@@ -1,5 +1,10 @@
 # Tablett – ETH & UZH mensa app (frontend)
 
+## Application link
+
+**[http://localhost:4321/](http://localhost:4321/)** (works once the app is running locally; start it with `npm install` then `npm run dev`, see "How to run" below).
+There is no hosted deployment yet; replace this link with the public URL once the app is deployed.
+
 Mobile-first web app for the ETH Zurich and UZH mensas: today's menus, live crowd levels, ratings and favourites.
 Frontend only. All data comes from a mock layer that is a drop-in replacement for a future REST API.
 
