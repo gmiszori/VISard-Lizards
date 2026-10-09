@@ -149,3 +149,16 @@ The ETH test fetches all pages. The ZFV test additionally requires
 `MENSA_ZFV_API_KEY`; without a key it is skipped. It checks that GraphQL returned
 authorized outlet data rather than silently accepting HTTP 200 authorization
 errors. Keys are not printed by these tests.
+
+### Packaged backend smoke check (Windows / PowerShell 7)
+
+```powershell
+pwsh -File backend/scripts/smoke-upstream.ps1
+pwsh -File backend/scripts/smoke-upstream.ps1 -Live -SkipBuild
+```
+
+The first command verifies and packages the backend, starts its JAR on loopback
+port 18081, checks the bundled catalogs and invalid-date handling, and stops only
+the process it created. The second additionally fetches every ETH page and checks
+ZFV if `MENSA_ZFV_API_KEY` is configured. Use `-Port 18082` if the default smoke
+port is occupied. Logs remain under the ignored `backend/target/` directory.
