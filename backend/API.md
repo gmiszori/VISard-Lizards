@@ -25,7 +25,8 @@ node backend/scripts/export-mensa-db.mjs
 | Method | Path | Returns |
 | --- | --- | --- |
 | GET | `/api/mensas?campus=` | `MensaDTO[]` without meal plan. `campus`: `zentrum`, `hoenggerberg`, `irchel` (optional) |
-| GET | `/api/mensas/{id}?dateStart=&dateEnd=&priceCategory=` | `MensaDTO` with meal plan. Dates default to today |
+| GET | `/api/meta` | `{today, menuDate, dataFrom, dataTo}`: which days have meals and which day to show by default |
+| GET | `/api/mensas/{id}?dateStart=&dateEnd=&priceCategory=` | `MensaDTO` with meal plan. Dates default to the menu date (see below) |
 | GET | `/api/mensas/{id}/meal-plan?dateStart=&dateEnd=&priceCategory=` | `MealPlanDTO`. Both dates required, inclusive |
 | POST | `/api/mensas/{id}/ratings` | `201`. Body `{"stars": 1-5}` |
 | GET | `/api/mensas/{id}/crowd` | `{histogram, live}`, same shape as `CrowdInfo` in `frontend/MARTIN/src/lib/types.ts` |
@@ -34,6 +35,8 @@ node backend/scripts/export-mensa-db.mjs
 | POST | `/api/meals/{id}/ratings` | `201`. Body `{"stars": 1-5, "tags": ["tasty", ...]}`, tags optional |
 
 - Dates: `YYYY-MM-DD`. Times: `HH:mm`.
+- "Today" is today in Zurich. The **menu date** is today if there are meals for it, otherwise the latest
+  earlier day with meals (e.g. Friday on weekends), the same rule as `MENU_DATE` in `canteens.ts`.
 - `priceCategory`: `STUDENT` (default), `STAFF`, `EXTERNAL`.
 - Mensa ids are the ids from `canteens.ts`, e.g. `polyterrasse`, `archimedes`.
 - Meal rating tags: `tasty`, `big-portion`, `small-portion`, `cold`, `too-salty`, `worth-it` (same as `MealTag` in the MARTIN frontend).

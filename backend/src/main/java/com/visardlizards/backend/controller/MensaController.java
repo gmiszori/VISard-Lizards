@@ -46,7 +46,7 @@ public class MensaController {
 				.toList();
 	}
 
-	/** One mensa including its meal plan (default: today in Zurich). */
+	/** One mensa including its meal plan (default: the menu date, see GET /api/meta). */
 	@GetMapping("/{id}")
 	public MensaDTO getMensa(
 			@PathVariable String id,
@@ -54,7 +54,7 @@ public class MensaController {
 			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @Nullable LocalDate dateEnd,
 			@RequestParam(defaultValue = "STUDENT") PriceCategory priceCategory) {
 		LocalDate today = LocalDate.now(clock);
-		LocalDate start = dateStart != null ? dateStart : today;
+		LocalDate start = dateStart != null ? dateStart : mensaService.getMenuDate(today);
 		Mensa mensa = mensaService.getMensa(id);
 		return toMensaDTO(mensa, today, getMealPlan(id, start, dateEnd != null ? dateEnd : start, priceCategory));
 	}

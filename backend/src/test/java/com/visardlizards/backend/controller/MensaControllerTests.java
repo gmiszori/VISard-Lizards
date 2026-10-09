@@ -88,6 +88,16 @@ class MensaControllerTests {
 	}
 
 	@Test
+	void metaDescribesTheDataRange() throws Exception {
+		mockMvc.perform(get("/api/meta"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.today").isString())
+				.andExpect(jsonPath("$.menuDate").isString())
+				.andExpect(jsonPath("$.dataFrom").value("2026-09-28"))
+				.andExpect(jsonPath("$.dataTo").value("2026-10-09"));
+	}
+
+	@Test
 	void returns404ForUnknownMensa() throws Exception {
 		mockMvc.perform(get("/api/mensas/does-not-exist"))
 				.andExpect(status().isNotFound())

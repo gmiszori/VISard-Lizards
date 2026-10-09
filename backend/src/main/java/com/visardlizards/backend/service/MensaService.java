@@ -3,6 +3,7 @@ package com.visardlizards.backend.service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.SortedSet;
 
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
@@ -42,6 +43,31 @@ public class MensaService {
 			throw new IllegalArgumentException("dateEnd must not be before dateStart");
 		}
 		return mensaRepository.findMeals(getMensa(mensaId).id(), dateStart, dateEnd);
+	}
+
+	/**
+	 * The day whose menu to show by default: the given day if there is data for it, otherwise the
+	 * latest earlier day with data (e.g. Friday on weekends), or the first day with data.
+	 * Same rule as MENU_DATE in frontend/src/data/canteens.ts.
+	 */
+	public LocalDate getMenuDate(LocalDate today) {
+		SortedSet<LocalDate> dates = mensaRepository.findMealDates();
+		if (dates.isEmpty() || dates.contains(today)) {
+			return today;
+		}
+		SortedSet<LocalDate> earlier = dates.headSet(today);
+		return earlier.isEmpty() ? dates.first() : earlier.last();
+	}
+
+	/** First and last day with meals, or null if there are none. */
+	public @Nullable LocalDate getFirstMealDate() {
+		SortedSet<LocalDate> dates = mensaRepository.findMealDates();
+		return dates.isEmpty() ? null : dates.first();
+	}
+
+	public @Nullable LocalDate getLastMealDate() {
+		SortedSet<LocalDate> dates = mensaRepository.findMealDates();
+		return dates.isEmpty() ? null : dates.last();
 	}
 
 	/** Display name of the mensa's campus, falling back to its id. */

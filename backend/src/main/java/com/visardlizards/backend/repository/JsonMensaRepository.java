@@ -4,10 +4,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -35,6 +38,7 @@ public class JsonMensaRepository implements MensaRepository {
 	private final Map<String, Campus> campusesById;
 	private final Map<String, List<Meal>> mealsByMensaId;
 	private final Map<String, Meal> mealsById;
+	private final SortedSet<LocalDate> mealDates;
 
 	public JsonMensaRepository(JsonMapper jsonMapper) {
 		MensaDb db;
@@ -50,6 +54,8 @@ public class JsonMensaRepository implements MensaRepository {
 				.sorted(Comparator.comparing(Meal::date))
 				.collect(Collectors.groupingBy(Meal::mensaId));
 		this.mealsById = db.meals().stream().collect(Collectors.toMap(Meal::id, Function.identity()));
+		this.mealDates = Collections.unmodifiableSortedSet(
+				db.meals().stream().map(Meal::date).collect(Collectors.toCollection(TreeSet::new)));
 	}
 
 	@Override
@@ -70,6 +76,11 @@ public class JsonMensaRepository implements MensaRepository {
 	@Override
 	public Optional<Meal> findMealById(String id) {
 		return Optional.ofNullable(mealsById.get(id));
+	}
+
+	@Override
+	public SortedSet<LocalDate> findMealDates() {
+		return mealDates;
 	}
 
 	@Override

@@ -52,4 +52,6 @@ Status log:
            GET  /api/meals/{id}?priceCategory=   -> {mensaId, date, meal, avgRating, tagCounts}
            POST /api/meals/{id}/ratings  {"stars": 1-5, "tags": [...]}  (tags = MealTag of MARTIN frontend)
          28 tests green. Full docs: backend/API.md, Swagger UI at /swagger-ui.html.
-  00:44  DONE: MensaDTO now has an "id" too (needed to call /api/mensas/{id} from the list).
+  00:43  DONE: MensaDTO now has an "id" too (needed to call /api/mensas/{id} from the list).
+  00:43  DONE: GET /api/meta {today, menuDate, dataFrom, dataTo}; /api/mensas/{id} defaults to the menu date
+         (snapshot ends 2026-10-09, so 'today' alone would give empty plans). 33 tests green.

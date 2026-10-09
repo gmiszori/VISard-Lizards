@@ -3,6 +3,7 @@ package com.visardlizards.backend.repository;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.SortedSet;
 
 import com.visardlizards.backend.model.domain.Campus;
 import com.visardlizards.backend.model.domain.Meal;
@@ -21,6 +22,9 @@ public interface MensaRepository {
 	Optional<Campus> findCampusById(String id);
 
 	Optional<Meal> findMealById(String id);
+
+	/** All dates that have at least one meal, ascending. */
+	SortedSet<LocalDate> findMealDates();
 
 	/** Meals of a mensa between both dates (inclusive), ordered by date. */
 	List<Meal> findMeals(String mensaId, LocalDate dateStart, LocalDate dateEnd);
