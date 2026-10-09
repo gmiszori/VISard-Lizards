@@ -5,13 +5,21 @@ type Preferences = {
   compact: boolean;
   locations: string[];
   openOnly: boolean;
+  priceTier: 'student' | 'worker' | 'external';
 };
 
 const STORAGE_KEY = 'campuseats-preferences';
 const allLocations = ['zentrum', 'hoenggerberg', 'irchel'];
 // Older versions saved display labels; map them to the campus ids used now.
 const legacyLocations: Record<string, string> = { 'ETH Zentrum': 'zentrum', 'UZH Zentrum': 'zentrum', 'ETH Hönggerberg': 'hoenggerberg', 'UZH Irchel': 'irchel' };
-const defaults: Preferences = { vegan: true, vegetarian: true, meat: true, compact: false, locations: allLocations, openOnly: false };
+const defaults: Preferences = { vegan: true, vegetarian: true, meat: true, compact: false, locations: allLocations, openOnly: false, priceTier: 'student' };
+const isPriceTier = (value: unknown): value is Preferences['priceTier'] => value === 'student' || value === 'worker' || value === 'external';
+function profilePriceTier(): Preferences['priceTier'] {
+  try {
+    const profile = JSON.parse(localStorage.getItem('campuseats-profile') || '{}');
+    return isPriceTier(profile?.priceTier) ? profile.priceTier : 'student';
+  } catch { return 'student'; }
+}
 
 function readPreferences(): Preferences {
   try {
@@ -21,7 +29,7 @@ function readPreferences(): Preferences {
       : saved.campus && saved.campus !== 'all'
         ? [saved.campus]
         : allLocations;
-    return { ...defaults, ...saved, locations: [...new Set(locations.map((location) => legacyLocations[location] ?? location))] };
+    return { ...defaults, ...saved, priceTier: isPriceTier(saved.priceTier) ? saved.priceTier : profilePriceTier(), locations: [...new Set(locations.map((location) => legacyLocations[location] ?? location))] };
   } catch {
     return defaults;
   }
@@ -31,6 +39,20 @@ let preferences = readPreferences();
 
 function applyPreferences() {
   document.documentElement.dataset.density = preferences.compact ? 'compact' : 'standard';
+  document.querySelectorAll<HTMLElement>('[data-meal-price]').forEach(price => {
+    const amount = price.querySelector<HTMLElement>('[data-price-amount]');
+    const label = price.querySelector<HTMLElement>('[data-price-label]');
+    const value = price.getAttribute(`data-price-${preferences.priceTier}`) ?? '–';
+    if (amount) amount.textContent = `CHF ${value}`;
+    if (label) {
+      label.dataset.i18n = preferences.priceTier;
+      const labels = document.documentElement.lang === 'de'
+        ? { student: 'Studierende', worker: 'Mitarbeitende', external: 'Externe' }
+        : { student: 'Student', worker: 'Worker', external: 'External' };
+      label.textContent = labels[preferences.priceTier];
+    }
+  });
+  document.querySelectorAll<HTMLSelectElement>('[data-price-tier]').forEach(select => select.value = preferences.priceTier);
 
   document.querySelectorAll<HTMLElement>('[data-diet]').forEach((meal) => {
     const diet = meal.dataset.diet as keyof Pick<Preferences, 'vegan' | 'vegetarian' | 'meat'>;
@@ -76,16 +98,19 @@ function applyPreferences() {
 }
 
 document.querySelector<HTMLFormElement>('#preferences-form')?.addEventListener('change', (event) => {
-  const input = event.target as HTMLInputElement;
-  if (input.type !== 'checkbox' || !(input.name in preferences)) return;
-  if (input.name === 'locations') {
-    const locations = new Set(preferences.locations);
-    if (input.checked) locations.add(input.value);
-    else locations.delete(input.value);
-    preferences = { ...preferences, locations: [...locations] };
-  } else {
-    preferences = { ...preferences, [input.name]: input.checked };
-  }
+  const input = event.target as HTMLInputElement | HTMLSelectElement;
+  if (input instanceof HTMLSelectElement && input.name === 'priceTier' && isPriceTier(input.value)) {
+    preferences = { ...preferences, priceTier: input.value };
+  } else if (input instanceof HTMLInputElement && input.type === 'checkbox' && input.name in preferences) {
+    if (input.name === 'locations') {
+      const locations = new Set(preferences.locations);
+      if (input.checked) locations.add(input.value);
+      else locations.delete(input.value);
+      preferences = { ...preferences, locations: [...locations] };
+    } else {
+      preferences = { ...preferences, [input.name]: input.checked };
+    }
+  } else return;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences));
   applyPreferences();
   showSavedState();

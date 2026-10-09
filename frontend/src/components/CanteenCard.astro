@@ -1,5 +1,6 @@
 ---
-import { formatPrice, type Canteen } from '../data/canteens';
+import { type Canteen } from '../data/canteens';
+import MealPrice from './MealPrice.astro';
 interface Props { canteen: Canteen }
 const { canteen } = Astro.props;
 ---
@@ -9,8 +10,8 @@ const { canteen } = Astro.props;
   <div class="card-image"><img src={canteen.imageUrl} alt={`Food at ${canteen.name}`} loading="lazy" /><span data-live="status" data-live-id={canteen.id} class={`status ${canteen.isOpen ? 'open' : 'closed'}`}>● <span data-i18n={canteen.isOpen ? 'open' : 'closed'}>{canteen.isOpen ? 'Open now' : 'Closed'}</span></span><span class="rating">★ {canteen.rating.toFixed(1)}</span></div>
   <div class="card-body">
     <div class="card-title-row"><div><h3 class="card-title">{canteen.name}</h3><div class="campus">{canteen.campus} <span aria-hidden="true">·</span> {canteen.location}</div></div><span class="hours" data-live="hours" data-live-id={canteen.id}>{canteen.hours}</span></div>
-    <div class="menu-preview" data-preference-list><div class="menu-label" data-i18n="today">On the menu today</div>
-      {canteen.menu.map((item) => <div class="dish-preview" data-diet={item.dietary}><div class="dish"><span>{item.name}<span class={`diet diet-${item.dietary}`} data-i18n={`diet_${item.dietary}`}>{item.dietary}</span></span></div><div class="card-prices"><span><small data-i18n="student">Student</small><strong>CHF {formatPrice(item.priceStudent)}</strong></span><span><small data-i18n="worker">Worker</small><strong>CHF {formatPrice(item.priceWorker)}</strong></span><span><small data-i18n="external">External</small><strong>CHF {formatPrice(item.priceExternal)}</strong></span></div></div>)}
+    <div class="menu-preview" data-preference-list>
+      {canteen.menu.map((item) => <div class="dish-preview" data-diet={item.dietary}><div class="dish"><span>{item.name}<span class={`diet diet-${item.dietary}`} data-i18n={`diet_${item.dietary}`}>{item.dietary}</span></span></div><MealPrice item={item} compact /></div>)}
       <p class="preference-empty" data-no-preference-meals hidden data-i18n="noPreferenceMeals">No dishes match your food preferences.</p>
     </div>
   </div>
