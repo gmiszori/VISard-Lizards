@@ -78,6 +78,10 @@ public class ZfvMensaClient {
             throw new IllegalStateException(
                     "Configure MENSA_ZFV_API_KEY or mensa.zfv.api-key before requesting UZH menus");
         }
+        if (apiKey.chars().anyMatch(Character::isISOControl)) {
+            // Fail without allowing the HTTP header validator to echo the key.
+            throw new IllegalStateException("The ZFV API key contains invalid control characters");
+        }
         String query = "query Client { organisation(where: {"
                 + "id: \"cm1tjaby3002o72q4lhhak996\", tenantId: \"zfv\"}) {"
                 + " outlets(take: 100) { slug calendar { " + calendarQuery + " } } } }";

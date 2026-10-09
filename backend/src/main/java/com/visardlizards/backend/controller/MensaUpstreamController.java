@@ -1,6 +1,8 @@
 package com.visardlizards.backend.controller;
 
 import java.time.LocalDate;
+import java.net.http.HttpTimeoutException;
+import java.net.SocketTimeoutException;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -68,6 +70,12 @@ public class MensaUpstreamController {
 
     @ExceptionHandler(RestClientException.class)
     public ProblemDetail upstreamUnavailable(RestClientException exception) {
+        for (Throwable cause = exception; cause != null; cause = cause.getCause()) {
+            if (cause instanceof HttpTimeoutException || cause instanceof SocketTimeoutException) {
+                return ProblemDetail.forStatusAndDetail(HttpStatus.GATEWAY_TIMEOUT,
+                        "The meal data provider timed out.");
+            }
+        }
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_GATEWAY,
                 "The meal data provider could not complete the request.");
     }

@@ -69,4 +69,15 @@ class ZfvMensaClientTests {
         assertThrows(IllegalStateException.class, client::fetchThisWeek);
         server.verify();
     }
+
+    @Test
+    void invalidKeyDoesNotLeakThroughHeaderValidationErrors() {
+        RestClient.Builder builder = RestClient.builder();
+        MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
+        ZfvMensaClient client = new ZfvMensaClient(builder.build(), "private-test-key\n");
+
+        IllegalStateException error = assertThrows(IllegalStateException.class, client::fetchThisWeek);
+        assertEquals("The ZFV API key contains invalid control characters", error.getMessage());
+        server.verify();
+    }
 }

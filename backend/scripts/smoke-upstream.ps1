@@ -46,7 +46,8 @@ try {
     $stderrPath = Join-Path $backendRoot "target/smoke-$runId.err.log"
     $backendProcess = Start-Process -FilePath 'java' -ArgumentList @(
         '-jar', "`"$jarPath`"", "--server.port=$Port", '--server.address=127.0.0.1',
-        '--mensa.upstream.enabled=true'
+        '--mensa.upstream.enabled=true',
+        "--spring.datasource.url=jdbc:h2:mem:smoke_$runId", '--spring.jpa.hibernate.ddl-auto=create-drop'
     ) -WindowStyle Hidden -PassThru -RedirectStandardOutput $stdoutPath -RedirectStandardError $stderrPath
 
     $ready = $false

@@ -1,6 +1,7 @@
 package com.visardlizards.backend.controller;
 
 import java.time.LocalDate;
+import java.net.SocketTimeoutException;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.ResourceAccessException;
 
 import com.visardlizards.backend.service.EthMensaClient;
 import com.visardlizards.backend.service.MensaLocationCatalog;
@@ -71,5 +73,16 @@ class MensaUpstreamControllerTests {
 
         mvc.perform(get("/api/upstream/uzh/week"))
                 .andExpect(status().isBadGateway());
+    }
+
+    @Test
+    void upstreamTimeoutIsDistinguishedFromOtherFailures() throws Exception {
+        when(zfvClient.fetchThisWeek()).thenThrow(
+                new ResourceAccessException("private diagnostics", new SocketTimeoutException()));
+
+        mvc.perform(get("/api/upstream/uzh/week"))
+                .andExpect(status().isGatewayTimeout())
+                .andExpect(jsonPath("$.status").value(504))
+                .andExpect(jsonPath("$.detail").value("The meal data provider timed out."));
     }
 }

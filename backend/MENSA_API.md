@@ -104,6 +104,8 @@ the upstream copyright and license notice.
 The ZFV request is adapted from the maintained MensaZH provider:
 https://github.com/fflopsi/mensa-zh/blob/main/app/src/main/java/ch/florianfrauenfelder/mensazh/data/providers/UZHMensaProvider.kt
 Its MIT notice is retained in `third-party/MensaZH-LICENSE.md`.
+Maven also includes both third-party notices under `META-INF/licenses` in the
+packaged backend JAR, so attribution accompanies executable distributions.
 
 ## Verification
 
@@ -128,6 +130,8 @@ Responses have `application/json` content type and preserve the upstream body
 without quoting it as a JSON string. These endpoints do not overlap the app's
 `/api/mensas` DTO endpoints. ZFV keys remain on the server. HTTP/transport errors
 become 502; missing ZFV configuration becomes 503; invalid parameters become 400.
+Upstream timeouts become 504. Invalid keys containing control characters are
+rejected before header validation, without echoing the key in an exception.
 GraphQL `errors` inside a successful HTTP response remain in the raw body, so
 consumers must inspect them. No FOOD2050 HTTP endpoint is exposed because the
 legacy source URL returned 404 during verification.
@@ -162,3 +166,5 @@ port 18081, checks the bundled catalogs and invalid-date handling, and stops onl
 the process it created. The second additionally fetches every ETH page and checks
 ZFV if `MENSA_ZFV_API_KEY` is configured. Use `-Port 18082` if the default smoke
 port is occupied. Logs remain under the ignored `backend/target/` directory.
+The smoke server explicitly uses an in-memory H2 database so checking the packaged
+app does not open or change your normal local ratings/crowd database.
