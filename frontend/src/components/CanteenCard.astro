@@ -2,14 +2,17 @@
 import type { Canteen } from '../data/canteens';
 interface Props { canteen: Canteen }
 const { canteen } = Astro.props;
-const firstItems = canteen.menu.slice(0, 2);
 ---
-<a href={`/canteen/${canteen.id}`} data-canteen-card data-campus={canteen.campus} data-is-open={String(canteen.isOpen)} data-name={canteen.name} data-menu={canteen.menu.map((item) => item.name).join(' ')} class="canteen-card">
-  <div class="card-image"><img src={canteen.imageUrl} alt={`Food at ${canteen.name}`} loading="lazy" /><span class={`status ${canteen.isOpen ? 'open' : 'closed'}`}>{canteen.isOpen ? '● Open now' : '● Closed'}</span><span class="rating">★ {canteen.rating.toFixed(1)}</span></div>
+<article data-canteen-card data-canteen-id={canteen.id} data-campus={canteen.campus} data-is-open={String(canteen.isOpen)} data-name={canteen.name} data-menu={canteen.menu.map((item) => item.name).join(' ')} class="canteen-card">
+  <button class="favorite-toggle" type="button" data-favorite-toggle aria-pressed="false" aria-label="Add to favourites"><span aria-hidden="true">☆</span></button>
+  <a href={`/canteen/${canteen.id}`} class="canteen-card-link">
+  <div class="card-image"><img src={canteen.imageUrl} alt={`Food at ${canteen.name}`} loading="lazy" /><span class={`status ${canteen.isOpen ? 'open' : 'closed'}`}>● <span data-i18n={canteen.isOpen ? 'open' : 'closed'}>{canteen.isOpen ? 'Open now' : 'Closed'}</span></span><span class="rating">★ {canteen.rating.toFixed(1)}</span></div>
   <div class="card-body">
     <div class="card-title-row"><div><h3 class="card-title">{canteen.name}</h3><div class="campus">{canteen.campus} <span aria-hidden="true">·</span> {canteen.location}</div></div><span class="hours">{canteen.hours}</span></div>
-    <div class="menu-preview"><div class="menu-label">On the menu today</div>
-      {firstItems.map((item) => <div class="dish"><span>{item.name}<span class="diet">{item.dietary}</span></span><span class="dish-price">CHF {item.priceStudent.toFixed(2)}</span></div>)}
+    <div class="menu-preview" data-preference-list><div class="menu-label" data-i18n="today">On the menu today</div>
+      {canteen.menu.map((item) => <div class="dish-preview" data-diet={item.dietary}><div class="dish"><span>{item.name}<span class={`diet diet-${item.dietary}`} data-i18n={`diet_${item.dietary}`}>{item.dietary}</span></span></div><div class="card-prices"><span><small data-i18n="student">Student</small><strong>CHF {item.priceStudent.toFixed(2)}</strong></span><span><small data-i18n="worker">Worker</small><strong>CHF {item.priceWorker.toFixed(2)}</strong></span><span><small data-i18n="external">External</small><strong>CHF {item.priceExternal.toFixed(2)}</strong></span></div></div>)}
+      <p class="preference-empty" data-no-preference-meals hidden data-i18n="noPreferenceMeals">No dishes match your food preferences.</p>
     </div>
   </div>
-</a>
+  </a>
+</article>

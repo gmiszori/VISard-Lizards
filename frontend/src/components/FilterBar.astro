@@ -1,38 +1,5 @@
 ---
 ---
 <div class="toolbar">
-  <label class="search"><span class="search-icon" aria-hidden="true">⌕</span><input type="search" id="search-input" placeholder="Search canteens or dishes" aria-label="Search canteens or dishes" /></label>
-  <div class="filters" aria-label="Filter canteens">
-    <button type="button" data-filter="all" class="filter-btn active">All spots</button>
-    <button type="button" data-filter="ETH Zentrum" class="filter-btn">Zentrum</button>
-    <button type="button" data-filter="ETH Hönggerberg" class="filter-btn">Hönggerberg</button>
-    <button type="button" data-filter="open" class="filter-btn">Open now</button>
-  </div>
+  <label class="search"><span class="search-icon" aria-hidden="true">⌕</span><input type="search" id="search-input" data-i18n-placeholder="search" placeholder="Search canteens or dishes" aria-label="Search canteens or dishes" /></label>
 </div>
-<script>
-  const searchInput = document.querySelector<HTMLInputElement>('#search-input');
-  const filterBtns = document.querySelectorAll<HTMLButtonElement>('.filter-btn');
-  const cards = document.querySelectorAll<HTMLElement>('[data-canteen-card]');
-  let currentFilter = 'all';
-  function applyFilters() {
-    const query = searchInput?.value.trim().toLocaleLowerCase() ?? '';
-    let visible = 0;
-    cards.forEach((card) => {
-      const text = `${card.dataset.name} ${card.dataset.menu}`.toLocaleLowerCase();
-      const matchesQuery = text.includes(query);
-      const matchesFilter = currentFilter === 'all' || (currentFilter === 'open' ? card.dataset.isOpen === 'true' : card.dataset.campus === currentFilter);
-      card.hidden = !(matchesQuery && matchesFilter);
-      if (!card.hidden) visible++;
-    });
-    const empty = document.querySelector<HTMLElement>('#empty-state');
-    if (empty) empty.style.display = visible ? 'none' : 'block';
-    const count = document.querySelector<HTMLElement>('#visible-count');
-    if (count) count.textContent = `${visible} ${visible === 1 ? 'canteen' : 'canteens'}`;
-  }
-  searchInput?.addEventListener('input', applyFilters);
-  filterBtns.forEach((button) => button.addEventListener('click', () => {
-    currentFilter = button.dataset.filter ?? 'all';
-    filterBtns.forEach((item) => item.classList.toggle('active', item === button));
-    applyFilters();
-  }));
-</script>

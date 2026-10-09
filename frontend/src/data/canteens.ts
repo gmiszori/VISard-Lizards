@@ -6,7 +6,8 @@ export interface MenuItem {
   name: string;
   description: string;
   priceStudent: number;
-  priceStaff: number;
+  priceWorker: number;
+  priceExternal: number;
   dietary: DietaryType;
   allergens?: string[];
   category: 'Daily Special' | 'Classic' | 'Side';
@@ -42,7 +43,8 @@ export const CANTEENS: Canteen[] = [
         name: 'Creamy Wild Mushroom Risotto',
         description: 'Arborio rice cooked with thyme, white wine, wild mushrooms, topped with almond parmesan crisp.',
         priceStudent: 6.50,
-        priceStaff: 9.50,
+        priceWorker: 9.50,
+        priceExternal: 11.00,
         dietary: 'vegan',
         allergens: ['Nuts', 'Soy'],
         category: 'Daily Special'
@@ -52,7 +54,8 @@ export const CANTEENS: Canteen[] = [
         name: 'Crispy Swiss Chicken Escalope',
         description: 'Golden breaded chicken breast served with rosemary roasted potatoes and lemon butter sauce.',
         priceStudent: 8.90,
-        priceStaff: 12.00,
+        priceWorker: 12.00,
+        priceExternal: 13.50,
         dietary: 'meat',
         allergens: ['Gluten', 'Dairy'],
         category: 'Daily Special'
@@ -75,7 +78,8 @@ export const CANTEENS: Canteen[] = [
         name: 'Thai Green Curry Bowl',
         description: 'Fragrant green curry with organic tofu, bamboo shoots, Thai basil, served over jasmine rice.',
         priceStudent: 7.20,
-        priceStaff: 10.20,
+        priceWorker: 10.20,
+        priceExternal: 11.70,
         dietary: 'vegetarian',
         allergens: ['Soy', 'Sesame'],
         category: 'Daily Special'
@@ -98,7 +102,8 @@ export const CANTEENS: Canteen[] = [
         name: 'Roasted Sweet Potato & Lentil Bowl',
         description: 'Warm beluga lentils, roasted sweet potatoes, kale, pomegranate seeds, and tahini dressing.',
         priceStudent: 6.80,
-        priceStaff: 9.80,
+        priceWorker: 9.80,
+        priceExternal: 11.30,
         dietary: 'vegan',
         allergens: ['Sesame'],
         category: 'Classic'

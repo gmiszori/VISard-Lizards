@@ -2,12 +2,12 @@
 import type { MenuItem as MenuItemType } from '../data/canteens';
 interface Props { item: MenuItemType }
 const { item } = Astro.props;
-const dietaryLabels = { vegan: 'Vegan', vegetarian: 'Vegetarian', meat: 'Meat' };
 ---
-<article class="menu-item">
-  <span class="eyebrow">{item.category}</span>
+<article class="menu-item" data-diet={item.dietary}>
+  <span class="eyebrow" data-i18n={`category_${item.category.toLowerCase().replace(' ', '_')}`}>{item.category}</span>
   <h3>{item.name}</h3>
   <p>{item.description}</p>
-  <p style="margin-top:9px">{item.allergens?.length ? `Contains: ${item.allergens.join(', ')}` : 'No listed allergens'}</p>
-  <footer><span>{dietaryLabels[item.dietary]} · Student</span><strong>CHF {item.priceStudent.toFixed(2)}</strong></footer>
+  <p style="margin-top:9px"><span data-i18n={item.allergens?.length ? 'contains' : 'noAllergens'}>{item.allergens?.length ? 'Contains' : 'No listed allergens'}</span>{item.allergens?.length ? `: ${item.allergens.join(', ')}` : ''}</p>
+  <div class={`menu-diet diet-${item.dietary}`} data-i18n={`diet_${item.dietary}`}>{item.dietary}</div>
+  <div class="price-grid"><div><small data-i18n="student">Student</small><strong>CHF {item.priceStudent.toFixed(2)}</strong></div><div><small data-i18n="worker">Worker</small><strong>CHF {item.priceWorker.toFixed(2)}</strong></div><div><small data-i18n="external">External</small><strong>CHF {item.priceExternal.toFixed(2)}</strong></div></div>
 </article>
