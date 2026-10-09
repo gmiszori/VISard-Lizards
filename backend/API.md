@@ -25,15 +25,21 @@ node backend/scripts/export-mensa-db.mjs
 | Method | Path | Returns |
 | --- | --- | --- |
 | GET | `/api/mensas?campus=` | `MensaDTO[]` without meal plan. `campus`: `zentrum`, `hoenggerberg`, `irchel` (optional) |
-| GET | `/api/mensas/{id}?dateStart=&dateEnd=&priceCategory=` | `MensaDTO` with meal plan. Dates default to today |
+| GET | `/api/meta` | `{today, menuDate, dataFrom, dataTo}`: which days have meals and which day to show by default |
+| GET | `/api/mensas/{id}?dateStart=&dateEnd=&priceCategory=` | `MensaDTO` with meal plan. Dates default to the menu date (see below) |
 | GET | `/api/mensas/{id}/meal-plan?dateStart=&dateEnd=&priceCategory=` | `MealPlanDTO`. Both dates required, inclusive |
 | POST | `/api/mensas/{id}/ratings` | `201`. Body `{"stars": 1-5}` |
 | GET | `/api/mensas/{id}/crowd` | `{histogram, live}`, same shape as `CrowdInfo` in `frontend/MARTIN/src/lib/types.ts` |
 | POST | `/api/mensas/{id}/crowd-reports` | `201` + `CrowdReport`. Body `{"level": 1-5}`, the server stamps the time |
+| GET | `/api/meals/{id}?priceCategory=` | `{mensaId, date, meal: MealDTO, avgRating, tagCounts}` |
+| POST | `/api/meals/{id}/ratings` | `201`. Body `{"stars": 1-5, "tags": ["tasty", ...]}`, tags optional |
 
 - Dates: `YYYY-MM-DD`. Times: `HH:mm`.
+- "Today" is today in Zurich. The **menu date** is today if there are meals for it, otherwise the latest
+  earlier day with meals (e.g. Friday on weekends), the same rule as `MENU_DATE` in `canteens.ts`.
 - `priceCategory`: `STUDENT` (default), `STAFF`, `EXTERNAL`.
 - Mensa ids are the ids from `canteens.ts`, e.g. `polyterrasse`, `archimedes`.
+- Meal rating tags: `tasty`, `big-portion`, `small-portion`, `cold`, `too-salty`, `worth-it` (same as `MealTag` in the MARTIN frontend).
 - Ratings and crowd reports are kept in memory (lost on restart). `avgRating` is `null` until a mensa has been rated.
 - Crowd: `live` holds the reports of the last 30 minutes, newest first. `histogram.byWeekday`
   (`mon`..`sun`, 24 hourly values 0–100, Zurich time) is only present when `sufficient` is true
@@ -49,6 +55,7 @@ node backend/scripts/export-mensa-db.mjs
 ```json
 [
   {
+    "id": "uzh-seerose-irchel",
     "title": "Cafeteria Seerose",
     "openingHours": {
       "2026-10-12": [{ "from": "11:30", "to": "13:00" }, { "from": "17:00", "to": "19:30" }],
@@ -73,6 +80,7 @@ node backend/scripts/export-mensa-db.mjs
       "timeStart": "17:30",
       "timeEnd": "19:30",
       "meal": {
+        "id": "polyterrasse.2026-10-06.dinner.1",
         "name": "Panang Tofu Curry",
         "price": { "price": 11.5, "cat": "staff" },
         "description": "Tofu, Panang Curry, Asian Vegetables, Jasmine Rice, Bamboo Shoots",
@@ -88,7 +96,10 @@ node backend/scripts/export-mensa-db.mjs
 Entries of a day are ordered lunch before dinner. `timeStart`/`timeEnd` are `null` when the mensa
 publishes no service window for that day.
 
+`MensaDTO.id` (e.g. `polyterrasse`) is not on the whiteboard either; it is needed to call `/api/mensas/{id}`.
+
 **`MealDTO` fields:**
+- `id`: e.g. `polyterrasse.2026-10-06.lunch.2`, for `/api/meals/{id}`. Not on the whiteboard, added so single meals can be addressed.
 - `description`: the meal's components joined with commas.
 - `classification`: `[diet, kind, service]`, where diet is `vegan`/`vegetarian`/`meat`/`fish`, kind is `main`/`buffet`/`dessert`/`drink` and service is `lunch`/`dinner`.
 - `envImp`: the ETH eco score (e.g. `C+`) or the UZH climate impact (`LOW`/`MEDIUM`/`HIGH`).

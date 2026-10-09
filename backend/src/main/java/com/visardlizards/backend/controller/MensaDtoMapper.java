@@ -36,6 +36,7 @@ public class MensaDtoMapper {
 	public MensaDTO toMensaDTO(Mensa mensa, String campusName, @Nullable BigDecimal avgRating,
 			LocalDate openingHoursFrom, @Nullable MealPlanDTO mealPlan) {
 		return new MensaDTO(
+				mensa.id(),
 				mensa.name(),
 				toOpeningHoursDTO(mensa, openingHoursFrom),
 				campusName,
@@ -76,11 +77,12 @@ public class MensaDtoMapper {
 				toMealDTO(meal, priceCategory));
 	}
 
-	private MealDTO toMealDTO(Meal meal, PriceCategory priceCategory) {
+	public MealDTO toMealDTO(Meal meal, PriceCategory priceCategory) {
 		BigDecimal price = meal.price() == null ? null : meal.price().of(priceCategory);
 		String description = meal.components().isEmpty() ? null : String.join(", ", meal.components());
 		String envImp = meal.ecoScore() != null ? meal.ecoScore() : meal.climateImpact();
 		return new MealDTO(
+				meal.id(),
 				meal.title(),
 				new PriceDTO(price, priceCategory.name().toLowerCase(Locale.ROOT)),
 				description,

@@ -24,6 +24,7 @@ class MensaControllerTests {
 		mockMvc.perform(get("/api/mensas"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.length()").value(22))
+				.andExpect(jsonPath("$[0].id").value("archimedes"))
 				.andExpect(jsonPath("$[0].title").value("Archimedes"))
 				.andExpect(jsonPath("$[0].location").value("Gloriastrasse 37/39, 8092 Zürich"))
 				.andExpect(jsonPath("$[0].mealPlan").doesNotExist());
@@ -84,6 +85,16 @@ class MensaControllerTests {
 		mockMvc.perform(get("/api/mensas/uzh-lichthof"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.openingHours.*[*]").isEmpty());
+	}
+
+	@Test
+	void metaDescribesTheDataRange() throws Exception {
+		mockMvc.perform(get("/api/meta"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.today").isString())
+				.andExpect(jsonPath("$.menuDate").isString())
+				.andExpect(jsonPath("$.dataFrom").value("2026-09-28"))
+				.andExpect(jsonPath("$.dataTo").value("2026-10-09"));
 	}
 
 	@Test

@@ -4,7 +4,9 @@ import java.util.List;
 
 import org.jspecify.annotations.Nullable;
 
+/** id: use it for GET /api/meals/{id} and meal ratings (not on the whiteboard, added for that). */
 public record MealDTO(
+		String id,
 		String name,
 		PriceDTO price,
 		@Nullable String description,
