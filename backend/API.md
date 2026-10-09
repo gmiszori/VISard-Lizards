@@ -30,7 +30,7 @@ node backend/scripts/export-mensa-db.mjs
 | GET | `/api/mensas/{id}?dateStart=&dateEnd=&priceCategory=` | `MensaDTO` with meal plan. Dates default to the menu date (see below) |
 | GET | `/api/mensas/{id}/meal-plan?dateStart=&dateEnd=&priceCategory=` | `MealPlanDTO`. Both dates required, inclusive |
 | POST | `/api/mensas/{id}/ratings` | `201`. Body `{"stars": 1-5}` |
-| GET | `/api/mensas/{id}/crowd` | `{histogram, live}`, same shape as `CrowdInfo` in `frontend/MARTIN/src/lib/types.ts` |
+| GET | `/api/mensas/{id}/crowd` | `{histogram: {mensaId, sufficient, sampleSize, byWeekday?}, live: CrowdReport[]}` |
 | POST | `/api/mensas/{id}/crowd-reports` | `201` + `CrowdReport`. Body `{"level": 1-5}`, the server stamps the time |
 | GET | `/api/meals/{id}?priceCategory=` | `{mensaId, date, meal: MealDTO, avgRating, tagCounts}` |
 | POST | `/api/meals/{id}/ratings` | `201`. Body `{"stars": 1-5, "tags": ["tasty", ...]}`, tags optional |
@@ -40,7 +40,7 @@ node backend/scripts/export-mensa-db.mjs
   earlier day with meals (e.g. Friday on weekends), the same rule as `MENU_DATE` in `canteens.ts`.
 - `priceCategory`: `STUDENT` (default), `STAFF`, `EXTERNAL`.
 - Mensa ids are the ids from `canteens.ts`, e.g. `polyterrasse`, `archimedes`.
-- Meal rating tags: `tasty`, `big-portion`, `small-portion`, `cold`, `too-salty`, `worth-it` (same as `MealTag` in the MARTIN frontend).
+- Meal rating tags: `tasty`, `big-portion`, `small-portion`, `cold`, `too-salty`, `worth-it`.
 - Ratings and crowd reports are stored in an H2 file database under `backend/data/` (git-ignored, created on
   first start; set `DB_URL` to use another JDBC database). `avgRating` is `null` until a mensa has been rated.
 - Crowd: `live` holds the reports of the last 30 minutes, newest first. `histogram.byWeekday`

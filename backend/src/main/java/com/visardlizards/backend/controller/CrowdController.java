@@ -18,7 +18,7 @@ import com.visardlizards.backend.model.dto.CrowdReportRequestDTO;
 import com.visardlizards.backend.service.CrowdService;
 import com.visardlizards.backend.service.MensaService;
 
-/** "How full is it?" Shapes match CrowdInfo / CrowdReport in frontend/MARTIN/src/lib/types.ts. */
+/** "How full is it?": crowd reports and the popular-times histogram. */
 @RestController
 @RequestMapping("/api/mensas/{id}")
 public class CrowdController {

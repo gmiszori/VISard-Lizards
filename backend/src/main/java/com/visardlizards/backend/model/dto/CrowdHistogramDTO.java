@@ -7,7 +7,7 @@ import org.jspecify.annotations.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-/** Matches CrowdHistogram in frontend/MARTIN/src/lib/types.ts. */
+/** Popular times: 24 hourly values (0-100) per weekday; byWeekday is omitted when sufficient is false. */
 public record CrowdHistogramDTO(String mensaId, boolean sufficient, int sampleSize,
 		@JsonInclude(JsonInclude.Include.NON_NULL) @Nullable Map<String, List<Integer>> byWeekday) {
 }

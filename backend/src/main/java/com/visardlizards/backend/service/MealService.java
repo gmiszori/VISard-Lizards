@@ -15,7 +15,7 @@ import com.visardlizards.backend.repository.MensaRepository;
 @Service
 public class MealService {
 
-	/** Same values as MealTag in frontend/MARTIN/src/lib/types.ts. */
+	/** Allowed tags of a meal rating. */
 	public static final Set<String> MEAL_TAGS =
 			Set.of("tasty", "big-portion", "small-portion", "cold", "too-salty", "worth-it");
 
