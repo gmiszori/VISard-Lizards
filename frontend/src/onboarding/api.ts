@@ -3,7 +3,9 @@ import type { Profile } from './profile.ts';
 /** TODO(backend): replace this local mock with authenticated profile persistence. */
 export function saveProfile(profile: Profile): void {
   localStorage.setItem('campuseats-profile', JSON.stringify(profile));
-  const raw = JSON.parse(localStorage.getItem('campuseats-preferences') || '{}') as unknown;
+  let raw: unknown;
+  try { raw = JSON.parse(localStorage.getItem('campuseats-preferences') || '{}'); }
+  catch { raw = {}; }
   const existing = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
   localStorage.setItem('campuseats-preferences', JSON.stringify({ ...existing,
     locations: [...new Set([profile.campus, ...profile.campusSecondary])],
