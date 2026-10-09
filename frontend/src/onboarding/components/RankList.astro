@@ -1,0 +1,16 @@
+---
+import { PRIORITIES } from '../profile';
+import { t } from '../i18n';
+---
+<fieldset class="ob-field">
+  <legend data-ob-i18n="priorities">{t('priorities')}</legend>
+  <p class="ob-note" data-ob-i18n="rankHint">{t('rankHint')}</p>
+  <ol class="ob-rank" data-rank-list>
+    {PRIORITIES.map(priority => <li data-priority={priority}>
+      <span class="ob-rank-number" aria-hidden="true"></span><strong data-ob-i18n={priority}>{t(priority)}</strong>
+      <button type="button" data-rank-move="-1" aria-label={`${t('up')}: ${t(priority)}`}>↑</button>
+      <button type="button" data-rank-move="1" aria-label={`${t('down')}: ${t(priority)}`}>↓</button>
+    </li>)}
+  </ol>
+  <p class="ob-note" data-ob-i18n="signalHint">{t('signalHint')}</p>
+</fieldset>

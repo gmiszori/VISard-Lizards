@@ -1,0 +1,11 @@
+---
+import ChipSelect from './ChipSelect.astro';
+---
+<template id="ob-rating-template">
+  <article class="ob-rating-row">
+    <h3 data-mensa-name></h3>
+    <ChipSelect name="rating" labelKey="ratings" mode="single" options={[
+      { value: '1', key: 'avoid' }, { value: '2', key: 'fine' }, { value: '3', key: 'love' },
+    ]} />
+  </article>
+</template>
