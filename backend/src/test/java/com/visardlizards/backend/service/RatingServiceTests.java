@@ -4,12 +4,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigDecimal;
+import java.time.Clock;
 
 import org.junit.jupiter.api.Test;
 
 class RatingServiceTests {
 
-	private final RatingService ratingService = new RatingService();
+	private final RatingService ratingService = new RatingService(new InMemoryRatingRepository(), Clock.systemUTC());
 
 	@Test
 	void averageIsNullWithoutRatings() {

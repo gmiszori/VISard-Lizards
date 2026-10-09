@@ -2,6 +2,7 @@ package com.visardlizards.backend.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.Clock;
 import java.time.LocalDate;
 
 import org.junit.jupiter.api.Test;
@@ -14,7 +15,7 @@ import tools.jackson.databind.json.JsonMapper;
 class MensaServiceTests {
 
 	private final MensaService mensaService =
-			new MensaService(new JsonMensaRepository(JsonMapper.builder().build()), new RatingService());
+			new MensaService(new JsonMensaRepository(JsonMapper.builder().build()), new RatingService(new InMemoryRatingRepository(), Clock.systemUTC()));
 
 	@Test
 	void menuDateIsTodayWhenThereIsData() {

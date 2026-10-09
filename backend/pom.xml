@@ -36,6 +36,17 @@
 			<artifactId>spring-boot-starter-webmvc</artifactId>
 		</dependency>
 
+		<!-- Ratings and crowd reports, stored in an H2 file database (backend/data/) -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+
 		<!-- OpenAPI docs: /v3/api-docs, Swagger UI: /swagger-ui.html -->
 		<dependency>
 			<groupId>org.springdoc</groupId>
