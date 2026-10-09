@@ -26,9 +26,9 @@ const { canteen } = Astro.props;
   </div>
 </article>
 <style>
-  .canteen-card{align-self:start}.canteen-card .card-image{display:flex;align-items:flex-end;height:auto;min-height:144px}
+  .canteen-card{align-self:start}.canteen-card .card-image{display:flex;align-items:flex-end;height:auto;min-height:110px}
   .canteen-card .card-image>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-  .canteen-card .canteen-photo-caption{position:relative;inset:auto;width:100%;box-sizing:border-box;padding:56px 16px 14px;align-items:flex-end}
+  .canteen-card .canteen-photo-caption{position:relative;inset:auto;width:100%;box-sizing:border-box;padding:44px 16px 10px;align-items:flex-end}
   .canteen-photo-caption>div{width:100%;min-width:0}.canteen-photo-title{display:flex;align-items:center;gap:9px}
   .canteen-card .canteen-photo-caption .card-title{flex:0 1 auto;min-width:0;color:inherit;font-size:18px;line-height:1.2;overflow-wrap:anywhere}
   .canteen-card .canteen-photo-caption .campus{color:inherit;opacity:.85;font-size:11px;line-height:1.4;margin-top:5px}
@@ -40,8 +40,8 @@ const { canteen } = Astro.props;
   .canteen-card .menu-preview>.dish-preview:not([hidden])~.dish-preview:not([hidden]){border-top:1px solid var(--line);margin-top:10px;padding-top:10px}
   .canteen-card .meal-preview-heading{align-items:center}.canteen-card .meal-preview-heading>.dish{margin-top:0}
   .canteen-card .menu-preview>.preference-empty{margin:0;padding:8px 0;font-size:12px;line-height:1.5}
-  :root[data-density=compact] .canteen-card .card-image{height:auto;min-height:128px}
+  :root[data-density=compact] .canteen-card .card-image{height:auto;min-height:110px}
   :root[data-density=compact] .canteen-card .card-body{padding:10px 12px 12px}
   :root[data-density=compact] .canteen-card .favorite-toggle{width:44px;height:44px}
-  @media(max-width:700px){.canteen-card .card-image{min-height:138px}.canteen-card .canteen-photo-caption{padding-left:15px}.canteen-card .card-body{padding:10px 15px 13px}:root[data-density=compact] .canteen-card{display:block}}
+  @media(max-width:700px){.canteen-card .canteen-photo-caption{padding-left:15px}.canteen-card .card-body{padding:10px 15px 13px}:root[data-density=compact] .canteen-card{display:block}}
 </style>
