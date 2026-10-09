@@ -6,7 +6,6 @@ import java.util.List;
 import org.jspecify.annotations.Nullable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -66,12 +65,6 @@ public class MensaController {
 	@ResponseStatus(HttpStatus.CREATED)
 	public void rateMensa(@PathVariable String id, @RequestBody RatingRequestDTO rating) {
 		mensaService.rateMensa(id, rating.stars());
-	}
-
-	@ExceptionHandler(IllegalArgumentException.class)
-	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	public String handleBadRequest(IllegalArgumentException e) {
-		return e.getMessage();
 	}
 
 }

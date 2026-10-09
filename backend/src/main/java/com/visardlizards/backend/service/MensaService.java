@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.TextStyle;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -92,9 +93,13 @@ public class MensaService {
 	}
 
 	private MealPlanDTO toMealPlanDTO(Mensa mensa, LocalDate dateStart, LocalDate dateEnd, PriceCategory priceCategory) {
+		// Within a day: lunch before dinner (stable sort keeps the source's line order)
 		Map<LocalDate, List<MealPlanEntryDTO>> days = mensaRepository.findMeals(mensa.id(), dateStart, dateEnd).stream()
-				.collect(Collectors.groupingBy(Meal::date, TreeMap::new,
-						Collectors.mapping(meal -> toMealPlanEntryDTO(mensa, meal, priceCategory), Collectors.toList())));
+				.map(meal -> Map.entry(meal.date(), toMealPlanEntryDTO(mensa, meal, priceCategory)))
+				.sorted(Comparator.comparing((Map.Entry<LocalDate, MealPlanEntryDTO> e) -> e.getValue().timeStart(),
+						Comparator.nullsLast(Comparator.naturalOrder())))
+				.collect(Collectors.groupingBy(Map.Entry::getKey, TreeMap::new,
+						Collectors.mapping(Map.Entry::getValue, Collectors.toList())));
 		return new MealPlanDTO(days);
 	}
 

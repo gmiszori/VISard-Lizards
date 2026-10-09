@@ -51,17 +51,31 @@ class MensaControllerTests {
 	}
 
 	@Test
+	void ordersLunchBeforeDinner() throws Exception {
+		mockMvc.perform(get("/api/mensas/polyterrasse/meal-plan")
+						.param("dateStart", "2026-10-06")
+						.param("dateEnd", "2026-10-06")
+						.param("priceCategory", "STAFF"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$['2026-10-06'][0].meal.classification[2]").value("lunch"))
+				.andExpect(jsonPath("$['2026-10-06'][-1].meal.classification[2]").value("dinner"))
+				.andExpect(jsonPath("$['2026-10-06'][0].meal.price.cat").value("staff"));
+	}
+
+	@Test
 	void rejectsInvertedDateRange() throws Exception {
 		mockMvc.perform(get("/api/mensas/archimedes/meal-plan")
 						.param("dateStart", "2026-10-06")
 						.param("dateEnd", "2026-10-05"))
-				.andExpect(status().isBadRequest());
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.detail").value("dateEnd must not be before dateStart"));
 	}
 
 	@Test
 	void returns404ForUnknownMensa() throws Exception {
 		mockMvc.perform(get("/api/mensas/does-not-exist"))
-				.andExpect(status().isNotFound());
+				.andExpect(status().isNotFound())
+				.andExpect(jsonPath("$.detail").value("Mensa not found: does-not-exist"));
 	}
 
 	@Test
