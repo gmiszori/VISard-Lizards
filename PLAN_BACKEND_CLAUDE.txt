@@ -55,3 +55,6 @@ Status log:
   00:43  DONE: MensaDTO now has an "id" too (needed to call /api/mensas/{id} from the list).
   00:43  DONE: GET /api/meta {today, menuDate, dataFrom, dataTo}; /api/mensas/{id} defaults to the menu date
          (snapshot ends 2026-10-09, so 'today' alone would give empty plans). 33 tests green.
+  00:46  DONE: ratings + crowd reports persist (Spring Data JPA, H2 file DB in backend/data/, git-ignored,
+         override with DB_URL). Entities in model/db, services only see domain models via
+         RatingRepository/CrowdReportRepository (README.txt rule). Tests use in-memory H2. 33 tests green.

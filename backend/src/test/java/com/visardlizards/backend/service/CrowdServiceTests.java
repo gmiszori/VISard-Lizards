@@ -17,7 +17,7 @@ class CrowdServiceTests {
 
 	/** Tuesday 2026-10-06 12:00 in Zurich. */
 	private final MutableClock clock = new MutableClock(ZonedDateTime.of(2026, 10, 6, 12, 0, 0, 0, ZURICH).toInstant());
-	private final CrowdService crowdService = new CrowdService(clock);
+	private final CrowdService crowdService = new CrowdService(new InMemoryCrowdReportRepository(), clock);
 
 	@Test
 	void liveReportsAreFromTheLast30MinutesNewestFirst() {

@@ -40,7 +40,8 @@ node backend/scripts/export-mensa-db.mjs
 - `priceCategory`: `STUDENT` (default), `STAFF`, `EXTERNAL`.
 - Mensa ids are the ids from `canteens.ts`, e.g. `polyterrasse`, `archimedes`.
 - Meal rating tags: `tasty`, `big-portion`, `small-portion`, `cold`, `too-salty`, `worth-it` (same as `MealTag` in the MARTIN frontend).
-- Ratings and crowd reports are kept in memory (lost on restart). `avgRating` is `null` until a mensa has been rated.
+- Ratings and crowd reports are stored in an H2 file database under `backend/data/` (git-ignored, created on
+  first start; set `DB_URL` to use another JDBC database). `avgRating` is `null` until a mensa has been rated.
 - Crowd: `live` holds the reports of the last 30 minutes, newest first. `histogram.byWeekday`
   (`mon`..`sun`, 24 hourly values 0–100, Zurich time) is only present when `sufficient` is true
   (at least 20 reports).

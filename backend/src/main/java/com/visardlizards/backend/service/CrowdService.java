@@ -3,25 +3,22 @@ package com.visardlizards.backend.service;
 import java.time.Clock;
 import java.time.DayOfWeek;
 import java.time.Duration;
-import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.TextStyle;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.springframework.stereotype.Service;
 
 import com.visardlizards.backend.model.domain.CrowdHistogram;
 import com.visardlizards.backend.model.domain.CrowdReport;
+import com.visardlizards.backend.repository.CrowdReportRepository;
 
-/** Crowd reports, kept in memory until there is a database. */
+/** Crowd reports ("how full is it?") and the popular-times histogram built from them. */
 @Service
 public class CrowdService {
 
@@ -32,10 +29,11 @@ public class CrowdService {
 
 	private static final ZoneId ZONE = ZoneId.of("Europe/Zurich");
 
+	private final CrowdReportRepository crowdReportRepository;
 	private final Clock clock;
-	private final Map<String, List<CrowdReport>> reportsByMensaId = new ConcurrentHashMap<>();
 
-	public CrowdService(Clock clock) {
+	public CrowdService(CrowdReportRepository crowdReportRepository, Clock clock) {
+		this.crowdReportRepository = crowdReportRepository;
 		this.clock = clock;
 	}
 
@@ -45,22 +43,18 @@ public class CrowdService {
 			throw new IllegalArgumentException("level must be between 1 and 5, was " + level);
 		}
 		CrowdReport report = new CrowdReport(mensaId, level, clock.instant());
-		reportsByMensaId.computeIfAbsent(mensaId, id -> new CopyOnWriteArrayList<>()).add(report);
+		crowdReportRepository.save(report);
 		return report;
 	}
 
 	/** Reports of the last 30 minutes, newest first. */
 	public List<CrowdReport> getLiveReports(String mensaId) {
-		Instant since = clock.instant().minus(LIVE_WINDOW);
-		return reports(mensaId).stream()
-				.filter(report -> report.timestamp().isAfter(since))
-				.sorted(Comparator.comparing(CrowdReport::timestamp).reversed())
-				.toList();
+		return crowdReportRepository.findByMensaIdSince(mensaId, clock.instant().minus(LIVE_WINDOW));
 	}
 
 	/** Average level per weekday and hour, scaled to 0-100 (level 1 = 0, level 5 = 100). */
 	public CrowdHistogram getHistogram(String mensaId) {
-		List<CrowdReport> reports = reports(mensaId);
+		List<CrowdReport> reports = crowdReportRepository.findByMensaId(mensaId);
 		if (reports.size() < MIN_SAMPLE_SIZE) {
 			return new CrowdHistogram(mensaId, false, reports.size(), null);
 		}
@@ -82,10 +76,6 @@ public class CrowdService {
 			byWeekday.put(day.getDisplayName(TextStyle.SHORT, Locale.ENGLISH).toLowerCase(Locale.ROOT), hours);
 		}
 		return new CrowdHistogram(mensaId, true, reports.size(), byWeekday);
-	}
-
-	private List<CrowdReport> reports(String mensaId) {
-		return reportsByMensaId.getOrDefault(mensaId, List.of());
 	}
 
 }
