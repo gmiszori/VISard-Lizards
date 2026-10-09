@@ -6,6 +6,7 @@ const meal: ConstraintMeal = { dietTag: 'vegan', allergens: [], originDetail: nu
 const allowed: Record<Profile['diet'], string[]> = {
   vegan: ['vegan'], vegetarian: ['vegan', 'vegetarian'], pescetarian: ['vegan', 'vegetarian', 'fish'],
   omnivore: ['vegan', 'vegetarian', 'fish', 'meat'], flexitarian: ['vegan', 'vegetarian', 'fish', 'meat'],
+  carnivore: ['fish', 'meat'],
 };
 for (const diet of Object.keys(allowed) as Profile['diet'][]) test(`diet ${diet}`, () => {
   for (const dietTag of ['vegan', 'vegetarian', 'fish', 'meat'] as const)

@@ -1,5 +1,5 @@
 import type { CampusId } from '../data/canteens';
-import { CUISINES, DIETS, HARD, PRIORITIES, SOFT, TIERS, defaults, normaliseDislikes, type Profile } from './profile.ts';
+import { DIETS, HARD, PRIORITIES, TIERS, defaults, type Profile } from './profile.ts';
 
 export interface Draft { profile: Profile; step: number; picks: string[] }
 const KEY = 'campuseats-onboarding';
@@ -13,7 +13,7 @@ export function createOnboardingStore(campuses: CampusId[], stepCount: number) {
   try {
     const saved = JSON.parse(localStorage.getItem(KEY) ?? 'null') as Draft | null;
     const p = saved?.profile;
-    if (p?.v === 1 && campuses.includes(p.campus) && DIETS.includes(p.diet) && TIERS.includes(p.priceTier) &&
+    if (p?.v === 1 && campuses.includes(p.campus) && [...DIETS, 'flexitarian', 'pescetarian'].includes(p.diet) && TIERS.includes(p.priceTier) &&
       (p.lang === 'en' || p.lang === 'de') && (p.priceMode === 'soft' || p.priceMode === 'hard') &&
       (p.maxPrice === null || (typeof p.maxPrice === 'number' && Number.isFinite(p.maxPrice) && p.maxPrice >= 0)) &&
       strings(p.campusSecondary) && strings(p.hard) && strings(p.soft) && strings(p.dislikes) &&
@@ -22,9 +22,12 @@ export function createOnboardingStore(campuses: CampusId[], stepCount: number) {
       (p.lunchTime === null || /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(p.lunchTime)) &&
       Array.isArray(p.mensaRatings) && p.mensaRatings.every(r => typeof r.mensaId === 'string' && [1, 2, 3].includes(r.rating))) {
       state = { profile: { ...p,
+        // Preserve the rest of a draft made before the diet choices were simplified.
+        diet: DIETS.includes(p.diet) ? p.diet : 'omnivore',
         campusSecondary: [...new Set(p.campusSecondary.filter(id => campuses.includes(id) && id !== p.campus))],
-        hard: p.hard.filter(v => HARD.includes(v)), soft: p.soft.filter(v => [...SOFT, ...CUISINES].includes(v)),
-        dislikes: normaliseDislikes(p.dislikes) },
+        hard: p.hard.filter(v => HARD.includes(v)),
+        // The finishing-preferences step is deferred; don't apply its older answers silently.
+        soft: [], dislikes: [], lunchTime: null, notifyDaily: false },
         step: Number.isInteger(saved.step) ? Math.max(0, Math.min(stepCount - 1, saved.step)) : 0,
         picks: strings(saved.picks) ? [...new Set(saved.picks)] : [] };
     }

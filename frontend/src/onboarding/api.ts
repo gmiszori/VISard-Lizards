@@ -9,7 +9,7 @@ export function saveProfile(profile: Profile): void {
   const existing = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
   localStorage.setItem('campuseats-preferences', JSON.stringify({ ...existing,
     locations: [...new Set([profile.campus, ...profile.campusSecondary])],
-    vegan: true, vegetarian: profile.diet !== 'vegan',
+    vegan: profile.diet !== 'carnivore', vegetarian: profile.diet !== 'vegan' && profile.diet !== 'carnivore',
     // Existing preferences group fish with meat; detailed diet filtering is in the payoff.
     meat: profile.diet !== 'vegan' && profile.diet !== 'vegetarian',
   }));

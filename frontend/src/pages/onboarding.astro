@@ -4,9 +4,8 @@ import { CAMPUSES, MENSAS, MEALS, MENU_DATE } from '../data/canteens';
 import ChipSelect from '../onboarding/components/ChipSelect.astro';
 import RankList from '../onboarding/components/RankList.astro';
 import RatingRow from '../onboarding/components/RatingRow.astro';
-import { DIETS, HARD, SOFT, CUISINES, TIERS } from '../onboarding/profile';
+import { DIETS, HARD, TIERS } from '../onboarding/profile';
 import { priceRange } from '../onboarding/priceRange';
-import { PUSH_AVAILABLE } from '../onboarding/config';
 import { t, type Key } from '../onboarding/i18n';
 import '../onboarding/onboarding.css';
 
@@ -32,7 +31,7 @@ const payload = {
       <header class="ob-progress-header">
         <span class="eyebrow">CampusEats · <span data-ob-i18n="intro">{t('intro')}</span></span>
         <p class="ob-progress-label" data-progress-label aria-live="polite" aria-atomic="true"></p>
-        <progress data-progress max="5" value="1" aria-label="Onboarding progress"></progress>
+        <progress data-progress max="4" value="1" aria-label="Onboarding progress"></progress>
       </header>
       <div class="ob-content">
         <section data-step="campus" hidden>
@@ -71,29 +70,6 @@ const payload = {
           <div data-rating-rows></div><RatingRow />
           <p data-ratings-empty data-ob-i18n="ratingsEmpty" hidden>{t('ratingsEmpty')}</p>
           <button type="button" class="ob-text-button ob-none" data-no-ratings aria-pressed="false" data-ob-i18n="notBeen">{t('notBeen')}</button>
-        </section>
-        <section data-step="finish" hidden>
-          <h1 tabindex="-1" data-ob-i18n="finishTitle">{t('finishTitle')}</h1>
-          <p class="ob-lead" data-ob-i18n="finishHint">{t('finishHint')}</p>
-          <ChipSelect name="soft" labelKey="cravings" options={keys(SOFT)} />
-          <ChipSelect name="cuisines" labelKey="cuisines" options={keys(CUISINES)} />
-          <p class="ob-note" data-ob-i18n="cuisineHint">{t('cuisineHint')}</p>
-          <form data-dislike-form class="ob-field">
-            <label for="ob-dislike" data-ob-i18n="dislikes">{t('dislikes')}</label>
-            <p class="ob-note" id="ob-dislike-hint" data-ob-i18n="dislikesHint">{t('dislikesHint')}</p>
-            <div class="ob-input-row">
-              <input id="ob-dislike" type="text" maxlength="80" autocomplete="off" aria-describedby="ob-dislike-hint" aria-label={t('ingredient')} data-ob-aria="ingredient" />
-              <button type="submit" class="ob-small-button" data-ob-i18n="add">{t('add')}</button>
-            </div>
-            <div data-dislikes class="ob-chips ob-dislikes"></div>
-            <p data-dislikes-limit class="ob-note" aria-live="polite" hidden data-ob-i18n="limitReached">{t('limitReached')}</p>
-          </form>
-          <div class="ob-field"><label for="ob-lunch-time" data-ob-i18n="lunchTime">{t('lunchTime')}</label><input id="ob-lunch-time" type="time" /></div>
-          <ChipSelect name="lang" labelKey="language" mode="single" options={[{ value: 'de', label: 'Deutsch' }, { value: 'en', label: 'English' }]} />
-          <div class="ob-notify">
-            <label for="ob-notify"><span><strong data-ob-i18n="notify">{t('notify')}</strong> {!PUSH_AVAILABLE && <small data-ob-i18n="comingSoon">{t('comingSoon')}</small>}</span><input id="ob-notify" type="checkbox" /></label>
-            <p class="ob-note" data-ob-i18n="notifyHint">{t('notifyHint')}</p>
-          </div>
         </section>
       </div>
       <p class="ob-error" data-error role="alert" hidden></p>
