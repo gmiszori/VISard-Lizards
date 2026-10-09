@@ -4,7 +4,7 @@ Updated at: 2026-10-10
 ## 1. Backend Status
 - Backend Server: Spring Boot on http://localhost:8080
 - CORS: Enabled for all origins ("*") on all endpoints
-- Database: H2 In-Memory database initialized at `jdbc:h2:mem:visarddb` (Console at http://localhost:8080/h2-console, user: `sa`, password: empty)
+- Database: H2 In-Memory database initialized at `${DB_URL:jdbc:h2:file:./data/visard}` (Console at http://localhost:8080/h2-console, user: `sa`, password: empty)
 - Cache: Caffeine In-Memory Cache enabled with automatic TTL (10 min) and cache eviction on writes/updates.
 
 ---

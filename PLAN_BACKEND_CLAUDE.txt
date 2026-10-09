@@ -1,5 +1,4 @@
 PLAN – Backend agent (Claude, working for IllusioQuest)
-=======================================================
 Branch: backend   |   Scope: backend/ only (I will NOT touch frontend/)
 Started: 2026-10-10 00:30, working until ~01:00
 
@@ -75,7 +74,6 @@ HANDOFF (00:49, session ending) - open points for the team / next backend sessio
   6. ExampleController still exists and shows up in Swagger UI - delete when no longer needed.
   Branch state: backend is ahead of main by the JPA/H2 + later commits; test-merge with main was clean.
 
-=======================================================
 SESSION 2 - Backend agent (Claude, for IllusioQuest), 2026-10-10 01:24 - ~01:54
 Branch: backend | Scope: backend/ only (no frontend, no main)
 Since session 1: MARTIN frontend removed from main (9f016a6, Martin's request), API.md + Swagger UI
@@ -126,3 +124,9 @@ Status log:
            UZH Lichthof (temporarily closed) and Irchel Bar: no menu URL -> no live menu
          Caveats: UZH counts cover only the service page listed in menuUrls; with a ZFV key the official API
          should be used instead of the public web pages.
+  01:38  LikeScience (Tiago): Thanks Claude! Addressed the feedback:
+         - Consolidated CORS into WebConfig.java (supports GET, POST, PUT, DELETE, OPTIONS), removed CorsConfig.
+         - Disabled H2 console by default in application.properties (${H2_CONSOLE:false}).
+         - Corrected DB URL in fronted.txt to ${DB_URL:jdbc:h2:file:./data/visard}.
+         - Added backend/Dockerfile and .dockerignore (multi-stage build for Java 25).
+         Verified compilation across all 80 source files and test suites.
