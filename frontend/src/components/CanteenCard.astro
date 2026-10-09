@@ -8,9 +8,16 @@ const { canteen } = Astro.props;
 <article data-canteen-card data-canteen-id={canteen.id} data-campus={canteen.campus} data-campus-id={canteen.campusId} data-is-open={String(canteen.isOpen)} data-name={canteen.name} data-menu={canteen.menu.map((item) => item.name).join(' ')} class="canteen-card">
   <button class="favorite-toggle" type="button" data-favorite-toggle aria-pressed="false" aria-label="Add to favourites"><span aria-hidden="true">☆</span></button>
   <div class="canteen-card-link">
-  <a href={`/canteen/${canteen.id}`} class="canteen-photo-link" aria-label={canteen.name}><div class="card-image"><img src={canteen.imageUrl} alt={`Food at ${canteen.name}`} loading="lazy" /><span data-live="status" data-live-id={canteen.id} class={`status ${canteen.isOpen ? 'open' : 'closed'}`}>● <span data-i18n={canteen.isOpen ? 'open' : 'closed'}>{canteen.isOpen ? 'Open now' : 'Closed'}</span></span><span class="rating">★ {canteen.rating.toFixed(1)}</span></div></a>
+  <a href={`/canteen/${canteen.id}`} class="canteen-photo-link" aria-label={canteen.name}>
+    <div class="card-image">
+      <img src={canteen.imageUrl} alt={`Food at ${canteen.name}`} loading="lazy" />
+      <div class="detail-overlay canteen-photo-caption">
+        <div><div class="canteen-photo-title"><h3 class="card-title">{canteen.name}</h3><span data-live="status" data-live-id={canteen.id} class={`status ${canteen.isOpen ? 'open' : 'closed'}`}>● <span data-i18n={canteen.isOpen ? 'open' : 'closed'}>{canteen.isOpen ? 'Open now' : 'Closed'}</span></span></div><div class="campus">{canteen.campus} <span aria-hidden="true">·</span> {canteen.location}</div></div>
+      </div>
+      <span class="rating">★ {canteen.rating.toFixed(1)}</span>
+    </div>
+  </a>
   <div class="card-body">
-    <div class="card-title-row"><div><h3 class="card-title"><a href={`/canteen/${canteen.id}`}>{canteen.name}</a></h3><div class="campus">{canteen.campus} <span aria-hidden="true">·</span> {canteen.location}</div></div><span class="hours" data-live="hours" data-live-id={canteen.id}>{canteen.hours}</span></div>
     <div class="menu-preview" data-preference-list data-meal-list>
       {canteen.menu.map((item) => <div class="dish-preview" data-diet={item.dietary} data-meal-row><div class="meal-preview-heading"><div class="dish"><a href={`/canteen/${canteen.id}`}>{item.name}<span class={`diet diet-${item.dietary}`} data-i18n={`diet_${item.dietary}`}>{item.dietary}</span></a></div><MealStar item={item} /></div><MealPrice item={item} compact /></div>)}
       <p class="preference-empty" data-no-preference-meals hidden data-i18n="noPreferenceMeals">No dishes match your food preferences.</p>
@@ -18,3 +25,23 @@ const { canteen } = Astro.props;
   </div>
   </div>
 </article>
+<style>
+  .canteen-card{align-self:start}.canteen-card .card-image{display:flex;align-items:flex-end;height:auto;min-height:144px}
+  .canteen-card .card-image>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .canteen-card .canteen-photo-caption{position:relative;inset:auto;width:100%;box-sizing:border-box;padding:56px 16px 14px;align-items:flex-end}
+  .canteen-photo-caption>div{width:100%;min-width:0}.canteen-photo-title{display:flex;align-items:center;gap:9px}
+  .canteen-card .canteen-photo-caption .card-title{flex:0 1 auto;min-width:0;color:inherit;font-size:18px;line-height:1.2;overflow-wrap:anywhere}
+  .canteen-card .canteen-photo-caption .campus{color:inherit;opacity:.85;font-size:11px;line-height:1.4;margin-top:5px}
+  .canteen-card .canteen-photo-title .status{position:static;min-height:0;padding:5px 8px;font-size:10px;line-height:1.2;white-space:nowrap;box-shadow:none;flex-shrink:0}
+  .canteen-card .rating{top:12px;left:12px;right:auto;bottom:auto}
+  .canteen-card .card-body{padding:12px 16px 14px}
+  .canteen-card .card-body>.menu-preview{border-top:0;padding:0;margin:0}
+  .canteen-card .menu-preview>.dish-preview{border-top:0;margin-top:0;padding-block:0}
+  .canteen-card .menu-preview>.dish-preview:not([hidden])~.dish-preview:not([hidden]){border-top:1px solid var(--line);margin-top:10px;padding-top:10px}
+  .canteen-card .meal-preview-heading{align-items:center}.canteen-card .meal-preview-heading>.dish{margin-top:0}
+  .canteen-card .menu-preview>.preference-empty{margin:0;padding:8px 0;font-size:12px;line-height:1.5}
+  :root[data-density=compact] .canteen-card .card-image{height:auto;min-height:128px}
+  :root[data-density=compact] .canteen-card .card-body{padding:10px 12px 12px}
+  :root[data-density=compact] .canteen-card .favorite-toggle{width:44px;height:44px}
+  @media(max-width:700px){.canteen-card .card-image{min-height:138px}.canteen-card .canteen-photo-caption{padding-left:15px}.canteen-card .card-body{padding:10px 15px 13px}:root[data-density=compact] .canteen-card{display:block}}
+</style>
