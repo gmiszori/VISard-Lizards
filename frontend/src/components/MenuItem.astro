@@ -1,0 +1,13 @@
+---
+import type { MenuItem as MenuItemType } from '../data/canteens';
+interface Props { item: MenuItemType }
+const { item } = Astro.props;
+const dietaryLabels = { vegan: 'Vegan', vegetarian: 'Vegetarian', meat: 'Meat' };
+---
+<article class="menu-item">
+  <span class="eyebrow">{item.category}</span>
+  <h3>{item.name}</h3>
+  <p>{item.description}</p>
+  <p style="margin-top:9px">{item.allergens?.length ? `Contains: ${item.allergens.join(', ')}` : 'No listed allergens'}</p>
+  <footer><span>{dietaryLabels[item.dietary]} · Student</span><strong>CHF {item.priceStudent.toFixed(2)}</strong></footer>
+</article>

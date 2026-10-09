@@ -1,0 +1,26 @@
+---
+import '../styles/global.css';
+interface Props { title: string }
+const { title } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f5f6f1" />
+    <meta name="description" content="Find what's cooking at ETH and UZH campus canteens." />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title} | CampusEats</title>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="site-header">
+        <a class="brand" href="/" aria-label="CampusEats home"><span class="brand-mark">✳</span><span>CampusEats<small>YOUR CAMPUS, SERVED</small></span></a>
+        <span class="header-tag">VISCon 2026 · ETH Zürich</span>
+      </header>
+      <main class="main"><slot /></main>
+      <footer class="footer"><span>Made for hungry minds.</span><span>Sample menus · Zürich</span></footer>
+    </div>
+  </body>
+</html>

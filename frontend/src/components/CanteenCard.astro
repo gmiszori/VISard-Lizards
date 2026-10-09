@@ -1,0 +1,15 @@
+---
+import type { Canteen } from '../data/canteens';
+interface Props { canteen: Canteen }
+const { canteen } = Astro.props;
+const firstItems = canteen.menu.slice(0, 2);
+---
+<a href={`/canteen/${canteen.id}`} data-canteen-card data-campus={canteen.campus} data-is-open={String(canteen.isOpen)} data-name={canteen.name} data-menu={canteen.menu.map((item) => item.name).join(' ')} class="canteen-card">
+  <div class="card-image"><img src={canteen.imageUrl} alt={`Food at ${canteen.name}`} loading="lazy" /><span class={`status ${canteen.isOpen ? 'open' : 'closed'}`}>{canteen.isOpen ? '● Open now' : '● Closed'}</span><span class="rating">★ {canteen.rating.toFixed(1)}</span></div>
+  <div class="card-body">
+    <div class="card-title-row"><div><h3 class="card-title">{canteen.name}</h3><div class="campus">{canteen.campus} <span aria-hidden="true">·</span> {canteen.location}</div></div><span class="hours">{canteen.hours}</span></div>
+    <div class="menu-preview"><div class="menu-label">On the menu today</div>
+      {firstItems.map((item) => <div class="dish"><span>{item.name}<span class="diet">{item.dietary}</span></span><span class="dish-price">CHF {item.priceStudent.toFixed(2)}</span></div>)}
+    </div>
+  </div>
+</a>

@@ -1,11 +1,15 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
-
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CanteenCard from '../components/CanteenCard.astro';
+import FilterBar from '../components/FilterBar.astro';
+import { CANTEENS } from '../data/canteens';
+const openCount = CANTEENS.filter((canteen) => canteen.isOpen).length;
 ---
-
-<Layout>
-	<Welcome />
-</Layout>
+<BaseLayout title="Find your next meal">
+  <section class="hero"><div class="hero-copy"><span class="eyebrow">Good food, between lectures</span><h1>What’s cooking<br />on campus?</h1><p>Explore today’s menus and find a spot that’s open.</p></div></section>
+  <div class="section-head"><div><h2>Campus canteens</h2><p>Fresh picks from around Zürich</p></div><span class="count">{openCount} open right now</span></div>
+  <FilterBar />
+  <div id="visible-count" class="count" style="margin:0 0 12px">{CANTEENS.length} canteens</div>
+  <div class="canteen-grid">{CANTEENS.map((canteen) => <CanteenCard canteen={canteen} />)}</div>
+  <div id="empty-state" class="empty-state">No canteens match your search. Try another dish or campus.</div>
+</BaseLayout>

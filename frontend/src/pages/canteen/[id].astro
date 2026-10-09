@@ -1,0 +1,15 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import MenuItem from '../../components/MenuItem.astro';
+import { CANTEENS } from '../../data/canteens';
+export function getStaticPaths() { return CANTEENS.map((canteen) => ({ params: { id: canteen.id }, props: { canteen } })); }
+const { canteen } = Astro.props;
+---
+<BaseLayout title={canteen.name}>
+  <a href="/" class="detail-back">← All canteens</a>
+  <section class="detail-hero"><img src={canteen.imageUrl} alt={`Dining area at ${canteen.name}`} /><div class="detail-overlay"><div><h1>{canteen.name}</h1><p>{canteen.campus} · {canteen.location} · ★ {canteen.rating.toFixed(1)}</p></div><span class={`status ${canteen.isOpen ? 'open' : 'closed'}`}>{canteen.isOpen ? '● Open now' : '● Closed'}</span></div></section>
+  <div class="detail-info"><div class="info-box"><small>Opening hours</small><strong>{canteen.hours}</strong></div><div class="info-box"><small>Current crowd</small><strong>{canteen.occupancy[0].toUpperCase() + canteen.occupancy.slice(1)}</strong></div></div>
+  <section><h2 class="menu-section-title">Today’s menu <span class="count">· {canteen.menu.length} dishes</span></h2>
+    {canteen.menu.length ? <div class="menu-list">{canteen.menu.map((item) => <MenuItem item={item} />)}</div> : <div class="empty-state" style="display:block">No menu available today.</div>}
+  </section>
+</BaseLayout>
