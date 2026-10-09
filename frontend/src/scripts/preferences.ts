@@ -8,7 +8,9 @@ type Preferences = {
 };
 
 const STORAGE_KEY = 'campuseats-preferences';
-const allLocations = ['ETH Zentrum', 'ETH Hönggerberg', 'UZH Irchel'];
+const allLocations = ['zentrum', 'hoenggerberg', 'irchel'];
+// Older versions saved display labels; map them to the campus ids used now.
+const legacyLocations: Record<string, string> = { 'ETH Zentrum': 'zentrum', 'UZH Zentrum': 'zentrum', 'ETH Hönggerberg': 'hoenggerberg', 'UZH Irchel': 'irchel' };
 const defaults: Preferences = { vegan: true, vegetarian: true, meat: true, compact: false, locations: allLocations, openOnly: false };
 
 function readPreferences(): Preferences {
@@ -19,7 +21,7 @@ function readPreferences(): Preferences {
       : saved.campus && saved.campus !== 'all'
         ? [saved.campus]
         : allLocations;
-    return { ...defaults, ...saved, locations };
+    return { ...defaults, ...saved, locations: [...new Set(locations.map((location) => legacyLocations[location] ?? location))] };
   } catch {
     return defaults;
   }
@@ -47,7 +49,7 @@ function applyPreferences() {
   const query = document.querySelector<HTMLInputElement>('#search-input')?.value.trim().toLocaleLowerCase() ?? '';
   let visibleCanteens = 0;
   document.querySelectorAll<HTMLElement>('[data-canteen-card]').forEach((card) => {
-    const matchesCampus = preferences.locations.includes(card.dataset.campus ?? '');
+    const matchesCampus = preferences.locations.includes(card.dataset.campusId ?? '');
     const matchesOpen = !preferences.openOnly || card.dataset.isOpen === 'true';
     const searchText = `${card.dataset.name ?? ''} ${card.dataset.menu ?? ''}`.toLocaleLowerCase();
     const matchesSearch = searchText.includes(query);
