@@ -153,7 +153,8 @@ class MensaControllerTests {
 		mockMvc.perform(post("/api/mensas/polyterrasse/ratings")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("{\"stars\": 9}"))
-				.andExpect(status().isBadRequest());
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.detail").value("stars: must be less than or equal to 5"));
 	}
 
 }

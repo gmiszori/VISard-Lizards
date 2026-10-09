@@ -32,6 +32,7 @@ public class OpenApiConfig {
 						- Errors are RFC 9457 problem details, e.g.
 						  `{"status": 404, "title": "Not Found", "detail": "Mensa not found: xyz"}`.
 						  Unknown ids return 404; invalid parameters or bodies return 400.
+						  For an invalid body, `detail` names the field, e.g. `"stars: must be less than or equal to 5"`.
 						"""));
 	}
 

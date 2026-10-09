@@ -90,3 +90,7 @@ Not touching: raw upstream clients/controllers (Nikita's agent, on main), DTO sh
 (only additive changes), ExampleController.
 
 Status log:
+  01:26  DONE 1: Bean Validation on request bodies, 400 detail names the field. GlobalExceptionHandler now
+         extends ResponseEntityExceptionHandler (Boot's default problem-details handler steps back).
+         NEXT (user request, replaces old step order): mensa data moves from the in-memory JSON file into real DB
+         tables (Flyway migrations + JPA entities + importer). Then rate limiting, search, Dockerfile.
