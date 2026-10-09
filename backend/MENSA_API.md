@@ -1,11 +1,12 @@
 # Raw meal API clients
 
-Inject `EthMensaClient` or `UzhMensaClient` into your service. Both are Spring
-services and return the response body as a JSON `String`. There are no API or
+Inject `EthMensaClient`, `ZfvMensaClient`, or the legacy `UzhMensaClient` into your
+service. They are Spring services and return the response body as a JSON `String`. There are no API or
 application DTOs, menu filtering, price formatting, or persistent caches.
 
 ```java
 String ethJson = ethMensaClient.fetchWeeklyRotas(LocalDate.of(2026, 10, 9), "en");
+List<String> allEthPages = ethMensaClient.fetchWeeklyRotaPages(LocalDate.of(2026, 10, 9), "en");
 String uzhJson = uzhMensaClient.fetchTodayOffers(locationId);
 ```
 
@@ -20,12 +21,46 @@ The GET request uses Cookpit's `weeklyrotas` endpoint with `client-id=ethz-wcms`
 the supplied date's week. The whole response is retained. The original code
 notes that extra weeks may be returned, so filter by `valid-from`, `facility-id`,
 `day-of-week-code`, and meal time in your mapping layer. This preserves the
-original 50-entry request; it does not implement automatic pagination.
+original 50-entry request. For complete retrieval, use `fetchWeeklyRotaPages`,
+which returns each page unchanged as a `List<String>`. It inspects only the array
+length to continue at offsets 0, 50, 100, etc. It rejects missing arrays, empty
+responses, repeated pages and more than 100 pages rather than silently losing
+data. For manual pagination use `fetchWeeklyRotas(date, language, offset, pageSize)`.
+The page size must be between 1 and 50.
 
 Restaurant metadata and facility IDs:
 https://github.com/famoser/Mensa/blob/main/app/src/main/assets/eth/locations.json
 
-## UZH
+## UZH: maintained ZFV API
+
+Use `ZfvMensaClient` for the maintained MensaZH app's request. Set your own key in
+the environment before starting Spring Boot:
+
+```powershell
+$env:MENSA_ZFV_API_KEY = 'your-api-key'
+```
+
+Alternatively configure `mensa.zfv.api-key` through external Spring configuration.
+Do not commit keys to the repository. The application can start without a key;
+calling the ZFV client without one fails immediately with an explanatory error.
+
+```java
+String thisWeekJson = zfvMensaClient.fetchThisWeek();
+String nextWeekJson = zfvMensaClient.fetchNextWeek();
+String dayJson = zfvMensaClient.fetchDay(LocalDate.of(2026, 10, 12));
+```
+
+These POST to `https://api.zfv.ch/graphql` with the `api-key` header and query the
+UZH organisation's outlets. Raw results include kitchen/outlet slugs, daily menu
+items, translated dish names, price amounts, nutrition, allergens, images and
+vegetarian/vegan flags. Map the response's `data.organisation.outlets` to your own
+DTOs. Inspect `errors` first: GraphQL failures can use HTTP 200. The request retains
+the source's `outlets(take: 100)` limit.
+
+Current outlet slug/category metadata:
+https://github.com/fflopsi/mensa-zh/blob/main/app/src/main/assets/uzh/locations_zfv.json
+
+## UZH: original FOOD2050 translation (legacy)
 
 The POST request uses FOOD2050's GraphQL endpoint and the original `ExampleQuery`
 with a safely serialized `locationId` variable. It retrieves `todayOffer` for
@@ -37,8 +72,19 @@ HTTP 200 with an `errors` array; inspect it before mapping `data`.
 Use the FOOD2050 `locationId` from:
 https://github.com/famoser/Mensa/blob/main/app/src/main/assets/uzh/locations_food2025.json
 
-Neither translated request sends an API key. Upstream availability and schema
-can change independently of this backend.
+The original ETH/FOOD2050 requests send no API key. Upstream availability and
+schema can change independently of this backend.
+
+### Live verification on 2026-10-10
+
+- ETH: HTTP 200; first page had 50 entries and the second 8. `valid-after` did not
+  restrict results to the requested week. Use pagination and filter dates yourself.
+- FOOD2050: the original URL returned HTTP 404. Retained for source compatibility;
+  use the maintained ZFV client for new integration.
+- ZFV: GraphQL endpoint reachable; unauthenticated menu queries returned
+  authorization errors. Authorized meal retrieval needs your own working key.
+  Day and week requests are covered by mock tests; meal data with a valid key
+  has not been verified in this workspace.
 
 ## Source
 
@@ -49,3 +95,7 @@ The request logic is adapted from these MIT-licensed Kotlin providers:
 
 The original repository is archived. See `third-party/Mensa-LICENSE.txt` for
 the upstream copyright and license notice.
+
+The ZFV request is adapted from the maintained MensaZH provider:
+https://github.com/fflopsi/mensa-zh/blob/main/app/src/main/java/ch/florianfrauenfelder/mensazh/data/providers/UZHMensaProvider.kt
+Its MIT notice is retained in `third-party/MensaZH-LICENSE.md`.

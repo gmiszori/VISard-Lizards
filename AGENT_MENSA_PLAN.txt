@@ -5,3 +5,6 @@ Owned files: backend service/EthMensaClient.java, service/UzhMensaClient.java, t
 No DTOs will be introduced. Collaborators can map raw API JSON in their own services.
 I will fetch origin regularly and review collaborator commits before choosing additional work. Avoid overlapping edits to these clients without noting the plan here.
 Current status: initial clients compile; 4 tests pass. Live API verification next.
+00:31 scope update: BACKEND ONLY. I will not edit frontend code. Root TXT notes are the coordination exception requested by the user.
+Initial clients pushed (9ac31f0), required remote synchronization complete (9781916). Reviewed Claude's backend DTO work and plan; I will not touch its repository, domain mapping, controllers or DTOs.
+Live findings: ETH Cookpit returns HTTP 200 with extra weeks and a full first page. Original FOOD2050 UZH endpoint returns 404. Maintained MensaZH uses api.zfv.ch/graphql with api-key; unauthenticated meal queries return authorization errors. Next: explicit ETH pagination, a separate raw ZFV client configured by MENSA_ZFV_API_KEY, and backend integration documentation/tests. No keys will be committed.

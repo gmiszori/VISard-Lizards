@@ -12,6 +12,8 @@ import org.springframework.web.client.RestClient;
 /**
  * Retrieves raw UZH FOOD2050 GraphQL JSON without creating menu DTOs.
  * Request adapted from famoser/Mensa's UZHMensaProvider2.kt (MIT).
+ * Legacy endpoint returned HTTP 404 during verification on 2026-10-10.
+ * For the maintained app's API, use ZfvMensaClient with your own API key.
  */
 @Service
 public class UzhMensaClient {
