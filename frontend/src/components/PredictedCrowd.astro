@@ -1,0 +1,43 @@
+---
+import '../crowd/predicted-crowd.css';
+import type { CrowdPrediction } from '../crowd/prediction';
+interface Props { prediction: CrowdPrediction }
+const { prediction } = Astro.props;
+---
+<section class="predicted-crowd" data-crowd-chart data-mensa-id={prediction.mensaId} aria-labelledby="predicted-crowd-title">
+  <div class="crowd-heading">
+    <div><span class="crowd-eyebrow" data-crowd-text="eyebrow">PLAN YOUR LUNCH</span><h2 id="predicted-crowd-title" data-crowd-text="title">Predicted crowd</h2></div>
+    <span class="crowd-interval">15 <span data-crowd-text="minutes">min</span></span>
+  </div>
+  <div class="crowd-toolbar">
+    <p data-crowd-text="subtitle">Typical occupancy, every 15 minutes.</p>
+    <label class="crowd-day-control"><span class="visually-hidden" data-crowd-text="day">Day</span><select data-crowd-day aria-label="Day"></select></label>
+  </div>
+  <div data-crowd-content hidden>
+    <div class="crowd-plot">
+      <div class="crowd-y-axis" aria-hidden="true"><span>100%</span><span>50%</span><span>0%</span></div>
+      <div class="crowd-plot-body">
+        <svg class="crowd-bars" viewBox="0 0 600 180" preserveAspectRatio="none" role="img" data-crowd-svg aria-label="Predicted occupancy by time">
+          <g class="crowd-grid" aria-hidden="true"><line x1="0" x2="600" y1="1" y2="1"/><line x1="0" x2="600" y1="90" y2="90"/><line x1="0" x2="600" y1="179" y2="179"/></g>
+          <g data-crowd-bars></g>
+          <line class="crowd-now-line" data-crowd-now y1="0" y2="180" hidden />
+        </svg>
+        <div class="crowd-x-axis" data-crowd-ticks aria-hidden="true"></div>
+      </div>
+    </div>
+    <div class="crowd-legend"><span><i class="crowd-quiet"></i><span data-crowd-text="quiet">Quiet</span></span><span><i class="crowd-moderate"></i><span data-crowd-text="moderate">Moderate</span></span><span><i class="crowd-busy"></i><span data-crowd-text="busy">Busy</span></span><span data-crowd-now-legend hidden><i class="crowd-now-key"></i><span data-crowd-text="now">Now</span></span></div>
+    <div class="crowd-selected" aria-live="polite" aria-atomic="true">
+      <div><strong data-crowd-selected-time></strong><span data-crowd-selected-level></span></div>
+      <output data-crowd-selected-value for="crowd-time-slot"></output>
+    </div>
+    <label class="crowd-explore" for="crowd-time-slot" data-crowd-text="explore">Slide to explore the day</label>
+    <input id="crowd-time-slot" class="crowd-slider" data-crowd-slider type="range" min="0" max="0" step="1" value="0" />
+  </div>
+  <p class="crowd-empty" data-crowd-empty hidden data-crowd-text="empty">No prediction available for this day.</p>
+  <p class="crowd-source" data-crowd-source></p>
+  <noscript><p class="crowd-empty">Enable JavaScript to explore predicted crowd.</p></noscript>
+  <script type="application/json" data-crowd-data is:inline set:html={JSON.stringify(prediction).replace(/</g, '\\u003c')} />
+</section>
+<script>
+  import '../crowd/chart';
+</script>
