@@ -32,6 +32,15 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
 	}
 
+	/** Spam protection: 429 with a Retry-After header in seconds, rounded up so clients never retry too early. */
+	@ExceptionHandler(TooManyRequestsException.class)
+	public ResponseEntity<ProblemDetail> handleTooManyRequests(TooManyRequestsException e) {
+		long seconds = (e.getRetryAfter().toMillis() + 999) / 1000;
+		return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+				.header(HttpHeaders.RETRY_AFTER, String.valueOf(seconds))
+				.body(ProblemDetail.forStatusAndDetail(HttpStatus.TOO_MANY_REQUESTS, e.getMessage()));
+	}
+
 	/** Invalid request body, e.g. {"stars": 9} -> detail "stars: must be less than or equal to 5". */
 	@Override
 	protected @Nullable ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException e,

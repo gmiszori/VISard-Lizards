@@ -126,3 +126,8 @@ Status log:
            UZH Lichthof (temporarily closed) and Irchel Bar: no menu URL -> no live menu
          Caveats: UZH counts cover only the service page listed in menuUrls; with a ZFV key the official API
          should be used instead of the public web pages.
+  01:42  DONE 2: spam protection. POST /ratings (mensa + meal): once per client IP and target per 24h,
+         POST /crowd-reports: once per client IP and mensa per 5 min -> 429 + Retry-After. Configurable via
+         app.rate-limit.* (disabled in src/test/resources/config so existing tests can post repeatedly).
+         WebConfig takes the Clock via ObjectProvider so @WebMvcTest slices (MensaUpstreamControllerTests) start.
+         69 tests green (2 opt-in live tests skipped).

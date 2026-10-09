@@ -60,8 +60,8 @@ public class MealController {
 	@PostMapping("/{id}/ratings")
 	@ResponseStatus(HttpStatus.CREATED)
 	@Operation(summary = "Rate a meal", description = """
-			Saves a user's rating of a meal: stars plus optional tags that say why. Every call adds one
-			rating. The result shows up in `GET /api/meals/{id}`.
+			Saves a user's rating of a meal: stars plus optional tags that say why. Each client (IP
+			address) can rate a meal once every 24 hours. The result shows up in `GET /api/meals/{id}`.
 
 			Tags: `tasty`, `big-portion`, `small-portion`, `cold`, `too-salty`, `worth-it`.
 			A tag listed twice in one rating counts once.
@@ -69,6 +69,7 @@ public class MealController {
 	@ApiResponse(responseCode = "201", description = "Rating saved (no body)")
 	@ApiResponse(responseCode = "400", description = "Stars outside 1-5, unknown tag or invalid body")
 	@ApiResponse(responseCode = "404", description = "Unknown meal")
+	@ApiResponse(responseCode = "429", description = "This client already rated it in the last 24 hours (see `Retry-After`)")
 	public void rateMeal(
 			@Parameter(description = "Meal id, e.g. `polyterrasse.2026-10-06.lunch.2`") @PathVariable String id,
 			@Valid @RequestBody MealRatingRequestDTO rating) {

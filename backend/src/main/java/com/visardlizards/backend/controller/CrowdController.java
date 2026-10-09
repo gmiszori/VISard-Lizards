@@ -65,7 +65,7 @@ public class CrowdController {
 	@ResponseStatus(HttpStatus.CREATED)
 	@Operation(summary = "Report how full a mensa is", description = """
 			Saves a user's report of how full a mensa is right now. The server sets the time, so clients
-			cannot backdate reports. The report immediately appears in `live` of
+			cannot backdate reports. Each client (IP address) can report a mensa once every 5 minutes. The report immediately appears in `live` of
 			`GET /api/mensas/{id}/crowd` and counts towards the histogram.
 
 			Levels: 1 = empty, 2 = quiet, 3 = some queue, 4 = busy, 5 = packed.
@@ -73,6 +73,7 @@ public class CrowdController {
 	@ApiResponse(responseCode = "201", description = "The stored report")
 	@ApiResponse(responseCode = "400", description = "Level outside 1-5 or invalid body")
 	@ApiResponse(responseCode = "404", description = "Unknown mensa")
+	@ApiResponse(responseCode = "429", description = "This client already reported this mensa in the last 5 minutes (see `Retry-After`)")
 	public CrowdReportDTO reportCrowd(@Parameter(description = "Mensa id, e.g. `polyterrasse`") @PathVariable String id,
 			@Valid @RequestBody CrowdReportRequestDTO request) {
 		return toDTO(crowdService.addReport(mensaService.getMensa(id).id(), request.level()));

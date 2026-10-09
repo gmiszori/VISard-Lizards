@@ -125,13 +125,14 @@ public class MensaController {
 	@PostMapping("/{id}/ratings")
 	@ResponseStatus(HttpStatus.CREATED)
 	@Operation(summary = "Rate a mensa", description = """
-			Saves a user's star rating of a mensa. Every call adds one rating; there are no user accounts, so
-			the same person can rate several times. The new average shows up as `avgRating` in the mensa
+			Saves a user's star rating of a mensa. Every call adds one rating; there are no user accounts, but
+			each client (IP address) can rate a mensa once every 24 hours. The new average shows up as `avgRating` in the mensa
 			endpoints.
 			""")
 	@ApiResponse(responseCode = "201", description = "Rating saved (no body)")
 	@ApiResponse(responseCode = "400", description = "Stars outside 1-5 or invalid body")
 	@ApiResponse(responseCode = "404", description = "Unknown mensa")
+	@ApiResponse(responseCode = "429", description = "This client already rated it in the last 24 hours (see `Retry-After`)")
 	public void rateMensa(@Parameter(description = "Mensa id, e.g. `polyterrasse`") @PathVariable String id,
 			@Valid @RequestBody RatingRequestDTO rating) {
 		mensaService.rateMensa(id, rating.stars());

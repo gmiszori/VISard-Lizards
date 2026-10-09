@@ -61,6 +61,9 @@ or controllers.
   `{"status": 404, "title": "Not Found", "detail": "Mensa not found: xyz", "instance": "/api/mensas/xyz"}`.
   Unknown ids return 404; invalid parameters or bodies return 400. For an invalid body, `detail` names
   the field, e.g. `"stars: must be less than or equal to 5"`.
+- **Spam protection:** a client (IP address) can rate each mensa/meal once per 24 hours and report each
+  mensa once per 5 minutes; otherwise `429 Too Many Requests` with a `Retry-After` header (seconds).
+  Windows: `app.rate-limit.*` in `application.properties`.
 - CORS is open for the Astro dev server (`http://localhost:4321`), see `app.cors.allowed-origins`.
 
 ## Mensas
@@ -193,13 +196,14 @@ publishes none.
 
 ### POST /api/mensas/{id}/ratings
 
-Saves a user's star rating of a mensa. Every call adds one rating; there are no user accounts, so
-the same person can rate several times. The new average shows up as `avgRating` in the mensa
+Saves a user's star rating of a mensa. Every call adds one rating; there are no user accounts, but
+each client (IP address) can rate a mensa only once every 24 hours. The new average shows up as `avgRating` in the mensa
 endpoints.
 
 Body: `{"stars": 4}` with `stars` from 1 to 5.
 
-Response `201` without body. Errors: `404` unknown mensa, `400` stars outside 1–5 or invalid body.
+Response `201` without body. Errors: `404` unknown mensa, `400` stars outside 1–5 or invalid body,
+`429` already rated by this client in the last 24 hours.
 
 ## Crowd
 
@@ -230,13 +234,14 @@ Errors: `404` unknown mensa.
 ### POST /api/mensas/{id}/crowd-reports
 
 Saves a user's report of how full a mensa is right now. The server sets the time, so clients
-cannot backdate reports. The report immediately appears in `live` of
+cannot backdate reports. Each client (IP address) can report a mensa once every 5 minutes. The report immediately appears in `live` of
 [`GET /api/mensas/{id}/crowd`](#get-apimensasidcrowd) and counts towards the histogram.
 
 Body: `{"level": 3}`, where 1 = empty, 2 = quiet, 3 = some queue, 4 = busy, 5 = packed.
 
 Response `201` with the stored report: `{"mensaId": "polyterrasse", "level": 3, "timestamp": "..."}`.
-Errors: `404` unknown mensa, `400` level outside 1–5 or invalid body.
+Errors: `404` unknown mensa, `400` level outside 1–5 or invalid body, `429` already reported
+by this client in the last 5 minutes.
 
 ## Meals
 
@@ -269,8 +274,8 @@ Errors: `404` unknown meal.
 
 ### POST /api/meals/{id}/ratings
 
-Saves a user's rating of a meal: stars plus optional tags that say why. Every call adds one
-rating. The result shows up in [`GET /api/meals/{id}`](#get-apimealsid).
+Saves a user's rating of a meal: stars plus optional tags that say why. Each client (IP address) can
+rate a meal once every 24 hours. The result shows up in [`GET /api/meals/{id}`](#get-apimealsid).
 
 Body: `{"stars": 5, "tags": ["tasty", "worth-it"]}`
 
@@ -279,7 +284,7 @@ Body: `{"stars": 5, "tags": ["tasty", "worth-it"]}`
   `worth-it`. A tag listed twice in one rating counts once.
 
 Response `201` without body. Errors: `404` unknown meal, `400` stars outside 1–5, unknown tag or
-invalid body.
+invalid body, `429` already rated by this client in the last 24 hours.
 
 ## Raw upstream endpoints (optional)
 
