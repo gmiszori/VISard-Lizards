@@ -102,6 +102,31 @@ Its MIT notice is retained in `third-party/MensaZH-LICENSE.md`.
 
 ## Verification
 
+### Optional raw HTTP endpoints
+
+Raw endpoints are disabled by default. For local inspection, enable them when
+starting the backend:
+
+```powershell
+cd backend
+.\mvnw.cmd spring-boot:run '-Dspring-boot.run.arguments=--mensa.upstream.enabled=true'
+```
+
+- `GET /api/upstream/eth/weekly-rotas?date=2026-10-09&language=en&offset=0&pageSize=50`
+- `GET /api/upstream/uzh/week` (current week)
+- `GET /api/upstream/uzh/week?next=true`
+- `GET /api/upstream/uzh/day?date=2026-10-12`
+
+Responses have `application/json` content type and preserve the upstream body
+without quoting it as a JSON string. These endpoints do not overlap the app's
+`/api/mensas` DTO endpoints. ZFV keys remain on the server. HTTP/transport errors
+become 502; missing ZFV configuration becomes 503; invalid parameters become 400.
+GraphQL `errors` inside a successful HTTP response remain in the raw body, so
+consumers must inspect them. No FOOD2050 HTTP endpoint is exposed because the
+legacy source URL returned 404 during verification.
+
+### Automated checks
+
 Normal `mvnw test` runs mock HTTP contract tests and the application context test.
 Live checks are disabled by default, so upstream outages cannot break an ordinary
 build. To verify the real Java client from PowerShell:
