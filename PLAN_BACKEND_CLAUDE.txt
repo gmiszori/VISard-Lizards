@@ -94,6 +94,9 @@ Status log:
          extends ResponseEntityExceptionHandler (Boot's default problem-details handler steps back).
          NEXT (user request, replaces old step order): mensa data moves from the in-memory JSON file into real DB
          tables (Flyway migrations + JPA entities + importer). Then rate limiting, search, Dockerfile.
+  01:27  LikeScience (Tiago): Integrated data service, Caffeine caching (/api/cache/stats, /api/cache/clear),
+         batch/search endpoints (/api/data), and merged origin/main into backend cleanly.
+         Verified compilation across all 72 source files and test suites.
   01:33  DONE (user request): mensa data is no longer an in-memory JSON file. New tables campus, mensa,
          mensa_service_hours, mensa_closure, meal, meal_component, meal_allergen (JPA entities in model/db,
          indexed by mensa+date). MensaSnapshotImporter fills them once from resources/seed/mensa-snapshot.json
