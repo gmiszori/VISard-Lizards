@@ -1,5 +1,7 @@
 import type { CampusId } from '../data/canteens';
 
+export type MensaRating = 1 | 2 | 3 | 4 | 5;
+
 export interface Profile {
   v: 1;
   lang: 'de' | 'en';
@@ -15,7 +17,7 @@ export interface Profile {
   priceMode: 'soft' | 'hard';
   lunchTime: string | null;
   notifyDaily: boolean;
-  mensaRatings: { mensaId: string; rating: 1 | 2 | 3 }[];
+  mensaRatings: { mensaId: string; rating: MensaRating }[];
 }
 export const DIETS: Profile['diet'][] = ['omnivore', 'vegan', 'vegetarian', 'carnivore'];
 export const HARD: Profile['hard'] = ['no_pork', 'halal', 'kosher', 'lactose_free', 'gluten_free', 'nut_free'];

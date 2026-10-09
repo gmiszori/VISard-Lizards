@@ -1,11 +1,18 @@
 ---
-import ChipSelect from './ChipSelect.astro';
+import { t } from '../i18n';
 ---
 <template id="ob-rating-template">
   <article class="ob-rating-row">
     <h3 data-mensa-name></h3>
-    <ChipSelect name="rating" labelKey="ratings" mode="single" options={[
-      { value: '1', key: 'avoid' }, { value: '2', key: 'fine' }, { value: '3', key: 'love' },
-    ]} />
+    <fieldset class="ob-field" data-chip-group="rating" data-mode="single">
+      <legend data-ob-i18n="ratings">{t('ratings')}</legend>
+      <div class="ob-stars" role="radiogroup" aria-label={t('ratings')}>
+        {[1, 2, 3, 4, 5].map(value => <button type="button" class="ob-star" data-value={value}
+          role="radio" aria-checked="false" aria-pressed="false" aria-label={`${value} ${t('outOfFiveStars')}`}>
+          <span data-star aria-hidden="true">☆</span>
+        </button>)}
+      </div>
+      <p class="ob-rating-value" data-rating-value aria-live="polite">{t('notRated')}</p>
+    </fieldset>
   </article>
 </template>

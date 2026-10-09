@@ -4,7 +4,7 @@ import { mountRankList, renderRankList } from './rankList';
 import { mountBudgetSlider } from './budgetSlider';
 import { t, translate, type Key } from './i18n';
 import { pickMensas } from './pickMensas';
-import type { Profile } from './profile';
+import type { MensaRating, Profile } from './profile';
 import type { OnboardingStore } from './onboardingStore';
 import type { RecommendationMeal, RecommendationMensa } from './pickTodaysDish';
 
@@ -90,7 +90,7 @@ function mountRatings(root: HTMLElement, ctx: Context) {
   mountChipSelect(rows, ({ name, values }) => {
     const mensaId = name.slice('rating:'.length);
     ctx.update({ mensaRatings: [...ctx.store.state.profile.mensaRatings.filter(r => r.mensaId !== mensaId),
-      { mensaId, rating: Number(values[0]) as 1 | 2 | 3 }] });
+      { mensaId, rating: Number(values[0]) as MensaRating }] });
   });
   root.querySelector('[data-no-ratings]')!.addEventListener('click', () => ctx.update({ mensaRatings: [] }));
   return () => {
@@ -119,7 +119,18 @@ function mountRatings(root: HTMLElement, ctx: Context) {
       rendered = signature;
     }
     translate(rows);
-    for (const id of picks) sync(root, `rating:${id}`, p.mensaRatings.filter(r => r.mensaId === id).map(r => String(r.rating)));
+    for (const id of picks) {
+      const rating = p.mensaRatings.find(r => r.mensaId === id)?.rating;
+      sync(root, `rating:${id}`, rating ? [String(rating)] : []);
+      const group = root.querySelector<HTMLElement>(`[data-chip-group="rating:${id}"]`)!;
+      group.querySelectorAll<HTMLButtonElement>('[data-value]').forEach(button => {
+        const filled = Number(button.dataset.value) <= (rating ?? 0);
+        button.dataset.filled = String(filled);
+        button.querySelector('[data-star]')!.textContent = filled ? '★' : '☆';
+        button.setAttribute('aria-label', `${button.dataset.value} ${t('outOfFiveStars')}`);
+      });
+      group.querySelector<HTMLElement>('[data-rating-value]')!.textContent = rating ? `${rating} / 5` : t('notRated');
+    }
     root.querySelector<HTMLElement>('[data-ratings-empty]')!.hidden = picks.length > 0;
     root.querySelector('[data-no-ratings]')!.setAttribute('aria-pressed', String(p.mensaRatings.length === 0));
   };

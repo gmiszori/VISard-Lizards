@@ -25,7 +25,7 @@ export function pickTodaysDish(profile: Profile, mensas: RecommendationMensa[], 
       const text = `${meal.title} ${meal.titleDe ?? ''} ${meal.components.join(' ')}`.toLowerCase();
       const portion = meal.nutrition?.suspect ? null : meal.nutrition?.perPortion;
       const health = portion?.proteinG != null ? Math.min(portion.proteinG / 40, 1) : 0;
-      const signals = { taste: ((ratings.get(meal.mensaId) ?? 2) - 1) / 2,
+      const signals = { taste: ((ratings.get(meal.mensaId) ?? 3) - 1) / 4,
         price: price === null ? 0 : 1 / (1 + price / 10), speed: meal.service === 'lunch' ? 0.5 : 0, health };
       let score = profile.priority.reduce((sum, priority, i) => sum + (profile.priority.length - i) * signals[priority], 0);
       if (profile.diet === 'flexitarian' && meal.dietTag === 'meat') score -= 2;
