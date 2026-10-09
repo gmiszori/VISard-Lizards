@@ -1,0 +1,40 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+<BaseLayout title="Settings">
+  <a href="/" class="detail-back" data-i18n="back">← All canteens</a>
+  <section class="settings-intro">
+    <div class="settings-intro-icon" aria-hidden="true">⚙</div>
+    <div><span class="eyebrow" data-i18n="settings">Settings</span>
+      <h1 data-i18n="settingsTitle">Your settings</h1>
+      <p data-i18n="settingsIntro">Choose which meals you want to see. Your choices are saved on this device.</p>
+    </div>
+  </section>
+  <form id="preferences-form" class="settings-form">
+    <fieldset class="settings-group">
+      <legend data-i18n="foodPreferences">Food preferences</legend><span class="settings-group-mark" aria-hidden="true">✳</span>
+      <p data-i18n="preferencesHint">Select every type of meal you want included.</p>
+      <div class="preference-options">
+        <label class="setting-option preference-option preference-vegan"><span class="preference-icon" aria-hidden="true">🌿</span><span class="setting-copy"><strong data-i18n="vegan">Vegan</strong><small data-i18n="plantBased">Plant-based</small></span><input type="checkbox" name="vegan" value="vegan" /></label>
+        <label class="setting-option preference-option preference-vegetarian"><span class="preference-icon" aria-hidden="true">🥬</span><span class="setting-copy"><strong data-i18n="vegetarian">Vegetarian</strong><small data-i18n="meatFree">Meat-free</small></span><input type="checkbox" name="vegetarian" value="vegetarian" /></label>
+        <label class="setting-option preference-option preference-meat"><span class="preference-icon" aria-hidden="true">🍗</span><span class="setting-copy"><strong data-i18n="meat">Meat</strong><small data-i18n="meatDishes">Including meat dishes</small></span><input type="checkbox" name="meat" value="meat" /></label>
+      </div>
+    </fieldset>
+    <fieldset class="settings-group">
+      <legend data-i18n="canteenFilters">Canteen filters</legend><span class="settings-group-mark" aria-hidden="true">⌖</span>
+      <p data-i18n="filtersHint">Choose one or more campus locations to include.</p>
+      <div class="campus-options">
+        <label class="setting-option compact-option"><span class="compact-icon" aria-hidden="true">⌂</span><span class="setting-copy"><strong data-i18n="zentrum">Zentrum</strong></span><input type="checkbox" name="locations" value="zentrum" /></label>
+        <label class="setting-option compact-option"><span class="compact-icon" aria-hidden="true">⌂</span><span class="setting-copy"><strong data-i18n="hoenggerberg">Hönggerberg</strong></span><input type="checkbox" name="locations" value="hoenggerberg" /></label>
+        <label class="setting-option compact-option"><span class="compact-icon" aria-hidden="true">⌂</span><span class="setting-copy"><strong data-i18n="irchel">Irchel</strong></span><input type="checkbox" name="locations" value="irchel" /></label>
+      </div>
+      <label class="setting-option compact-option open-only-option"><span class="compact-icon" aria-hidden="true">◷</span><span class="setting-copy"><strong data-i18n="openOnly">Only show open canteens</strong></span><input type="checkbox" name="openOnly" value="true" /></label>
+    </fieldset>
+    <fieldset class="settings-group">
+      <legend data-i18n="compactMode">Compact mode</legend><span class="settings-group-mark" aria-hidden="true">▤</span>
+      <p data-i18n="compactDescription">Show smaller canteen cards to fit more on the screen.</p>
+      <label class="setting-option compact-option"><span class="compact-icon" aria-hidden="true">▦</span><span class="setting-copy"><strong data-i18n="compact">Compact</strong></span><input type="checkbox" name="compact" value="true" /></label>
+    </fieldset>
+    <p class="settings-saved" id="settings-saved" aria-live="polite" data-i18n="settingsSaved" hidden>Saved</p>
+  </form>
+</BaseLayout>

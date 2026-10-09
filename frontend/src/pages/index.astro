@@ -1,0 +1,55 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CanteenCard from '../components/CanteenCard.astro';
+import FilterBar from '../components/FilterBar.astro';
+import { CANTEENS } from '../data/canteens';
+const openCount = CANTEENS.filter((canteen) => canteen.isOpen).length;
+---
+<BaseLayout title="Campus canteens">
+  <div class="section-head" style="margin-top:0"><div><h2 data-i18n="campus">Campus canteens</h2><p data-i18n="campusSub">Fresh picks from around Zürich</p></div><span class="count"><span data-live="open-count">{openCount}</span> <span data-i18n="openCount">open right now</span></span></div>
+  <FilterBar />
+  <section id="favourites-section" hidden>
+    <div class="section-head favourites-heading"><div><h2 data-i18n="favourites">Your favourites</h2></div></div>
+    <div id="favourites-grid" class="canteen-grid"></div>
+  </section>
+  <div class="section-head all-canteens-heading"><div><h2 data-i18n="allCanteens">All canteens</h2></div></div>
+  <div id="visible-count" class="count" style="margin:0 0 12px">{CANTEENS.length} canteens</div>
+  <div id="canteen-grid" class="canteen-grid">{CANTEENS.map((canteen) => <CanteenCard canteen={canteen} />)}</div>
+  <div id="empty-state" class="empty-state" data-i18n="empty">No canteens match your search. Try another dish or campus.</div>
+  <script>
+    const allCards = [...document.querySelectorAll<HTMLElement>('[data-canteen-card]')];
+    const allGrid = document.querySelector<HTMLElement>('#canteen-grid');
+    const favouritesGrid = document.querySelector<HTMLElement>('#favourites-grid');
+    const favouritesSection = document.querySelector<HTMLElement>('#favourites-section');
+    const saved = JSON.parse(localStorage.getItem('campuseats-favourites') || '[]') as string[];
+    const favourites = new Set(saved);
+    function renderFavourites() {
+      allCards.forEach((card) => {
+        const id = card.dataset.canteenId || '';
+        const isFavourite = favourites.has(id);
+        const button = card.querySelector<HTMLButtonElement>('[data-favorite-toggle]');
+        if (button) {
+          button.setAttribute('aria-pressed', String(isFavourite));
+          button.setAttribute('aria-label', isFavourite ? (document.documentElement.lang === 'de' ? 'Aus Favoriten entfernen' : 'Remove from favourites') : (document.documentElement.lang === 'de' ? 'Zu Favoriten hinzufügen' : 'Add to favourites'));
+          button.classList.toggle('is-favourite', isFavourite);
+          button.querySelector('span')!.textContent = isFavourite ? '★' : '☆';
+        }
+        (isFavourite ? favouritesGrid : allGrid)?.append(card);
+      });
+      const visibleFavourites = favouritesGrid?.querySelectorAll<HTMLElement>('[data-canteen-card]:not([hidden])').length ?? 0;
+      if (favouritesSection) favouritesSection.hidden = visibleFavourites === 0;
+    }
+    document.addEventListener('click', (event) => {
+      const button = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-favorite-toggle]');
+      if (!button) return;
+      const card = button.closest<HTMLElement>('[data-canteen-card]');
+      const id = card?.dataset.canteenId;
+      if (!id) return;
+      if (favourites.has(id)) favourites.delete(id); else favourites.add(id);
+      localStorage.setItem('campuseats-favourites', JSON.stringify([...favourites]));
+      renderFavourites();
+    });
+    document.addEventListener('languagechange', renderFavourites);
+    renderFavourites();
+  </script>
+</BaseLayout>

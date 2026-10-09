@@ -90,3 +90,6 @@ Not touching: raw upstream clients/controllers (Nikita's agent, on main), DTO sh
 (only additive changes), ExampleController.
 
 Status log:
+  01:27  LikeScience (Tiago): Integrated data service, Caffeine caching (/api/cache/stats, /api/cache/clear),
+         batch/search endpoints (/api/data), and merged origin/main into backend cleanly.
+         Verified compilation across all 72 source files and test suites.
