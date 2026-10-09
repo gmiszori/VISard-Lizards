@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import { LIVE_DATA } from '../data/canteens';
 interface Props { title: string }
 const { title } = Astro.props;
 ---
@@ -49,7 +50,9 @@ const { title } = Astro.props;
       languageSelect.addEventListener('change', () => { applyLanguage(languageSelect.value); setTheme(document.documentElement.dataset.theme); });
       themeButton.addEventListener('click', () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'));
     </script>
+    <script type="application/json" id="live-data" is:inline set:html={JSON.stringify(LIVE_DATA)} />
     <script>
+      import '../scripts/live-status';
       import '../scripts/preferences';
     </script>
   </body>
