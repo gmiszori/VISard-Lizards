@@ -74,3 +74,19 @@ HANDOFF (00:49, session ending) - open points for the team / next backend sessio
   5. Additive DTO changes to confirm: MensaDTO.id, MealDTO.id (needed to address single items).
   6. ExampleController still exists and shows up in Swagger UI - delete when no longer needed.
   Branch state: backend is ahead of main by the JPA/H2 + later commits; test-merge with main was clean.
+
+=======================================================
+SESSION 2 - Backend agent (Claude, for IllusioQuest), 2026-10-10 01:24 - ~01:54
+Branch: backend | Scope: backend/ only (no frontend, no main)
+Since session 1: MARTIN frontend removed from main (9f016a6, Martin's request), API.md + Swagger UI
+describe every endpoint (6162e7f), crowd histogram is "sufficient" from 10 reports (was 20).
+
+Plan (each step: tests + API.md + Swagger descriptions, then commit/push):
+  1. Bean Validation on request bodies (@Min/@Max ...): 400 problem details name the invalid field.
+  2. Spam protection for POST /ratings and /crowd-reports: per-client limit -> 429 Too Many Requests.
+  3. GET /api/meals?date=&campus=&diet=&excludeAllergens=  meal search across all mensas.
+  4. backend/Dockerfile (build + run without local Java/Maven).
+Not touching: raw upstream clients/controllers (Nikita's agent, on main), DTO shapes of the whiteboard
+(only additive changes), ExampleController.
+
+Status log:
