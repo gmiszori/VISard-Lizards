@@ -27,6 +27,27 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 class MensaClientsTests {
 
     @Test
+    void ethStopsWhenUpstreamIgnoresPaginationOffset() {
+        RestClient.Builder builder = RestClient.builder();
+        MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
+        EthMensaClient client = new EthMensaClient(builder.build());
+        String repeated = "{\"weekly-rota-array\":[" + IntStream.range(0, 50)
+                .mapToObj(i -> "{\"facility-id\":" + i + "}")
+                .collect(Collectors.joining(",")) + "]}";
+        String prefix = "https://idapps.ethz.ch/cookpit-pub-services/v1/weeklyrotas"
+                + "?client-id=ethz-wcms&lang=en&rs-first=";
+        server.expect(requestTo(prefix + "0&rs-size=50&valid-after=2026-10-05"))
+                .andRespond(withSuccess(repeated, MediaType.APPLICATION_JSON));
+        server.expect(requestTo(prefix + "50&rs-size=50&valid-after=2026-10-05"))
+                .andRespond(withSuccess(repeated, MediaType.APPLICATION_JSON));
+
+        IllegalStateException error = assertThrows(IllegalStateException.class,
+                () -> client.fetchWeeklyRotaPages(LocalDate.of(2026, 10, 9), "en"));
+        assertEquals("ETH repeated a page; pagination may be ignored", error.getMessage());
+        server.verify();
+    }
+
+    @Test
     void ethRetrievesSecondPageWithoutMappingOrDroppingFields() {
         RestClient.Builder builder = RestClient.builder();
         MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();

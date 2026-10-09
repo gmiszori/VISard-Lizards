@@ -7,12 +7,18 @@ application DTOs, menu filtering, price formatting, or persistent caches.
 ```java
 String ethJson = ethMensaClient.fetchWeeklyRotas(LocalDate.of(2026, 10, 9), "en");
 List<String> allEthPages = ethMensaClient.fetchWeeklyRotaPages(LocalDate.of(2026, 10, 9), "en");
-String uzhJson = uzhMensaClient.fetchTodayOffers(locationId);
+String uzhJson = zfvMensaClient.fetchThisWeek(); // requires MENSA_ZFV_API_KEY
 ```
 
 Map these strings to your own DTOs after retrieval. An empty HTTP body can return
 `null`. HTTP 4xx/5xx and transport failures throw Spring `RestClientException`
 subclasses. Connect timeout is 10 seconds; read timeout is 30 seconds.
+
+The application's `/api/mensas` and `/api/meals` routes currently read the bundled
+menu snapshot through `JsonMensaRepository`. Adding these clients does not make
+those routes fetch live menus. To use live menus in your app, retrieve the raw
+responses here and map them to your own DTOs or repository implementation. The
+optional `/api/upstream` routes below expose the raw responses for inspection.
 
 ## ETH
 
