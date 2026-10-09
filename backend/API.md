@@ -50,7 +50,8 @@ created on first start; set `DB_URL` to use another JDBC database).
   Meal ids look like `polyterrasse.2026-10-06.lunch.2`.
 - Errors are [problem details](https://www.rfc-editor.org/rfc/rfc9457), e.g.
   `{"status": 404, "title": "Not Found", "detail": "Mensa not found: xyz", "instance": "/api/mensas/xyz"}`.
-  Unknown ids return 404; invalid parameters or bodies return 400.
+  Unknown ids return 404; invalid parameters or bodies return 400. For an invalid body, `detail` names
+  the field, e.g. `"stars: must be less than or equal to 5"`.
 - CORS is open for the Astro dev server (`http://localhost:4321`), see `app.cors.allowed-origins`.
 
 ## Mensas

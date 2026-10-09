@@ -36,6 +36,12 @@
 			<artifactId>spring-boot-starter-webmvc</artifactId>
 		</dependency>
 
+		<!-- Validation of request bodies (@Min, @Max, ...) -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
+
 		<!-- Ratings and crowd reports, stored in an H2 file database (backend/data/) -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

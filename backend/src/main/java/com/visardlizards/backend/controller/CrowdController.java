@@ -22,6 +22,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 
 // The @Operation descriptions are shown in the Swagger UI; keep them in sync with backend/API.md.
 @RestController
@@ -73,7 +74,7 @@ public class CrowdController {
 	@ApiResponse(responseCode = "400", description = "Level outside 1-5 or invalid body")
 	@ApiResponse(responseCode = "404", description = "Unknown mensa")
 	public CrowdReportDTO reportCrowd(@Parameter(description = "Mensa id, e.g. `polyterrasse`") @PathVariable String id,
-			@RequestBody CrowdReportRequestDTO request) {
+			@Valid @RequestBody CrowdReportRequestDTO request) {
 		return toDTO(crowdService.addReport(mensaService.getMensa(id).id(), request.level()));
 	}
 

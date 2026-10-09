@@ -22,6 +22,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 
 // The @Operation descriptions are shown in the Swagger UI; keep them in sync with backend/API.md.
 @RestController
@@ -70,7 +71,7 @@ public class MealController {
 	@ApiResponse(responseCode = "404", description = "Unknown meal")
 	public void rateMeal(
 			@Parameter(description = "Meal id, e.g. `polyterrasse.2026-10-06.lunch.2`") @PathVariable String id,
-			@RequestBody MealRatingRequestDTO rating) {
+			@Valid @RequestBody MealRatingRequestDTO rating) {
 		mealService.rateMeal(id, rating.stars(), rating.tags() == null ? List.of() : rating.tags());
 	}
 
