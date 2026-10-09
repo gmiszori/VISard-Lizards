@@ -26,6 +26,9 @@ public interface MensaRepository {
 
 	Optional<Meal> findMealById(String id);
 
+	/** Meals of all mensas on one day, ordered by mensa. */
+	List<Meal> findMealsOn(LocalDate date);
+
 	/** All dates that have at least one meal, ascending. */
 	SortedSet<LocalDate> findMealDates();
 

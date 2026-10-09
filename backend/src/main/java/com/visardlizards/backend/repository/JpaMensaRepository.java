@@ -69,6 +69,11 @@ public class JpaMensaRepository implements MensaRepository {
 	}
 
 	@Override
+	public List<Meal> findMealsOn(LocalDate date) {
+		return meals.findByDateOrderByMensaIdAscIdAsc(date).stream().map(JpaMensaRepository::toDomain).toList();
+	}
+
+	@Override
 	public SortedSet<LocalDate> findMealDates() {
 		return new TreeSet<>(meals.findDistinctDates());
 	}

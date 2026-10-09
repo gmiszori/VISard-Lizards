@@ -1,6 +1,11 @@
 package com.visardlizards.backend.controller;
 
+import java.time.Clock;
+import java.time.LocalDate;
 import java.util.List;
+
+import org.jspecify.annotations.Nullable;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,6 +22,7 @@ import com.visardlizards.backend.model.domain.PriceCategory;
 import com.visardlizards.backend.model.dto.MealDetailDTO;
 import com.visardlizards.backend.model.dto.MealRatingRequestDTO;
 import com.visardlizards.backend.service.MealService;
+import com.visardlizards.backend.service.MensaService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -27,15 +33,46 @@ import jakarta.validation.Valid;
 // The @Operation descriptions are shown in the Swagger UI; keep them in sync with backend/API.md.
 @RestController
 @RequestMapping("/api/meals")
-@Tag(name = "Meals", description = "Single meals and their ratings")
+@Tag(name = "Meals", description = "Meal search, single meals and their ratings")
 public class MealController {
 
 	private final MealService mealService;
+	private final MensaService mensaService;
 	private final MensaDtoMapper mapper;
+	private final Clock clock;
 
-	public MealController(MealService mealService, MensaDtoMapper mapper) {
+	public MealController(MealService mealService, MensaService mensaService, MensaDtoMapper mapper, Clock clock) {
 		this.mealService = mealService;
+		this.mensaService = mensaService;
 		this.mapper = mapper;
+		this.clock = clock;
+	}
+
+	@GetMapping
+	@Operation(summary = "Search meals across all mensas", description = """
+			Returns the meals of all mensas on one day, for questions like "which vegan meals without gluten
+			are there today on Zentrum?". Every filter is optional; without any, all meals of the menu date are
+			returned. Each result says which mensa serves it and includes its ratings, like `GET /api/meals/{id}`.
+			Results are ordered by mensa.
+			""")
+	@ApiResponse(responseCode = "200", description = "Matching meals (empty list if none)")
+	@ApiResponse(responseCode = "400", description = "Unknown diet or invalid date")
+	public List<MealDetailDTO> searchMeals(
+			@Parameter(description = "Day to search. Default: the menu date (see `GET /api/meta`)")
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @Nullable LocalDate date,
+			@Parameter(description = "Only this campus: `zentrum`, `hoenggerberg` or `irchel`")
+			@RequestParam(required = false) @Nullable String campus,
+			@Parameter(description = "Only this diet: `vegan`, `vegetarian` (includes vegan), `meat` or `fish`")
+			@RequestParam(required = false) @Nullable String diet,
+			@Parameter(description = "Comma-separated allergen ids to leave out, e.g. `gluten,milk`")
+			@RequestParam(required = false) @Nullable List<String> excludeAllergens,
+			@Parameter(description = "Which price to put into each meal")
+			@RequestParam(defaultValue = "STUDENT") PriceCategory priceCategory) {
+		LocalDate day = date != null ? date : mensaService.getMenuDate(LocalDate.now(clock));
+		return mealService.searchMeals(day, campus, diet, excludeAllergens == null ? List.of() : excludeAllergens)
+				.stream()
+				.map(meal -> toDetail(meal, priceCategory))
+				.toList();
 	}
 
 	@GetMapping("/{id}")
@@ -52,9 +89,7 @@ public class MealController {
 			@Parameter(description = "Meal id, e.g. `polyterrasse.2026-10-06.lunch.2`") @PathVariable String id,
 			@Parameter(description = "Which price to put into the meal")
 			@RequestParam(defaultValue = "STUDENT") PriceCategory priceCategory) {
-		Meal meal = mealService.getMeal(id);
-		return new MealDetailDTO(meal.mensaId(), meal.date(), mapper.toMealDTO(meal, priceCategory),
-				mealService.getAverageRating(meal.id()), mealService.getTagCounts(meal.id()));
+		return toDetail(mealService.getMeal(id), priceCategory);
 	}
 
 	@PostMapping("/{id}/ratings")
@@ -74,6 +109,11 @@ public class MealController {
 			@Parameter(description = "Meal id, e.g. `polyterrasse.2026-10-06.lunch.2`") @PathVariable String id,
 			@Valid @RequestBody MealRatingRequestDTO rating) {
 		mealService.rateMeal(id, rating.stars(), rating.tags() == null ? List.of() : rating.tags());
+	}
+
+	private MealDetailDTO toDetail(Meal meal, PriceCategory priceCategory) {
+		return new MealDetailDTO(meal.mensaId(), meal.date(), mapper.toMealDTO(meal, priceCategory),
+				mealService.getAverageRating(meal.id()), mealService.getTagCounts(meal.id()));
 	}
 
 }

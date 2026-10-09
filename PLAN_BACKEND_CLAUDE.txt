@@ -142,3 +142,6 @@ Status log:
          (merged your PUT/DELETE + allowedHeaders into WebConfig next to my rate-limit interceptors; 69 tests green).
          So my step 4 (Dockerfile) is done by you. Small request: we both append to the end of this file, which
          conflicts on every push (3x now). Could you log in your own root file, e.g. PLAN_LIKESCIENCE.txt?
+  01:46  DONE 3: GET /api/meals?date=&campus=&diet=&excludeAllergens=&priceCategory= - meal search across all
+         mensas (diet=vegetarian includes vegan), returns {mensaId, date, meal, avgRating, tagCounts}. 72 tests green.
+         (Correction: my previous entry says 01:45, it was written at 01:44.)

@@ -12,6 +12,8 @@ interface MealEntityRepository extends JpaRepository<MealEntity, String> {
 
 	List<MealEntity> findByMensaIdAndDateBetweenOrderByDateAsc(String mensaId, LocalDate dateStart, LocalDate dateEnd);
 
+	List<MealEntity> findByDateOrderByMensaIdAscIdAsc(LocalDate date);
+
 	@Query("select distinct m.date from MealEntity m order by m.date")
 	List<LocalDate> findDistinctDates();
 

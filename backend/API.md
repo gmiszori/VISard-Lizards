@@ -44,6 +44,7 @@ or controllers.
 | POST | [`/api/mensas/{id}/ratings`](#post-apimensasidratings) | Rate a mensa |
 | GET | [`/api/mensas/{id}/crowd`](#get-apimensasidcrowd) | How full a mensa is now and usually |
 | POST | [`/api/mensas/{id}/crowd-reports`](#post-apimensasidcrowd-reports) | Report how full a mensa is |
+| GET | [`/api/meals`](#get-apimeals) | Search meals across all mensas |
 | GET | [`/api/meals/{id}`](#get-apimealsid) | One meal with its ratings |
 | POST | [`/api/meals/{id}/ratings`](#post-apimealsidratings) | Rate a meal |
 
@@ -244,6 +245,26 @@ Errors: `404` unknown mensa, `400` level outside 1–5 or invalid body, `429` al
 by this client in the last 5 minutes.
 
 ## Meals
+
+### GET /api/meals
+
+Returns the meals of all mensas on one day, for questions like "which vegan meals without gluten
+are there today on Zentrum?". Every filter is optional; without any, all meals of the menu date are
+returned. Each result says which mensa serves it and includes its ratings, in the same format as
+[`GET /api/meals/{id}`](#get-apimealsid). Results are ordered by mensa.
+
+| Query parameter | Required | Description |
+| --- | --- | --- |
+| `date` | no | Day to search. Default: the menu date (see [`/api/meta`](#get-apimeta)) |
+| `campus` | no | Only this campus: `zentrum`, `hoenggerberg` or `irchel` |
+| `diet` | no | Only this diet: `vegan`, `vegetarian` (includes vegan meals), `meat` or `fish` |
+| `excludeAllergens` | no | Comma-separated allergen ids to leave out, e.g. `gluten,milk` |
+| `priceCategory` | no | Which price to put into each meal. Default: `STUDENT` |
+
+Example: `GET /api/meals?date=2026-10-06&campus=irchel&diet=vegetarian&excludeAllergens=gluten`
+
+Response `200`: list of `{mensaId, date, meal, avgRating, tagCounts}` (empty if nothing matches).
+Errors: `400` unknown diet or invalid date.
 
 ### GET /api/meals/{id}
 
