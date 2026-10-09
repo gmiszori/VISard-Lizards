@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClientException;
 
 import com.visardlizards.backend.service.EthMensaClient;
+import com.visardlizards.backend.service.MensaLocationCatalog;
 import com.visardlizards.backend.service.ZfvMensaClient;
 
 /** Optional raw JSON endpoints for inspecting upstream data before DTO mapping. */
@@ -26,10 +27,23 @@ public class MensaUpstreamController {
 
     private final EthMensaClient ethClient;
     private final ZfvMensaClient zfvClient;
+    private final MensaLocationCatalog locationCatalog;
 
-    public MensaUpstreamController(EthMensaClient ethClient, ZfvMensaClient zfvClient) {
+    public MensaUpstreamController(EthMensaClient ethClient, ZfvMensaClient zfvClient,
+            MensaLocationCatalog locationCatalog) {
         this.ethClient = ethClient;
         this.zfvClient = zfvClient;
+        this.locationCatalog = locationCatalog;
+    }
+
+    @GetMapping(value = "/eth/locations", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> ethLocations() {
+        return rawJson(locationCatalog.readEthLocations());
+    }
+
+    @GetMapping(value = "/uzh/locations", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> uzhLocations() {
+        return rawJson(locationCatalog.readUzhZfvLocations());
     }
 
     @GetMapping(value = "/eth/weekly-rotas", produces = MediaType.APPLICATION_JSON_VALUE)

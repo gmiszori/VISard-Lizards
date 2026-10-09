@@ -11,6 +11,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.client.RestClientException;
 
 import com.visardlizards.backend.service.EthMensaClient;
+import com.visardlizards.backend.service.MensaLocationCatalog;
 import com.visardlizards.backend.service.ZfvMensaClient;
 
 import static org.mockito.Mockito.when;
@@ -30,6 +31,9 @@ class MensaUpstreamControllerTests {
 
     @MockitoBean
     private ZfvMensaClient zfvClient;
+
+    @MockitoBean
+    private MensaLocationCatalog locationCatalog;
 
     @Test
     void ethResponseIsRawJsonRatherThanAQuotedJsonString() throws Exception {

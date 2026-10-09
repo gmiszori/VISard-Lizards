@@ -30,6 +30,8 @@ The page size must be between 1 and 50.
 
 Restaurant metadata and facility IDs:
 https://github.com/famoser/Mensa/blob/main/app/src/main/assets/eth/locations.json
+Also bundled in `src/main/resources/mensa/eth-locations.json`; inject
+`MensaLocationCatalog` and call `readEthLocations()` to get the raw JSON.
 
 ## UZH: maintained ZFV API
 
@@ -59,6 +61,9 @@ the source's `outlets(take: 100)` limit.
 
 Current outlet slug/category metadata:
 https://github.com/fflopsi/mensa-zh/blob/main/app/src/main/assets/uzh/locations_zfv.json
+Also bundled in `src/main/resources/mensa/uzh-zfv-locations.json`; call
+`MensaLocationCatalog.readUzhZfvLocations()`. These snapshots are identifier
+catalogs, not a replacement for the app's own mensa database.
 
 ## UZH: original FOOD2050 translation (legacy)
 
@@ -116,6 +121,8 @@ cd backend
 - `GET /api/upstream/uzh/week` (current week)
 - `GET /api/upstream/uzh/week?next=true`
 - `GET /api/upstream/uzh/day?date=2026-10-12`
+- `GET /api/upstream/eth/locations` (bundled identifier catalog)
+- `GET /api/upstream/uzh/locations` (bundled ZFV identifier catalog)
 
 Responses have `application/json` content type and preserve the upstream body
 without quoting it as a JSON string. These endpoints do not overlap the app's
