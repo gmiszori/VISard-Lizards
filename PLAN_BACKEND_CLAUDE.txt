@@ -145,3 +145,13 @@ Status log:
   01:46  DONE 3: GET /api/meals?date=&campus=&diet=&excludeAllergens=&priceCategory= - meal search across all
          mensas (diet=vegetarian includes vegan), returns {mensaId, date, meal, avgRating, tagCounts}. 72 tests green.
          (Correction: my previous entry says 01:45, it was written at 01:44.)
+
+HANDOFF SESSION 2 (01:46) - open points:
+  1. Live data: the check above shows live meals for 11/12 ETH and 8/10 UZH mensas. Next step: a live importer
+     that writes ETH rotas (EthMensaClient) and ZFV menus (needs MENSA_ZFV_API_KEY) into the meal tables,
+     next to MensaSnapshotImporter. Services/controllers need no change.
+  2. Schema is still created by Hibernate ddl-auto=update (also LikeScience's data table). Before a real
+     deployment: Flyway migrations for all tables.
+  3. Rate limits are per IP and in memory; behind a reverse proxy set server.forward-headers-strategy.
+  4. backend now contains main (merged by LikeScience at 01:27), so a merge backend -> main is a fast-forward
+     for main's content; nothing on main is newer. MartinValachy works on branch feature/onboarding (frontend).
