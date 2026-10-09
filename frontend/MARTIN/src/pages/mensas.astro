@@ -1,0 +1,8 @@
+---
+import AppLayout from '../layouts/AppLayout.astro';
+import MensasApp from '../components/MensasApp';
+---
+
+<AppLayout title="Mensas" current="mensas">
+  <MensasApp client:load />
+</AppLayout>

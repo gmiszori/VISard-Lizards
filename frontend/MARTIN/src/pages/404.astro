@@ -1,0 +1,15 @@
+---
+import AppLayout from '../layouts/AppLayout.astro';
+import { Icon } from '../components/Icon';
+---
+
+<AppLayout title="Not found">
+  <div class="page-pad">
+    <div class="empty">
+      <Icon name="plate" size={30} />
+      <h1 class="empty__title">Nothing on this plate</h1>
+      <p class="empty__text">That page doesn't exist. Head back to today's menus.</p>
+      <a class="btn btn--primary" href="/">Back to Today</a>
+    </div>
+  </div>
+</AppLayout>

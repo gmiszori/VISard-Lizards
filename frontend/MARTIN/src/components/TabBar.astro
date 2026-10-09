@@ -1,0 +1,30 @@
+---
+import { Icon, type IconName } from './Icon';
+
+interface Props {
+  current?: 'today' | 'mensas' | 'profile';
+}
+const { current } = Astro.props;
+
+const tabs: Array<{ id: 'today' | 'mensas' | 'profile'; label: string; href: string; icon: IconName }> = [
+  { id: 'today', label: 'Today', href: '/', icon: 'plate' },
+  { id: 'mensas', label: 'Mensas', href: '/mensas', icon: 'pin' },
+  { id: 'profile', label: 'Profile', href: '/profile', icon: 'user' },
+];
+// Detail pages belong to the Mensas tab visually; they pass no `current`.
+---
+
+<nav class="tabbar" aria-label="Main">
+  <ul>
+    {
+      tabs.map((t) => (
+        <li>
+          <a href={t.href} class:list={['tab-link', { 'is-on': current === t.id }]} aria-current={current === t.id ? 'page' : undefined}>
+            <Icon name={t.icon} size={22} />
+            <span>{t.label}</span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>
