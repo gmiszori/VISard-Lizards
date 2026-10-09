@@ -25,7 +25,7 @@ public class CrowdService {
 	/** Reports newer than this count as "live". */
 	static final Duration LIVE_WINDOW = Duration.ofMinutes(30);
 	/** Below this many reports the histogram is not meaningful. */
-	static final int MIN_SAMPLE_SIZE = 20;
+	static final int MIN_SAMPLE_SIZE = 10;
 
 	private static final ZoneId ZONE = ZoneId.of("Europe/Zurich");
 

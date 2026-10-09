@@ -18,9 +18,15 @@ import com.visardlizards.backend.model.dto.CrowdReportRequestDTO;
 import com.visardlizards.backend.service.CrowdService;
 import com.visardlizards.backend.service.MensaService;
 
-/** "How full is it?": crowd reports and the popular-times histogram. */
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+// The @Operation descriptions are shown in the Swagger UI; keep them in sync with backend/API.md.
 @RestController
 @RequestMapping("/api/mensas/{id}")
+@Tag(name = "Crowd", description = "How full a mensa is: live user reports and the popular-times chart")
 public class CrowdController {
 
 	private final MensaService mensaService;
@@ -31,9 +37,21 @@ public class CrowdController {
 		this.crowdService = crowdService;
 	}
 
-	/** Typical pattern + reports of the last 30 minutes, newest first. */
 	@GetMapping("/crowd")
-	public CrowdInfoDTO getCrowd(@PathVariable String id) {
+	@Operation(summary = "How full a mensa is now and usually", description = """
+			Says how full a mensa is, based on what users reported. `live` holds the reports of the last 30
+			minutes, newest first: show them as "right now". `histogram` is the "popular times" chart: for
+			each weekday and hour, how full the mensa usually is, from all reports ever made.
+
+			- `byWeekday` has the keys `mon` to `sun`, each with 24 values (index = hour of day in Zurich,
+			  0-23). A value is the average reported level of that hour, scaled to 0-100 (level 1 = 0,
+			  level 5 = 100); hours without reports are 0.
+			- With fewer than **10** reports the chart would be meaningless: then `sufficient` is `false` and
+			  `byWeekday` is left out. `sampleSize` is always the number of reports.
+			""")
+	@ApiResponse(responseCode = "200", description = "Histogram and live reports")
+	@ApiResponse(responseCode = "404", description = "Unknown mensa")
+	public CrowdInfoDTO getCrowd(@Parameter(description = "Mensa id, e.g. `polyterrasse`") @PathVariable String id) {
 		String mensaId = mensaService.getMensa(id).id();
 		CrowdHistogram histogram = crowdService.getHistogram(mensaId);
 		return new CrowdInfoDTO(
@@ -42,10 +60,20 @@ public class CrowdController {
 				crowdService.getLiveReports(mensaId).stream().map(CrowdController::toDTO).toList());
 	}
 
-	/** Body {"level": 1-5}. The server stamps the time. */
 	@PostMapping("/crowd-reports")
 	@ResponseStatus(HttpStatus.CREATED)
-	public CrowdReportDTO reportCrowd(@PathVariable String id, @RequestBody CrowdReportRequestDTO request) {
+	@Operation(summary = "Report how full a mensa is", description = """
+			Saves a user's report of how full a mensa is right now. The server sets the time, so clients
+			cannot backdate reports. The report immediately appears in `live` of
+			`GET /api/mensas/{id}/crowd` and counts towards the histogram.
+
+			Levels: 1 = empty, 2 = quiet, 3 = some queue, 4 = busy, 5 = packed.
+			""")
+	@ApiResponse(responseCode = "201", description = "The stored report")
+	@ApiResponse(responseCode = "400", description = "Level outside 1-5 or invalid body")
+	@ApiResponse(responseCode = "404", description = "Unknown mensa")
+	public CrowdReportDTO reportCrowd(@Parameter(description = "Mensa id, e.g. `polyterrasse`") @PathVariable String id,
+			@RequestBody CrowdReportRequestDTO request) {
 		return toDTO(crowdService.addReport(mensaService.getMensa(id).id(), request.level()));
 	}
 
