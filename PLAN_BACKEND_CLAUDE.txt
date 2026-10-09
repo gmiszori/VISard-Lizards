@@ -39,4 +39,5 @@ Status log:
   00:37  DONE: ProblemDetail errors (GlobalExceptionHandler), lunch-before-dinner sort.
          Refactor per backend/README.txt: services return domain models only,
          DTO mapping lives in controller/MensaDtoMapper.
-  next   backend/API.md (endpoint docs + examples), OpenAPI/Swagger UI if a Boot-4 compatible springdoc exists.
+  00:38  DONE: Swagger UI (/swagger-ui.html, springdoc 3.1.1), endpoint docs in backend/API.md.
+  next   crowd reports endpoint (frontend README item 13: real crowd reports need a backend).
