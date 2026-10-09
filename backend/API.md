@@ -28,11 +28,16 @@ node backend/scripts/export-mensa-db.mjs
 | GET | `/api/mensas/{id}?dateStart=&dateEnd=&priceCategory=` | `MensaDTO` with meal plan. Dates default to today |
 | GET | `/api/mensas/{id}/meal-plan?dateStart=&dateEnd=&priceCategory=` | `MealPlanDTO`. Both dates required, inclusive |
 | POST | `/api/mensas/{id}/ratings` | `201`. Body `{"stars": 1-5}` |
+| GET | `/api/mensas/{id}/crowd` | `{histogram, live}`, same shape as `CrowdInfo` in `frontend/MARTIN/src/lib/types.ts` |
+| POST | `/api/mensas/{id}/crowd-reports` | `201` + `CrowdReport`. Body `{"level": 1-5}`, the server stamps the time |
 
 - Dates: `YYYY-MM-DD`. Times: `HH:mm`.
 - `priceCategory`: `STUDENT` (default), `STAFF`, `EXTERNAL`.
 - Mensa ids are the ids from `canteens.ts`, e.g. `polyterrasse`, `archimedes`.
-- Ratings are kept in memory (lost on restart). `avgRating` is `null` until a mensa has been rated.
+- Ratings and crowd reports are kept in memory (lost on restart). `avgRating` is `null` until a mensa has been rated.
+- Crowd: `live` holds the reports of the last 30 minutes, newest first. `histogram.byWeekday`
+  (`mon`..`sun`, 24 hourly values 0–100, Zurich time) is only present when `sufficient` is true
+  (at least 20 reports).
 - Errors are [problem details](https://www.rfc-editor.org/rfc/rfc9457):
   `{"status": 404, "title": "Not Found", "detail": "Mensa not found: xyz", ...}`.
 - CORS is open for the Astro dev server (`http://localhost:4321`), see `app.cors.allowed-origins`.

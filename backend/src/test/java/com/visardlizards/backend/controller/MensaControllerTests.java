@@ -94,6 +94,27 @@ class MensaControllerTests {
 	}
 
 	@Test
+	void crowdReportShowsUpAsLive() throws Exception {
+		mockMvc.perform(post("/api/mensas/archimedes/crowd-reports")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("{\"level\": 4}"))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.mensaId").value("archimedes"))
+				.andExpect(jsonPath("$.timestamp").isString());
+		mockMvc.perform(get("/api/mensas/archimedes/crowd"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.live[0].level").value(4))
+				.andExpect(jsonPath("$.histogram.sufficient").value(false))
+				.andExpect(jsonPath("$.histogram.byWeekday").doesNotExist());
+	}
+
+	@Test
+	void crowdOfUnknownMensaIs404() throws Exception {
+		mockMvc.perform(get("/api/mensas/does-not-exist/crowd"))
+				.andExpect(status().isNotFound());
+	}
+
+	@Test
 	void rejectsInvalidRating() throws Exception {
 		mockMvc.perform(post("/api/mensas/polyterrasse/ratings")
 						.contentType(MediaType.APPLICATION_JSON)

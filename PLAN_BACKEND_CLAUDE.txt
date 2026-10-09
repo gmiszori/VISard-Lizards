@@ -40,4 +40,5 @@ Status log:
          Refactor per backend/README.txt: services return domain models only,
          DTO mapping lives in controller/MensaDtoMapper.
   00:38  DONE: Swagger UI (/swagger-ui.html, springdoc 3.1.1), endpoint docs in backend/API.md.
-  next   crowd reports endpoint (frontend README item 13: real crowd reports need a backend).
+  00:42  DONE: GET /api/mensas/{id}/crowd + POST /api/mensas/{id}/crowd-reports {"level":1-5}
+         (shapes = CrowdInfo/CrowdReport of frontend/MARTIN/src/lib/types.ts), 18 tests green.
