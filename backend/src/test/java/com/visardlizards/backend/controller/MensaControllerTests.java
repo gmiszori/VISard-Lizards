@@ -1,5 +1,6 @@
 package com.visardlizards.backend.controller;
 
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -95,6 +96,13 @@ class MensaControllerTests {
 				.andExpect(jsonPath("$.menuDate").isString())
 				.andExpect(jsonPath("$.dataFrom").value("2026-09-28"))
 				.andExpect(jsonPath("$.dataTo").value("2026-10-09"));
+	}
+
+	@Test
+	void listsCampuses() throws Exception {
+		mockMvc.perform(get("/api/campuses"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$[*].id").value(containsInAnyOrder("zentrum", "hoenggerberg", "irchel")));
 	}
 
 	@Test

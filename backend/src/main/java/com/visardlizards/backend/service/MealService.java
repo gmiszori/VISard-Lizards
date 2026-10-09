@@ -34,7 +34,8 @@ public class MealService {
 
 	public void rateMeal(String id, int stars, List<String> tags) {
 		for (String tag : tags) {
-			if (!MEAL_TAGS.contains(tag)) {
+			// Set.of(...).contains(null) throws, so check null first
+			if (tag == null || !MEAL_TAGS.contains(tag)) {
 				throw new IllegalArgumentException("Unknown tag: " + tag + ", allowed: " + MEAL_TAGS);
 			}
 		}

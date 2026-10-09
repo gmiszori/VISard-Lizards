@@ -69,6 +69,14 @@ class MealControllerTests {
 	}
 
 	@Test
+	void rejectsNullTag() throws Exception {
+		mockMvc.perform(post("/api/meals/" + MEAL_ID + "/ratings")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("{\"stars\": 4, \"tags\": [null]}"))
+				.andExpect(status().isBadRequest());
+	}
+
+	@Test
 	void returns404ForUnknownMeal() throws Exception {
 		mockMvc.perform(get("/api/meals/does-not-exist"))
 				.andExpect(status().isNotFound())
