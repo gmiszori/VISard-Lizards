@@ -12,6 +12,7 @@ import '@fontsource/ibm-plex-mono/latin-600.css';
 import '../styles/global.css';
 import TabBar from '../components/TabBar.astro';
 import GlobalUI from '../components/GlobalUI';
+import { href } from '../lib/paths';
 
 interface Props {
   title: string;
@@ -35,9 +36,9 @@ const fullTitle = title === 'Today' ? 'Tablett – ETH & UZH mensas' : `${title}
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Tablett" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <link rel="manifest" href="/manifest.webmanifest" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href={href('/manifest.webmanifest')} />
+    <link rel="icon" href={href('/favicon.svg')} type="image/svg+xml" />
+    <link rel="apple-touch-icon" href={href('/apple-touch-icon.png')} />
     <title>{fullTitle}</title>
   </head>
   <body>

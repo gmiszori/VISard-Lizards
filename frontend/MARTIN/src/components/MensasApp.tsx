@@ -1,4 +1,5 @@
 import { useStore } from '@nanostores/react';
+import { href } from '../lib/paths';
 import { useMemo, useState } from 'react';
 import { getCrowd } from '../lib/api';
 import { crowdNow } from '../lib/crowd';
@@ -31,7 +32,7 @@ function MensaRow({ mensa, distanceM, crowd, index }: RowProps) {
     <li className="row fade-up" style={stagger(index)}>
       <div className="row__main">
         <h3 className="row__name">
-          <a href={`/mensa/${mensa.id}`}>{mensa.name}</a>
+          <a href={href(`/mensa/${mensa.id}`)}>{mensa.name}</a>
         </h3>
         <p className="row__meta">
           <span className="num">{formatDistance(distanceM)}</span>

@@ -1,4 +1,5 @@
 import { useStore } from '@nanostores/react';
+import { href } from '../lib/paths';
 import { useState } from 'react';
 import { CAMPUSES, geoStatus, requestPosition } from '../lib/geo';
 import { TAG_LABEL, timeAgo } from '../lib/format';
@@ -236,7 +237,7 @@ function Profile() {
                     <span className="muted review__who">{timeAgo(h.at, now)}</span>
                   </div>
                   <p>
-                    <a className="textlink" href={`/meal/${h.r.mealId}`}>{h.r.mealTitle ?? 'Meal'}</a>
+                    <a className="textlink" href={href(`/meal/${h.r.mealId}`)}>{h.r.mealTitle ?? 'Meal'}</a>
                     <span className="muted"> · {nameOf(h.r.mensaId)}</span>
                   </p>
                   {h.r.tags.length > 0 && <p className="muted">{h.r.tags.map((t) => TAG_LABEL[t]).join(' · ')}</p>}
@@ -248,7 +249,7 @@ function Profile() {
                     <span className="muted review__who">{timeAgo(h.at, now)}</span>
                   </div>
                   <p>
-                    <a className="textlink" href={`/mensa/${h.r.mensaId}`}>{nameOf(h.r.mensaId)}</a>
+                    <a className="textlink" href={href(`/mensa/${h.r.mensaId}`)}>{nameOf(h.r.mensaId)}</a>
                     <span className="muted"> · mensa</span>
                   </p>
                 </li>

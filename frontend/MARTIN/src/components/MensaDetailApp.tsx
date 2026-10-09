@@ -1,4 +1,5 @@
 import { useStore } from '@nanostores/react';
+import { href } from '../lib/paths';
 import { useState } from 'react';
 import { getMenu } from '../lib/api';
 import { crowdNow } from '../lib/crowd';
@@ -50,7 +51,7 @@ function MensaDetail({ mensaId }: { mensaId: string }) {
   if (!mensa) {
     return (
       <div className="page-pad">
-        <EmptyState title="We don't know this mensa" action={<a className="btn btn--primary" href="/mensas">All mensas</a>}>
+        <EmptyState title="We don't know this mensa" action={<a className="btn btn--primary" href={href('/mensas')}>All mensas</a>}>
           The link may be out of date.
         </EmptyState>
       </div>
@@ -66,7 +67,7 @@ function MensaDetail({ mensaId }: { mensaId: string }) {
 
   return (
     <div className="page-pad">
-      <a className="backlink" href="/mensas">
+      <a className="backlink" href={href('/mensas')}>
         <Icon name="arrow-left" size={18} /> Mensas
       </a>
 

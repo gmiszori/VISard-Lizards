@@ -1,4 +1,5 @@
 import { useStore } from '@nanostores/react';
+import { href } from '../lib/paths';
 import { announce, lastEaten, setLastEaten } from '../lib/store';
 import type { Meal, PriceCategory } from '../lib/types';
 import { DietTag, Price, stagger } from './Bits';
@@ -65,7 +66,7 @@ export function MealCard({ meal, price, index = 0, mensaName, compact = false }:
             <DietTag tag={meal.dietTag} />
           </p>
           <h3 className="ticket__title">
-            <a className="ticket__link" href={`/meal/${meal.id}`}>
+            <a className="ticket__link" href={href(`/meal/${meal.id}`)}>
               {meal.title}
             </a>
           </h3>

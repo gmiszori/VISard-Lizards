@@ -1,4 +1,5 @@
 import { useStore } from '@nanostores/react';
+import { href } from '../lib/paths';
 import { useMemo, useState } from 'react';
 import { useBoardData, useNow, useRefPoint, useVisibleMensas } from '../lib/hooks';
 import { buildBoard, topRecommendations, type Prefs } from '../lib/rank';
@@ -100,7 +101,7 @@ function Today() {
             icon="eye-off"
             title="You've hidden every mensa"
             action={
-              <a className="btn btn--primary" href="/mensas">
+              <a className="btn btn--primary" href={href('/mensas')}>
                 Manage mensas
               </a>
             }
@@ -172,7 +173,7 @@ function Today() {
 
             {hidden.length > 0 && (
               <p className="footnote">
-                <span className="num">{hidden.length}</span> mensa{hidden.length === 1 ? '' : 's'} hidden. <a href="/mensas">Manage</a>
+                <span className="num">{hidden.length}</span> mensa{hidden.length === 1 ? '' : 's'} hidden. <a href={href('/mensas')}>Manage</a>
               </p>
             )}
           </>

@@ -2,20 +2,16 @@
 
 ## Application link
 
-**[http://localhost:4321/](http://localhost:4321/)** (works once the app is running locally; start it with `npm install` then `npm run dev`, see "How to run" below).
-There is no hosted deployment yet; replace this link with the public URL once the app is deployed.
+**https://martinvalachy.github.io/tablett-mensa/**
+
+Open it on a phone and use "Add to Home Screen" to install it. Source: https://github.com/MartinValachy/tablett-mensa
+For local development, see "How to run" below (http://localhost:4321/).
 
 Mobile-first web app for the ETH Zurich and UZH mensas: today's menus, live crowd levels, ratings and favourites.
 Frontend only. All data comes from a mock layer that is a drop-in replacement for a future REST API.
 
 **Stack:** Astro 7 + React islands (`client:load`), TypeScript strict, nanostores (+ persistent, localStorage), plain CSS tokens,
 fonts installed locally via `@fontsource` (Bricolage Grotesque, Instrument Sans, IBM Plex Mono). No CDN, no analytics, no hotlinked assets.
-
-## Working app
-
-There is no hosted deployment yet. The working app is the local dev server:
-
-**http://localhost:4321/** after running the commands below. Open it in a phone-sized window (or DevTools device mode) for the intended layout.
 
 ## How to run (PowerShell)
 
@@ -25,6 +21,12 @@ npm install
 npm run dev        # http://localhost:4321  (binds to localhost only)
 npm run build      # astro check (TypeScript) + production build into dist/
 npm run preview    # serve the production build
+```
+
+Deploy (GitHub Pages, builds with the repo name as base path and publishes `dist/` to the `gh-pages` branch):
+
+```powershell
+npm run deploy
 ```
 
 Node 22.12+ is required by Astro 7 (developed on Node 24).

@@ -1,4 +1,5 @@
 import { campusById, formatDistance } from '../lib/geo';
+import { href } from '../lib/paths';
 import type { MensaGroup as Group } from '../lib/rank';
 import type { PriceCategory, Service } from '../lib/types';
 import { StatusPills, stagger } from './Bits';
@@ -22,7 +23,7 @@ export function MensaGroup({ group, price, service, start }: Props) {
       <header className="group__head">
         <div>
           <h2 className="group__name">
-            <a href={`/mensa/${mensa.id}`}>{mensa.name}</a>
+            <a href={href(`/mensa/${mensa.id}`)}>{mensa.name}</a>
             {group.isFavourite && (
               <span className="group__fav" title="Favourite">
                 <Icon name="star" size={16} filled />

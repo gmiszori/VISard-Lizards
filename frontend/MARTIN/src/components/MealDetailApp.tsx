@@ -1,4 +1,5 @@
 import { useStore } from '@nanostores/react';
+import { href } from '../lib/paths';
 import { useState } from 'react';
 import { getMeal } from '../lib/api';
 import { PRICE_LABEL, timeAgo } from '../lib/format';
@@ -54,7 +55,7 @@ function MealDetailView({ mealId }: { mealId: string }) {
   if (meal.status === 'error' && !meal.data) {
     return (
       <div className="page-pad">
-        <a className="backlink" href="/"><Icon name="arrow-left" size={18} /> Today</a>
+        <a className="backlink" href={href('/')}><Icon name="arrow-left" size={18} /> Today</a>
         <ErrorState error={meal.error} onRetry={meal.reload} />
       </div>
     );
@@ -78,7 +79,7 @@ function MealDetailView({ mealId }: { mealId: string }) {
 
   return (
     <div className="page-pad">
-      <a className="backlink" href={mensa ? `/mensa/${mensa.id}` : '/'}>
+      <a className="backlink" href={href(mensa ? `/mensa/${mensa.id}` : '/')}>
         <Icon name="arrow-left" size={18} /> {mensa?.name ?? 'Today'}
       </a>
 
@@ -93,7 +94,7 @@ function MealDetailView({ mealId }: { mealId: string }) {
         <div className="meta-row">
           <DietTag tag={m.dietTag} />
           {mensa && (
-            <a className="textlink" href={`/mensa/${mensa.id}`}>
+            <a className="textlink" href={href(`/mensa/${mensa.id}`)}>
               {mensa.name}
             </a>
           )}
