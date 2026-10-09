@@ -1,0 +1,9 @@
+### Eclipse (workspace / project metadata, if the repo root is used as workspace or project) ###
+.metadata/
+.project
+.classpath
+.settings/
+.factorypath
+.recommenders/
+RemoteSystemsTempFiles/
+Servers/
