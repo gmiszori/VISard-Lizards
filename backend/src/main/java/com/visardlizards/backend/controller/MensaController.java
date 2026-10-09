@@ -1,5 +1,6 @@
 package com.visardlizards.backend.controller;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -28,29 +29,31 @@ public class MensaController {
 
 	private final MensaService mensaService;
 	private final MensaDtoMapper mapper;
+	private final Clock clock;
 
-	public MensaController(MensaService mensaService, MensaDtoMapper mapper) {
+	public MensaController(MensaService mensaService, MensaDtoMapper mapper, Clock clock) {
 		this.mensaService = mensaService;
 		this.mapper = mapper;
+		this.clock = clock;
 	}
 
 	/** All mensas without meal plan, optionally filtered by campus (zentrum, hoenggerberg, irchel). */
 	@GetMapping
 	public List<MensaDTO> getMensas(@RequestParam(required = false) @Nullable String campus) {
-		LocalDate today = LocalDate.now();
+		LocalDate today = LocalDate.now(clock);
 		return mensaService.getMensas(campus).stream()
 				.map(mensa -> toMensaDTO(mensa, today, null))
 				.toList();
 	}
 
-	/** One mensa including its meal plan (default: today). */
+	/** One mensa including its meal plan (default: today in Zurich). */
 	@GetMapping("/{id}")
 	public MensaDTO getMensa(
 			@PathVariable String id,
 			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @Nullable LocalDate dateStart,
 			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @Nullable LocalDate dateEnd,
 			@RequestParam(defaultValue = "STUDENT") PriceCategory priceCategory) {
-		LocalDate today = LocalDate.now();
+		LocalDate today = LocalDate.now(clock);
 		LocalDate start = dateStart != null ? dateStart : today;
 		Mensa mensa = mensaService.getMensa(id);
 		return toMensaDTO(mensa, today, getMealPlan(id, start, dateEnd != null ? dateEnd : start, priceCategory));

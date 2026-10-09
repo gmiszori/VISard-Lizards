@@ -72,6 +72,21 @@ class MensaControllerTests {
 	}
 
 	@Test
+	void rejectsInvertedDateRangeOnMensaDetail() throws Exception {
+		mockMvc.perform(get("/api/mensas/archimedes")
+						.param("dateStart", "2026-10-06")
+						.param("dateEnd", "2026-10-05"))
+				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void temporarilyClosedMensaHasNoOpeningHours() throws Exception {
+		mockMvc.perform(get("/api/mensas/uzh-lichthof"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.openingHours.*[*]").isEmpty());
+	}
+
+	@Test
 	void returns404ForUnknownMensa() throws Exception {
 		mockMvc.perform(get("/api/mensas/does-not-exist"))
 				.andExpect(status().isNotFound())

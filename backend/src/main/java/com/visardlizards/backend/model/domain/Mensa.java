@@ -18,10 +18,14 @@ public record Mensa(
 		boolean hasMenu,
 		boolean temporarilyClosed,
 		/** Keys: mon, tue, wed, thu, fri, sat, sun. */
-		Map<String, List<ServiceHours>> openingHours) {
+		Map<String, List<ServiceHours>> openingHours,
+		List<Closure> closures) {
 
-	/** Meal service windows on the weekday of the given date (empty if closed). */
+	/** Meal service windows on the given date (empty if closed that day, temporarily closed or in a closure). */
 	public List<ServiceHours> serviceHoursOn(LocalDate date) {
+		if (temporarilyClosed || closures.stream().anyMatch(closure -> closure.contains(date))) {
+			return List.of();
+		}
 		String weekday = date.getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.ENGLISH).toLowerCase(Locale.ROOT);
 		return openingHours.getOrDefault(weekday, List.of());
 	}
