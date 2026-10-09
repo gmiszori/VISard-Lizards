@@ -1,0 +1,8 @@
+---
+import AppLayout from '../layouts/AppLayout.astro';
+import ProfileApp from '../components/ProfileApp';
+---
+
+<AppLayout title="Profile" current="profile">
+  <ProfileApp client:load />
+</AppLayout>

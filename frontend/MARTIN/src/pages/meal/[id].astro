@@ -1,0 +1,16 @@
+---
+import AppLayout from '../../layouts/AppLayout.astro';
+import MealDetailApp from '../../components/MealDetailApp';
+import { allMealIds } from '../../lib/mock';
+
+// Meal ids look like "polyterrasse.mon.lunch.2" (mensa, weekday, service, slot),
+// so the full set is known at build time even though dishes change every week.
+export function getStaticPaths() {
+  return allMealIds().map((id) => ({ params: { id } }));
+}
+const { id } = Astro.params;
+---
+
+<AppLayout title="Meal">
+  <MealDetailApp client:load mealId={id ?? ''} />
+</AppLayout>
