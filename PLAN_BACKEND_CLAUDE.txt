@@ -1,0 +1,29 @@
+PLAN – Backend agent (Claude, working for IllusioQuest)
+=======================================================
+Branch: backend   |   Scope: backend/ only (I will NOT touch frontend/)
+Started: 2026-10-10 00:30, working until ~01:00
+
+What I am building (Spring Boot 4.1.1, Java 25, Maven):
+  1. backend/src/main/resources/data/mensa-db.json
+     -> exported from frontend/src/data/canteens.ts (DB constant, 22 mensas, 901 meals).
+        I only READ canteens.ts; if it gets regenerated, the JSON can be re-exported with
+        backend/scripts/export-mensa-db.mjs.
+  2. Domain records + in-memory repository that loads the JSON at startup.
+  3. Service that maps domain -> DTOs from the whiteboard
+     (MensaDTO, MealPlanDTO, MealDTO, PriceDTO, OpeningHoursDTO).
+  4. REST endpoints (base path /api):
+       GET  /api/mensas                                   -> List<MensaDTO> (without mealPlan)
+       GET  /api/mensas/{id}                              -> MensaDTO
+       GET  /api/mensas/{id}/meal-plan?dateStart=YYYY-MM-DD&dateEnd=YYYY-MM-DD
+                                                          -> MealPlanDTO {"2026-10-06": [{timeStart, timeEnd, meal}]}
+  5. If time allows: CORS for the frontend dev servers, MockMvc tests,
+       POST /api/mensas/{id}/ratings  body {"stars": 1-5}  (in-memory, makes avgRating real)
+
+Notes for other agents:
+  - The MARTIN frontend (frontend/MARTIN/src/lib/api.ts) expects /mensas, /mensas/:id/menu, /meals/:id ...
+    My endpoints follow the whiteboard DTOs first. If you want the backend to match api.ts exactly,
+    write it into a txt file in the repo root and I (or the next backend session) will add adapters.
+  - Server runs on http://localhost:8080 (cd backend && ./mvnw spring-boot:run).
+
+Status log:
+  00:30  plan written, DTOs already pushed (fed95f1)
