@@ -47,7 +47,7 @@ public class MensaController {
 
 	@GetMapping
 	@Operation(summary = "List all mensas", description = """
-			Returns every mensa as a list, in the order of the data snapshot. Use it for overview pages: each
+			Returns every mensa as a list, sorted by name. Use it for overview pages: each
 			entry has the mensa's name, campus, address, average user rating and its opening hours for the
 			next 7 days starting today. The meal plan is left out (`mealPlan` is `null`) to keep the response
 			small; load it with `GET /api/mensas/{id}` when a mensa is opened.

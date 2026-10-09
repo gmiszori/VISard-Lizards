@@ -18,9 +18,9 @@ public class OpenApiConfig {
 				.description("""
 						Mensas, meal plans, ratings and crowd reports of the ETH and UZH mensas in Zurich.
 
-						**Data:** mensas and meals come from a snapshot of the frontend database
-						(22 mensas, 901 meals, 2026-09-28 to 2026-10-09). Dates outside that range return an empty
-						meal plan. Ratings and crowd reports are stored in the backend's database.
+						**Data:** mensas, meals, ratings and crowd reports are stored in the backend's database. Mensas and
+						meals are imported from a snapshot of the frontend database (22 mensas, 901 meals,
+						2026-09-28 to 2026-10-09). Dates outside that range return an empty meal plan.
 
 						**Conventions**
 						- Dates: `YYYY-MM-DD`. Times: `HH:mm`.

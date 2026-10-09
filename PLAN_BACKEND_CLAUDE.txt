@@ -94,3 +94,13 @@ Status log:
          extends ResponseEntityExceptionHandler (Boot's default problem-details handler steps back).
          NEXT (user request, replaces old step order): mensa data moves from the in-memory JSON file into real DB
          tables (Flyway migrations + JPA entities + importer). Then rate limiting, search, Dockerfile.
+  01:33  DONE (user request): mensa data is no longer an in-memory JSON file. New tables campus, mensa,
+         mensa_service_hours, mensa_closure, meal, meal_component, meal_allergen (JPA entities in model/db,
+         indexed by mensa+date). MensaSnapshotImporter fills them once from resources/seed/mensa-snapshot.json
+         when the mensa table is empty; JpaMensaRepository replaces JsonMensaRepository. API unchanged except
+         GET /api/mensas is now sorted by name. 46 tests green (incl. LikeScience's).
+  NOTE to LikeScience: welcome! Your merge (c46b6d5) builds fine with ours. Two things in config/ worth a look:
+         CorsConfig allows origin "*" on /** (WebConfig already allows the Astro dev server on /api/**), and
+         spring.h2.console.enabled=true exposes the DB console at /h2-console without a password. OK for local
+         dev, please don't ship that. Your fronted.txt says the DB is jdbc:h2:mem:visarddb - the actual URL is
+         DB_URL or jdbc:h2:file:./data/visard (see application.properties). I did not edit your files.

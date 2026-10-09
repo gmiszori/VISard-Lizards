@@ -15,6 +15,7 @@ import com.visardlizards.backend.model.domain.Mensa;
  */
 public interface MensaRepository {
 
+	/** All mensas, sorted by name. */
 	List<Mensa> findAllMensas();
 
 	Optional<Mensa> findMensaById(String id);

@@ -9,19 +9,28 @@ Interactive docs: [Swagger UI](http://localhost:8080/swagger-ui.html), OpenAPI J
 
 ## Data
 
-Mensas and meals come from `src/main/resources/data/mensa-db.json`, a snapshot of
-`frontend/src/data/canteens.ts` (22 ETH/UZH mensas, 901 meals, **2026-09-28 to 2026-10-09**).
-Dates outside that range return an empty meal plan. Regenerate after the frontend data changes:
+Everything lives in one database: an H2 file database under `backend/data/` (git-ignored, created
+on first start; set `DB_URL` to use another JDBC database).
+
+| Tables | Content | Written by |
+| --- | --- | --- |
+| `campus`, `mensa`, `mensa_service_hours`, `mensa_closure` | Campuses, mensas, weekly service hours, closures | `MensaSnapshotImporter` |
+| `meal`, `meal_component`, `meal_allergen` | Meals per mensa and day (indexed by mensa + date) | `MensaSnapshotImporter` |
+| `rating`, `rating_tag`, `crowd_report` | User ratings and crowd reports | the API |
+
+**Mensa data import:** on a start with an empty `mensa` table, `MensaSnapshotImporter` loads the
+bundled seed `src/main/resources/seed/mensa-snapshot.json`, a snapshot of `frontend/src/data/canteens.ts`
+(22 ETH/UZH mensas, 901 meals, **2026-09-28 to 2026-10-09**). Existing data is never overwritten.
+Dates outside that range return an empty meal plan. To load a new snapshot, regenerate it and start
+with an empty database (delete `backend/data/`, which also deletes ratings and crowd reports):
 
 ```bash
 node backend/scripts/export-mensa-db.mjs
 ```
 
-`MensaRepository` is an interface: a live implementation using the ETH/UZH clients can replace
-`JsonMensaRepository` without changes to services or controllers.
-
-Ratings and crowd reports are stored in an H2 file database under `backend/data/` (git-ignored,
-created on first start; set `DB_URL` to use another JDBC database).
+Services only see domain models through `MensaRepository` (implemented by `JpaMensaRepository`).
+A live importer using the ETH/UZH clients can write to the same tables without changes to services
+or controllers.
 
 ## Overview
 
@@ -58,7 +67,7 @@ created on first start; set `DB_URL` to use another JDBC database).
 
 ### GET /api/mensas
 
-Returns every mensa as a list, in the order of the data snapshot. Use it for overview pages: each
+Returns every mensa as a list, sorted by name. Use it for overview pages: each
 entry has the mensa's name, campus, address, average user rating and its opening hours for the
 next 7 days starting today. The meal plan is left out (`mealPlan` is `null`) to keep the response
 small; load it with [`GET /api/mensas/{id}`](#get-apimensasid) when a mensa is opened.
