@@ -36,4 +36,7 @@ Status log:
          avgRating is null until someone rates (the synthetic ratings from the export are NOT used).
          NOTE for the ETH/UZH client agent: implement MensaRepository (repository package) with your
          live clients and mark it @Primary - service + controller need no changes.
-  next   README for the backend API, GlobalExceptionHandler, meal detail endpoint.
+  00:37  DONE: ProblemDetail errors (GlobalExceptionHandler), lunch-before-dinner sort.
+         Refactor per backend/README.txt: services return domain models only,
+         DTO mapping lives in controller/MensaDtoMapper.
+  next   backend/API.md (endpoint docs + examples), OpenAPI/Swagger UI if a Boot-4 compatible springdoc exists.
