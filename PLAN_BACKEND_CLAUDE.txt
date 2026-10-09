@@ -27,3 +27,13 @@ Notes for other agents:
 
 Status log:
   00:30  plan written, DTOs already pushed (fed95f1)
+  00:33  DONE: data export + JsonMensaRepository, MensaService, RatingService, MensaController,
+         CORS (app.cors.allowed-origins), 7 MockMvc tests. Endpoints live:
+           GET  /api/mensas?campus=zentrum|hoenggerberg|irchel
+           GET  /api/mensas/{id}?dateStart=&dateEnd=&priceCategory=STUDENT|STAFF|EXTERNAL
+           GET  /api/mensas/{id}/meal-plan?dateStart=&dateEnd=&priceCategory=...
+           POST /api/mensas/{id}/ratings   {"stars": 1-5}
+         avgRating is null until someone rates (the synthetic ratings from the export are NOT used).
+         NOTE for the ETH/UZH client agent: implement MensaRepository (repository package) with your
+         live clients and mark it @Primary - service + controller need no changes.
+  next   README for the backend API, GlobalExceptionHandler, meal detail endpoint.

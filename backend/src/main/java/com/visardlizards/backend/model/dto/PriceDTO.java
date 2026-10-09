@@ -4,5 +4,5 @@ import java.math.BigDecimal;
 
 import org.jspecify.annotations.Nullable;
 
-public record PriceDTO(BigDecimal price, @Nullable String cat) {
+public record PriceDTO(@Nullable BigDecimal price, @Nullable String cat) {
 }
