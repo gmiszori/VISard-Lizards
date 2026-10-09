@@ -95,6 +95,7 @@ function applyPreferences() {
       ? preferences.locations.includes(input.value)
       : preferences[input.name as keyof Omit<Preferences, 'locations'>] as boolean;
   });
+  document.dispatchEvent(new Event('campuseats:preferences-applied'));
 }
 
 document.querySelector<HTMLFormElement>('#preferences-form')?.addEventListener('change', (event) => {

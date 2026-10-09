@@ -18,6 +18,7 @@ export interface Profile {
   lunchTime: string | null;
   notifyDaily: boolean;
   mensaRatings: { mensaId: string; rating: MensaRating }[];
+  starredMeals?: string[];
 }
 export const DIETS: Profile['diet'][] = ['omnivore', 'vegan', 'vegetarian', 'carnivore'];
 export const HARD: Profile['hard'] = ['no_pork', 'halal', 'kosher', 'lactose_free', 'gluten_free', 'nut_free'];

@@ -1,0 +1,9 @@
+---
+import '../meals/stars.css';
+interface Props { date: string }
+const { date } = Astro.props;
+---
+<section class="starred-meals-section" data-starred-meals-section aria-labelledby="starred-meals-title" hidden>
+  <div class="section-head starred-meals-heading"><div><h2 id="starred-meals-title" data-meal-copy="featured">Your starred meals</h2><p data-starred-menu-date={date}></p></div><span class="starred-meals-mark" aria-hidden="true">★</span></div>
+  <div class="starred-meals-grid" data-starred-meals-grid></div>
+</section>

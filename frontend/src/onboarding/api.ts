@@ -1,8 +1,9 @@
 import type { Profile } from './profile.ts';
+import { readStarredMeals } from '../meals/stars';
 
 /** TODO(backend): replace this local mock with authenticated profile persistence. */
 export function saveProfile(profile: Profile): void {
-  localStorage.setItem('campuseats-profile', JSON.stringify(profile));
+  localStorage.setItem('campuseats-profile', JSON.stringify({ ...profile, starredMeals: readStarredMeals() }));
   let raw: unknown;
   try { raw = JSON.parse(localStorage.getItem('campuseats-preferences') || '{}'); }
   catch { raw = {}; }

@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import OnboardingEntry from '../onboarding/components/OnboardingEntry.astro';
+import StarredMealsSettings from '../components/StarredMealsSettings.astro';
 ---
 <BaseLayout title="Settings">
   <a href="/" class="detail-back" data-i18n="back">← All canteens</a>
@@ -12,6 +13,7 @@ import OnboardingEntry from '../onboarding/components/OnboardingEntry.astro';
     </div>
   </section>
   <OnboardingEntry />
+  <StarredMealsSettings />
   <form id="preferences-form" class="settings-form">
     <fieldset class="settings-group price-category">
       <legend data-i18n="priceCategory">Price category</legend>
