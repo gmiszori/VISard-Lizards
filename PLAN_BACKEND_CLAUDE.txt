@@ -52,3 +52,4 @@ Status log:
            GET  /api/meals/{id}?priceCategory=   -> {mensaId, date, meal, avgRating, tagCounts}
            POST /api/meals/{id}/ratings  {"stars": 1-5, "tags": [...]}  (tags = MealTag of MARTIN frontend)
          28 tests green. Full docs: backend/API.md, Swagger UI at /swagger-ui.html.
+  00:44  DONE: MensaDTO now has an "id" too (needed to call /api/mensas/{id} from the list).

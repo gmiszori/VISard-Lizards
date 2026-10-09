@@ -36,6 +36,7 @@ public class MensaDtoMapper {
 	public MensaDTO toMensaDTO(Mensa mensa, String campusName, @Nullable BigDecimal avgRating,
 			LocalDate openingHoursFrom, @Nullable MealPlanDTO mealPlan) {
 		return new MensaDTO(
+				mensa.id(),
 				mensa.name(),
 				toOpeningHoursDTO(mensa, openingHoursFrom),
 				campusName,

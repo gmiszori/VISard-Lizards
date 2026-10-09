@@ -52,6 +52,7 @@ node backend/scripts/export-mensa-db.mjs
 ```json
 [
   {
+    "id": "uzh-seerose-irchel",
     "title": "Cafeteria Seerose",
     "openingHours": {
       "2026-10-12": [{ "from": "11:30", "to": "13:00" }, { "from": "17:00", "to": "19:30" }],
@@ -91,6 +92,8 @@ node backend/scripts/export-mensa-db.mjs
 
 Entries of a day are ordered lunch before dinner. `timeStart`/`timeEnd` are `null` when the mensa
 publishes no service window for that day.
+
+`MensaDTO.id` (e.g. `polyterrasse`) is not on the whiteboard either; it is needed to call `/api/mensas/{id}`.
 
 **`MealDTO` fields:**
 - `id`: e.g. `polyterrasse.2026-10-06.lunch.2`, for `/api/meals/{id}`. Not on the whiteboard, added so single meals can be addressed.
