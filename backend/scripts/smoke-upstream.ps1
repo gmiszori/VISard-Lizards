@@ -3,6 +3,7 @@
 param(
     [ValidateRange(1024, 65535)] [int] $Port = 18081,
     [switch] $Live,
+    [switch] $Application,
     [switch] $SkipBuild
 )
 
@@ -69,6 +70,26 @@ try {
     }
     $problem = Read-JsonBody (Get-CheckedResponse '/api/upstream/eth/weekly-rotas?date=invalid' 400)
     if ($problem.status -ne 400) { throw 'Invalid dates must return a JSON problem response' }
+
+    if ($Application) {
+        $meta = Read-JsonBody (Get-CheckedResponse '/api/meta')
+        $campuses = @(Read-JsonBody (Get-CheckedResponse '/api/campuses'))
+        $mensas = @(Read-JsonBody (Get-CheckedResponse '/api/mensas'))
+        if ($campuses.Count -eq 0 -or $mensas.Count -eq 0 -or -not $mensas[0].id) {
+            throw 'Application catalogs must expose campuses and addressable mensas'
+        }
+        $mensaId = [uri]::EscapeDataString($mensas[0].id)
+        $plan = Read-JsonBody (Get-CheckedResponse (
+            "/api/mensas/$mensaId/meal-plan?dateStart=$($meta.dataFrom)&dateEnd=$($meta.dataTo)"))
+        if ($plan.PSObject.Properties.Name.Count -eq 0) {
+            throw 'Expected a meal plan within the published snapshot date range'
+        }
+        $api = Read-JsonBody (Get-CheckedResponse '/v3/api-docs')
+        if (-not $api.paths.'/api/upstream/eth/weekly-rotas' -or -not $api.paths.'/api/mensas') {
+            throw 'Application or upstream routes missing from OpenAPI'
+        }
+        Write-Host "Application API: $($campuses.Count) campuses, $($mensas.Count) mensas, menu date $($meta.menuDate)"
+    }
 
     if ($Live) {
         $date = [TimeZoneInfo]::ConvertTimeBySystemTimeZoneId([DateTime]::UtcNow, 'Europe/Zurich').ToString('yyyy-MM-dd')

@@ -159,6 +159,7 @@ errors. Keys are not printed by these tests.
 ```powershell
 pwsh -File backend/scripts/smoke-upstream.ps1
 pwsh -File backend/scripts/smoke-upstream.ps1 -Live -SkipBuild
+pwsh -File backend/scripts/smoke-upstream.ps1 -Application -Live -SkipBuild
 ```
 
 The first command verifies and packages the backend, starts its JAR on loopback
@@ -168,3 +169,6 @@ ZFV if `MENSA_ZFV_API_KEY` is configured. Use `-Port 18082` if the default smoke
 port is occupied. Logs remain under the ignored `backend/target/` directory.
 The smoke server explicitly uses an in-memory H2 database so checking the packaged
 app does not open or change your normal local ratings/crowd database.
+`-Application` additionally checks the integrated campus/mensa catalogs, a meal
+plan inside the snapshot range, metadata and OpenAPI. These are read-only checks;
+the script does not submit ratings or crowd reports.
