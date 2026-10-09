@@ -5,11 +5,12 @@ export interface Draft { profile: Profile; step: number; picks: string[]; rating
 const KEY = 'campuseats-onboarding';
 const strings = (value: unknown): value is string[] => Array.isArray(value) && value.every(v => typeof v === 'string');
 
-export function createOnboardingStore(campuses: CampusId[], stepCount: number) {
+export function createOnboardingStore(campuses: CampusId[], stepCount: number, restart = false) {
   // This factory is called only by main.ts in the browser, never during SSR.
   const lang = localStorage.getItem('campuseats-language') === 'de' ? 'de' : 'en';
   const initial = defaults(campuses[0]!, lang);
   let state: Draft = { profile: initial, step: 0, picks: [], ratingScale: 5 };
+  if (restart) localStorage.removeItem(KEY);
   try {
     const saved = JSON.parse(localStorage.getItem(KEY) ?? 'null') as Draft | null;
     const p = saved?.profile;

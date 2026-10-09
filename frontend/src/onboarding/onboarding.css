@@ -1,4 +1,5 @@
 .ob{max-width:480px;margin:0 auto;color:var(--ink);font-family:'DM Sans',sans-serif;padding-bottom:20px}
+.onboarding-restart{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:48px;padding:11px 18px;margin:0 0 24px;border:1px solid var(--green);border-radius:12px;background:var(--paper);color:var(--green);font:700 14px 'DM Sans',sans-serif;text-decoration:none}.onboarding-restart:focus-visible{outline:3px solid var(--green);outline-offset:3px}
 .ob [hidden]{display:none!important}.ob [data-flow]{display:flex;flex-direction:column;min-height:calc(100svh - 190px)}
 .ob-progress-header{margin-bottom:28px}.ob .eyebrow{color:var(--green);line-height:1.7;font-size:10px;letter-spacing:.08em}
 .ob-progress-label{color:var(--muted);font-size:12px;margin:16px 0 8px}.ob progress{display:block;width:100%;height:5px;border:0;border-radius:8px;overflow:hidden;background:var(--line);accent-color:var(--green)}

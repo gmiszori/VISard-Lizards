@@ -14,7 +14,14 @@ function initialise(root: HTMLElement) {
   const showError = () => { error.hidden = false; error.textContent = t('saveError'); };
   try {
     const data = JSON.parse(document.querySelector('#onboarding-data')!.textContent!) as OnboardingData;
-    const store = createOnboardingStore(data.campuses.map(c => c.id), steps.length);
+    const url = new URL(window.location.href);
+    const restart = url.searchParams.get('restart') === '1';
+    const store = createOnboardingStore(data.campuses.map(c => c.id), steps.length, restart);
+    if (restart) {
+      // Consume the command so reloading afterwards resumes the new draft.
+      url.searchParams.delete('restart');
+      window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
+    }
     const initial = defaults(data.campuses[0]!.id, localStorage.getItem('campuseats-language') === 'de' ? 'de' : 'en');
     const sections = steps.map(step => root.querySelector<HTMLElement>(`[data-step="${step.id}"]`)!);
     const flow = root.querySelector<HTMLElement>('[data-flow]')!;
