@@ -20,6 +20,8 @@ public interface MensaRepository {
 
 	Optional<Campus> findCampusById(String id);
 
+	Optional<Meal> findMealById(String id);
+
 	/** Meals of a mensa between both dates (inclusive), ordered by date. */
 	List<Meal> findMeals(String mensaId, LocalDate dateStart, LocalDate dateEnd);
 

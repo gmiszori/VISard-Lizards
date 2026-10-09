@@ -34,6 +34,7 @@ public class JsonMensaRepository implements MensaRepository {
 	private final Map<String, Mensa> mensasById;
 	private final Map<String, Campus> campusesById;
 	private final Map<String, List<Meal>> mealsByMensaId;
+	private final Map<String, Meal> mealsById;
 
 	public JsonMensaRepository(JsonMapper jsonMapper) {
 		MensaDb db;
@@ -48,6 +49,7 @@ public class JsonMensaRepository implements MensaRepository {
 		this.mealsByMensaId = db.meals().stream()
 				.sorted(Comparator.comparing(Meal::date))
 				.collect(Collectors.groupingBy(Meal::mensaId));
+		this.mealsById = db.meals().stream().collect(Collectors.toMap(Meal::id, Function.identity()));
 	}
 
 	@Override
@@ -63,6 +65,11 @@ public class JsonMensaRepository implements MensaRepository {
 	@Override
 	public Optional<Campus> findCampusById(String id) {
 		return Optional.ofNullable(campusesById.get(id));
+	}
+
+	@Override
+	public Optional<Meal> findMealById(String id) {
+		return Optional.ofNullable(mealsById.get(id));
 	}
 
 	@Override

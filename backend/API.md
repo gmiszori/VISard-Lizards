@@ -30,10 +30,13 @@ node backend/scripts/export-mensa-db.mjs
 | POST | `/api/mensas/{id}/ratings` | `201`. Body `{"stars": 1-5}` |
 | GET | `/api/mensas/{id}/crowd` | `{histogram, live}`, same shape as `CrowdInfo` in `frontend/MARTIN/src/lib/types.ts` |
 | POST | `/api/mensas/{id}/crowd-reports` | `201` + `CrowdReport`. Body `{"level": 1-5}`, the server stamps the time |
+| GET | `/api/meals/{id}?priceCategory=` | `{mensaId, date, meal: MealDTO, avgRating, tagCounts}` |
+| POST | `/api/meals/{id}/ratings` | `201`. Body `{"stars": 1-5, "tags": ["tasty", ...]}`, tags optional |
 
 - Dates: `YYYY-MM-DD`. Times: `HH:mm`.
 - `priceCategory`: `STUDENT` (default), `STAFF`, `EXTERNAL`.
 - Mensa ids are the ids from `canteens.ts`, e.g. `polyterrasse`, `archimedes`.
+- Meal rating tags: `tasty`, `big-portion`, `small-portion`, `cold`, `too-salty`, `worth-it` (same as `MealTag` in the MARTIN frontend).
 - Ratings and crowd reports are kept in memory (lost on restart). `avgRating` is `null` until a mensa has been rated.
 - Crowd: `live` holds the reports of the last 30 minutes, newest first. `histogram.byWeekday`
   (`mon`..`sun`, 24 hourly values 0–100, Zurich time) is only present when `sufficient` is true
@@ -73,6 +76,7 @@ node backend/scripts/export-mensa-db.mjs
       "timeStart": "17:30",
       "timeEnd": "19:30",
       "meal": {
+        "id": "polyterrasse.2026-10-06.dinner.1",
         "name": "Panang Tofu Curry",
         "price": { "price": 11.5, "cat": "staff" },
         "description": "Tofu, Panang Curry, Asian Vegetables, Jasmine Rice, Bamboo Shoots",
@@ -89,6 +93,7 @@ Entries of a day are ordered lunch before dinner. `timeStart`/`timeEnd` are `nul
 publishes no service window for that day.
 
 **`MealDTO` fields:**
+- `id`: e.g. `polyterrasse.2026-10-06.lunch.2`, for `/api/meals/{id}`. Not on the whiteboard, added so single meals can be addressed.
 - `description`: the meal's components joined with commas.
 - `classification`: `[diet, kind, service]`, where diet is `vegan`/`vegetarian`/`meat`/`fish`, kind is `main`/`buffet`/`dessert`/`drink` and service is `lunch`/`dinner`.
 - `envImp`: the ETH eco score (e.g. `C+`) or the UZH climate impact (`LOW`/`MEDIUM`/`HIGH`).
