@@ -1,0 +1,123 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { CAMPUSES, MENSAS, MEALS, MENU_DATE } from '../data/canteens';
+import ChipSelect from '../onboarding/components/ChipSelect.astro';
+import RankList from '../onboarding/components/RankList.astro';
+import RatingRow from '../onboarding/components/RatingRow.astro';
+import { DIETS, HARD, SOFT, CUISINES, TIERS } from '../onboarding/profile';
+import { priceRange } from '../onboarding/priceRange';
+import { PUSH_AVAILABLE } from '../onboarding/config';
+import { t, type Key } from '../onboarding/i18n';
+import '../onboarding/onboarding.css';
+
+const campusOptions = CAMPUSES.map(campus => ({ value: campus.id, label: campus.name,
+  count: MENSAS.filter(m => m.campusId === campus.id && m.hasMenu && !m.temporarilyClosed).length }));
+const keys = (values: string[]) => values.map(value => ({ value, key: value as Key }));
+const payload = {
+  campuses: CAMPUSES.map(({ id, name }) => ({ id, name })), menuDate: MENU_DATE,
+  mensas: MENSAS.map(({ id, name, campusId, hasMenu, temporarilyClosed }) => ({ id, name, campusId, hasMenu, temporarilyClosed })),
+  // TODO(backend): real rating counts. Current database ratings are synthetic.
+  ratingCounts: Object.fromEntries(MENSAS.map(m => [m.id, m.rating.count])),
+  ranges: Object.fromEntries(TIERS.map(tier => [tier, priceRange(MEALS, tier)])),
+  meals: MEALS.filter(meal => meal.date === MENU_DATE && meal.kind === 'main').map(meal => ({
+    id: meal.id, mensaId: meal.mensaId, date: meal.date, title: meal.title, titleDe: meal.titleDe,
+    kind: meal.kind, service: meal.service, dietTag: meal.dietTag, allergens: meal.allergens,
+    originDetail: meal.originDetail, components: meal.components, price: meal.price, nutrition: meal.nutrition,
+  })),
+};
+---
+<BaseLayout title="Personalise your menu">
+  <div class="ob" id="onboarding">
+    <div data-flow>
+      <header class="ob-progress-header">
+        <span class="eyebrow">CampusEats · <span data-ob-i18n="intro">{t('intro')}</span></span>
+        <p class="ob-progress-label" data-progress-label aria-live="polite" aria-atomic="true"></p>
+        <progress data-progress max="5" value="1" aria-label="Onboarding progress"></progress>
+      </header>
+      <div class="ob-content">
+        <section data-step="campus" hidden>
+          <h1 tabindex="-1" data-ob-i18n="campusTitle">{t('campusTitle')}</h1>
+          <p class="ob-lead" data-ob-i18n="campusHint">{t('campusHint')}</p>
+          <ChipSelect name="campus" labelKey="home" mode="single" options={campusOptions} />
+          <ChipSelect name="campusSecondary" labelKey="secondary" options={campusOptions} />
+        </section>
+        <section data-step="diet" hidden>
+          <h1 tabindex="-1" data-ob-i18n="dietTitle">{t('dietTitle')}</h1>
+          <p class="ob-lead" data-ob-i18n="dietHint">{t('dietHint')}</p>
+          <ChipSelect name="diet" labelKey="diet" mode="single" options={keys(DIETS)} />
+          <div class="ob-constraints">
+            <ChipSelect name="hard" labelKey="never" options={HARD.map(value => ({ value, key: value,
+              notice: value === 'halal' || value === 'kosher' }))} />
+            <p class="ob-note" data-ob-i18n="hardHint">{t('hardHint')}</p>
+          </div>
+        </section>
+        <section data-step="price" hidden>
+          <h1 tabindex="-1" data-ob-i18n="priceTitle">{t('priceTitle')}</h1>
+          <p class="ob-lead" data-ob-i18n="priceHint">{t('priceHint')}</p>
+          <ChipSelect name="priceTier" labelKey="tier" mode="single" options={keys(TIERS)} />
+          <div class="ob-field ob-budget">
+            <label for="ob-budget" data-ob-i18n="budget">{t('budget')}</label>
+            <output for="ob-budget" data-budget-value aria-live="polite"></output>
+            <input id="ob-budget" type="range" min="0" max="1" step="0.5" value="1" aria-describedby="ob-budget-hint" />
+            <div class="ob-range-ends"><span data-budget-min></span><span data-ob-i18n="noLimit">{t('noLimit')}</span></div>
+            <p class="ob-note" id="ob-budget-hint" data-ob-i18n="budgetHint">{t('budgetHint')}</p>
+          </div>
+          <ChipSelect name="priceMode" labelKey="priceMode" mode="single" options={keys(['soft', 'hard'])} />
+          <RankList />
+        </section>
+        <section data-step="ratings" hidden>
+          <h1 tabindex="-1" data-ob-i18n="ratingsTitle">{t('ratingsTitle')}</h1>
+          <p class="ob-lead" data-ob-i18n="ratingsHint">{t('ratingsHint')}</p>
+          <div data-rating-rows></div><RatingRow />
+          <p data-ratings-empty data-ob-i18n="ratingsEmpty" hidden>{t('ratingsEmpty')}</p>
+          <button type="button" class="ob-text-button ob-none" data-no-ratings aria-pressed="false" data-ob-i18n="notBeen">{t('notBeen')}</button>
+        </section>
+        <section data-step="finish" hidden>
+          <h1 tabindex="-1" data-ob-i18n="finishTitle">{t('finishTitle')}</h1>
+          <p class="ob-lead" data-ob-i18n="finishHint">{t('finishHint')}</p>
+          <ChipSelect name="soft" labelKey="cravings" options={keys(SOFT)} />
+          <ChipSelect name="cuisines" labelKey="cuisines" options={keys(CUISINES)} />
+          <p class="ob-note" data-ob-i18n="cuisineHint">{t('cuisineHint')}</p>
+          <form data-dislike-form class="ob-field">
+            <label for="ob-dislike" data-ob-i18n="dislikes">{t('dislikes')}</label>
+            <p class="ob-note" id="ob-dislike-hint" data-ob-i18n="dislikesHint">{t('dislikesHint')}</p>
+            <div class="ob-input-row">
+              <input id="ob-dislike" type="text" maxlength="80" autocomplete="off" aria-describedby="ob-dislike-hint" aria-label={t('ingredient')} data-ob-aria="ingredient" />
+              <button type="submit" class="ob-small-button" data-ob-i18n="add">{t('add')}</button>
+            </div>
+            <div data-dislikes class="ob-chips ob-dislikes"></div>
+            <p data-dislikes-limit class="ob-note" aria-live="polite" hidden data-ob-i18n="limitReached">{t('limitReached')}</p>
+          </form>
+          <div class="ob-field"><label for="ob-lunch-time" data-ob-i18n="lunchTime">{t('lunchTime')}</label><input id="ob-lunch-time" type="time" /></div>
+          <ChipSelect name="lang" labelKey="language" mode="single" options={[{ value: 'de', label: 'Deutsch' }, { value: 'en', label: 'English' }]} />
+          <div class="ob-notify">
+            <label for="ob-notify"><span><strong data-ob-i18n="notify">{t('notify')}</strong> {!PUSH_AVAILABLE && <small data-ob-i18n="comingSoon">{t('comingSoon')}</small>}</span><input id="ob-notify" type="checkbox" /></label>
+            <p class="ob-note" data-ob-i18n="notifyHint">{t('notifyHint')}</p>
+          </div>
+        </section>
+      </div>
+      <p class="ob-error" data-error role="alert" hidden></p>
+      <footer class="ob-actions">
+        <div class="ob-secondary-actions"><button type="button" data-back class="ob-text-button" data-ob-i18n="back">{t('back')}</button><button type="button" data-skip class="ob-text-button" data-ob-i18n="skip">{t('skip')}</button></div>
+        <button type="button" class="ob-primary" data-next data-ob-i18n="next">{t('next')}</button>
+        <p class="ob-note" data-ob-i18n="saved">{t('saved')}</p>
+      </footer>
+    </div>
+    <section class="ob-payoff" data-payoff hidden>
+      <span class="ob-payoff-mark" aria-hidden="true">✳</span>
+      <h1 tabindex="-1" data-ob-i18n="payoffTitle">{t('payoffTitle')}</h1>
+      <p class="ob-lead" data-ob-i18n="payoffHint">{t('payoffHint')}</p>
+      <p class="ob-note"><span data-ob-i18n="menuDate">{t('menuDate')}</span>: <time datetime={MENU_DATE}>{MENU_DATE}</time></p>
+      <article class="ob-pick" data-pick hidden><p class="eyebrow" data-pick-mensa></p><h2 data-pick-title></h2><p data-pick-components></p><strong class="ob-pick-price" data-pick-price></strong><a class="ob-primary" data-pick-link data-ob-i18n="viewMensa">{t('viewMensa')}</a></article>
+      <p class="ob-empty" data-pick-empty hidden data-ob-i18n="nothing">{t('nothing')}</p>
+      <p class="ob-note" data-ob-i18n="payoffNotice">{t('payoffNotice')}</p>
+      <a href="/" class="ob-text-button" data-ob-i18n="allMenus">{t('allMenus')}</a>
+      <button type="button" class="ob-text-button" data-edit data-ob-i18n="edit">{t('edit')}</button>
+    </section>
+    <noscript><p>{t('jsRequired')}</p></noscript>
+  </div>
+  <script type="application/json" id="onboarding-data" is:inline set:html={JSON.stringify(payload).replaceAll('<', '\\u003c')} />
+</BaseLayout>
+<script>
+  import '../onboarding/main';
+</script>
