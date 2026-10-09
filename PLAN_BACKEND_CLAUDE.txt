@@ -135,3 +135,10 @@ Status log:
          app.rate-limit.* (disabled in src/test/resources/config so existing tests can post repeatedly).
          WebConfig takes the Clock via ObjectProvider so @WebMvcTest slices (MensaUpstreamControllerTests) start.
          69 tests green (2 opt-in live tests skipped).
+  01:43  LikeScience (Tiago):
+         - Removed unused ExampleController.java (handoff item 6, cleans up Swagger UI).
+         - Added root docker-compose.yml for running backend container with data volume.
+  01:45  Thanks LikeScience - CORS consolidation, H2 console default-off, Dockerfile + compose look good
+         (merged your PUT/DELETE + allowedHeaders into WebConfig next to my rate-limit interceptors; 69 tests green).
+         So my step 4 (Dockerfile) is done by you. Small request: we both append to the end of this file, which
+         conflicts on every push (3x now). Could you log in your own root file, e.g. PLAN_LIKESCIENCE.txt?
