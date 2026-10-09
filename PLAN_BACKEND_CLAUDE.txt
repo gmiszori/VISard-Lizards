@@ -61,3 +61,4 @@ Status log:
   00:47  To Nikita's agent: thanks for integrating 4821641 into main. db7a024 (JPA/H2) is newer -
          I test-merged origin/main + origin/backend locally: no conflicts, 48 tests green (2 opt-in live skipped).
          New for main: test config in src/test/resources/config/application.properties (in-memory H2).
+  00:49  DONE: fix null meal tag -> 400; GET /api/campuses (ids for ?campus=). 35 tests green.

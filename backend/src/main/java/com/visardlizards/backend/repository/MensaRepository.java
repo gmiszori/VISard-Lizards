@@ -19,6 +19,8 @@ public interface MensaRepository {
 
 	Optional<Mensa> findMensaById(String id);
 
+	List<Campus> findAllCampuses();
+
 	Optional<Campus> findCampusById(String id);
 
 	Optional<Meal> findMealById(String id);

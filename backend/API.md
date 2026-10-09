@@ -25,6 +25,7 @@ node backend/scripts/export-mensa-db.mjs
 | Method | Path | Returns |
 | --- | --- | --- |
 | GET | `/api/mensas?campus=` | `MensaDTO[]` without meal plan. `campus`: `zentrum`, `hoenggerberg`, `irchel` (optional) |
+| GET | `/api/campuses` | `[{id, name, city}]`, ids for the `campus` filter |
 | GET | `/api/meta` | `{today, menuDate, dataFrom, dataTo}`: which days have meals and which day to show by default |
 | GET | `/api/mensas/{id}?dateStart=&dateEnd=&priceCategory=` | `MensaDTO` with meal plan. Dates default to the menu date (see below) |
 | GET | `/api/mensas/{id}/meal-plan?dateStart=&dateEnd=&priceCategory=` | `MealPlanDTO`. Both dates required, inclusive |

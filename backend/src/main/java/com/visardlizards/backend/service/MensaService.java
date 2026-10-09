@@ -70,6 +70,10 @@ public class MensaService {
 		return dates.isEmpty() ? null : dates.last();
 	}
 
+	public List<Campus> getCampuses() {
+		return mensaRepository.findAllCampuses();
+	}
+
 	/** Display name of the mensa's campus, falling back to its id. */
 	public String getCampusName(Mensa mensa) {
 		return mensaRepository.findCampusById(mensa.campusId()).map(Campus::name).orElse(mensa.campusId());

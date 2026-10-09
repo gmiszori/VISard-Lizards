@@ -35,6 +35,7 @@ public class JsonMensaRepository implements MensaRepository {
 
 	private final List<Mensa> mensas;
 	private final Map<String, Mensa> mensasById;
+	private final List<Campus> campuses;
 	private final Map<String, Campus> campusesById;
 	private final Map<String, List<Meal>> mealsByMensaId;
 	private final Map<String, Meal> mealsById;
@@ -49,7 +50,8 @@ public class JsonMensaRepository implements MensaRepository {
 		}
 		this.mensas = List.copyOf(db.mensas());
 		this.mensasById = mensas.stream().collect(Collectors.toMap(Mensa::id, Function.identity()));
-		this.campusesById = db.campuses().stream().collect(Collectors.toMap(Campus::id, Function.identity()));
+		this.campuses = List.copyOf(db.campuses());
+		this.campusesById = campuses.stream().collect(Collectors.toMap(Campus::id, Function.identity()));
 		this.mealsByMensaId = db.meals().stream()
 				.sorted(Comparator.comparing(Meal::date))
 				.collect(Collectors.groupingBy(Meal::mensaId));
@@ -66,6 +68,11 @@ public class JsonMensaRepository implements MensaRepository {
 	@Override
 	public Optional<Mensa> findMensaById(String id) {
 		return Optional.ofNullable(mensasById.get(id));
+	}
+
+	@Override
+	public List<Campus> findAllCampuses() {
+		return campuses;
 	}
 
 	@Override
