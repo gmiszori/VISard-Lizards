@@ -62,3 +62,15 @@ Status log:
          I test-merged origin/main + origin/backend locally: no conflicts, 48 tests green (2 opt-in live skipped).
          New for main: test config in src/test/resources/config/application.properties (in-memory H2).
   00:49  DONE: fix null meal tag -> 400; GET /api/campuses (ids for ?campus=). 35 tests green.
+
+HANDOFF (00:49, session ending) - open points for the team / next backend session:
+  1. Live data: implement MensaRepository with the ETH/UZH/ZFV clients (Nikita's agent, on main) and
+     mark it @Primary. Services, controllers and DTOs need no change. Until then: static snapshot
+     2026-09-28..2026-10-09 (re-export: node backend/scripts/export-mensa-db.mjs).
+  2. POST /ratings and /crowd-reports have no auth or rate limiting -> anyone can spam them.
+  3. Database: H2 file DB is a dev default. Decide on a real DB (README.txt asks "JPA...?") -> set DB_URL.
+  4. Whiteboard questions: MealDTO.price is ONE PriceDTO (category chosen via ?priceCategory=);
+     should it be a list of all categories? envImp has no type yet (String: ETH eco score / UZH climate).
+  5. Additive DTO changes to confirm: MensaDTO.id, MealDTO.id (needed to address single items).
+  6. ExampleController still exists and shows up in Swagger UI - delete when no longer needed.
+  Branch state: backend is ahead of main by the JPA/H2 + later commits; test-merge with main was clean.
