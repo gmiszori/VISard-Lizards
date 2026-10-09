@@ -99,3 +99,21 @@ the upstream copyright and license notice.
 The ZFV request is adapted from the maintained MensaZH provider:
 https://github.com/fflopsi/mensa-zh/blob/main/app/src/main/java/ch/florianfrauenfelder/mensazh/data/providers/UZHMensaProvider.kt
 Its MIT notice is retained in `third-party/MensaZH-LICENSE.md`.
+
+## Verification
+
+Normal `mvnw test` runs mock HTTP contract tests and the application context test.
+Live checks are disabled by default, so upstream outages cannot break an ordinary
+build. To verify the real Java client from PowerShell:
+
+```powershell
+cd backend
+$env:MENSA_LIVE_TESTS = 'true'
+.\mvnw.cmd -B -ntp '-Dtest=MensaLiveApiTests' test
+Remove-Item Env:MENSA_LIVE_TESTS
+```
+
+The ETH test fetches all pages. The ZFV test additionally requires
+`MENSA_ZFV_API_KEY`; without a key it is skipped. It checks that GraphQL returned
+authorized outlet data rather than silently accepting HTTP 200 authorization
+errors. Keys are not printed by these tests.
