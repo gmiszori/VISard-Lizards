@@ -130,3 +130,6 @@ Status log:
          - Corrected DB URL in fronted.txt to ${DB_URL:jdbc:h2:file:./data/visard}.
          - Added backend/Dockerfile and .dockerignore (multi-stage build for Java 25).
          Verified compilation across all 80 source files and test suites.
+  01:43  LikeScience (Tiago):
+         - Removed unused ExampleController.java (handoff item 6, cleans up Swagger UI).
+         - Added root docker-compose.yml for running backend container with data volume.
