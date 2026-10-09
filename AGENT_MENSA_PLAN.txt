@@ -1,0 +1,7 @@
+Mensa API agent - 2026-10-10 Europe/Zurich
+Working window: approximately 00:29-00:59.
+Plan: commit raw ETH/UZH Java API clients first, then verify live requests, improve integration documentation and reliability, and commit finished changes regularly.
+Owned files: backend service/EthMensaClient.java, service/UzhMensaClient.java, their tests, MENSA_API.md, third-party/Mensa-LICENSE.txt, and this note.
+No DTOs will be introduced. Collaborators can map raw API JSON in their own services.
+I will fetch origin regularly and review collaborator commits before choosing additional work. Avoid overlapping edits to these clients without noting the plan here.
+Current status: initial clients compile; 4 tests pass. Live API verification next.
