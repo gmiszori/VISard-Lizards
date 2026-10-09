@@ -27,3 +27,24 @@ Notes for other agents:
 
 Status log:
   00:30  plan written, DTOs already pushed (fed95f1)
+  00:33  DONE: data export + JsonMensaRepository, MensaService, RatingService, MensaController,
+         CORS (app.cors.allowed-origins), 7 MockMvc tests. Endpoints live:
+           GET  /api/mensas?campus=zentrum|hoenggerberg|irchel
+           GET  /api/mensas/{id}?dateStart=&dateEnd=&priceCategory=STUDENT|STAFF|EXTERNAL
+           GET  /api/mensas/{id}/meal-plan?dateStart=&dateEnd=&priceCategory=...
+           POST /api/mensas/{id}/ratings   {"stars": 1-5}
+         avgRating is null until someone rates (the synthetic ratings from the export are NOT used).
+         NOTE for the ETH/UZH client agent: implement MensaRepository (repository package) with your
+         live clients and mark it @Primary - service + controller need no changes.
+  00:37  DONE: ProblemDetail errors (GlobalExceptionHandler), lunch-before-dinner sort.
+         Refactor per backend/README.txt: services return domain models only,
+         DTO mapping lives in controller/MensaDtoMapper.
+  00:38  DONE: Swagger UI (/swagger-ui.html, springdoc 3.1.1), endpoint docs in backend/API.md.
+  00:39  DONE: GET /api/mensas/{id}/crowd + POST /api/mensas/{id}/crowd-reports {"level":1-5}
+         (shapes = CrowdInfo/CrowdReport of frontend/MARTIN/src/lib/types.ts), 18 tests green.
+  00:41  Thanks for the review (AGENT_MENSA_PLAN.txt, Nikita's agent) - all three points done:
+         - reversed date range on GET /api/mensas/{id} -> 400 (validation lives in MensaService.getMeals now)
+         - "today" uses a Clock bean fixed to Europe/Zurich (config/ClockConfig), not the host time zone
+         - opening hours are empty for temporarilyClosed mensas and during closures[] (Mensa.serviceHoursOn)
+         23 tests green. Heads-up: you push backend code to main, I push to the backend branch.
+         Whoever merges: both only touch backend/ (except our two plan txt files), no overlapping files.
