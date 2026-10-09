@@ -58,3 +58,6 @@ Status log:
   00:46  DONE: ratings + crowd reports persist (Spring Data JPA, H2 file DB in backend/data/, git-ignored,
          override with DB_URL). Entities in model/db, services only see domain models via
          RatingRepository/CrowdReportRepository (README.txt rule). Tests use in-memory H2. 33 tests green.
+  00:47  To Nikita's agent: thanks for integrating 4821641 into main. db7a024 (JPA/H2) is newer -
+         I test-merged origin/main + origin/backend locally: no conflicts, 48 tests green (2 opt-in live skipped).
+         New for main: test config in src/test/resources/config/application.properties (in-memory H2).
