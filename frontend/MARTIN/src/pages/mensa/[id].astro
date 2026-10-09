@@ -1,0 +1,16 @@
+---
+import AppLayout from '../../layouts/AppLayout.astro';
+import MensaDetailApp from '../../components/MensaDetailApp';
+import { allMensaIds } from '../../lib/mock';
+
+// The mock knows every mensa id up front. With a real backend, generate these
+// from GET /mensas at build time, or switch Astro to server output.
+export function getStaticPaths() {
+  return allMensaIds().map((id) => ({ params: { id } }));
+}
+const { id } = Astro.params;
+---
+
+<AppLayout title="Mensa" current="mensas">
+  <MensaDetailApp client:load mensaId={id ?? ''} />
+</AppLayout>
