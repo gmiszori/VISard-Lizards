@@ -208,7 +208,7 @@
 }
 :root[data-density="compact"] article.canteen-card[data-canteen-card] .card-image {
   display: grid;
-  grid-template-columns: 58px minmax(0, 1fr);
+  grid-template-columns: 58px minmax(0, 1fr) auto;
   grid-template-rows: auto auto;
   align-items: start;
   column-gap: 10px;
@@ -233,11 +233,13 @@
   display: none;
 }
 :root[data-density="compact"] article.canteen-card[data-canteen-card][data-has-photo="false"] .card-image {
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) auto;
 }
-:root[data-density="compact"] article.canteen-card[data-canteen-card][data-has-photo="false"] .canteen-photo-caption,
-:root[data-density="compact"] article.canteen-card[data-canteen-card][data-has-photo="false"] .rating {
+:root[data-density="compact"] article.canteen-card[data-canteen-card][data-has-photo="false"] .canteen-photo-caption {
   grid-column: 1;
+}
+:root[data-density="compact"] article.canteen-card[data-canteen-card][data-has-photo="false"] .rating {
+  grid-column: 2;
 }
 :root[data-density="compact"] article.canteen-card[data-canteen-card] .canteen-image-link > img {
   display: block;
@@ -258,29 +260,40 @@
   pointer-events: auto;
 }
 :root[data-density="compact"] article.canteen-card[data-canteen-card] .canteen-photo-title {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 :root[data-density="compact"] article.canteen-card[data-canteen-card] .card-title {
   font-size: 15px;
 }
 :root[data-density="compact"] article.canteen-card[data-canteen-card] .campus {
   color: var(--muted);
+  margin-top: 2px;
+  line-height: 1.3;
 }
 :root[data-density="compact"] article.canteen-card[data-canteen-card] .status {
   position: static;
   display: block;
   width: max-content;
   min-height: 0;
-  margin: 7px 0 0;
+  margin: 0;
+}
+:root[data-density="compact"] article.canteen-card[data-canteen-card] .mensa-location-link {
+  min-height: 0;
+  min-width: 0;
+  padding: 0;
 }
 :root[data-density="compact"] article.canteen-card[data-canteen-card] .rating {
   position: static;
   display: block;
-  grid-column: 2;
-  grid-row: 2;
-  justify-self: start;
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+  align-self: start;
   width: max-content;
-  margin: 6px 0 0;
+  margin: 1px 0 0;
   box-shadow: none;
 }
 :root[data-density="compact"] article.canteen-card[data-canteen-card] .card-body {
