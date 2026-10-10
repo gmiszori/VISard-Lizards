@@ -31,7 +31,7 @@ function applyPreferences() {
       label.dataset.i18n = preferences.priceTier;
       const labels = document.documentElement.lang === 'de'
         ? { student: 'Studierende', worker: 'Mitarbeitende', external: 'Externe' }
-        : { student: 'Student', worker: 'Worker', external: 'External' };
+        : { student: 'Student', worker: 'Staff', external: 'External' };
       label.textContent = labels[preferences.priceTier];
     }
   });
