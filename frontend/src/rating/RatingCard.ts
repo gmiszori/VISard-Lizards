@@ -1,5 +1,4 @@
 import { zurichTime, type MensaChoice, type RatingPrompt } from './getRatingPrompt.ts';
-import { addDays } from '../data/menuDate.ts';
 import { appNow } from '../time/clock.ts';
 import { mensaCandidates, STATE_KEY, useRatingPrompt } from './useRatingPrompt.ts';
 import { loadMeals } from './mealSource.ts';
@@ -161,7 +160,7 @@ export function mountRatingCard(): void {
     });
     step('meal', !skipped);
   }
-  /** Whether a day had any menu: true / false, or undefined while it is still being loaded (refresh runs again then). */
+  /** Whether today has a menu: true / false, or undefined while it is loading. */
   const menuChecks = new Map<string, 'pending' | 'yes' | 'no'>();
   function hadMenu(date: string): boolean | undefined {
     const known = menuChecks.get(date);
@@ -173,26 +172,13 @@ export function mountRatingCard(): void {
     void mealsOn(date).then(list => { menuChecks.set(date, list.length ? 'yes' : 'no'); }, () => { menuChecks.set(date, 'yes'); }).then(() => refresh());
     return undefined;
   }
-  /**
-   * No lunch today (weekend, holiday): ask about the latest earlier day that had a menu (yesterday if it did, up to
-   * three days back) instead of "Where did you eat today?" and a dead end. Visits of a day are never replaced.
-   * 'wait': menus are still loading (refresh runs again); 'none': no recent day had a menu, so there is nothing to ask.
-   */
+  /** No question on days without a menu. Never fall back to a previous day. */
   function chooseDayToAskAbout(): 'ok' | 'wait' | 'none' {
-    store.setFallbackDate(undefined);
     if (store.current()?.kind === 'visit') return 'ok';
     const today = zurichTime(now()).date;
     const todayServed = hadMenu(today);
     if (todayServed === undefined) return 'wait';
-    if (todayServed) return 'ok';
-    for (let back = 1; back <= 3; back++) {
-      const day = addDays(today, -back);
-      if (!day) break;
-      const served = hadMenu(day);
-      if (served === undefined) return 'wait';
-      if (served) { store.setFallbackDate(day); return 'ok'; }
-    }
-    return 'none';
+    return todayServed ? 'ok' : 'none';
   }
   function refresh() {
     if (busy || closing) return;
@@ -225,15 +211,9 @@ export function mountRatingCard(): void {
       query('.meal-rating-eyebrow').dataset.ratingText = dinner ? 'eyebrowDinner' : 'eyebrow';
       query('#meal-rating-title').dataset.ratingText = dinner ? 'titleDinner' : 'title';
       const question = query('[data-rating-step="mensa"] [data-rating-text^="question"]');
-      // A guess about an earlier day (no lunch today) says so: "yesterday", else "on that day" (the date is shown above).
-      const today = zurichTime(now()).date;
-      const earlier = next.kind === 'guess' && next.date !== today;
-      const yesterday = earlier && next.date === addDays(today, -1);
-      question.dataset.ratingText = next.kind !== 'guess' ? 'question'
-        : !earlier ? 'questionGuess' : yesterday ? 'questionGuessYesterday' : 'questionGuessEarlier';
+      question.dataset.ratingText = next.kind === 'guess' ? 'questionGuess' : 'question';
       const skip = query('[data-rating-skip]');
-      skip.dataset.ratingText = next.kind !== 'guess' ? 'skip'
-        : !earlier ? 'nowhere' : yesterday ? 'nowhereYesterday' : 'nowhereEarlier';
+      skip.dataset.ratingText = next.kind === 'guess' ? 'nowhere' : 'skip';
       translateRating(root!);
       root!.hidden = false;
       step('mensa', false);

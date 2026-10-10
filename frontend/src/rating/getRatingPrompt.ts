@@ -17,11 +17,10 @@ export interface RatingPromptState {
 /** visit: the user was at these mensas; guess: "Where did you eat today?" with suggestions. */
 export interface RatingPrompt { date: string; mensaChoices: MensaChoice[]; kind: 'visit' | 'guess' }
 
-/** Before 11:00 the question is about yesterday, from then until 23:00 about today. */
-const MORNING_END_MIN = 11 * 60;
 const EVENING_END_MIN = 23 * 60;
-/** Guess questions only after lunch. */
 const GUESS_FROM_MIN = 14 * 60;
+const GUESS_UNTIL_MIN = 16 * 60;
+const VISIT_WINDOW_MS = 2 * 60 * 60 * 1000;
 const MAX_VISITED = 4;
 const MAX_GUESSES = 3;
 
@@ -33,12 +32,6 @@ export function zurichTime(now: Date) {
   const parts = Object.fromEntries(formatter.formatToParts(now).map(p => [p.type, p.value]));
   return { date: `${parts.year}-${parts.month}-${parts.day}`, minutes: Number(parts.hour) * 60 + Number(parts.minute) };
 }
-function previousDate(date: string): string {
-  const day = new Date(`${date}T12:00:00Z`);
-  day.setUTCDate(day.getUTCDate() - 1);
-  return day.toISOString().slice(0, 10);
-}
-
 function unique(choices: readonly MensaChoice[]): MensaChoice[] {
   const seen = new Set<string>();
   return choices.filter(m => !seen.has(m.mensaId) && Boolean(seen.add(m.mensaId)));
@@ -47,30 +40,22 @@ function unique(choices: readonly MensaChoice[]): MensaChoice[] {
 /**
  * The rating question to show now, or null. All calendar and window decisions use Zurich, independent of the
  * device timezone.
- * - Visits (location or crowd report) of today count once the meal is probably eaten (readyAt <= now), until
- *   23:00; before 11:00 the visits of yesterday are asked about.
- * - Without any visit today, undated guesses give "Where did you eat today?" from 14:00, unless the user
- *   answered "nowhere" recently (quietUntil).
- * - options.fallbackDate: there was no lunch today (weekend, holiday), so ask about that earlier day instead (the latest
- *   day before today that had a menu). Then the guess question is allowed at any time before 23:00.
+ * - Visits of today count only from the estimated meal completion until two hours later.
+ * - Without a visit, guesses are allowed from 14:00 to 16:00 on the same day only.
  */
-export interface RatingPromptOptions { fallbackDate?: string }
-export function getRatingPrompt(now: Date, candidates: readonly MensaChoice[], state: RatingPromptState, options: RatingPromptOptions = {}): RatingPrompt | null {
+export function getRatingPrompt(now: Date, candidates: readonly MensaChoice[], state: RatingPromptState): RatingPrompt | null {
   if (!Number.isFinite(now.getTime())) return null;
   const { date: today, minutes } = zurichTime(now);
   if (minutes >= EVENING_END_MIN) return null;
-  // Only an earlier real date counts; anything else is ignored.
-  const earlier = typeof options.fallbackDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(options.fallbackDate) && options.fallbackDate < today
-    ? options.fallbackDate : undefined;
-  const date = earlier ?? (minutes < MORNING_END_MIN ? previousDate(today) : today);
-  if (state.resolvedDates.includes(date) || state.dismissedDates.includes(date)) return null;
-  if (state.promptedDays[today] && state.promptedDays[today] !== date) return null;
-  const visited = unique(candidates.filter(m => m.date === date && (date !== today || (m.readyAt ?? 0) <= now.getTime())));
-  if (visited.length) return { date, mensaChoices: visited.slice(0, MAX_VISITED), kind: 'visit' };
-  if (!earlier && (date !== today || minutes < GUESS_FROM_MIN)) return null;
+  if (state.resolvedDates.includes(today) || state.dismissedDates.includes(today)) return null;
+  if (state.promptedDays[today] && state.promptedDays[today] !== today) return null;
+  const visited = unique(candidates.filter(m => m.date === today && Number.isFinite(m.readyAt) &&
+    m.readyAt! <= now.getTime() && now.getTime() - m.readyAt! <= VISIT_WINDOW_MS));
+  if (visited.length) return { date: today, mensaChoices: visited.slice(0, MAX_VISITED), kind: 'visit' };
+  if (minutes < GUESS_FROM_MIN || minutes >= GUESS_UNTIL_MIN) return null;
   if (state.quietUntil && today <= state.quietUntil) return null;
-  // A visit today whose meal is not eaten yet: wait for it instead of guessing.
+  // A visit today that is not yet eaten or already too old must not turn into a guess.
   if (candidates.some(m => m.date === today)) return null;
   const guesses = unique(candidates.filter(m => !m.date)).slice(0, MAX_GUESSES);
-  return guesses.length ? { date, mensaChoices: guesses.map(m => ({ ...m, source: 'guess' as const })), kind: 'guess' } : null;
+  return guesses.length ? { date: today, mensaChoices: guesses.map(m => ({ ...m, source: 'guess' as const })), kind: 'guess' } : null;
 }

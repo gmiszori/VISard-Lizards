@@ -40,11 +40,8 @@ export function useRatingPrompt(now: () => Date, candidates: MensaChoice[] | (()
     }
     return s;
   }
-  // Set by the card when there was no lunch today: the earlier day to ask about instead (see getRatingPrompt).
-  let fallbackDate: string | undefined;
   return {
-    current: () => getRatingPrompt(now(), typeof candidates === 'function' ? candidates() : candidates, read(), { fallbackDate }),
-    setFallbackDate(date: string | undefined) { fallbackDate = date; },
+    current: () => getRatingPrompt(now(), typeof candidates === 'function' ? candidates() : candidates, read()),
     shown(date: string) {
       const state = read();
       const today = zurichTime(now()).date;
