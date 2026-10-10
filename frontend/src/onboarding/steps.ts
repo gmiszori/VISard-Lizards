@@ -21,6 +21,8 @@ export interface Context {
   data: OnboardingData;
   update(patch: Partial<Profile>): void;
   refresh(): void;
+  /** Go to the next step, or finish on the last one (like the Next/Finish button). */
+  advance(): void;
 }
 interface Step { id: string; titleKey: Key; skippable: boolean; mount(root: HTMLElement, ctx: Context): () => void }
 
@@ -92,7 +94,8 @@ function mountRatings(root: HTMLElement, ctx: Context) {
     ctx.update({ mensaRatings: [...ctx.store.state.profile.mensaRatings.filter(r => r.mensaId !== mensaId),
       { mensaId, rating: Number(values[0]) as MensaRating }] });
   });
-  root.querySelector('[data-no-ratings]')!.addEventListener('click', () => ctx.update({ mensaRatings: [] }));
+  // "I haven't been to any of these" answers the step: no ratings, then continue (finish on the last step).
+  root.querySelector('[data-no-ratings]')!.addEventListener('click', () => { ctx.update({ mensaRatings: [] }); ctx.advance(); });
   return () => {
     if (ctx.store.state.step !== steps.findIndex(step => step.id === 'ratings')) return;
     const p = ctx.store.state.profile;

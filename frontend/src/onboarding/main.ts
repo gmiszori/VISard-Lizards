@@ -34,6 +34,7 @@ function initialise(root: HTMLElement) {
     const ctx: Context = { store, data,
       update(patch) { guard(() => { store.update(patch); refresh(); }); },
       refresh() { refresh(); },
+      advance() { guard(advance); },
     };
     const renders = steps.map((step, i) => step.mount(sections[i]!, ctx));
 
