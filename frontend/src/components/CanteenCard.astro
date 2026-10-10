@@ -18,7 +18,7 @@ const showServiceHeadings = menuGroups.some(group => group.service === 'lunch') 
       <div class="detail-overlay canteen-photo-caption">
         <div><div class="canteen-photo-title"><h3 class="card-title"><a href={`/canteen/${canteen.id}`}>{canteen.name}</a></h3><span data-live="status" data-live-id={canteen.id} class={`status ${canteen.isOpen ? 'open' : 'closed'}`}>● <span data-i18n={canteen.isOpen ? 'open' : 'closed'}>{canteen.isOpen ? 'Open now' : 'Closed'}</span></span><LocationLink mensaId={canteen.id} /></div><div class="campus">{canteen.campus} <span aria-hidden="true">·</span> {canteen.location}</div></div>
       </div>
-      <span class="rating" title={canteen.rating === null ? 'No ratings yet' : undefined}>★ {canteen.rating !== null ? canteen.rating.toFixed(1) : '–'}</span>
+      <span class="rating" title={canteen.rating === null ? 'No ratings yet' : undefined} data-i18n-title={canteen.rating === null ? 'noRatingsYet' : undefined}>★ {canteen.rating !== null ? canteen.rating.toFixed(1) : '–'}</span>
     </div>
   <div class="card-body">
     <div class="menu-preview" data-preference-list data-meal-list>
