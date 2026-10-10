@@ -31,7 +31,7 @@ const prediction: CrowdPrediction = {
   <div class="detail-info"><div class="info-box"><small data-i18n="hours">Opening hours</small><strong data-live="hours" data-live-id={canteen.id}>{canteen.hours}</strong></div><div class="info-box"><small data-i18n="crowd">Current crowd</small><strong data-live="crowd" data-live-id={canteen.id} data-i18n={canteen.isOpen ? canteen.occupancy : 'closed'}>{canteen.isOpen ? canteen.occupancy[0].toUpperCase() + canteen.occupancy.slice(1) : 'Closed'}</strong></div></div>
   <PredictedCrowd prediction={prediction} />
   <section><h2 class="menu-section-title"><MenuDate date={menuDate} today={today} variant="heading" /> <span class="count">· {canteen.menu.length} <span data-i18n="dishes">dishes</span></span></h2>
-    {canteen.menu.length ? <><div class="menu-list" data-preference-list data-meal-list>{canteen.menu.map((item) => <MenuItem item={item} />)}</div><div class="empty-state preference-empty" data-no-preference-meals hidden data-i18n="noPreferenceMeals">No dishes match your food preferences.</div></> : <div class="empty-state" style="display:block" data-i18n="menuEmpty">No menu available today.</div>}
+    {canteen.menu.length ? <><div class="menu-list" data-preference-list data-meal-list>{canteen.menu.map((item) => <MenuItem item={item} />)}</div><div class="empty-state preference-empty" data-no-preference-meals hidden data-i18n="noPreferenceMeals">No dishes match your food preferences.</div></> : <div class="empty-state" style="display:block" data-i18n="menuEmpty">No menu available for this date.</div>}
   </section>
 </BaseLayout>
 <style>.detail-hero-title{display:flex;align-items:center;gap:12px;flex-wrap:wrap}</style>
