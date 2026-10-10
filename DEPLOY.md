@@ -7,7 +7,7 @@ The hackathon managed address forwards plain HTTP to port 8080 on the VM. Copy `
 `OPENAI_API_KEY` and `MEAL_SCRAPER_ENABLED=true` to enable AI menu retrieval, and run from the repository root:
 
 ```sh
-docker compose up --build -d
+docker compose --profile scraper up --build -d
 ```
 
 Caddy serves the frontend over plain HTTP on `0.0.0.0:8080`; the backend is reachable only by Caddy
@@ -49,9 +49,10 @@ results. Missing current/future data invokes the connector when scraping is enab
 backend key is configured. Refresh also runs daily at 06:00 Europe/Zurich. Devices do not need
 an OpenAI key or connector token. The backend is the only OpenAI client in this path.
 
-Compose sets `MEAL_CONNECTOR_URL=http://meal-scraper:8091` and passes the same required
-`MEAL_CONNECTOR_TOKEN` to both services. It waits for connector/MCP readiness before starting the
-backend. Port 8091 is not published and is not proxied by Caddy. Keep `.env` on the server; never
+Compose sets `MEAL_CONNECTOR_URL=http://meal-scraper:8091` and passes the same
+`MEAL_CONNECTOR_TOKEN` to both services. The optional MCP service requires the `scraper` profile;
+alternatively set `COMPOSE_PROFILES=scraper` in `.env` to include it with plain `docker compose up`.
+Check connector readiness before triggering a manual refresh. Port 8091 is not published and is not proxied by Caddy. Keep `.env` on the server; never
 put these keys in browser settings or frontend build variables. The existing `backend-data`
 volume holds both raw MCP evidence and projected meal rows.
 
@@ -59,6 +60,15 @@ For a general Linux VM, install Docker Engine with Compose v2, clone this repo, 
 and run the same Compose command. Point your HTTPS ingress/domain to the server's port 8080.
 On a private LAN, the website is reachable at `http://<server-LAN-IP>:8080` when that port is
 allowed by the host firewall. `localhost` on a phone refers to the phone, so use the server address.
+
+If a local Eclipse backend already occupies port 8080, set `WEB_PORT=8083` in `.env` or start with:
+
+```sh
+WEB_PORT=8083 docker compose --profile scraper up --build -d
+```
+
+Then use `http://localhost:8083`. The backend remains private on container port 8080, and the
+manual refresh command is unchanged. Keep `WEB_PORT=8080` on the managed VM for its ingress.
 
 Verify deployment:
 
@@ -90,7 +100,7 @@ HTTP 401 means the shared token is missing or mismatched. Check progress with
 `curl -fsS https://your-server/api/scraped-menus` (`running`, `lastCompleted`, and each cafeteria's
 `stale`/`error` fields); acceptance does not guarantee every venue succeeds. Prior data survives failures.
 
-After updating source, run `docker compose up --build -d` again. If connector health reports
+After updating source, run `docker compose --profile scraper up --build -d` again. If connector health reports
 MCP unavailable, inspect logs and run `docker compose restart meal-scraper`. Do not use
 `docker compose down -v` during an update: it removes the database volume. Linux CI builds
 the bundled MCP image and checks MCP readiness and backend connectivity without OpenAI calls.
