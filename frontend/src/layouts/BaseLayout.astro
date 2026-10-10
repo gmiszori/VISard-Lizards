@@ -17,41 +17,39 @@ const { title } = Astro.props;
       // Apply the saved theme and language before the page is painted, so dark-theme users do not see a white flash
       // while the rest of the page loads. The full handling stays in the script at the end of the body.
       try {
+        if (location.pathname === '/' && localStorage.getItem('campuseats-profile') === null) location.replace('/onboarding');
         if (localStorage.getItem('campuseats-theme') === 'dark') document.documentElement.dataset.theme = 'dark';
         if (localStorage.getItem('campuseats-language') === 'de') document.documentElement.lang = 'de';
       } catch (error) { /* storage blocked: the defaults apply */ }
     </script>
     <meta name="description" content="Find what's cooking at ETH and UZH campus canteens." />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title data-page-title={title}>{title} | CampusEats</title>
+    <title data-page-title={title}>{title} | UniEats</title>
   </head>
   <body>
     <a class="skip-link" href="#main" data-i18n="skipToContent">Skip to content</a>
     <div class="app-shell">
       <header class="site-header">
-        <a class="brand" href="/" aria-label="CampusEats home"><span class="brand-mark">✳</span><span>CampusEats<small data-i18n="tagline">YOUR CAMPUS, SERVED</small></span></a>
+        <a class="brand" href="/" aria-label="UniEats home"><span class="brand-mark">✳</span><span>UniEats</span></a>
         <HeaderAccount />
-        <div class="header-controls"><a class="settings-link" href="/settings" data-i18n="settings">Settings</a><button class="control-btn" id="theme-toggle" type="button" aria-label="Switch to dark theme" title="Switch theme">☾</button><label class="language-control"><span class="visually-hidden">Language</span><select id="language-select" aria-label="Language"><option value="en">EN</option><option value="de">DE</option></select></label></div>
+        <div class="header-controls"><a class="settings-link" href="/settings" data-i18n="settings">Settings</a><label class="language-control"><span class="visually-hidden">Language</span><select id="language-select" aria-label="Language"><option value="en">EN</option><option value="de">DE</option></select></label></div>
       </header>
       <main class="main" id="main" tabindex="-1"><slot /></main>
       <SimulatedClockBanner />
-      <footer class="footer"><span data-i18n="footerMade">Made by students with &lt;3 for students</span></footer>
     </div>
     <script is:inline>
       const translations = {
         en: { tagline:'YOUR CAMPUS, SERVED', footerMade:'Made for hungry minds.', footerSample:'Sample menus · Zürich', campus:'Campus canteens', campusSub:'Fresh picks from around Zürich', openCount:'open right now', search:'Search canteens or dishes', all:'All spots', allCanteens:'All canteens', favourites:'Your favourites', favouriteAdd:'Add to favourites', favouriteRemove:'Remove from favourites', settings:'Settings', settingsTitle:'Your settings', settingsIntro:'Choose which meals you want to see. Your choices are saved on this device.', foodPreferences:'Food preferences', vegan:'Vegan', vegetarian:'Vegetarian', meat:'Meat', preferencesHint:'Select every type of meal you want included.', plantBased:'Plant-based', meatFree:'Meat-free', meatDishes:'Including meat dishes', canteenFilters:'Canteen filters', filtersHint:'Choose which campus locations to include.', location:'Campus location', allCampuses:'All campuses', zentrum:'Zentrum', hoenggerberg:'Hönggerberg', irchel:'Irchel', openOnly:'Only show open canteens', noPreferenceMeals:'No dishes match your food preferences.', compactMode:'Compact mode', compactDescription:'Show smaller canteen cards to fit more on the screen.', compact:'Compact', settingsSaved:'Saved', openFilter:'Open now', today:'On the menu today', open:'Open now', closed:'Closed', back:'← All canteens', hours:'Opening hours', lunch:'Lunch',allMeals:'All', dinner:'Dinner', servingTimeUnknown:'Serving time unavailable', crowd:'Current crowd', todayMenu:'Today’s menu', dishes:'dishes', empty:'No canteens match your search. Try another dish or campus.', menuEmpty:'No menu available for this date.', contains:'Contains', noAllergens:'No listed allergens', student:'Student', worker:'Worker', external:'External', themeLight:'Switch to light theme', themeDark:'Switch to dark theme', low:'Quiet', medium:'Moderate', high:'Busy', diet_vegan:'Vegan', diet_vegetarian:'Vegetarian', diet_meat:'Meat', category_daily_special:'Daily Special', category_classic:'Classic', category_side:'Side' },
         de: { tagline:'DEIN CAMPUS, DEIN ESSEN', footerMade:'Für hungrige Köpfe gemacht.', footerSample:'Beispielmenüs · Zürich', campus:'Mensen auf dem Campus', campusSub:'Frische Auswahl aus Zürich', openCount:'jetzt geöffnet', search:'Mensen oder Gerichte suchen', all:'Alle Mensen', allCanteens:'Alle Mensen', favourites:'Deine Favoriten', favouriteAdd:'Zu Favoriten hinzufügen', favouriteRemove:'Aus Favoriten entfernen', settings:'Einstellungen', settingsTitle:'Deine Einstellungen', settingsIntro:'Wähle, welche Gerichte du sehen möchtest. Deine Auswahl wird auf diesem Gerät gespeichert.', foodPreferences:'Essenspräferenzen', vegan:'Vegan', vegetarian:'Vegetarisch', meat:'Fleisch', preferencesHint:'Wähle alle Essensarten aus, die angezeigt werden sollen.', plantBased:'Pflanzlich', meatFree:'Fleischlos', meatDishes:'Mit Fleisch', canteenFilters:'Mensenfilter', filtersHint:'Wähle die Campus-Standorte aus, die angezeigt werden sollen.', location:'Campus-Standort', allCampuses:'Alle Standorte', zentrum:'Zentrum', hoenggerberg:'Hönggerberg', irchel:'Irchel', openOnly:'Nur geöffnete Mensen anzeigen', noPreferenceMeals:'Keine Gerichte entsprechen deinen Essenspräferenzen.', compactMode:'Kompakte Ansicht', compactDescription:'Zeigt kleinere Mensen-Karten, damit mehr auf den Bildschirm passt.', compact:'Kompakt', settingsSaved:'Gespeichert', openFilter:'Jetzt geöffnet', today:'Heute auf dem Menü', open:'Geöffnet', closed:'Geschlossen', back:'← Alle Mensen', hours:'Öffnungszeiten', lunch:'Mittagessen',allMeals:'Alle', dinner:'Abendessen', servingTimeUnknown:'Essenszeit nicht verfügbar', crowd:'Aktuelle Auslastung', todayMenu:'Heutiges Menü', dishes:'Gerichte', empty:'Keine Mensen gefunden. Suche ein anderes Gericht oder einen anderen Campus.', menuEmpty:'Für dieses Datum ist kein Menü verfügbar.', contains:'Enthält', noAllergens:'Keine Allergene angegeben', student:'Studierende', worker:'Mitarbeitende', external:'Externe', themeLight:'Helles Design aktivieren', themeDark:'Dunkles Design aktivieren', low:'Ruhig', medium:'Mässig', high:'Viel los', diet_vegan:'Vegan', diet_vegetarian:'Vegetarisch', diet_meat:'Fleisch', category_daily_special:'Tagesmenü', category_classic:'Klassiker', category_side:'Beilage' }
       };
-      translations.en.footerMade = 'Made by students with <3 for students';
       Object.assign(translations.en, { priceCategory: 'Price category', priceCategoryHint: 'Show only your selected price on every dish. Student is the default.', yourPrice: 'Your price' });
       Object.assign(translations.de, { priceCategory: 'Preiskategorie', priceCategoryHint: 'Zeige bei jedem Gericht nur deinen gewählten Preis. Standard ist der Studierendenpreis.', yourPrice: 'Dein Preis' });
-      translations.de.footerMade = 'Von Studierenden mit <3 für Studierende';
       translations.en.notFoundTitle = 'This page does not exist';
       translations.de.notFoundTitle = 'Diese Seite gibt es nicht';
       translations.en.notFoundText = 'The link may be old or mistyped. Go back to the canteens to find today’s menus.';
       translations.de.notFoundText = 'Der Link ist vielleicht veraltet oder falsch geschrieben. Zurück zu den Mensen, um die heutigen Menüs zu finden.';
-      translations.en.sampleMenus = 'Showing sample menus: the CampusEats backend is not reachable.';
-      translations.de.sampleMenus = 'Beispielmenüs: Das CampusEats-Backend ist nicht erreichbar.';
+      translations.en.sampleMenus = 'Showing sample menus: the UniEats backend is not reachable.';
+      translations.de.sampleMenus = 'Beispielmenüs: Das UniEats-Backend ist nicht erreichbar.';
       Object.assign(translations.en, { campusSelect: 'Campus', campusPreset: 'My campuses', campusAll: 'All campuses' });
       Object.assign(translations.de, { campusSelect: 'Campus', campusPreset: 'Meine Auswahl', campusAll: 'Alle Standorte' });
       Object.assign(translations.en, { resetFilters: 'Show all canteens', checkSettings: 'Check my settings' });
@@ -66,8 +64,10 @@ const { title } = Astro.props;
       Object.assign(translations.de, { noRatingsYet: 'Noch keine Bewertungen' });
       Object.assign(translations.en, { canteensTitle: 'Canteens' });
       Object.assign(translations.de, { canteensTitle: 'Mensen' });
-      Object.assign(translations.en, { sampleMenusInvalid: 'Showing sample menus: the CampusEats backend sent data this page could not read.' });
-      Object.assign(translations.de, { sampleMenusInvalid: 'Beispielmenüs: Das CampusEats-Backend hat Daten gesendet, die diese Seite nicht lesen konnte.' });
+      Object.assign(translations.en, { sampleMenusInvalid: 'Showing sample menus: the UniEats backend sent data this page could not read.' });
+      Object.assign(translations.de, { sampleMenusInvalid: 'Beispielmenüs: Das UniEats-Backend hat Daten gesendet, die diese Seite nicht lesen konnte.' });
+      Object.assign(translations.en, { appearance: 'Appearance', themeLabel: 'Theme', lightTheme: 'Light', darkTheme: 'Dark' });
+      Object.assign(translations.de, { appearance: 'Darstellung', themeLabel: 'Design', lightTheme: 'Hell', darkTheme: 'Dunkel' });
       Object.assign(translations.en, { menuFor: 'Menu for', menusFor: 'Menus for' });
       Object.assign(translations.de, { menuFor: 'Menü für', menusFor: 'Menüs für' });
       Object.assign(translations.en, { devMode: 'Dev mode', devModeDescription: 'Show diagnostics for live data, location, storage and backend connectivity.', devTools: 'Developer tools' });
@@ -86,7 +86,7 @@ const { title } = Astro.props;
         document.documentElement.lang = lang;
         // The tab title and the screen-reader page name follow the page language (canteen names stay as they are).
         const titleElement = document.querySelector('title[data-page-title]');
-        if (titleElement) { const english = titleElement.dataset.pageTitle; titleElement.textContent = ((lang === 'de' && pageTitlesDe[english]) || english) + ' | CampusEats'; }
+        if (titleElement) { const english = titleElement.dataset.pageTitle; titleElement.textContent = ((lang === 'de' && pageTitlesDe[english]) || english) + ' | UniEats'; }
         campusStorage.set('campuseats-language', lang);
         document.querySelectorAll('[data-i18n]').forEach(el => { const key = el.dataset.i18n; if (translations[lang][key]) el.textContent = translations[lang][key]; });
         document.querySelectorAll('[data-i18n-placeholder]').forEach(el => el.placeholder = translations[lang][el.dataset.i18nPlaceholder]);
@@ -96,15 +96,15 @@ const { title } = Astro.props;
         document.querySelectorAll('[data-menu-date]').forEach(el => { el.textContent = dateFormatter.format(new Date(`${el.dataset.menuDate}T00:00:00Z`)); });
         document.dispatchEvent(new CustomEvent('languagechange', { detail: { lang, translations: translations[lang] } }));
       };
-      const themeButton = document.querySelector('#theme-toggle');
-      const setTheme = (requested) => { const theme = requested === 'dark' ? 'dark' : 'light'; document.documentElement.dataset.theme = theme; campusStorage.set('campuseats-theme', theme); themeButton.textContent = theme === 'dark' ? '☀' : '☾'; themeButton.setAttribute('aria-label', translations[document.documentElement.lang][theme === 'dark' ? 'themeLight' : 'themeDark']); };
+      const themeSelect = document.querySelector('#theme-select');
+      const setTheme = (requested) => { const theme = requested === 'dark' ? 'dark' : 'light'; document.documentElement.dataset.theme = theme; campusStorage.set('campuseats-theme', theme); if (themeSelect) themeSelect.value = theme; };
       const languageSelect = document.querySelector('#language-select');
       const language = knownLanguage(campusStorage.get('campuseats-language'));
       languageSelect.value = language;
       applyLanguage(language);
       setTheme(campusStorage.get('campuseats-theme'));
-      languageSelect.addEventListener('change', () => { applyLanguage(languageSelect.value); setTheme(document.documentElement.dataset.theme); });
-      themeButton.addEventListener('click', () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'));
+      languageSelect.addEventListener('change', () => applyLanguage(languageSelect.value));
+      if (themeSelect) themeSelect.addEventListener('change', () => setTheme(themeSelect.value));
     </script>
     <script type="application/json" id="live-data" is:inline set:html={JSON.stringify(LIVE_DATA).replace(/</g, '\\u003c')} />
     <script>

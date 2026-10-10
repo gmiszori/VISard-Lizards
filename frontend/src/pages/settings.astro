@@ -13,6 +13,13 @@ import StarredMealsSettings from '../components/StarredMealsSettings.astro';
     </div>
   </section>
   <OnboardingEntry />
+  <fieldset class="settings-group appearance-settings">
+    <legend data-i18n="appearance">Appearance</legend><span class="settings-group-mark" aria-hidden="true">◐</span>
+    <label class="select-option"><span data-i18n="themeLabel">Theme</span><select id="theme-select" aria-label="Theme">
+      <option value="light" data-i18n="lightTheme">Light</option>
+      <option value="dark" data-i18n="darkTheme">Dark</option>
+    </select></label>
+  </fieldset>
   <StarredMealsSettings />
   <form id="preferences-form" class="settings-form">
     <fieldset class="settings-group price-category">

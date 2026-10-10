@@ -1,6 +1,6 @@
-# CampusEats frontend
+# UniEats frontend
 
-Astro site for the ETH and UZH mensas. Menus, ratings and crowd predictions come from the CampusEats
+Astro site for the ETH and UZH mensas. Menus, ratings and crowd predictions come from the UniEats
 backend in `../backend` (Spring Boot); mensa details (photos, addresses, opening windows) come from the
 bundled database in `src/data/canteens.ts`.
 

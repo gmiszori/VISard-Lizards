@@ -1,5 +1,5 @@
 /**
- * Connection to the CampusEats backend (backend/, Spring Boot). Used at build/render time by the pages
+ * Connection to the UniEats backend (backend/, Spring Boot). Used at build/render time by the pages
  * (src/data/app-data.ts) and in the browser (meal ratings, crowd chart).
  *
  * PUBLIC_API_URL (see .env.example) overrides the backend's base URL. Browser requests default to

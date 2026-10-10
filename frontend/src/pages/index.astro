@@ -21,8 +21,8 @@ const openCount = canteens.filter((canteen) => canteen.isOpen).length;
   <DevTools canteens={canteens} source={source} sampleReason={sampleReason} menuDate={menuDate} today={today} />
   <RatingCard />
   {source === 'sample' && (sampleReason === 'invalid'
-    ? <p class="data-source-note" data-i18n="sampleMenusInvalid">Showing sample menus: the CampusEats backend sent data this page could not read.</p>
-    : <p class="data-source-note" data-i18n="sampleMenus">Showing sample menus: the CampusEats backend is not reachable.</p>)}
+    ? <p class="data-source-note" data-i18n="sampleMenusInvalid">Showing sample menus: the UniEats backend sent data this page could not read.</p>
+    : <p class="data-source-note" data-i18n="sampleMenus">Showing sample menus: the UniEats backend is not reachable.</p>)}
   <StarredMealsToday date={menuDate} />
   <section id="favourites-section" hidden>
     <div class="section-head favourites-heading"><div><h2 data-i18n="favourites">Your favourites</h2></div></div>
