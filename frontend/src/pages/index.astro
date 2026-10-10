@@ -33,7 +33,7 @@ const openCount = canteens.filter((canteen) => canteen.isOpen).length;
   <DayPicker days={days} menuDate={menuDate} today={today} chosenDay={chosenDay} />
   <div class="menu-list-controls"><div id="visible-count" class="count" role="status" aria-live="polite">{canteens.length} canteens</div><button id="no-menu-toggle" type="button" aria-pressed="false" hidden></button></div>
   <p id="favourites-status" role="status" hidden></p>
-  <div id="canteen-grid" class="canteen-grid">{canteens.map((canteen) => <CanteenCard canteen={canteen} day={chosenDay ? menuDate : undefined} />)}</div>
+  <div id="canteen-grid" class="canteen-grid">{canteens.map((canteen) => <CanteenCard canteen={canteen} day={chosenDay ? menuDate : undefined} serviceDate={chosenDay ? menuDate : today} liveService={!chosenDay || menuDate === today} />)}</div>
   <div id="empty-state" class="empty-state">
     <p id="empty-message">No canteens match your search. Try another dish or campus.</p>
     <div class="empty-actions"><button type="button" data-reset-filters data-i18n="resetFilters">Show all canteens</button><a href="/settings" data-i18n="checkSettings">Check my settings</a></div>

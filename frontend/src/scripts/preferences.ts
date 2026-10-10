@@ -63,7 +63,10 @@ function applyPreferences() {
     const diet = meal.dataset.diet as keyof Pick<Preferences, 'vegan' | 'vegetarian' | 'meat'>;
     const card = meal.closest<HTMLElement>('[data-canteen-card]');
     const matchesName = card && matchesQuery(card.dataset.name ?? '', query);
-    const otherService = !!service && meal.closest<HTMLElement>('[data-meal-group]')?.dataset.service === (service === 'lunch' ? 'dinner' : 'lunch');
+    const liveService = card?.querySelector<HTMLElement>('[data-service-label][data-service-live="true"]')?.dataset.service;
+    const effectiveService = liveService || service;
+    const groupService = meal.closest<HTMLElement>('[data-meal-group]')?.dataset.service;
+    const otherService = liveService === 'closed' || (!!effectiveService && !!groupService && groupService !== effectiveService);
     meal.hidden = !preferences[diet] || otherService || !!(card && !matchesName && !matchesQuery(meal.dataset.mealName ?? '', query));
   });
 
@@ -102,7 +105,21 @@ function applyPreferences() {
     if (!emptyMessage && list.nextElementSibling?.matches('[data-no-preference-meals]')) {
       emptyMessage = list.nextElementSibling as HTMLElement;
     }
-    if (emptyMessage) emptyMessage.hidden = hasVisibleMeals;
+    if (emptyMessage) {
+      const card = list.closest<HTMLElement>('[data-canteen-card]');
+      const liveService = card?.querySelector<HTMLElement>('[data-service-label][data-service-live="true"]')?.dataset.service;
+      const effectiveService = liveService || service;
+      const hasDishForService = effectiveService === 'closed' ? false
+        : !effectiveService || list.querySelector(`[data-meal-group][data-service="${effectiveService}"], [data-meal-group]:not([data-service])`) !== null;
+      const hasAnyDish = list.querySelector('[data-meal-row]') !== null;
+      const key = !hasAnyDish || !hasDishForService ? 'noDishesAvailable' : 'noPreferenceMeals';
+      emptyMessage.dataset.i18n = key;
+      const german = document.documentElement.lang === 'de';
+      emptyMessage.textContent = key === 'noDishesAvailable'
+        ? german ? 'Keine Gerichte verfügbar' : 'No dishes available'
+        : german ? 'Keine Gerichte entsprechen deinen Essenspräferenzen.' : 'No dishes match your food preferences.';
+      emptyMessage.hidden = hasVisibleMeals;
+    }
   });
 
   const campusChoice = document.querySelector<HTMLSelectElement>('#campus-select')?.value ?? 'preset';
@@ -116,7 +133,9 @@ function applyPreferences() {
     const matchesSearch = aiMatchedIds && aiQuery === query
       ? aiMatchedIds.has(card.dataset.canteenId ?? '') : fallbackSearch;
     // With lunch or dinner picked, a canteen without that service counts as having no menu.
-    const servesChoice = !service || card.querySelector(`[data-meal-group][data-service="${service}"], [data-meal-group]:not([data-service])`) !== null;
+    const liveService = card.querySelector<HTMLElement>('[data-service-label][data-service-live="true"]')?.dataset.service;
+    const effectiveService = liveService || service;
+    const servesChoice = !effectiveService || (effectiveService !== 'closed' && card.querySelector(`[data-meal-group][data-service="${effectiveService}"], [data-meal-group]:not([data-service])`) !== null);
     const hasMenu = preferences.viewMode === 'list'
       ? card.querySelector('[data-meal-row]:not([hidden])') !== null
       : card.dataset.hasMenu === 'true' && servesChoice;
