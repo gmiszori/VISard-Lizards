@@ -55,7 +55,11 @@ function render() {
       const location = document.createElement('a');
       location.className = 'starred-today-location';
       location.href = `/canteen/${encodeURIComponent(card.dataset.canteenId!)}`;
-      location.textContent = `${card.dataset.name} ↗`;
+      location.textContent = card.dataset.name ?? '';
+      const arrow = document.createElement('span');
+      arrow.setAttribute('aria-hidden', 'true');
+      arrow.textContent = '\u2197\uFE0E';
+      location.append(' ', arrow);
       article.append(location);
       return article;
     }));
