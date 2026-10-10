@@ -10,6 +10,7 @@
  */
 import { CANTEENS, MENU_DATE, type Canteen, type MenuItem } from './canteens';
 import { API_URL, apiGet, type BackendMealDetail, type BackendMensa, type BackendMeta } from './api';
+import { menuDateCandidates } from './menuDate';
 
 /** A canteen as the pages show it. rating is null when nobody has rated it yet. */
 export type AppCanteen = Omit<Canteen, 'rating'> & { rating: number | null };
@@ -17,7 +18,7 @@ export type AppCanteen = Omit<Canteen, 'rating'> & { rating: number | null };
 export interface AppData {
   /** Where menus and ratings come from. */
   source: 'backend' | 'sample';
-  /** The day whose menu is shown: today, or the latest earlier day with menus. */
+  /** The day whose menu is shown: today (the coming Monday on weekends), or the latest earlier day with menus. */
   menuDate: string;
   canteens: AppCanteen[];
 }
@@ -44,16 +45,22 @@ async function fetchAppData(): Promise<AppData> {
   if (!API_URL) return sampleData();
   try {
     const meta = await apiGet<BackendMeta>('/api/meta');
-    const [meals, mensas] = await Promise.all([
-      apiGet<BackendMealDetail[]>(`/api/meals?date=${encodeURIComponent(meta.menuDate)}`),
-      apiGet<BackendMensa[]>('/api/mensas'),
-    ]);
+    const mensas = await apiGet<BackendMensa[]>('/api/mensas');
+    // Weekdays: today. Saturday/Sunday: the coming Monday. If the backend has no meals for that day,
+    // fall back to the day it suggests (today, or the latest earlier day with menus).
+    let menuDate = meta.menuDate;
+    let meals: BackendMealDetail[] = [];
+    for (const day of menuDateCandidates(meta.today, meta.menuDate)) {
+      menuDate = day;
+      meals = await apiGet<BackendMealDetail[]>(`/api/meals?date=${encodeURIComponent(day)}`);
+      if (meals.length) break;
+    }
     const ratings = new Map(mensas.map((mensa) => [mensa.id, mensa.avgRating]));
     const menus = new Map<string, BackendMealDetail[]>();
     for (const meal of meals) menus.set(meal.mensaId, [...(menus.get(meal.mensaId) ?? []), meal]);
     return {
       source: 'backend',
-      menuDate: meta.menuDate,
+      menuDate,
       canteens: CANTEENS.map((canteen) => ({
         ...canteen,
         menu: toMenu(menus.get(canteen.id) ?? []),

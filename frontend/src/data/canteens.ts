@@ -17,6 +17,8 @@
  * New features should read DB / MENSAS / MEALS / CROWD directly.
  */
 
+import { pickSampleMenuDate } from './menuDate';
+
 // ───────── types of the database ─────────
 
 export type Weekday = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
@@ -67765,14 +67767,12 @@ function zurichNow(): { weekday: Weekday; date: string; minutes: number } {
 }
 
 /**
- * The day whose menu the pages show: today if the database has it, otherwise
- * the most recent day before today, otherwise the newest day. (The database is
- * a hard-coded snapshot, 2026-09-28 to 2026-10-09.)
+ * The day whose menu the pages show: today on weekdays, the latest Monday of the data on Saturday and
+ * Sunday; if the database has no such day, the most recent day before today, otherwise its first day.
+ * (The database is a hard-coded snapshot, 2026-09-28 to 2026-10-09.) Rule: ./menuDate.ts
  */
 function pickMenuDate(): string {
-  const dates = [...new Set(MEALS.map((m) => m.date))].sort();
-  const today = zurichNow().date;
-  return dates.includes(today) ? today : ([...dates].reverse().find((d) => d <= today) ?? dates[dates.length - 1] ?? today);
+  return pickSampleMenuDate(MEALS.map((m) => m.date), zurichNow().date);
 }
 export const MENU_DATE: string = pickMenuDate();
 
