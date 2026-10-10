@@ -27,7 +27,7 @@ export interface Context {
   /** Go to the next step, or finish on the last one (like the Next/Finish button). */
   advance(): void;
 }
-interface Step { id: string; titleKey: Key; skippable: boolean; mount(root: HTMLElement, ctx: Context): () => void }
+interface Step { id: string; titleKey: Key; mount(root: HTMLElement, ctx: Context): () => void }
 
 const sync = (root: HTMLElement, name: string, values: string[]) => {
   const group = root.querySelector<HTMLElement>(`[data-chip-group="${name}"]`);
@@ -193,23 +193,11 @@ function mountRatings(root: HTMLElement, ctx: Context) {
   };
 }
 export const steps: Step[] = [
-  { id: 'language', titleKey: 'languageTitle', skippable: true, mount: mountLanguage },
-  { id: 'campus', titleKey: 'campusTitle', skippable: true, mount: mountCampus },
-  { id: 'diet', titleKey: 'dietTitle', skippable: true, mount: mountDiet },
-  { id: 'theme', titleKey: 'themeTitle', skippable: true, mount: mountTheme },
-  { id: 'price', titleKey: 'priceTitle', skippable: true, mount: mountPrice },
-  { id: 'ratings', titleKey: 'ratingsTitle', skippable: true, mount: mountRatings },
-  { id: 'install', titleKey: 'installTitle', skippable: true, mount: mountInstall },
+  { id: 'language', titleKey: 'languageTitle', mount: mountLanguage },
+  { id: 'campus', titleKey: 'campusTitle', mount: mountCampus },
+  { id: 'diet', titleKey: 'dietTitle', mount: mountDiet },
+  { id: 'theme', titleKey: 'themeTitle', mount: mountTheme },
+  { id: 'price', titleKey: 'priceTitle', mount: mountPrice },
+  { id: 'ratings', titleKey: 'ratingsTitle', mount: mountRatings },
+  { id: 'install', titleKey: 'installTitle', mount: mountInstall },
 ];
-
-/** Skip resets this step to its documented defaults, including partially entered answers. */
-export function skipStep(id: string, initial: Profile): Partial<Profile> {
-  switch (id) {
-    case 'campus': return { campus: initial.campus, campusSecondary: [], mensaRatings: [] };
-    case 'diet': return { diet: initial.diet, hard: [] };
-    case 'theme': return { theme: initial.theme };
-    case 'price': return { priceTier: initial.priceTier, maxPrice: null, priceMode: 'soft', priority: [...initial.priority] };
-    case 'ratings': return { mensaRatings: [] };
-    default: return {};
-  }
-}

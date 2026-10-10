@@ -94,7 +94,6 @@ function initialise(root: HTMLElement) {
       progress.setAttribute('aria-label', label);
       next.dataset.obI18n = index === flowSteps.length - 1 ? 'finish' : 'next';
       next.textContent = t(index === flowSteps.length - 1 ? 'finish' : 'next');
-      skip.hidden = !flowSteps[index]!.skippable;
     }
     function move(step: number) {
       lastMoveAt = performance.now();

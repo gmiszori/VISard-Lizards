@@ -4,7 +4,6 @@
  * 1 empty, 2 quiet, 3 some queue, 4 busy, 5 packed.
  */
 export type CrowdLevel = 1 | 2 | 3 | 4 | 5;
-export const CROWD_LEVELS: readonly CrowdLevel[] = [1, 2, 3, 4, 5];
 
 /** The backend accepts one report per mensa and client every 5 minutes (app.rate-limit.crowd-report-window). */
 export const REPORT_COOLDOWN_MS = 5 * 60_000;
