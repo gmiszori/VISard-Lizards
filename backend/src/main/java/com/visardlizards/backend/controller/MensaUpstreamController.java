@@ -12,6 +12,7 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -60,6 +61,14 @@ public class MensaUpstreamController {
     @GetMapping(value = "/uzh/week", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> uzhWeek(@RequestParam(defaultValue = "false") boolean next) {
         return rawJson(next ? zfvClient.fetchNextWeek() : zfvClient.fetchThisWeek());
+    }
+
+    @GetMapping(value = "/eth/facilities/{facilityId}/weekly-rotas", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> ethFacilityWeeklyRotas(
+            @PathVariable int facilityId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(defaultValue = "en") String language) {
+        return rawJson(ethClient.fetchFacilityWeeklyRotas(facilityId, date, language));
     }
 
     @GetMapping(value = "/uzh/day", produces = MediaType.APPLICATION_JSON_VALUE)
