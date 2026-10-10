@@ -27,8 +27,13 @@ const openCount = canteens.filter((canteen) => canteen.isOpen).length;
     const allGrid = document.querySelector<HTMLElement>('#canteen-grid');
     const favouritesGrid = document.querySelector<HTMLElement>('#favourites-grid');
     const favouritesSection = document.querySelector<HTMLElement>('#favourites-section');
-    const saved = JSON.parse(localStorage.getItem('campuseats-favourites') || '[]') as string[];
-    const favourites = new Set(saved);
+    function readFavourites(): string[] {
+      try {
+        const value: unknown = JSON.parse(localStorage.getItem('campuseats-favourites') || '[]');
+        return Array.isArray(value) ? value.filter((id): id is string => typeof id === 'string') : [];
+      } catch { return []; }
+    }
+    const favourites = new Set(readFavourites());
     function renderFavourites() {
       allCards.forEach((card) => {
         const id = card.dataset.canteenId || '';
@@ -54,7 +59,7 @@ const openCount = canteens.filter((canteen) => canteen.isOpen).length;
       const id = card?.dataset.canteenId;
       if (!id) return;
       if (favourites.has(id)) favourites.delete(id); else favourites.add(id);
-      localStorage.setItem('campuseats-favourites', JSON.stringify([...favourites]));
+      try { localStorage.setItem('campuseats-favourites', JSON.stringify([...favourites])); } catch { /* not remembered, still works for this visit */ }
       renderFavourites();
     });
     document.addEventListener('languagechange', renderFavourites);

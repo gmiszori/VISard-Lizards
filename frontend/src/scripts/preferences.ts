@@ -112,7 +112,8 @@ document.querySelector<HTMLFormElement>('#preferences-form')?.addEventListener('
       preferences = { ...preferences, [input.name]: input.checked };
     }
   } else return;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences));
+  // Full or blocked storage must not stop the choice from applying to this page.
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences)); } catch { /* applied for this visit only */ }
   applyPreferences();
   showSavedState();
 });

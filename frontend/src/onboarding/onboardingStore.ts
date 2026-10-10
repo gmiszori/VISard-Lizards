@@ -3,14 +3,18 @@ import { DIETS, HARD, PRIORITIES, TIERS, defaults, type MensaRating, type Profil
 
 export interface Draft { profile: Profile; step: number; picks: string[]; ratingScale: 5 }
 const KEY = 'campuseats-onboarding';
+/** The saved UI language, or English when storage is unavailable or holds anything else. */
+export function savedLanguage(): 'de' | 'en' {
+  try { return localStorage.getItem('campuseats-language') === 'de' ? 'de' : 'en'; } catch { return 'en'; }
+}
 const strings = (value: unknown): value is string[] => Array.isArray(value) && value.every(v => typeof v === 'string');
 
 export function createOnboardingStore(campuses: CampusId[], stepCount: number, restart = false) {
   // This factory is called only by main.ts in the browser, never during SSR.
-  const lang = localStorage.getItem('campuseats-language') === 'de' ? 'de' : 'en';
+  const lang = savedLanguage();
   const initial = defaults(campuses[0]!, lang);
   let state: Draft = { profile: initial, step: 0, picks: [], ratingScale: 5 };
-  if (restart) localStorage.removeItem(KEY);
+  if (restart) { try { localStorage.removeItem(KEY); } catch { /* nothing saved to remove */ } }
   try {
     const saved = JSON.parse(localStorage.getItem(KEY) ?? 'null') as Draft | null;
     const p = saved?.profile;
@@ -37,13 +41,14 @@ export function createOnboardingStore(campuses: CampusId[], stepCount: number, r
         picks: strings(saved.picks) ? [...new Set(saved.picks)] : [], ratingScale: 5 };
     }
   } catch { /* Invalid or older drafts start with safe defaults. */ }
-  const persist = () => localStorage.setItem(KEY, JSON.stringify(state));
+  // A full or blocked storage only means the draft is not saved; the flow itself keeps working.
+  const persist = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch { /* draft not saved */ } };
   return {
     get state() { return state; },
     update(patch: Partial<Profile>) { state = { ...state, profile: { ...state.profile, ...patch } }; persist(); },
     setStep(step: number) { state.step = step; persist(); },
     setPicks(picks: string[]) { state.picks = picks; persist(); },
-    clear() { localStorage.removeItem(KEY); },
+    clear() { try { localStorage.removeItem(KEY); } catch { /* nothing to clear */ } },
   };
 }
 export type OnboardingStore = ReturnType<typeof createOnboardingStore>;

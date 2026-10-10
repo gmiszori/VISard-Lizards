@@ -34,31 +34,42 @@ const { title } = Astro.props;
       Object.assign(translations.en, { priceCategory: 'Price category', priceCategoryHint: 'Show only your selected price on every dish. Student is the default.', yourPrice: 'Your price' });
       Object.assign(translations.de, { priceCategory: 'Preiskategorie', priceCategoryHint: 'Zeige bei jedem Gericht nur deinen gewählten Preis. Standard ist der Studierendenpreis.', yourPrice: 'Dein Preis' });
       translations.de.footerMade = 'Von Studierenden mit <3 für Studierende';
+      translations.en.notFoundTitle = 'This page does not exist';
+      translations.de.notFoundTitle = 'Diese Seite gibt es nicht';
+      translations.en.notFoundText = 'The link may be old or mistyped. Go back to the canteens to find today’s menus.';
+      translations.de.notFoundText = 'Der Link ist vielleicht veraltet oder falsch geschrieben. Zurück zu den Mensen, um die heutigen Menüs zu finden.';
       translations.en.menuFor = 'Menu for';
       translations.de.menuFor = 'Menü für';
       translations.en.sampleMenus = 'Showing sample menus: the CampusEats backend is not reachable.';
       translations.de.sampleMenus = 'Beispielmenüs: Das CampusEats-Backend ist nicht erreichbar.';
       translations.en.filtersHint = 'Choose one or more campus locations to include.';
       translations.de.filtersHint = 'Wähle einen oder mehrere Campus-Standorte aus.';
-      const applyLanguage = (lang) => {
+      // Storage can be unavailable (private mode, blocked cookies) or hold unexpected values: never let that stop this script.
+      const campusStorage = {
+        get: (key) => { try { return localStorage.getItem(key); } catch { return null; } },
+        set: (key, value) => { try { localStorage.setItem(key, value); } catch { /* the choice is just not remembered */ } },
+      };
+      const knownLanguage = (lang) => (lang === 'de' ? 'de' : 'en');
+      const applyLanguage = (requested) => {
+        const lang = knownLanguage(requested);
         document.documentElement.lang = lang;
-        localStorage.setItem('campuseats-language', lang);
+        campusStorage.set('campuseats-language', lang);
         document.querySelectorAll('[data-i18n]').forEach(el => { const key = el.dataset.i18n; if (translations[lang][key]) el.textContent = translations[lang][key]; });
         document.querySelectorAll('[data-i18n-placeholder]').forEach(el => el.placeholder = translations[lang][el.dataset.i18nPlaceholder]);
         document.querySelectorAll('[data-i18n-aria]').forEach(el => el.setAttribute('aria-label', translations[lang][el.dataset.i18nAria]));
         document.dispatchEvent(new CustomEvent('languagechange', { detail: { lang, translations: translations[lang] } }));
       };
       const themeButton = document.querySelector('#theme-toggle');
-      const setTheme = (theme) => { document.documentElement.dataset.theme = theme; localStorage.setItem('campuseats-theme', theme); themeButton.textContent = theme === 'dark' ? '☀' : '☾'; themeButton.setAttribute('aria-label', translations[document.documentElement.lang][theme === 'dark' ? 'themeLight' : 'themeDark']); };
+      const setTheme = (requested) => { const theme = requested === 'dark' ? 'dark' : 'light'; document.documentElement.dataset.theme = theme; campusStorage.set('campuseats-theme', theme); themeButton.textContent = theme === 'dark' ? '☀' : '☾'; themeButton.setAttribute('aria-label', translations[document.documentElement.lang][theme === 'dark' ? 'themeLight' : 'themeDark']); };
       const languageSelect = document.querySelector('#language-select');
-      const language = localStorage.getItem('campuseats-language') || 'en';
+      const language = knownLanguage(campusStorage.get('campuseats-language'));
       languageSelect.value = language;
       applyLanguage(language);
-      setTheme(localStorage.getItem('campuseats-theme') || 'light');
+      setTheme(campusStorage.get('campuseats-theme'));
       languageSelect.addEventListener('change', () => { applyLanguage(languageSelect.value); setTheme(document.documentElement.dataset.theme); });
       themeButton.addEventListener('click', () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'));
     </script>
-    <script type="application/json" id="live-data" is:inline set:html={JSON.stringify(LIVE_DATA)} />
+    <script type="application/json" id="live-data" is:inline set:html={JSON.stringify(LIVE_DATA).replace(/</g, '\u003c')} />
     <script>
       import '../scripts/live-status';
       import '../scripts/preferences';
