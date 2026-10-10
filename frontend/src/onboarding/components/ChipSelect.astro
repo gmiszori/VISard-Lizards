@@ -16,7 +16,7 @@ const { name, labelKey, mode = 'multi', className, options } = Astro.props;
       role={mode === 'single' ? 'radio' : undefined} aria-checked={mode === 'single' ? 'false' : undefined} aria-pressed="false">
       <span data-ob-i18n={option.key}>{option.key ? t(option.key) : option.label}</span>
       {option.descriptionKey && <small class="ob-chip-description" data-ob-i18n={option.descriptionKey}>{t(option.descriptionKey)}</small>}
-      {option.count !== undefined && <small>{option.count} <span data-ob-i18n="mensas">{t('mensas')}</span></small>}
+      {option.count !== undefined && <small>{option.count} <span data-ob-i18n={option.count === 1 ? 'mensa' : 'mensas'}>{t(option.count === 1 ? 'mensa' : 'mensas')}</span></small>}
     </button>)}
   </div>
 </fieldset>
