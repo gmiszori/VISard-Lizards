@@ -49,20 +49,32 @@ public class EthMenuMapper {
 	 * Meal ids follow the snapshot's format: {mensaId}.{date}.{service}.{index}.
 	 */
 	public List<Meal> map(List<String> pages, Map<Integer, String> mensaIdsByFacility, LocalDate from, LocalDate to) {
-		List<JsonNode> rotas = new ArrayList<>();
-		for (String page : pages) {
-			jsonMapper.readTree(page).path("weekly-rota-array").forEach(rotas::add);
-		}
+		return map(pages, List.of(), mensaIdsByFacility, from, to);
+	}
+
+	/** German text fills missing English translations; all other fields stay from the English response. */
+	public List<Meal> map(List<String> pages, List<String> germanPages,
+			Map<Integer, String> mensaIdsByFacility, LocalDate from, LocalDate to) {
+		List<JsonNode> rotas = readRotas(pages);
+		List<JsonNode> germanRotas = readRotas(germanPages);
 		List<Meal> meals = new ArrayList<>();
 		for (LocalDate date = from; !date.isAfter(to); date = date.plusDays(1)) {
 			for (Map.Entry<Integer, String> facility : mensaIdsByFacility.entrySet()) {
 				JsonNode rota = rotaFor(rotas, facility.getKey(), date);
 				if (rota != null) {
-					meals.addAll(mealsOfDay(rota, facility.getValue(), date));
+					meals.addAll(mealsOfDay(rota, rotaFor(germanRotas, facility.getKey(), date), facility.getValue(), date));
 				}
 			}
 		}
 		return meals;
+	}
+
+	private List<JsonNode> readRotas(List<String> pages) {
+		List<JsonNode> rotas = new ArrayList<>();
+		for (String page : pages) {
+			jsonMapper.readTree(page).path("weekly-rota-array").forEach(rotas::add);
+		}
+		return rotas;
 	}
 
 	/** The rota of a facility valid on a date; if several are, the most specific (shortest validity). */
@@ -76,8 +88,23 @@ public class EthMenuMapper {
 				.orElse(null);
 	}
 
-	private static List<Meal> mealsOfDay(JsonNode rota, String mensaId, LocalDate date) {
+	private static List<Meal> mealsOfDay(JsonNode rota, @Nullable JsonNode germanRota, String mensaId, LocalDate date) {
 		List<Meal> meals = new ArrayList<>();
+		Map<Integer, JsonNode> germanMeals = new HashMap<>();
+		if (germanRota != null) {
+			for (JsonNode day : germanRota.path("day-of-week-array")) {
+				if (day.path("day-of-week-code").asInt() != date.getDayOfWeek().getValue()) { continue; }
+				for (JsonNode hours : day.path("opening-hour-array")) {
+					for (JsonNode time : hours.path("meal-time-array")) {
+						for (JsonNode line : time.path("line-array")) {
+							JsonNode meal = line.path("meal");
+							int lineId = meal.path("line-id").asInt();
+							if (lineId > 0) { germanMeals.put(lineId, meal); }
+						}
+					}
+				}
+			}
+		}
 		Map<String, Integer> indexByService = new HashMap<>();
 		for (JsonNode day : rota.path("day-of-week-array")) {
 			if (day.path("day-of-week-code").asInt() != date.getDayOfWeek().getValue()) {
@@ -93,7 +120,9 @@ public class EthMenuMapper {
 							continue;
 						}
 						int index = indexByService.merge(service, 1, Integer::sum) - 1;
-						meals.add(toMeal(meal, line.path("name").asString(""), mensaId, date, service, index));
+						Meal mapped = toMeal(meal, germanMeals.get(meal.path("line-id").asInt()),
+								line.path("name").asString(""), mensaId, date, service, index);
+						if (mapped != null) { meals.add(mapped); }
 					}
 				}
 			}
@@ -101,20 +130,35 @@ public class EthMenuMapper {
 		return meals;
 	}
 
-	private static Meal toMeal(JsonNode meal, String line, String mensaId, LocalDate date, String service, int index) {
-		List<String> components = Arrays.stream(meal.path("description").asString("").split("\\|"))
+	private static @Nullable Meal toMeal(JsonNode meal, @Nullable JsonNode germanMeal,
+			String line, String mensaId, LocalDate date, String service, int index) {
+		String title = translatedText(meal, germanMeal, "name");
+		// Do not invent a dish name or publish Cookpit's translation placeholder.
+		// The source index was already allocated, so later meal ids do not shift.
+		if (title.isEmpty()) { return null; }
+		List<String> components = Arrays.stream(translatedText(meal, germanMeal, "description").split("\\|"))
 				.map(String::trim)
-				.filter(component -> !component.isEmpty())
+				.filter(EthMenuMapper::usableText)
 				.toList();
 		Set<String> allergens = new LinkedHashSet<>();
 		for (JsonNode allergen : meal.path("allergen-array")) {
 			String name = allergen.path("desc").asString("").toLowerCase(Locale.ROOT);
 			allergens.add(ALLERGENS.getOrDefault(name, name));
 		}
-		String title = meal.path("name").asString("").trim();
 		return new Meal(mensaId + "." + date + "." + service + "." + index, mensaId, date, service, line,
 				kind(line, title), title, components, diet(meal, allergens), price(meal),
 				List.copyOf(allergens), null, null);
+	}
+
+	private static String translatedText(JsonNode meal, @Nullable JsonNode germanMeal, String field) {
+		String english = meal.path(field).asString("").trim();
+		if (usableText(english)) { return english; }
+		String german = germanMeal == null ? "" : germanMeal.path(field).asString("").trim();
+		return usableText(german) ? german : "";
+	}
+
+	private static boolean usableText(String text) {
+		return !text.isBlank() && !text.equalsIgnoreCase("novalue");
 	}
 
 	/** main, buffet, dessert or drink, from the counter and meal name (Cookpit has no field for it). */

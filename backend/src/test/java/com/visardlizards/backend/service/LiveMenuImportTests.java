@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import com.visardlizards.backend.repository.MensaRepository;
+import com.visardlizards.backend.model.domain.Meal;
 
 /** Imports recorded Cookpit data (week of 12 Oct 2026) into the test database. */
 @SpringBootTest
@@ -34,9 +35,56 @@ class LiveMenuImportTests {
 
 	@AfterEach
 	void removeImportedWeek() {
-		for (String mensaId : List.of("polyterrasse", "food-and-lab")) {
+		for (String mensaId : List.of("polyterrasse", "food-and-lab", "clausiusbar")) {
 			mensaRepository.replaceMeals(mensaId, MONDAY, MONDAY.plusDays(6), List.of());
 		}
+	}
+
+	@Test
+	void refreshRepairsAnAlreadyStoredClausiusbarPlaceholder() {
+		String id = "clausiusbar.2026-10-12.lunch.0";
+		mensaRepository.replaceMeals("clausiusbar", MONDAY, MONDAY.plusDays(6), List.of(
+				new Meal(id, "clausiusbar", MONDAY, "lunch", "WOK STREET", "main", "novalue",
+						List.of("novalue"), "vegetarian", null, List.of(), null, null)));
+		EthMensaClient client = mock(EthMensaClient.class);
+		when(client.fetchWeeklyRotaPages(eq(MONDAY), eq("en"))).thenReturn(List.of(clausiusRota("novalue", "novalue")));
+		when(client.fetchWeeklyRotaPages(eq(MONDAY), eq("de"))).thenReturn(List.of(clausiusRota("Deutsches Gericht", "Reis")));
+		when(client.fetchWeeklyRotaPages(eq(MONDAY.plusWeeks(1)), any()))
+				.thenReturn(List.of("{\"weekly-rota-array\":[]}"));
+		Clock clock = Clock.fixed(MONDAY.atStartOfDay(ZoneId.of("Europe/Zurich")).toInstant(), ZoneId.of("Europe/Zurich"));
+
+		var result = new LiveMenuImportService(client, ethMenuMapper, mensaRepository, clock, true).importEthMenus();
+
+		assertThat(result.meals()).isEqualTo(1);
+		Meal stored = mensaRepository.findMealById(id).orElseThrow();
+		assertThat(stored.title()).isEqualTo("Deutsches Gericht");
+		assertThat(stored.components()).containsExactly("Reis");
+	}
+
+	@Test
+	void unavailableGermanFeedDoesNotPreventValidEnglishImport() {
+		EthMensaClient client = mock(EthMensaClient.class);
+		when(client.fetchWeeklyRotaPages(eq(MONDAY), eq("en")))
+				.thenReturn(List.of(clausiusRota("English dish", "Rice")));
+		when(client.fetchWeeklyRotaPages(any(), eq("de"))).thenThrow(new IllegalStateException("offline"));
+		when(client.fetchWeeklyRotaPages(eq(MONDAY.plusWeeks(1)), eq("en")))
+				.thenReturn(List.of("{\"weekly-rota-array\":[]}"));
+		Clock clock = Clock.fixed(MONDAY.atStartOfDay(ZoneId.of("Europe/Zurich")).toInstant(), ZoneId.of("Europe/Zurich"));
+
+		var result = new LiveMenuImportService(client, ethMenuMapper, mensaRepository, clock, true).importEthMenus();
+
+		assertThat(result.meals()).isEqualTo(1);
+		assertThat(mensaRepository.findMeals("clausiusbar", MONDAY, MONDAY)).extracting(Meal::title)
+				.containsExactly("English dish");
+	}
+
+	private static String clausiusRota(String name, String description) {
+		return """
+				{"weekly-rota-array":[{"facility-id":3,"valid-from":"2026-10-12","valid-to":"2026-10-18",
+				"day-of-week-array":[{"day-of-week-code":1,"opening-hour-array":[{"meal-time-array":[{
+				"name":"Lunch","line-array":[{"name":"WOK STREET","meal":{
+				"line-id":78588,"name":"%s","description":"%s"}}]}]}]}]}]}
+				""".formatted(name, description);
 	}
 
 	@Test
