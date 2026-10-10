@@ -24,7 +24,7 @@ const copy: Record<'en' | 'de', Record<WelcomeStep, Copy> & { skip: string; clos
   },
 };
 
-const guide: Record<InstallKind, { en: string; de: string; href?: string; hrefDe?: string; anchor: 'top' | 'bottom' }> = {
+export const guide: Record<InstallKind, { en: string; de: string; href?: string; hrefDe?: string; anchor: 'top' | 'bottom' }> = {
   installed: { en: 'Already installed. Open it from your home screen or app launcher.', de: 'Bereits installiert. Öffne die App über den Startbildschirm.', anchor: 'top' },
   'ios-safari': { en: 'Tap the Share button in Safari, then Add to Home Screen.', de: 'Tippe in Safari auf Teilen und dann auf Zum Home-Bildschirm.', href: 'https://support.apple.com/guide/iphone/turn-a-website-into-an-app-iph42ab2f3a7/ios', anchor: 'bottom' },
   'ios-other': { en: 'Open this page in Safari, then tap Share and Add to Home Screen.', de: 'Öffne diese Seite in Safari. Tippe auf Teilen und Zum Home-Bildschirm.', href: 'https://support.apple.com/guide/iphone/turn-a-website-into-an-app-iph42ab2f3a7/ios', anchor: 'bottom' },

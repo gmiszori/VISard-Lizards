@@ -32,6 +32,8 @@
 .ob-install-steps{display:grid;gap:12px;padding:0;list-style:none;counter-reset:install;}
 .ob-install-steps li{counter-increment:install;display:flex;align-items:flex-start;gap:13px;padding:15px;border:1px solid var(--line);border-radius:14px;background:var(--paper);font-size:14px;line-height:1.55}
 .ob-install-steps li::before{content:counter(install);display:grid;place-items:center;flex:0 0 26px;height:26px;border-radius:50%;background:var(--lime);color:var(--green);font-weight:800}
+.ob-install-guide{padding:14px 16px;border-left:3px solid var(--green);background:color-mix(in srgb,var(--green) 8%,var(--paper));line-height:1.55}
+.ob-install-button{margin-top:14px}
 .ob-payoff{padding:12px 0}.ob-payoff-mark{display:grid;place-items:center;width:64px;height:64px;background:var(--lime);color:var(--green);font-size:42px;border-radius:20px;margin-bottom:24px}.ob-pick{padding:24px;border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);background:var(--paper);margin:20px 0}.ob-pick h2{font:800 23px/1.3 Manrope,sans-serif;letter-spacing:-.03em;margin:10px 0}.ob-pick>p:not(.eyebrow){color:var(--muted);font-size:13px;line-height:1.6}.ob-pick-price{display:block;font:800 23px Manrope,sans-serif;color:var(--green);margin:20px 0}.ob-empty{padding:24px;border:1px solid var(--line);border-radius:18px;line-height:1.7}.ob-error{border:1px solid var(--green);padding:15px;background:var(--paper);line-height:1.6}
 :root[data-theme=dark] .ob-payoff-mark{background:var(--green);color:var(--paper)}
 @media(prefers-reduced-motion:reduce){.ob *{transition:none!important;scroll-behavior:auto!important}}
