@@ -16,7 +16,7 @@ import tools.jackson.databind.json.JsonMapper;
 public class ScraperAiClient {
     private static final Set<String> TOOLS = Set.of("discover_menu_sources", "scrape_meals", "read_menu_source");
     private static final String INSTRUCTIONS = """
-        Retrieve meals available today or next in Europe/Zurich, with prices and source references.
+        Retrieve meals available today and next weeks in Europe/Zurich, with prices and source references.
         First discover_menu_sources on the supplied venue URL, then choose returned links for the same venue.
         Prefer daily/weekly menus; inspect labelled catering PDFs if no daily menu exists, but label them as catering.
         Never guess URLs or select another venue's menu. Then scrape_meals on the selected source, or the

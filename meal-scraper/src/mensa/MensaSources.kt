@@ -24,7 +24,6 @@ object MensaSources {
         MensaLocation("raemi-59", "Rämi 59", "https://www.zfv.ch/de/essen-gehen/raemi-59"),
         MensaLocation("untere-mensa", "Untere Mensa", "https://www.zfv.ch/de/essen-gehen/untere-mensa-uzh"),
         MensaLocation("bistro-tonino", "Bistro Tonino", "https://www.zfv.ch/de/essen-gehen/bistro-tonino"),
-        // Lagerstrasse currently lists vending machines; Sihlhof publishes a lunch menu.
         MensaLocation("zhaw-lagerstrasse", "ZHAW Cafeteria Lagerstrasse & Sihlhof", "https://www.zfv.ch/de/essen-gehen/bistro-sihlhof",
             listOf("https://www.zhaw.ch/de/studium/waehrend-des-studiums/verpflegung")),
         MensaLocation("molki", "Mensa Molki", "https://www.zfv.ch/de/essen-gehen/gastronomie-im-toni-areal"),
