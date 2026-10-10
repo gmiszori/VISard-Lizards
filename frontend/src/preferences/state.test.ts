@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { normalizePreferences, readPreferences, readFavourites } from './state.ts';
 test('invalid stored shapes and boolean strings cannot break or silently enable filters', () => {
   for (const raw of [null, [], 'wrong', 12, { vegan: 'false', vegetarian: null, meat: [], compact: {}, openOnly: 'yes', priceTier: 'admin', locations: [null, 123, {}, 'invalid'] }]) {
-    assert.deepEqual(normalizePreferences(raw), { vegan: true, vegetarian: true, meat: true, viewMode: 'standard', openOnly: false, locations: ['zentrum', 'hoenggerberg', 'irchel'], priceTier: 'student', devMode: false });
+    assert.deepEqual(normalizePreferences(raw), { vegan: true, vegetarian: true, meat: true, viewMode: 'standard', openOnly: false, locations: ['zentrum', 'hoenggerberg', 'irchel', 'oerlikon', 'basel', 'toni-areal', 'europaallee'], priceTier: 'student', devMode: false });
   }
 });
 test('normalizes legacy locations, deduplicates, and preserves intentional empty selection', () => {

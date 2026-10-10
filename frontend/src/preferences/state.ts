@@ -5,17 +5,19 @@ export interface Preferences {
 }
 export const PREFERENCES_KEY = 'campuseats-preferences';
 export const FAVOURITES_KEY = 'campuseats-favourites';
-const campuses = ['zentrum', 'hoenggerberg', 'irchel'];
+export const ALL_CAMPUS_IDS = ['zentrum', 'hoenggerberg', 'irchel', 'oerlikon', 'basel', 'toni-areal', 'europaallee'];
 const legacy: Record<string, string> = { 'ETH Zentrum': 'zentrum', 'UZH Zentrum': 'zentrum', 'ETH Hönggerberg': 'hoenggerberg', 'UZH Irchel': 'irchel' };
 export const isPriceTier = (value: unknown): value is Preferences['priceTier'] => value === 'student' || value === 'worker' || value === 'external';
 export const isViewMode = (value: unknown): value is Preferences['viewMode'] => value === 'standard' || value === 'compact' || value === 'list';
 
 /** Treat persisted JSON as untrusted input. An intentional empty campus list stays empty. */
-export function normalizePreferences(value: unknown, profileTier: unknown = 'student'): Preferences {
+export function normalizePreferences(value: unknown, profileTier: unknown = 'student', profileLocations?: unknown): Preferences {
   const saved = value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
-  const raw = Array.isArray(saved.locations) ? saved.locations : typeof saved.campus === 'string' && saved.campus !== 'all' ? [saved.campus] : campuses;
-  const valid = raw.filter((v): v is string => typeof v === 'string').map(v => legacy[v] ?? v).filter(v => campuses.includes(v));
-  const locations = raw.length && !valid.length ? campuses : [...new Set(valid)];
+  const raw = Array.isArray(saved.locations) ? saved.locations
+    : Array.isArray(profileLocations) ? profileLocations
+      : typeof saved.campus === 'string' && saved.campus !== 'all' ? [saved.campus] : ALL_CAMPUS_IDS;
+  const valid = raw.filter((v): v is string => typeof v === 'string').map(v => legacy[v] ?? v).filter(v => ALL_CAMPUS_IDS.includes(v));
+  const locations = raw.length && !valid.length ? [...ALL_CAMPUS_IDS] : [...new Set(valid)];
   const bool = (key: string, fallback: boolean) => typeof saved[key] === 'boolean' ? saved[key] as boolean : fallback;
   return { vegan: bool('vegan', true), vegetarian: bool('vegetarian', true), meat: bool('meat', true),
     viewMode: isViewMode(saved.viewMode) ? saved.viewMode : bool('compact', false) ? 'compact' : 'standard',
@@ -26,9 +28,12 @@ export function readPreferences(storage: Pick<Storage, 'getItem'> = localStorage
   try {
     let saved: unknown;
     try { saved = JSON.parse(storage.getItem(PREFERENCES_KEY) ?? 'null'); } catch { saved = null; }
-    let profile: { priceTier?: unknown } | null = null;
+    let profile: Record<string, unknown> | null = null;
     try { profile = JSON.parse(storage.getItem('campuseats-profile') ?? 'null'); } catch { /* Defaults. */ }
-    return normalizePreferences(saved, profile?.priceTier);
+    const profileLocations = profile && typeof profile.campus === 'string'
+      ? [profile.campus, ...(Array.isArray(profile.campusSecondary) ? profile.campusSecondary : [])]
+      : undefined;
+    return normalizePreferences(saved, profile?.priceTier, profileLocations);
   } catch { return normalizePreferences(null); }
 }
 export function readFavourites(storage: Pick<Storage, 'getItem'> = localStorage): string[] {

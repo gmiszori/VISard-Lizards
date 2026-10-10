@@ -1,5 +1,5 @@
 import { matchesQuery } from '../search/fold';
-import { isPriceTier, isViewMode, readPreferences, PREFERENCES_KEY, type Preferences } from '../preferences/state';
+import { ALL_CAMPUS_IDS, isPriceTier, isViewMode, readPreferences, PREFERENCES_KEY, type Preferences } from '../preferences/state';
 import { API_URL, apiPost } from '../data/api';
 let aiMatchedIds: Set<string> | null = null;
 let aiQuery = '';
@@ -16,14 +16,7 @@ function searchStatus(message: string) {
 let preferences: Preferences;
 try {
   preferences = readPreferences();
-  const allCampuses = ['zentrum', 'hoenggerberg', 'irchel', 'oerlikon', 'basel', 'toni-areal', 'europaallee'];
-  // Ensure any newly added campus is included so users don't get stuck seeing only the 3 legacy campuses
-  for (const c of allCampuses) {
-    if (!preferences.locations.includes(c)) {
-      preferences.locations.push(c);
-    }
-  }
-} catch { preferences = { vegan: true, vegetarian: true, meat: true, viewMode: 'standard', openOnly: false, locations: ['zentrum', 'hoenggerberg', 'irchel', 'oerlikon', 'basel', 'toni-areal', 'europaallee'], priceTier: 'student', devMode: false }; }
+} catch { preferences = { vegan: true, vegetarian: true, meat: true, viewMode: 'standard', openOnly: false, locations: [...ALL_CAMPUS_IDS], priceTier: 'student', devMode: false }; }
 let showWithoutMenu = false;
 
 function applyPreferences() {
