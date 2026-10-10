@@ -28,8 +28,12 @@ public class WebPushSender {
 	/** The push service keeps an undelivered message this long, e.g. while the phone is off. */
 	private static final Duration TTL = Duration.ofHours(12);
 
-	/** The result of one send: the push service's HTTP status, or -1 if it could not be reached. */
-	public record Result(int status) {
+	/** The result of one send: the push service's HTTP status (-1 if it could not be reached) and its error text. */
+	public record Result(int status, String detail) {
+
+		public Result(int status) {
+			this(status, "");
+		}
 
 		public boolean delivered() {
 			return status >= 200 && status < 300;
@@ -45,7 +49,8 @@ public class WebPushSender {
 	private final String subject;
 	private final List<String> extraHosts;
 	private final Clock clock;
-	private final HttpClient http = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+	private final HttpClient http = HttpClient.newBuilder()
+			.version(HttpClient.Version.HTTP_1_1).connectTimeout(Duration.ofSeconds(10)).build();
 
 	public WebPushSender(VapidKeys keys, @Value("${app.push.subject:mailto:unieats@example.com}") String subject,
 			@Value("${app.push.extra-hosts:}") List<String> extraHosts, Clock clock) {
@@ -88,9 +93,20 @@ public class WebPushSender {
 				.POST(HttpRequest.BodyPublishers.ofByteArray(body))
 				.build();
 		try {
-			return new Result(http.send(request, HttpResponse.BodyHandlers.discarding()).statusCode());
+			HttpResponse<String> response;
+			try {
+				response = http.send(request, HttpResponse.BodyHandlers.ofString());
+			} catch (IOException firstTry) {
+				// A pooled connection the push service has closed in the meantime ("Connection reset", seen with
+				// Microsoft's WNS): one retry on a fresh connection.
+				response = http.send(request, HttpResponse.BodyHandlers.ofString());
+			}
+			int status = response.statusCode();
+			// The push services explain rejections in the body (e.g. a VAPID or encryption problem).
+			String detail = status >= 300 ? response.body().replaceAll("\\s+", " ").trim() : "";
+			return new Result(status, detail.length() > 300 ? detail.substring(0, 300) : detail);
 		} catch (IOException e) {
-			return new Result(-1);
+			return new Result(-1, e.getClass().getSimpleName() + ": " + e.getMessage());
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 			return new Result(-1);

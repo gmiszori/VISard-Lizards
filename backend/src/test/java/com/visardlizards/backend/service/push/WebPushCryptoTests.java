@@ -59,6 +59,22 @@ class WebPushCryptoTests {
 		assertThat(decrypt(body, (ECPrivateKey) userAgent.getPrivate(), userAgentPublic, auth)).isEqualTo(message);
 	}
 
+	/** The example of RFC 8291, appendix A: same keys and salt must give exactly the same message. */
+	@Test
+	void matchesTheRfc8291Example() {
+		byte[] serverPrivate = WebPushCrypto.fromBase64Url("yfWPiYE-n46HLnH0KqZOF1fJJU3MYrct3AELtAQ-oRw");
+		byte[] serverPublic = WebPushCrypto.fromBase64Url("BP4z9KsN6nGRTbVYI_c7VJSPQTBtkgcy27mlmlMoZIIgDll6e3vCYLocInmYWAmS6TlzAC8wEqKK6PBru3jl7A8");
+		byte[] userAgentPublic = WebPushCrypto.fromBase64Url("BCVxsr7N_eNgVRqvHtD0zTZsEc6-VV-JvLexhqUzORcxaOzi6-AYWXvTBHm4bjyPjs7Vd8pZGH6SRpkNtoIAiw4");
+		byte[] auth = WebPushCrypto.fromBase64Url("BTBZMqHH6r4Tts7J_aSIgg");
+		byte[] salt = WebPushCrypto.fromBase64Url("DGv6ra1nlYgDCS1FRnbzlw");
+		KeyPair ephemeral = new KeyPair(WebPushCrypto.decodePublicKey(serverPublic), WebPushCrypto.decodePrivateKey(serverPrivate));
+
+		byte[] body = WebPushCrypto.encrypt("When I grow up, I want to be a watermelon".getBytes(StandardCharsets.UTF_8),
+				userAgentPublic, auth, ephemeral, salt);
+
+		assertThat(WebPushCrypto.base64Url(body)).isEqualTo("DGv6ra1nlYgDCS1FRnbzlwAAEABBBP4z9KsN6nGRTbVYI_c7VJSPQTBtkgcy27mlmlMoZIIgDll6e3vCYLocInmYWAmS6TlzAC8wEqKK6PBru3jl7A_yl95bQpu6cVPTpK4Mqgkf1CXztLVBSt2Ks3oZwbuwXPXLWyouBWLVWGNWQexSgSxsj_Qulcy4a-fN");
+	}
+
 	@Test
 	void keysSurviveEncoding() {
 		KeyPair pair = WebPushCrypto.newKeyPair();

@@ -105,7 +105,18 @@ public class StarredMealPushService {
 		if (!added.isEmpty()) {
 			occurrences(added).forEach(o -> entity.getNotified().add(key(o)));
 		}
-		return subscriptions.save(entity);
+		PushSubscriptionEntity saved = subscriptions.save(entity);
+		log.info("Push subscription saved: {} ({} dishes, {})", host(endpoint), cleaned.size(), saved.getLanguage());
+		return saved;
+	}
+
+	/** The push service host only: the full endpoint is a secret address. */
+	private static String host(String endpoint) {
+		try {
+			return java.net.URI.create(endpoint).getHost();
+		} catch (IllegalArgumentException e) {
+			return "?";
+		}
 	}
 
 	public void unsubscribe(String endpoint) {
@@ -219,6 +230,7 @@ public class StarredMealPushService {
 	private Result send(PushSubscriptionEntity entity, String title, String body, String url) {
 		String payload = "{\"title\":" + json(title) + ",\"body\":" + json(body) + ",\"url\":" + json(url) + ",\"tag\":\"starred-dishes\"}";
 		Result result = sender.send(new PushTarget(entity.getEndpoint(), entity.getP256dh(), entity.getAuth()), payload);
+		log.info("Push to {}: HTTP {}{}", host(entity.getEndpoint()), result.status(), result.detail().isEmpty() ? "" : " " + result.detail());
 		if (result.gone()) {
 			subscriptions.delete(entity);
 		}

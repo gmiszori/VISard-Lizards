@@ -54,4 +54,5 @@ data/*.db
 
 data/scraped-menus.json
 data/vapid-keys.properties
+data/*.log
 data/scraped-menus-*.tmp
