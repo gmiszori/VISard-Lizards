@@ -11,12 +11,12 @@ The main backend sends AI function requests to the connector, which calls `disco
 backend owns the OpenAI key and persists results in the application's database. The connector
 does not need an OpenAI key.
 
-`src/mensa/MensaSources.kt` lists 23 known locations and supplies their official sources in
+`src/mensa/MensaSources.kt` lists 22 known locations and supplies their official sources in
 the MCP tool descriptions. Combined locations include supplementary links for UniTurm,
 Brunnenhof and ZHAW Lagerstrasse. The backend's `mensa/scraper-locations.json` uses the primary
 menu page for each combined location (Rämi 74, The YARD and Sihlhof respectively).
 Science Lounge is at the ETH campus in Basel. ZHAW Lagerstrasse currently lists vending
-machines rather than a staffed cafeteria. Bistro HPI is excluded from the source catalog
+machines rather than a staffed cafeteria. Bistro HPI and Bellavista are excluded from the source catalog
 and automatic scraping at the user's request. Source registration does not guarantee that
 a venue publishes a dated menu.
 

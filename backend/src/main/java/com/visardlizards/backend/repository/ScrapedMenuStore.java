@@ -18,11 +18,12 @@ public class ScrapedMenuStore {
     public ScrapedMenuStore(ScrapedMenuEntityRepository raw, MealEntityRepository meals, JsonMapper mapper) {
         this.raw=raw; this.meals=meals; this.mapper=mapper;
     }
-    public List<JsonNode> all() { return raw.findAll().stream().map(e -> mapper.readTree(e.getPayload())).toList(); }
-    public JsonNode get(String id) { return raw.findById(id).map(e -> mapper.readTree(e.getPayload())).orElse(null); }
+    public List<JsonNode> all() { return raw.findAll().stream().map(e -> mapper.readTree(e.getPayload())).filter(e -> ExcludedMensas.allowed(e.path("id").asText())).toList(); }
+    public JsonNode get(String id) { return ExcludedMensas.allowed(id) ? raw.findById(id).map(e -> mapper.readTree(e.getPayload())).orElse(null) : null; }
     @Transactional
     public void save(JsonNode entry) {
         String id=entry.path("id").asText();
+        if(!ExcludedMensas.allowed(id)) return;
         raw.save(new ScrapedMenuEntity(id,entry.toString()));
         if(entry.has("result") && !entry.path("stale").asBoolean()) {
             LocalDate today=LocalDate.now(ZoneId.of("Europe/Zurich"));

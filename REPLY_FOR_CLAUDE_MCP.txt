@@ -68,3 +68,10 @@ Codex MCP tool improvements (2026-10-10):
   Live tools: Bellavista has 60 entries for Oct 12-30 (4/day); PHZH has 33 Oct 10-24.
 - No frontend code changed. Rebuilding the meal-scraper service; existing backend caches
   still need r + Enter or the authenticated refresh endpoint to pick up new results.
+2026-10-10 - Codex: Bistro HPI and Bellavista permanently removed at user request.
+- Removed venue records from frontend fallback data, backend seed/ETH catalog/scraper registry, and MCP source catalog.
+- Backend excludes both IDs from location, meal and scraper-cache reads and blocks future imports/cache writes.
+- Startup deletes existing records including meals, collection rows, raw scraper results, associated ratings and crowd reports.
+- Added regression coverage with old DB records: API 404, safe deletion and rejected reimports.
+- Backend: 146 passed, 2 optional live tests skipped. Kotlin scraper/connector: 48 passed.
+- Rebuilding all local services to apply the removal. Frontend behavior/UI unchanged.

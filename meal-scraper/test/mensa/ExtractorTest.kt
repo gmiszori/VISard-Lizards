@@ -30,9 +30,9 @@ class ExtractorTest {
     }
     @Test fun allRequestedLocationsHaveDistinctPublicUrls() {
         val locations = MensaSources.locations
-        assertEquals(23, locations.size)
-        assertEquals(23, locations.map { it.id }.toSet().size)
-        assertEquals(23, locations.map { it.url }.toSet().size)
+        assertEquals(22, locations.size)
+        assertEquals(22, locations.map { it.id }.toSet().size)
+        assertEquals(22, locations.map { it.url }.toSet().size)
         locations.flatMap { listOf(it.url) + it.additionalUrls }.forEach {
             assertEquals(it, PublicWebFetcher.validateUrl(it))
             assertTrue(MensaSources.toolHint.contains(it))
