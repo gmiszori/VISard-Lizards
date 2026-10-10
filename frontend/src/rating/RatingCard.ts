@@ -61,6 +61,9 @@ export function mountRatingCard(): void {
     if (root!.contains(document.activeElement)) document.querySelector<HTMLInputElement>('#search-input')?.focus();
     root!.hidden = true;
     closing = false;
+    // A meal request that is still running must not draw a step into the hidden card or move focus.
+    mensa = undefined;
+    meal = undefined;
     if (closeTimer) clearTimeout(closeTimer);
   }
   function step(name: 'mensa' | 'meal' | 'rate', focus = true) {
