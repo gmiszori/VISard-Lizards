@@ -1,8 +1,8 @@
 // UniEats service worker: push notifications for starred dishes (src/push/push.ts)
 // plus an offline cache for visited and prewarmed pages.
 
-// v4 refreshes the manifest and raster app icons required by Chromium for installation.
-const CACHE_NAME = 'unieats-shell-v4';
+// v5 lets push start even when an optional offline page cannot be fetched during installation.
+const CACHE_NAME = 'unieats-shell-v5';
 const PRECACHE_URLS = ['/', '/settings', '/onboarding', '/offline.html', '/manifest.webmanifest', '/favicon.svg', '/icon-192.png', '/icon-512.png'];
 
 /**
@@ -18,11 +18,13 @@ async function plainCopy(response) {
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE_NAME);
-    // Like cache.addAll (one failure fails the install), but redirected answers are stored as plain copies.
+    // A protected or temporarily unavailable page must not prevent the push worker from activating.
     await Promise.all(PRECACHE_URLS.map(async url => {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`Could not precache ${url}: ${response.status}`);
-      await cache.put(url, await plainCopy(response));
+      try {
+        const response = await fetch(url);
+        if (!response.ok || new URL(response.url, self.location.origin).origin !== self.location.origin) return;
+        await cache.put(url, await plainCopy(response));
+      } catch { /* Offline cache is best-effort; push still needs an active worker. */ }
     }));
     await self.skipWaiting();
   })());

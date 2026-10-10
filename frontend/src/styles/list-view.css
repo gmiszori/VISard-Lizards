@@ -50,7 +50,7 @@
 }
 
 :root[data-density="list"] :is(#canteen-grid, #favourites-grid) .canteen-card .canteen-photo-caption .card-title {
-  font-size: 12px;
+  font-size: 15px;
   line-height: 1.35;
   font-weight: 700;
 }
@@ -67,15 +67,19 @@
 
 :root[data-density="list"] .canteen-card .favorite-toggle {
   position: static;
+  display: grid;
+  place-items: center;
   flex: 0 0 30px;
   width: 30px;
   height: 30px;
   margin: 0;
+  padding: 0;
   border: 1px solid var(--line);
   border-radius: 9px;
   background: var(--paper);
   box-shadow: none;
   font-size: 19px;
+  line-height: 1;
   pointer-events: auto;
 }
 

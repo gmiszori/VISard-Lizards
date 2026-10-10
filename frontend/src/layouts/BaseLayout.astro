@@ -5,8 +5,8 @@ import '../styles/touch-targets.css';
 import '../styles/list-view.css';
 import SimulatedClockBanner from '../time/SimulatedClockBanner.astro';
 import { LIVE_DATA } from '../data/canteens';
-interface Props { title: string }
-const { title } = Astro.props;
+interface Props { title: string; hideFooter?: boolean }
+const { title, hideFooter = false } = Astro.props;
 ---
 <!doctype html>
 <html lang="en">
@@ -60,6 +60,9 @@ const { title } = Astro.props;
       </header>
       <p class="offline-banner" data-offline-banner role="status" hidden>You are offline. Showing the last cached version.</p>
       <main class="main" id="main" tabindex="-1"><slot /></main>
+      {!hideFooter && <footer class="footer">
+        <span>Made by students with ❤️ for students</span>
+      </footer>}
       <SimulatedClockBanner />
     </div>
     <script is:inline>
