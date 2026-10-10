@@ -22,20 +22,18 @@ const openCount = canteens.filter((canteen) => canteen.isOpen).length;
   <div class="section-head all-canteens-heading"><div><h2 data-i18n="allCanteens">All canteens</h2></div></div>
   <MenuDate date={menuDate} today={today} variant="note" />
   <div id="visible-count" class="count" style="margin:0 0 12px">{canteens.length} canteens</div>
+  <p id="favourites-status" role="status" hidden></p>
   <div id="canteen-grid" class="canteen-grid">{canteens.map((canteen) => <CanteenCard canteen={canteen} />)}</div>
   <div id="empty-state" class="empty-state" data-i18n="empty">No canteens match your search. Try another dish or campus.</div>
   <script>
+    import { readFavourites, FAVOURITES_KEY } from '../preferences/state';
     const allCards = [...document.querySelectorAll<HTMLElement>('[data-canteen-card]')];
     const allGrid = document.querySelector<HTMLElement>('#canteen-grid');
     const favouritesGrid = document.querySelector<HTMLElement>('#favourites-grid');
     const favouritesSection = document.querySelector<HTMLElement>('#favourites-section');
-    function readFavourites(): string[] {
-      try {
-        const value: unknown = JSON.parse(localStorage.getItem('campuseats-favourites') || '[]');
-        return Array.isArray(value) ? value.filter((id): id is string => typeof id === 'string') : [];
-      } catch { return []; }
-    }
-    const favourites = new Set(readFavourites());
+    let saved: string[];
+    try { saved = readFavourites(); } catch { saved = []; }
+    const favourites = new Set(saved);
     function renderFavourites() {
       allCards.forEach((card) => {
         const id = card.dataset.canteenId || '';
@@ -60,12 +58,22 @@ const openCount = canteens.filter((canteen) => canteen.isOpen).length;
       const card = button.closest<HTMLElement>('[data-canteen-card]');
       const id = card?.dataset.canteenId;
       if (!id) return;
-      if (favourites.has(id)) favourites.delete(id); else favourites.add(id);
-      try { localStorage.setItem('campuseats-favourites', JSON.stringify([...favourites])); } catch { /* not remembered, still works for this visit */ }
+      const next = new Set(favourites);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      const status = document.querySelector<HTMLElement>('#favourites-status')!;
+      try { localStorage.setItem(FAVOURITES_KEY, JSON.stringify([...next])); }
+      catch { status.hidden = false; status.textContent = document.documentElement.lang === 'de' ? 'Favoriten konnten nicht gespeichert werden.' : 'Could not save favourites on this device.'; return; }
+      status.hidden = true;
+      favourites.clear(); next.forEach(value => favourites.add(value));
       renderFavourites();
     });
     document.addEventListener('languagechange', renderFavourites);
     document.addEventListener('campuseats:preferences-applied', renderFavourites);
+    window.addEventListener('storage', event => {
+      if (event.key === FAVOURITES_KEY || event.key === null) {
+        try { favourites.clear(); readFavourites().forEach(id => favourites.add(id)); renderFavourites(); } catch { /* Storage blocked. */ }
+      }
+    });
     renderFavourites();
   </script>
 </BaseLayout>

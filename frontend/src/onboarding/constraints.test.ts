@@ -29,3 +29,9 @@ for (const constraint of ['halal', 'kosher'] as const) test(`${constraint} is st
 test('constraints combine with diet', () => {
   assert.equal(matchesConstraints({ ...meal, dietTag: 'vegetarian', allergens: ['milk'] }, { diet: 'vegetarian', hard: ['lactose_free', 'halal'] }), false);
 });
+test('no_pork does not reject champignons or hamburger from a ham substring', () => {
+  for (const component of ['Champignon sauce', 'Hamburger bun', 'Chamomile tea'])
+    assert.equal(matchesConstraints({ ...meal, components: [component] }, { diet: 'omnivore', hard: ['no_pork'] }), true);
+  for (const component of ['Schweinefleisch', 'Bratwurst', 'Schinkenwürfel'])
+    assert.equal(matchesConstraints({ ...meal, components: [component] }, { diet: 'omnivore', hard: ['no_pork'] }), false);
+});

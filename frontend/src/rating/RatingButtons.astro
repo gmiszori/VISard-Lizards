@@ -9,13 +9,13 @@ const scores = [
 ---
 <div data-rating-step="rate" hidden>
   <p data-rating-meal-name></p>
-  <h3 tabindex="-1" data-rating-rate-heading>How was your meal?</h3>
-  <div class="meal-rating-scores" role="group" aria-label="Rate from 1 to 5 stars">
+  <h3 tabindex="-1" data-rating-rate-heading data-rating-text="rate">How was your meal?</h3>
+  <div class="meal-rating-scores" role="group" data-rating-aria="scores" aria-label="Rate from 1 to 5 stars">
     {scores.map(({ stars, label }) => (
       <button type="button" data-rating-score={stars} aria-label={`${stars} of 5 stars: ${label}`}>
-        <span aria-hidden="true">{stars}★</span>{label}
+        <span aria-hidden="true">{stars}★</span><strong data-rating-text={`score${stars}`}>{label}</strong>
       </button>
     ))}
   </div>
-  <button type="button" data-rating-back="meal">Back to meals</button>
+  <button type="button" data-rating-back="meal" data-rating-text="backMeals">Back to meals</button>
 </div>

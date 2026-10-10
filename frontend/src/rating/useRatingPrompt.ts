@@ -28,7 +28,7 @@ export function mensaCandidates(mensas: MensaChoice[], profile: Partial<Profile>
 }
 
 /** Framework-free state controller; every storage failure is surfaced to the card. */
-export function useRatingPrompt(now: () => Date, candidates: MensaChoice[], storage: Storage = localStorage, key = STATE_KEY) {
+export function useRatingPrompt(now: () => Date, candidates: MensaChoice[] | (() => MensaChoice[]), storage: Storage = localStorage, key = STATE_KEY) {
   function read(): RatingPromptState {
     const value: unknown = JSON.parse(storage.getItem(key) ?? 'null');
     if (value === null) return empty();
@@ -40,7 +40,7 @@ export function useRatingPrompt(now: () => Date, candidates: MensaChoice[], stor
     return s;
   }
   return {
-    current: () => getRatingPrompt(now(), candidates, read()),
+    current: () => getRatingPrompt(now(), typeof candidates === 'function' ? candidates() : candidates, read()),
     shown(date: string) {
       const state = read();
       const today = zurichTime(now()).date;
