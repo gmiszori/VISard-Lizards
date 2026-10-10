@@ -1,6 +1,6 @@
 import { saveProfile } from './api';
 import { defaults } from './profile';
-import { createOnboardingStore } from './onboardingStore';
+import { createOnboardingStore, savedLanguage } from './onboardingStore';
 import { pickTodaysDish } from './pickTodaysDish';
 import { steps, skipStep, type Context, type OnboardingData } from './steps';
 import { t, translate } from './i18n';
@@ -22,7 +22,7 @@ function initialise(root: HTMLElement) {
       url.searchParams.delete('restart');
       window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
     }
-    const initial = defaults(data.campuses[0]!.id, localStorage.getItem('campuseats-language') === 'de' ? 'de' : 'en');
+    const initial = defaults(data.campuses[0]!.id, savedLanguage());
     const sections = steps.map(step => root.querySelector<HTMLElement>(`[data-step="${step.id}"]`)!);
     const flow = root.querySelector<HTMLElement>('[data-flow]')!;
     const payoff = root.querySelector<HTMLElement>('[data-payoff]')!;
@@ -70,8 +70,10 @@ function initialise(root: HTMLElement) {
       root.scrollIntoView({ block: 'start', behavior: 'instant' });
     }
     function finish() {
-      saveProfile(store.state.profile);
+      const saved = saveProfile(store.state.profile);
       store.clear(); completed = true; refresh();
+      // If the device could not store the answers, say so instead of implying they were saved.
+      payoff.querySelector<HTMLElement>('[data-save-note]')!.hidden = saved;
       payoff.querySelector<HTMLElement>('h1')!.focus();
       root.scrollIntoView({ block: 'start', behavior: 'instant' });
     }
@@ -84,7 +86,7 @@ function initialise(root: HTMLElement) {
     skip.addEventListener('click', () => guard(() => {
       if (steps[store.state.step]!.id === 'campus') store.setPicks([]);
       store.update(skipStep(steps[store.state.step]!.id, { ...initial,
-        lang: localStorage.getItem('campuseats-language') === 'de' ? 'de' : 'en' })); advance();
+        lang: savedLanguage() })); advance();
     }));
     root.querySelector('[data-edit]')!.addEventListener('click', () => guard(() => { completed = false; move(0); }));
     root.addEventListener('keydown', event => {

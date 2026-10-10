@@ -7,7 +7,7 @@ const destination = mensa ? [mensa.name, mensa.address.street,
   [mensa.address.postalCode, mensa.address.city].filter(Boolean).join(' ')].join(', ') : '';
 const href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(destination)}`;
 ---
-{mensa && <a class="mensa-location-link" href={href} target="_blank" rel="noopener noreferrer" aria-label={`${mensa.name} location on Google Maps`}>Location</a>}
+{mensa && <a class="mensa-location-link" href={href} target="_blank" rel="noopener noreferrer"><span data-i18n="mapLink">Location</span><span class="visually-hidden"> – {mensa.name} (Google Maps)</span></a>}
 <style>
   .mensa-location-link{display:inline-flex;align-items:center;min-height:44px;min-width:44px;padding:4px 2px;color:inherit;font-size:11px;font-weight:600;text-decoration:underline;text-underline-offset:3px;white-space:nowrap;flex-shrink:0}
   .mensa-location-link:focus-visible{outline:2px solid currentColor;outline-offset:3px;border-radius:4px}

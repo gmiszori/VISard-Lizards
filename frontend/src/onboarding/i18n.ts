@@ -24,7 +24,7 @@ const en = {
   payoffTitle: 'Today’s pick for you', payoffHint: 'A little less deciding. A little more lunch.', menuDate: 'Menu date',
   viewMensa: 'See this mensa', allMenus: 'Explore all menus', edit: 'Adjust my answers',
   nothing: 'No dish fits all your choices on this menu. Try another campus, a higher budget, or fewer exclusions.',
-  unavailablePrice: 'Price not published', payoffNotice: 'Based on the published menu snapshot. Halal and kosher cannot be checked.',
+  unavailablePrice: 'Price not published', payoffNotice: 'Based on the published menu snapshot. Halal and kosher cannot be checked.', notSaved: 'We could not save your choices on this device (storage is full or blocked). Today’s pick still works for this visit.',
   saveError: 'We couldn’t save your choices. Check that browser storage is available, then try again.',
   jsRequired: 'Please enable JavaScript to personalise your menu.',
 };
@@ -55,7 +55,7 @@ const de: Record<Key, string> = {
   payoffTitle: 'Dein heutiger Vorschlag', payoffHint: 'Weniger entscheiden. Mehr geniessen.', menuDate: 'Menüdatum',
   viewMensa: 'Diese Mensa ansehen', allMenus: 'Alle Menüs entdecken', edit: 'Antworten anpassen',
   nothing: 'An diesem Menütag passt kein Gericht zu all deinen Wünschen. Probiere einen anderen Campus, ein höheres Budget oder weniger Ausschlüsse.',
-  unavailablePrice: 'Preis nicht veröffentlicht', payoffNotice: 'Basierend auf dem veröffentlichten Menüstand. Halal und koscher sind nicht prüfbar.',
+  unavailablePrice: 'Preis nicht veröffentlicht', payoffNotice: 'Basierend auf dem veröffentlichten Menüstand. Halal und koscher sind nicht prüfbar.', notSaved: 'Deine Auswahl konnte nicht auf diesem Gerät gespeichert werden (Speicher voll oder blockiert). Der heutige Tipp funktioniert trotzdem für diesen Besuch.',
   saveError: 'Deine Auswahl konnte nicht gespeichert werden. Prüfe, ob der Browserspeicher verfügbar ist, und versuche es erneut.',
   jsRequired: 'Bitte aktiviere JavaScript, um dein Menü zu personalisieren.',
 };

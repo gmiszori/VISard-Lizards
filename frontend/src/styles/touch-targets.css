@@ -1,0 +1,13 @@
+/* Touch targets: every link and button should be tappable with a thumb (at least 44 px), without changing the layout. */
+
+/* Header logo link: was 36 px tall. The header is taller than this, so nothing moves. */
+.brand { min-height: 44px; display: inline-flex; align-items: center; }
+
+/* Mensa name link on the cards: was 25 px tall. Padding grows the hit area, the negative margin keeps the layout. */
+.card-title a { display: inline-block; padding-block: 11px; margin-block: -11px; }
+
+/* Dish rows on the cards: the dish name link was only 23 px tall. Stretch it over the whole row (name, price,
+   serving time) so a tap anywhere on the row opens the mensa; the star button stays separately tappable. */
+.dish-preview { position: relative; }
+.dish-preview .dish a::after { content: ''; position: absolute; inset: 0; }
+.dish-preview .meal-star { position: relative; z-index: 1; }

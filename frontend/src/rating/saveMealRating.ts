@@ -1,4 +1,5 @@
 import { API_URL, ApiError, apiPost, type BackendMealRating } from '../data/api.ts';
+import { isIsoDate } from '../data/menuDate.ts';
 
 export type Stars = 1 | 2 | 3 | 4 | 5;
 export interface MealRating {
@@ -14,12 +15,19 @@ export class DuplicateMealRatingError extends Error {
   constructor() { super('This meal has already been rated.'); }
 }
 /** The anonymous id the backend identifies this device by: "anon:" + UUID (backend/API.md). */
-export function anonymousUserId(storage: Storage = localStorage): string {
+const ANON_ID = /^anon:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+let sessionId: string | undefined;
+/** The stored id if it has the format the backend accepts; a new one otherwise. Works when storage is blocked. */
+export function anonymousUserId(storage: Storage | (() => Storage) = () => localStorage): string {
   const key = 'campuseats-rating-anon-id';
-  const existing = storage.getItem(key);
-  if (existing) return existing;
-  const id = `anon:${crypto.randomUUID()}`;
-  storage.setItem(key, id);
+  let store: Storage | undefined;
+  try { store = typeof storage === 'function' ? storage() : storage; } catch { store = undefined; }
+  let existing: string | null = null;
+  try { existing = store?.getItem(key) ?? null; } catch { /* unreadable: make a new id */ }
+  if (existing && ANON_ID.test(existing)) return existing;
+  // Without usable storage the id lives for this visit only, but stays the same within it.
+  const id = sessionId ?? `anon:${crypto.randomUUID()}`;
+  try { store?.setItem(key, id); sessionId = undefined; } catch { sessionId = id; }
   return id;
 }
 
@@ -33,7 +41,7 @@ export function anonymousUserId(storage: Storage = localStorage): string {
 export async function saveMealRating(value: MealRating, storage: Storage = localStorage, key = RATINGS_KEY,
   apiUrl = API_URL): Promise<void> {
   if (!value.userId || !value.mealId || !value.mensaId || ![1, 2, 3, 4, 5].includes(value.rating) ||
-      !/^\d{4}-\d{2}-\d{2}$/.test(value.mealDate) || !Number.isFinite(Date.parse(value.ratedAt))) {
+      !isIsoDate(value.mealDate) || !Number.isFinite(Date.parse(value.ratedAt))) {
     throw new Error('Invalid meal rating.');
   }
   let saved = value;
@@ -56,6 +64,16 @@ export async function saveMealRating(value: MealRating, storage: Storage = local
     if (!duplicate) storage.setItem(key, JSON.stringify([...raw, saved]));
   };
   // Serialize the device copy across browser tabs where Web Locks are available.
-  if (typeof window !== 'undefined' && navigator.locks) await navigator.locks.request(key, save);
-  else save();
+  const writeDeviceCopy = async () => {
+    if (typeof window !== 'undefined' && navigator.locks) await navigator.locks.request(key, save);
+    else save();
+  };
+  if (apiUrl) {
+    // The server has already accepted the rating, so the device copy is only a cache for the offline
+    // duplicate check. If it cannot be written (corrupt data, full storage) the rating still counts and
+    // the user must not be told that saving failed.
+    try { await writeDeviceCopy(); } catch { /* best effort */ }
+    return;
+  }
+  await writeDeviceCopy();
 }

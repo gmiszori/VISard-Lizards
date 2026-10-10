@@ -1,6 +1,6 @@
 # Predicted crowd
 
-The canteen detail page shows a weekday histogram, with occupancy on a fixed 0–100% scale and one bar per 15-minute interval. The slider explores individual intervals; the dashed marker follows the current time in Europe/Zurich. Missing intervals remain gaps, and days without predictions show an empty state.
+The canteen detail page shows a small, orientative weekday histogram (about 60 px high): occupancy on a fixed 0–100% scale, one bar per 15-minute interval, with the exact value in each bar's tooltip and in the chart's accessible label. There is no slider. The chart opens on today, or on Monday on Saturday and Sunday (`defaultDay.ts`). The dashed marker follows the current time in Europe/Zurich. Missing intervals remain gaps, and days without predictions show an empty state.
 
 The current data comes from the existing synthetic `CROWD` module and is visibly labelled **Preview data**. Opening windows exclude closed hours; temporarily closed mensas have no preview prediction. On the detail page, a small adapter in `src/pages/canteen/[id].astro` loads `GET /api/mensas/{id}/crowd` and dispatches the backend prediction (`source: 'backend'`) once the backend has enough reports (`histogram.sufficient`); until then the preview stays, labelled as such.
 

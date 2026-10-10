@@ -1,4 +1,5 @@
-export interface MensaChoice { mensaId: string; name: string; date?: string }
+/** hasMenu is false for mensas that serve no meals (closed for renovation, bars); undefined counts as true. */
+export interface MensaChoice { mensaId: string; name: string; date?: string; hasMenu?: boolean }
 export interface RatingPromptState {
   resolvedDates: string[];
   dismissedDates: string[];

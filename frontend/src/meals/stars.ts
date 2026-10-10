@@ -4,15 +4,19 @@ export function normalizedName(name: string): string {
   return name.normalize('NFKC').trim().replace(/\s+/g, ' ').toLocaleLowerCase('en');
 }
 
-/** Save the main dish as a plain string: "Schnitzel with pommes" -> "Schnitzel". */
+/** Save the dish name as shown, with whitespace tidied up. */
 export function starName(name: string): string {
-  return name.normalize('NFKC').trim().replace(/\s+/g, ' ').split(/\s+(?:with|mit|avec|con)\s+/i)[0]!.trim();
+  return name.normalize('NFKC').trim().replace(/\s+/g, ' ');
 }
 
-/** Name matching lets the same dish return with different sides, dates, or locations. */
+/**
+ * A star matches only the exact same dish name (ignoring case and spacing), so the
+ * same dish is found on other days or at other canteens, but starring one dish never
+ * stars a different dish that merely shares a word ("Pasta", "Ground Meat", "Bowl").
+ */
 export function matchesMeal(name: string, stars: string[]): boolean {
   const normalized = normalizedName(name);
-  return stars.some(saved => normalized.includes(normalizedName(saved)));
+  return normalized.length > 0 && stars.some(saved => normalizedName(saved) === normalized);
 }
 
 function readProfile(): Record<string, unknown> {
