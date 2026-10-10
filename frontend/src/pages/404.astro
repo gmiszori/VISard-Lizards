@@ -17,6 +17,11 @@ const { days } = await loadAppData();
   const match = /^\/(day|canteen\/[^/]+)\/(\d{4}-\d{2}-\d{2})\/?$/.exec(window.location.pathname);
   if (match && !days.includes(match[2]!)) {
     const target = nearestMenuDay(match[2]!, days);
-    if (target) window.location.replace(`/${match[1]}/${target}`);
+    if (target) {
+      const url = new URL(window.location.href);
+      url.pathname = `/${match[1]}/${target}`;
+      url.searchParams.set('requestedDate', match[2]!);
+      window.location.replace(url.href);
+    }
   }
 </script>

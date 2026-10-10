@@ -7,8 +7,6 @@ import { eligibleRatingMensas, pickMensas } from './pickMensas';
 import type { MensaRating, Profile } from './profile';
 import type { OnboardingStore } from './onboardingStore';
 import type { RecommendationMeal, RecommendationMensa } from './pickTodaysDish';
-import { detectInstallKind } from '../welcome/installGuide';
-import { guide } from '../welcome/tour';
 
 export interface OnboardingData {
   campuses: { id: CampusId; name: string }[];
@@ -36,43 +34,6 @@ const sync = (root: HTMLElement, name: string, values: string[]) => {
 function mountLanguage(root: HTMLElement, ctx: Context) {
   const select = root.querySelector<HTMLSelectElement>('#language-select')!;
   return () => { select.value = ctx.store.state.profile.lang; };
-}
-
-function mountInstall(root: HTMLElement) {
-  type InstallPrompt = Event & { prompt(): Promise<void>; userChoice: Promise<{ outcome: string }> };
-  const appWindow = window as Window & { unieatsInstallPrompt?: InstallPrompt | null };
-  const button = root.querySelector<HTMLButtonElement>('[data-ob-install]')!;
-  const help = root.querySelector<HTMLAnchorElement>('[data-ob-install-help]')!;
-  const instructions = root.querySelector<HTMLElement>('[data-ob-install-guide]')!;
-  let prompt = appWindow.unieatsInstallPrompt ?? null;
-  const render = () => {
-    const language = document.documentElement.lang === 'de' ? 'de' : 'en';
-    const installed = window.matchMedia('(display-mode: standalone)').matches ||
-      Boolean((navigator as Navigator & { standalone?: boolean }).standalone);
-    const kind = detectInstallKind(navigator.userAgent, installed, navigator.maxTouchPoints);
-    const currentGuide = guide[kind];
-    instructions.textContent = currentGuide[language];
-    const href = language === 'de' ? currentGuide.hrefDe ?? currentGuide.href : currentGuide.href;
-    help.hidden = !href;
-    if (href) help.href = href;
-    help.textContent = language === 'de' ? 'Browser-Anleitung' : 'Browser instructions';
-    button.hidden = !prompt || installed;
-    button.textContent = language === 'de' ? 'App installieren' : 'Install app';
-  };
-  window.addEventListener('unieats:install-ready', () => { prompt = appWindow.unieatsInstallPrompt ?? null; render(); });
-  window.addEventListener('appinstalled', () => { prompt = null; render(); });
-  button.addEventListener('click', async () => {
-    if (!prompt) return;
-    const current = prompt;
-    prompt = null;
-    appWindow.unieatsInstallPrompt = null;
-    render();
-    try {
-      await current.prompt();
-      await current.userChoice;
-    } catch { /* Browser declined to show the native prompt; manual instructions remain available. */ }
-  });
-  return render;
 }
 
 function mountCampus(root: HTMLElement, ctx: Context) {
@@ -196,5 +157,4 @@ export const steps: Step[] = [
   { id: 'theme', titleKey: 'themeTitle', mount: mountTheme },
   { id: 'price', titleKey: 'priceTitle', mount: mountPrice },
   { id: 'ratings', titleKey: 'ratingsTitle', mount: mountRatings },
-  { id: 'install', titleKey: 'installTitle', mount: mountInstall },
 ];

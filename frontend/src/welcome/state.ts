@@ -5,7 +5,8 @@ export function welcomeStep(saved: string | null, hasProfile: boolean): WelcomeS
   if (saved === 'done') return null;
   if (saved === 'settings' || saved === 'finish') return saved;
   if (hasProfile) return null;
-  return saved === 'personalise' ? 'personalise' : 'install';
+  // First visits open the menus. Only resume a tour the visitor already started.
+  return saved === 'personalise' ? 'personalise' : null;
 }
 
 export function nextWelcomeStep(step: WelcomeStep): WelcomeStep | 'done' {

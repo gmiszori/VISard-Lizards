@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { addDays, defaultService, isIsoDate, isWeekend, latestToday, menuDateCandidates, nearestMenuDay, pickSampleMenuDate, weekdayIndex, wantedMenuDate } from './menuDate.ts';
+import { addDays, defaultService, isIsoDate, isWeekend, latestToday, menuDateCandidates, menuDateNotice, nearestMenuDay, pickSampleMenuDate, requestedMenuDate, weekdayIndex, wantedMenuDate } from './menuDate.ts';
 
 // 2026-10-10 is a Saturday.
 test('weekday numbers and weekend detection', () => {
@@ -128,4 +128,30 @@ test('the default Lunch / Dinner pill follows the menu shown, not just the clock
   assert.equal(defaultService('2026-10-13', '2026-10-13', '15:00'), 'dinner');
   // Another day picked ahead in the evening still opens on lunch.
   assert.equal(defaultService('2026-10-14', '2026-10-13', '19:00'), 'lunch');
+});
+
+test('replacement menu notices name the requested and shown dates and explain weekends', () => {
+  assert.match(menuDateNotice('2026-10-11', '2026-10-12')!,
+    /^No weekend menu is available for Sunday,? 11 October 2026\. Showing Monday,? 12 October 2026\.$/);
+  for (const requested of ['2026-01-01', '2027-01-01']) {
+    const message = menuDateNotice(requested, '2026-10-12')!;
+    assert.match(message, /No menu is available/);
+    assert.match(message, /January/);
+    assert.match(message, /Showing Monday,? 12 October 2026/);
+  }
+  assert.match(menuDateNotice('2026-10-11', '2026-10-12', 'de')!, /kein Wochenendmenü.*Montag/);
+  for (const date of ['2026-10-12', 'invalid', '2026-02-31']) {
+    assert.equal(menuDateNotice(date, '2026-10-12'), null);
+  }
+  assert.equal(menuDateNotice('2026-10-11', 'invalid'), null);
+});
+
+test('date notices follow explicit links and validate redirect context before using it', () => {
+  assert.equal(requestedMenuDate('/', '', '2026-10-11'), '2026-10-11');
+  assert.equal(requestedMenuDate('/day/2026-10-12', '', '2026-10-11'), '2026-10-12');
+  assert.equal(requestedMenuDate('/canteen/uzh-obere-mensa/2026-10-12/', '', '2026-10-11'), '2026-10-12');
+  assert.equal(requestedMenuDate('/day/2026-10-12', '?requestedDate=2026-10-10', '2026-10-11'), '2026-10-10');
+  for (const requested of ['wrong', '2026-02-31', '<script>']) {
+    assert.equal(requestedMenuDate('/day/2026-10-12', `?requestedDate=${encodeURIComponent(requested)}`, '2026-10-11'), '2026-10-12');
+  }
 });

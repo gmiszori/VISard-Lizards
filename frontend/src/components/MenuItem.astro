@@ -11,7 +11,7 @@ const { item } = Astro.props;
   <div class="meal-detail-heading"><h3>{item.name}</h3><MealStar item={item} /></div>
   <MealServingTime item={item} />
   <p>{item.description}</p>
-  <p style="margin-top:9px"><span data-i18n={item.allergens?.length ? 'contains' : 'noAllergens'}>{item.allergens?.length ? 'Contains' : 'No listed allergens'}</span>{item.allergens?.length ? `: ${item.allergens.join(', ')}` : ''}</p>
+  <p style="margin-top:9px"><span data-i18n={item.allergens?.length ? 'contains' : 'noAllergens'}>{item.allergens?.length ? 'Contains' : 'Allergen information unavailable. Ask the canteen before ordering.'}</span>{item.allergens?.length ? `: ${item.allergens.join(', ')}` : ''}</p>
   <div class={`menu-diet diet-${item.dietary}`} data-i18n={`diet_${item.dietary}`}>{item.dietary}</div>
   <MealPrice item={item} />
 </article>

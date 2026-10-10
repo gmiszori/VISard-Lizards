@@ -2,8 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { clearAppCaches, clearAppStorage, nextWelcomeStep, welcomeStep } from './state.ts';
 
-test('new visitors start with install guidance and continue after onboarding', () => {
-  assert.equal(welcomeStep(null, false), 'install');
+test('new visitors see menus; explicitly started tours can still resume', () => {
+  assert.equal(welcomeStep(null, false), null);
+  assert.equal(welcomeStep('install', false), null);
   assert.equal(nextWelcomeStep('install'), 'personalise');
   assert.equal(welcomeStep('personalise', false), 'personalise');
   assert.equal(welcomeStep('settings', true), 'settings');
