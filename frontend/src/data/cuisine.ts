@@ -1,5 +1,5 @@
-import { MEALS } from './canteens';
-import { foldPlain } from '../search/fold';
+import { MEALS } from './canteens.ts';
+import { foldPlain } from '../search/fold.ts';
 
 export const CUISINE_CATEGORIES = [
   'Swiss', 'Italian', 'Mexican', 'Chinese', 'Japanese', 'Korean', 'Indian', 'Thai', 'Vietnamese',

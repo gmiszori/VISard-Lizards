@@ -1,5 +1,5 @@
 import type { Mensa, MenuItem, Service, Weekday } from './canteens.ts';
-import { cuisineForDish, type CuisineCategory } from './cuisine';
+import { cuisineForDish, type CuisineCategory } from './cuisine.ts';
 
 export type DisplayMenuItem = MenuItem & {
   cuisine?: CuisineCategory;
