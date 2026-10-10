@@ -47,6 +47,27 @@ class ScrapedMenuRefreshServiceTests {
         }
         verify(ai,times(1)).retrieve("https://ethz.ch/en/campus/erleben/gastronomie-und-einkaufen/gastronomie/menueplaene/offerWeek.html?date=2026-10-12&id=16");
     }
+    @Test void manualRefreshBypassesFreshCacheAndDoesNotStartDuplicateBatch() throws Exception {
+        var mapper=JsonMapper.builder().build(); var ai=mock(ScraperAiClient.class); var store=memoryStore();
+        when(ai.configured()).thenReturn(true);
+        var entered=new java.util.concurrent.CountDownLatch(1);
+        var release=new java.util.concurrent.CountDownLatch(1);
+        when(ai.retrieve(anyString())).thenAnswer(call -> {
+            entered.countDown();
+            if(!release.await(10,java.util.concurrent.TimeUnit.SECONDS)) throw new IllegalStateException("Test timed out");
+            return mapper.readTree("{\"toolResults\":[]}");
+        });
+        store.save(mapper.createObjectNode().put("id","mendokoro")
+            .put("url","https://ethz.ch/en/campus/erleben/gastronomie-und-einkaufen/gastronomie/menueplaene/offerWeek.html?date=2026-10-12&id=16")
+            .put("lastAttempt",java.time.Instant.now().toString()).set("result",mapper.createObjectNode()));
+        try(var service=new TestClose(new ScrapedMenuRefreshService(ai,mapper,store,true,dir.resolve("unused.json").toString()))) {
+            assertEquals(ScrapedMenuRefreshService.RefreshStatus.STARTED,service.value.requestRefresh());
+            assertTrue(entered.await(5,java.util.concurrent.TimeUnit.SECONDS));
+            assertEquals(ScrapedMenuRefreshService.RefreshStatus.ALREADY_RUNNING,service.value.requestRefresh());
+            release.countDown();
+            verify(ai,timeout(5000).times(1)).retrieve("https://ethz.ch/en/campus/erleben/gastronomie-und-einkaufen/gastronomie/menueplaene/offerWeek.html?date=2026-10-12&id=16");
+        } finally { release.countDown(); }
+    }
     private record TestClose(ScrapedMenuRefreshService value) implements AutoCloseable { public void close() { value.close(); } }
     private static ScrapedMenuStore memoryStore() {
         var store=mock(ScrapedMenuStore.class);

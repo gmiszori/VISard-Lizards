@@ -51,9 +51,18 @@ public class ScrapedMenuRefreshService {
     @Scheduled(cron="${app.scraper.cron:0 0 6 * * *}",zone="Europe/Zurich")
     public void onSchedule() { enqueue(); }
     public void enqueue() {
-        if(enabled && ai.configured() && running.compareAndSet(false,true)) worker.submit(() -> {
+        requestRefresh();
+    }
+    public enum RefreshStatus { STARTED, ALREADY_RUNNING, DISABLED, NOT_CONFIGURED }
+    /** Force a full batch even when today's cached results are fresh. */
+    public RefreshStatus requestRefresh() {
+        if(!enabled) return RefreshStatus.DISABLED;
+        if(!ai.configured()) return RefreshStatus.NOT_CONFIGURED;
+        if(!running.compareAndSet(false,true)) return RefreshStatus.ALREADY_RUNNING;
+        worker.submit(() -> {
             try { refresh(); } finally { running.set(false); }
         });
+        return RefreshStatus.STARTED;
     }
     public void enqueueMissing() {
         if(!enabled || !ai.configured() || running.get()) return;
