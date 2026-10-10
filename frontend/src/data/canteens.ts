@@ -25,8 +25,8 @@ export type Weekday = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
 export type Service = 'lunch' | 'dinner';
 export type DietTag = 'vegan' | 'vegetarian' | 'meat' | 'fish';
 export type MealKind = 'main' | 'buffet' | 'dessert' | 'drink';
-export type CampusId = 'zentrum' | 'hoenggerberg' | 'irchel';
-export type Institution = 'ETH' | 'UZH';
+export type CampusId = 'zentrum' | 'hoenggerberg' | 'irchel' | 'oerlikon' | 'basel' | 'toni-areal' | 'europaallee';
+export type Institution = 'ETH' | 'UZH' | 'PHZH' | 'ZHAW';
 /** Canonical EU allergen ids. */
 export type AllergenId =
   | 'gluten' | 'crustaceans' | 'eggs' | 'fish' | 'peanuts' | 'soy' | 'milk' | 'nuts'
@@ -67688,6 +67688,2262 @@ export const DB: MensaDb = {
  }
 };
 
+
+export const ADDITIONAL_CAMPUSES: Campus[] = [
+  {
+    "id": "oerlikon",
+    "name": "Oerlikon",
+    "city": "Zürich",
+    "institutions": [
+      "ETH",
+      "UZH"
+    ],
+    "coordinates": {
+      "lat": 47.4124,
+      "lng": 8.5447
+    },
+    "note": "UZH & ETH Oerlikon facilities"
+  },
+  {
+    "id": "basel",
+    "name": "Basel",
+    "city": "Basel",
+    "institutions": [
+      "ETH"
+    ],
+    "coordinates": {
+      "lat": 47.5596,
+      "lng": 7.5886
+    },
+    "note": "ETH Department of Biosystems Science and Engineering (D-BSSE)"
+  },
+  {
+    "id": "toni-areal",
+    "name": "Toni-Areal",
+    "city": "Zürich",
+    "institutions": [
+      "ZHAW"
+    ],
+    "coordinates": {
+      "lat": 47.3908,
+      "lng": 8.5126
+    },
+    "note": "ZHdK and ZHAW Toni-Areal campus"
+  },
+  {
+    "id": "europaallee",
+    "name": "Europaallee",
+    "city": "Zürich",
+    "institutions": [
+      "PHZH",
+      "ZHAW"
+    ],
+    "coordinates": {
+      "lat": 47.3789,
+      "lng": 8.5323
+    },
+    "note": "PHZH and ZHAW facilities near Zurich HB"
+  }
+];
+export const ADDITIONAL_MENSAS: Mensa[] = [
+  {
+    "id": "bellavista",
+    "name": "Restaurant Bellavista",
+    "institution": "ETH",
+    "campusId": "hoenggerberg",
+    "address": {
+      "street": "Hoenggerbergring 47",
+      "postalCode": "8093",
+      "city": "Zürich",
+      "building": "HGP"
+    },
+    "coordinates": {
+      "lat": 47.4082,
+      "lng": 8.5085,
+      "source": "curated"
+    },
+    "contact": {
+      "phone": null,
+      "email": null,
+      "website": "https://bellavista-ethz.ch/mittagessen/"
+    },
+    "operator": "SV Group / Private",
+    "operatorUrl": "https://bellavista-ethz.ch",
+    "paymentOptions": [
+      "ETH card",
+      "Credit Card",
+      "Twint"
+    ],
+    "features": [
+      "Terrace",
+      "Table Service"
+    ],
+    "description": "Panoramic dining at ETH Hönggerberg overlooking Zurich.",
+    "hasMenu": true,
+    "temporarilyClosed": false,
+    "openingHours": {
+      "mon": [
+        {
+          "service": "lunch",
+          "open": "11:15",
+          "close": "13:30"
+        }
+      ],
+      "tue": [
+        {
+          "service": "lunch",
+          "open": "11:15",
+          "close": "13:30"
+        }
+      ],
+      "wed": [
+        {
+          "service": "lunch",
+          "open": "11:15",
+          "close": "13:30"
+        }
+      ],
+      "thu": [
+        {
+          "service": "lunch",
+          "open": "11:15",
+          "close": "13:30"
+        }
+      ],
+      "fri": [
+        {
+          "service": "lunch",
+          "open": "11:15",
+          "close": "13:30"
+        }
+      ],
+      "sat": [],
+      "sun": []
+    },
+    "buildingHours": {
+      "mon": [
+        {
+          "open": "08:00",
+          "close": "16:00"
+        }
+      ],
+      "tue": [
+        {
+          "open": "08:00",
+          "close": "16:00"
+        }
+      ],
+      "wed": [
+        {
+          "open": "08:00",
+          "close": "16:00"
+        }
+      ],
+      "thu": [
+        {
+          "open": "08:00",
+          "close": "16:00"
+        }
+      ],
+      "fri": [
+        {
+          "open": "08:00",
+          "close": "16:00"
+        }
+      ],
+      "sat": [],
+      "sun": []
+    },
+    "closures": [],
+    "pictures": [
+      {
+        "kind": "mensa",
+        "url": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&auto=format&fit=crop",
+        "caption": "Restaurant Bellavista dining area",
+        "source": "unsplash"
+      }
+    ],
+    "source": {
+      "provider": "bellavista",
+      "url": "https://bellavista-ethz.ch/mittagessen/"
+    },
+    "rating": {
+      "synthetic": true,
+      "average": 4.4,
+      "count": 52
+    }
+  },
+  {
+    "id": "octavo",
+    "name": "Restaurant Octavo",
+    "institution": "ETH",
+    "campusId": "oerlikon",
+    "address": {
+      "street": "Binzmühlestrasse 130",
+      "postalCode": "8050",
+      "city": "Zürich",
+      "building": "OCT"
+    },
+    "coordinates": {
+      "lat": 47.415,
+      "lng": 8.548,
+      "source": "curated"
+    },
+    "contact": {
+      "phone": null,
+      "email": null,
+      "website": "https://www.restaurant-octavo.ch/unsere-menues"
+    },
+    "operator": "SV Group",
+    "operatorUrl": "https://www.restaurant-octavo.ch",
+    "paymentOptions": [
+      "ETH card",
+      "Credit Card",
+      "Twint"
+    ],
+    "features": [
+      "SV Group canteen",
+      "Buffet"
+    ],
+    "description": "SV Group campus restaurant at ETH Oerlikon.",
+    "hasMenu": true,
+    "temporarilyClosed": false,
+    "openingHours": {
+      "mon": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "13:30"
+        }
+      ],
+      "tue": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "13:30"
+        }
+      ],
+      "wed": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "13:30"
+        }
+      ],
+      "thu": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "13:30"
+        }
+      ],
+      "fri": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "13:30"
+        }
+      ],
+      "sat": [],
+      "sun": []
+    },
+    "buildingHours": {
+      "mon": [
+        {
+          "open": "07:30",
+          "close": "15:30"
+        }
+      ],
+      "tue": [
+        {
+          "open": "07:30",
+          "close": "15:30"
+        }
+      ],
+      "wed": [
+        {
+          "open": "07:30",
+          "close": "15:30"
+        }
+      ],
+      "thu": [
+        {
+          "open": "07:30",
+          "close": "15:30"
+        }
+      ],
+      "fri": [
+        {
+          "open": "07:30",
+          "close": "15:30"
+        }
+      ],
+      "sat": [],
+      "sun": []
+    },
+    "closures": [],
+    "pictures": [
+      {
+        "kind": "mensa",
+        "url": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&auto=format&fit=crop",
+        "caption": "Restaurant Octavo",
+        "source": "unsplash"
+      }
+    ],
+    "source": {
+      "provider": "octavo",
+      "url": "https://www.restaurant-octavo.ch/unsere-menues"
+    },
+    "rating": {
+      "synthetic": true,
+      "average": 4.2,
+      "count": 38
+    }
+  },
+  {
+    "id": "zwei-grad",
+    "name": "Zwei Grad Bistro",
+    "institution": "ETH",
+    "campusId": "zentrum",
+    "address": {
+      "street": "Universitätstrasse 16",
+      "postalCode": "8092",
+      "city": "Zürich",
+      "building": "CHN"
+    },
+    "coordinates": {
+      "lat": 47.3787,
+      "lng": 8.5501,
+      "source": "curated"
+    },
+    "contact": {
+      "phone": null,
+      "email": null,
+      "website": "https://ethz.ch"
+    },
+    "operator": "SV Group",
+    "operatorUrl": "https://sv-restaurant.ch",
+    "paymentOptions": [
+      "ETH card",
+      "Credit Card",
+      "Twint"
+    ],
+    "features": [
+      "Climate friendly",
+      "Sandwiches",
+      "Warm snacks"
+    ],
+    "description": "Sustainable lunch specials and snacks in the CHN building.",
+    "hasMenu": true,
+    "temporarilyClosed": false,
+    "openingHours": {
+      "mon": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "14:00"
+        }
+      ],
+      "tue": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "14:00"
+        }
+      ],
+      "wed": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "14:00"
+        }
+      ],
+      "thu": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "14:00"
+        }
+      ],
+      "fri": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "14:00"
+        }
+      ],
+      "sat": [],
+      "sun": []
+    },
+    "buildingHours": {
+      "mon": [
+        {
+          "open": "08:00",
+          "close": "16:00"
+        }
+      ],
+      "tue": [
+        {
+          "open": "08:00",
+          "close": "16:00"
+        }
+      ],
+      "wed": [
+        {
+          "open": "08:00",
+          "close": "16:00"
+        }
+      ],
+      "thu": [
+        {
+          "open": "08:00",
+          "close": "16:00"
+        }
+      ],
+      "fri": [
+        {
+          "open": "08:00",
+          "close": "16:00"
+        }
+      ],
+      "sat": [],
+      "sun": []
+    },
+    "closures": [],
+    "pictures": [
+      {
+        "kind": "mensa",
+        "url": "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&auto=format&fit=crop",
+        "caption": "Zwei Grad Bistro",
+        "source": "unsplash"
+      }
+    ],
+    "source": {
+      "provider": "eth-gastro",
+      "url": "https://ethz.ch"
+    },
+    "rating": {
+      "synthetic": true,
+      "average": 4.3,
+      "count": 45
+    }
+  },
+  {
+    "id": "science-lounge",
+    "name": "Science Lounge",
+    "institution": "ETH",
+    "campusId": "basel",
+    "address": {
+      "street": "Klingelbergstrasse 48",
+      "postalCode": "4056",
+      "city": "Basel",
+      "building": "BSS"
+    },
+    "coordinates": {
+      "lat": 47.563,
+      "lng": 7.579,
+      "source": "curated"
+    },
+    "contact": {
+      "phone": null,
+      "email": null,
+      "website": "https://www.zfv.ch"
+    },
+    "operator": "ZFV",
+    "operatorUrl": "https://zfv.ch",
+    "paymentOptions": [
+      "ETH card",
+      "Credit Card",
+      "Twint"
+    ],
+    "features": [
+      "Lounge",
+      "Coffee",
+      "Daily warm meal"
+    ],
+    "description": "ETH Zurich D-BSSE staff and student cafeteria in Basel.",
+    "hasMenu": true,
+    "temporarilyClosed": false,
+    "openingHours": {
+      "mon": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "13:30"
+        }
+      ],
+      "tue": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "13:30"
+        }
+      ],
+      "wed": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "13:30"
+        }
+      ],
+      "thu": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "13:30"
+        }
+      ],
+      "fri": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "13:30"
+        }
+      ],
+      "sat": [],
+      "sun": []
+    },
+    "buildingHours": {
+      "mon": [
+        {
+          "open": "08:00",
+          "close": "16:00"
+        }
+      ],
+      "tue": [
+        {
+          "open": "08:00",
+          "close": "16:00"
+        }
+      ],
+      "wed": [
+        {
+          "open": "08:00",
+          "close": "16:00"
+        }
+      ],
+      "thu": [
+        {
+          "open": "08:00",
+          "close": "16:00"
+        }
+      ],
+      "fri": [
+        {
+          "open": "08:00",
+          "close": "16:00"
+        }
+      ],
+      "sat": [],
+      "sun": []
+    },
+    "closures": [],
+    "pictures": [
+      {
+        "kind": "mensa",
+        "url": "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=800&auto=format&fit=crop",
+        "caption": "Science Lounge Basel",
+        "source": "unsplash"
+      }
+    ],
+    "source": {
+      "provider": "zfv",
+      "url": "https://zfv.ch"
+    },
+    "rating": {
+      "synthetic": true,
+      "average": 4.1,
+      "count": 29
+    }
+  },
+  {
+    "id": "bqm",
+    "name": "bQm Kulturcafé & Bar",
+    "institution": "ETH",
+    "campusId": "zentrum",
+    "address": {
+      "street": "Leonhardstrasse 34",
+      "postalCode": "8001",
+      "city": "Zürich",
+      "building": "MM"
+    },
+    "coordinates": {
+      "lat": 47.3769,
+      "lng": 8.5475,
+      "source": "curated"
+    },
+    "contact": {
+      "phone": null,
+      "email": null,
+      "website": "https://bqm.ch"
+    },
+    "operator": "Student Association",
+    "operatorUrl": "https://bqm.ch",
+    "paymentOptions": [
+      "Credit Card",
+      "Twint",
+      "Cash"
+    ],
+    "features": [
+      "Student bar",
+      "Paninis",
+      "Events",
+      "Polyterrasse view"
+    ],
+    "description": "Legendary student bar and cafe directly beneath the Polyterrasse.",
+    "hasMenu": true,
+    "temporarilyClosed": false,
+    "openingHours": {
+      "mon": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "14:00"
+        }
+      ],
+      "tue": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "14:00"
+        }
+      ],
+      "wed": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "14:00"
+        }
+      ],
+      "thu": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "14:00"
+        }
+      ],
+      "fri": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "14:00"
+        }
+      ],
+      "sat": [],
+      "sun": []
+    },
+    "buildingHours": {
+      "mon": [
+        {
+          "open": "11:00",
+          "close": "24:00"
+        }
+      ],
+      "tue": [
+        {
+          "open": "11:00",
+          "close": "24:00"
+        }
+      ],
+      "wed": [
+        {
+          "open": "11:00",
+          "close": "24:00"
+        }
+      ],
+      "thu": [
+        {
+          "open": "11:00",
+          "close": "24:00"
+        }
+      ],
+      "fri": [
+        {
+          "open": "11:00",
+          "close": "24:00"
+        }
+      ],
+      "sat": [],
+      "sun": []
+    },
+    "closures": [],
+    "pictures": [
+      {
+        "kind": "mensa",
+        "url": "https://images.unsplash.com/photo-1543007630-9710e4a00a20?w=800&auto=format&fit=crop",
+        "caption": "bQm Kulturcafé",
+        "source": "unsplash"
+      }
+    ],
+    "source": {
+      "provider": "bqm",
+      "url": "https://bqm.ch"
+    },
+    "rating": {
+      "synthetic": true,
+      "average": 4.6,
+      "count": 87
+    }
+  },
+  {
+    "id": "bistro-hpi",
+    "name": "Bistro HPI",
+    "institution": "ETH",
+    "campusId": "hoenggerberg",
+    "address": {
+      "street": "Stefano-Franscini-Platz 5",
+      "postalCode": "8093",
+      "city": "Zürich",
+      "building": "HPI"
+    },
+    "coordinates": {
+      "lat": 47.408,
+      "lng": 8.5068,
+      "source": "curated"
+    },
+    "contact": {
+      "phone": null,
+      "email": null,
+      "website": "https://ethz.ch"
+    },
+    "operator": "SV Group",
+    "operatorUrl": "https://sv-restaurant.ch",
+    "paymentOptions": [
+      "ETH card",
+      "Credit Card",
+      "Twint"
+    ],
+    "features": [
+      "Bistro",
+      "Quick lunch",
+      "Espresso bar"
+    ],
+    "description": "Quick lunch, coffee, and study spot at ETH Hönggerberg.",
+    "hasMenu": true,
+    "temporarilyClosed": false,
+    "openingHours": {
+      "mon": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "14:00"
+        }
+      ],
+      "tue": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "14:00"
+        }
+      ],
+      "wed": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "14:00"
+        }
+      ],
+      "thu": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "14:00"
+        }
+      ],
+      "fri": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "14:00"
+        }
+      ],
+      "sat": [],
+      "sun": []
+    },
+    "buildingHours": {
+      "mon": [
+        {
+          "open": "08:00",
+          "close": "16:00"
+        }
+      ],
+      "tue": [
+        {
+          "open": "08:00",
+          "close": "16:00"
+        }
+      ],
+      "wed": [
+        {
+          "open": "08:00",
+          "close": "16:00"
+        }
+      ],
+      "thu": [
+        {
+          "open": "08:00",
+          "close": "16:00"
+        }
+      ],
+      "fri": [
+        {
+          "open": "08:00",
+          "close": "16:00"
+        }
+      ],
+      "sat": [],
+      "sun": []
+    },
+    "closures": [],
+    "pictures": [
+      {
+        "kind": "mensa",
+        "url": "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&auto=format&fit=crop",
+        "caption": "Bistro HPI",
+        "source": "unsplash"
+      }
+    ],
+    "source": {
+      "provider": "eth-gastro",
+      "url": "https://ethz.ch"
+    },
+    "rating": {
+      "synthetic": true,
+      "average": 4.1,
+      "count": 33
+    }
+  },
+  {
+    "id": "mensa-binzmuhle",
+    "name": "Mensa Oerlikon",
+    "institution": "UZH",
+    "campusId": "oerlikon",
+    "address": {
+      "street": "Binzmühlestrasse 14",
+      "postalCode": "8050",
+      "city": "Zürich",
+      "building": "AND"
+    },
+    "coordinates": {
+      "lat": 47.4128,
+      "lng": 8.5442,
+      "source": "curated"
+    },
+    "contact": {
+      "phone": null,
+      "email": null,
+      "website": "https://www.plaene.uzh.ch/"
+    },
+    "operator": "ZFV",
+    "operatorUrl": "https://zfv.ch",
+    "paymentOptions": [
+      "UZH card",
+      "Credit Card",
+      "Twint"
+    ],
+    "features": [
+      "Food2050",
+      "Fresh market menu",
+      "Outdoor seating"
+    ],
+    "description": "Main canteen for UZH Campus Oerlikon featuring daily Food2050 dishes.",
+    "hasMenu": true,
+    "temporarilyClosed": false,
+    "openingHours": {
+      "mon": [
+        {
+          "service": "lunch",
+          "open": "11:15",
+          "close": "14:00"
+        }
+      ],
+      "tue": [
+        {
+          "service": "lunch",
+          "open": "11:15",
+          "close": "14:00"
+        }
+      ],
+      "wed": [
+        {
+          "service": "lunch",
+          "open": "11:15",
+          "close": "14:00"
+        }
+      ],
+      "thu": [
+        {
+          "service": "lunch",
+          "open": "11:15",
+          "close": "14:00"
+        }
+      ],
+      "fri": [
+        {
+          "service": "lunch",
+          "open": "11:15",
+          "close": "14:00"
+        }
+      ],
+      "sat": [],
+      "sun": []
+    },
+    "buildingHours": {
+      "mon": [
+        {
+          "open": "08:00",
+          "close": "16:30"
+        }
+      ],
+      "tue": [
+        {
+          "open": "08:00",
+          "close": "16:30"
+        }
+      ],
+      "wed": [
+        {
+          "open": "08:00",
+          "close": "16:30"
+        }
+      ],
+      "thu": [
+        {
+          "open": "08:00",
+          "close": "16:30"
+        }
+      ],
+      "fri": [
+        {
+          "open": "08:00",
+          "close": "16:30"
+        }
+      ],
+      "sat": [],
+      "sun": []
+    },
+    "closures": [],
+    "pictures": [
+      {
+        "kind": "mensa",
+        "url": "https://images.unsplash.com/photo-1544025162-d76694265947?w=800&auto=format&fit=crop",
+        "caption": "Mensa Oerlikon",
+        "source": "unsplash"
+      }
+    ],
+    "source": {
+      "provider": "food2050",
+      "url": "https://app.food2050.ch"
+    },
+    "rating": {
+      "synthetic": true,
+      "average": 4.2,
+      "count": 64
+    }
+  },
+  {
+    "id": "bim11",
+    "name": "BIM11",
+    "institution": "UZH",
+    "campusId": "oerlikon",
+    "address": {
+      "street": "Binzmühlestrasse 11",
+      "postalCode": "8050",
+      "city": "Zürich",
+      "building": "BIM"
+    },
+    "coordinates": {
+      "lat": 47.4125,
+      "lng": 8.544,
+      "source": "curated"
+    },
+    "contact": {
+      "phone": null,
+      "email": null,
+      "website": "https://www.plaene.uzh.ch/"
+    },
+    "operator": "ZFV",
+    "operatorUrl": "https://zfv.ch",
+    "paymentOptions": [
+      "UZH card",
+      "Credit Card",
+      "Twint"
+    ],
+    "features": [
+      "New in 2026",
+      "Cafeteria & warm snacks"
+    ],
+    "description": "Brand new UZH cafeteria in Binzmühlestrasse 11 opened in September 2026.",
+    "hasMenu": true,
+    "temporarilyClosed": false,
+    "openingHours": {
+      "mon": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "14:00"
+        }
+      ],
+      "tue": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "14:00"
+        }
+      ],
+      "wed": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "14:00"
+        }
+      ],
+      "thu": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "14:00"
+        }
+      ],
+      "fri": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "14:00"
+        }
+      ],
+      "sat": [],
+      "sun": []
+    },
+    "buildingHours": {
+      "mon": [
+        {
+          "open": "08:00",
+          "close": "16:00"
+        }
+      ],
+      "tue": [
+        {
+          "open": "08:00",
+          "close": "16:00"
+        }
+      ],
+      "wed": [
+        {
+          "open": "08:00",
+          "close": "16:00"
+        }
+      ],
+      "thu": [
+        {
+          "open": "08:00",
+          "close": "16:00"
+        }
+      ],
+      "fri": [
+        {
+          "open": "08:00",
+          "close": "16:00"
+        }
+      ],
+      "sat": [],
+      "sun": []
+    },
+    "closures": [],
+    "pictures": [
+      {
+        "kind": "mensa",
+        "url": "https://images.unsplash.com/photo-1559925393-8be0ec4767c8?w=800&auto=format&fit=crop",
+        "caption": "BIM11 Cafeteria",
+        "source": "unsplash"
+      }
+    ],
+    "source": {
+      "provider": "uzh-plaene",
+      "url": "https://www.plaene.uzh.ch/"
+    },
+    "rating": {
+      "synthetic": true,
+      "average": 4.5,
+      "count": 21
+    }
+  },
+  {
+    "id": "cityport",
+    "name": "Cityport Mensa",
+    "institution": "UZH",
+    "campusId": "oerlikon",
+    "address": {
+      "street": "Affolternstrasse 56",
+      "postalCode": "8050",
+      "city": "Zürich",
+      "building": "COP"
+    },
+    "coordinates": {
+      "lat": 47.414,
+      "lng": 8.543,
+      "source": "curated"
+    },
+    "contact": {
+      "phone": null,
+      "email": null,
+      "website": "https://www.plaene.uzh.ch/"
+    },
+    "operator": "ZFV",
+    "operatorUrl": "https://zfv.ch",
+    "paymentOptions": [
+      "UZH card",
+      "Credit Card",
+      "Twint"
+    ],
+    "features": [
+      "Food2050",
+      "Cityport hub"
+    ],
+    "description": "UZH Cityport restaurant serving modern sustainable meals.",
+    "hasMenu": true,
+    "temporarilyClosed": false,
+    "openingHours": {
+      "mon": [
+        {
+          "service": "lunch",
+          "open": "11:15",
+          "close": "13:30"
+        }
+      ],
+      "tue": [
+        {
+          "service": "lunch",
+          "open": "11:15",
+          "close": "13:30"
+        }
+      ],
+      "wed": [
+        {
+          "service": "lunch",
+          "open": "11:15",
+          "close": "13:30"
+        }
+      ],
+      "thu": [
+        {
+          "service": "lunch",
+          "open": "11:15",
+          "close": "13:30"
+        }
+      ],
+      "fri": [
+        {
+          "service": "lunch",
+          "open": "11:15",
+          "close": "13:30"
+        }
+      ],
+      "sat": [],
+      "sun": []
+    },
+    "buildingHours": {
+      "mon": [
+        {
+          "open": "08:00",
+          "close": "16:00"
+        }
+      ],
+      "tue": [
+        {
+          "open": "08:00",
+          "close": "16:00"
+        }
+      ],
+      "wed": [
+        {
+          "open": "08:00",
+          "close": "16:00"
+        }
+      ],
+      "thu": [
+        {
+          "open": "08:00",
+          "close": "16:00"
+        }
+      ],
+      "fri": [
+        {
+          "open": "08:00",
+          "close": "16:00"
+        }
+      ],
+      "sat": [],
+      "sun": []
+    },
+    "closures": [],
+    "pictures": [
+      {
+        "kind": "mensa",
+        "url": "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=800&auto=format&fit=crop",
+        "caption": "Cityport Mensa",
+        "source": "unsplash"
+      }
+    ],
+    "source": {
+      "provider": "food2050",
+      "url": "https://app.food2050.ch"
+    },
+    "rating": {
+      "synthetic": true,
+      "average": 4.0,
+      "count": 42
+    }
+  },
+  {
+    "id": "tierspital",
+    "name": "Tierspital Mensa",
+    "institution": "UZH",
+    "campusId": "irchel",
+    "address": {
+      "street": "Winterthurerstrasse 260",
+      "postalCode": "8057",
+      "city": "Zürich",
+      "building": "TVS"
+    },
+    "coordinates": {
+      "lat": 47.3995,
+      "lng": 8.5535,
+      "source": "curated"
+    },
+    "contact": {
+      "phone": null,
+      "email": null,
+      "website": "https://www.plaene.uzh.ch/"
+    },
+    "operator": "ZFV",
+    "operatorUrl": "https://zfv.ch",
+    "paymentOptions": [
+      "UZH card",
+      "Credit Card",
+      "Twint"
+    ],
+    "features": [
+      "Vetsuisse",
+      "Food2050",
+      "Terrace"
+    ],
+    "description": "Canteen for the Vetsuisse veterinary faculty at UZH.",
+    "hasMenu": true,
+    "temporarilyClosed": false,
+    "openingHours": {
+      "mon": [
+        {
+          "service": "lunch",
+          "open": "11:15",
+          "close": "14:00"
+        }
+      ],
+      "tue": [
+        {
+          "service": "lunch",
+          "open": "11:15",
+          "close": "14:00"
+        }
+      ],
+      "wed": [
+        {
+          "service": "lunch",
+          "open": "11:15",
+          "close": "14:00"
+        }
+      ],
+      "thu": [
+        {
+          "service": "lunch",
+          "open": "11:15",
+          "close": "14:00"
+        }
+      ],
+      "fri": [
+        {
+          "service": "lunch",
+          "open": "11:15",
+          "close": "14:00"
+        }
+      ],
+      "sat": [],
+      "sun": []
+    },
+    "buildingHours": {
+      "mon": [
+        {
+          "open": "08:00",
+          "close": "16:30"
+        }
+      ],
+      "tue": [
+        {
+          "open": "08:00",
+          "close": "16:30"
+        }
+      ],
+      "wed": [
+        {
+          "open": "08:00",
+          "close": "16:30"
+        }
+      ],
+      "thu": [
+        {
+          "open": "08:00",
+          "close": "16:30"
+        }
+      ],
+      "fri": [
+        {
+          "open": "08:00",
+          "close": "16:30"
+        }
+      ],
+      "sat": [],
+      "sun": []
+    },
+    "closures": [],
+    "pictures": [
+      {
+        "kind": "mensa",
+        "url": "https://images.unsplash.com/photo-1578474846511-04ba529f0b88?w=800&auto=format&fit=crop",
+        "caption": "Tierspital Mensa",
+        "source": "unsplash"
+      }
+    ],
+    "source": {
+      "provider": "food2050",
+      "url": "https://app.food2050.ch"
+    },
+    "rating": {
+      "synthetic": true,
+      "average": 4.3,
+      "count": 58
+    }
+  },
+  {
+    "id": "the-yard",
+    "name": "The YARD & Cafeteria Brunnenhof",
+    "institution": "UZH",
+    "campusId": "irchel",
+    "address": {
+      "street": "Winterthurerstrasse 190",
+      "postalCode": "8057",
+      "city": "Zürich",
+      "building": "Y21"
+    },
+    "coordinates": {
+      "lat": 47.397,
+      "lng": 8.549,
+      "source": "curated"
+    },
+    "contact": {
+      "phone": null,
+      "email": null,
+      "website": "https://www.plaene.uzh.ch/"
+    },
+    "operator": "ZFV",
+    "operatorUrl": "https://zfv.ch",
+    "paymentOptions": [
+      "UZH card",
+      "Credit Card",
+      "Twint"
+    ],
+    "features": [
+      "Bistro",
+      "Bowls",
+      "Irchel courtyard"
+    ],
+    "description": "Vibrant bistro and bowl counter in the Irchel building 21 courtyard.",
+    "hasMenu": true,
+    "temporarilyClosed": false,
+    "openingHours": {
+      "mon": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "14:00"
+        }
+      ],
+      "tue": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "14:00"
+        }
+      ],
+      "wed": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "14:00"
+        }
+      ],
+      "thu": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "14:00"
+        }
+      ],
+      "fri": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "14:00"
+        }
+      ],
+      "sat": [],
+      "sun": []
+    },
+    "buildingHours": {
+      "mon": [
+        {
+          "open": "08:00",
+          "close": "16:30"
+        }
+      ],
+      "tue": [
+        {
+          "open": "08:00",
+          "close": "16:30"
+        }
+      ],
+      "wed": [
+        {
+          "open": "08:00",
+          "close": "16:30"
+        }
+      ],
+      "thu": [
+        {
+          "open": "08:00",
+          "close": "16:30"
+        }
+      ],
+      "fri": [
+        {
+          "open": "08:00",
+          "close": "16:30"
+        }
+      ],
+      "sat": [],
+      "sun": []
+    },
+    "closures": [],
+    "pictures": [
+      {
+        "kind": "mensa",
+        "url": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&auto=format&fit=crop",
+        "caption": "The YARD Brunnenhof",
+        "source": "unsplash"
+      }
+    ],
+    "source": {
+      "provider": "uzh-plaene",
+      "url": "https://www.plaene.uzh.ch/"
+    },
+    "rating": {
+      "synthetic": true,
+      "average": 4.4,
+      "count": 62
+    }
+  },
+  {
+    "id": "uniturm",
+    "name": "Restaurant UniTurm & Cafeteria Rämi 74",
+    "institution": "UZH",
+    "campusId": "zentrum",
+    "address": {
+      "street": "Rämistrasse 71",
+      "postalCode": "8006",
+      "city": "Zürich",
+      "building": "KOL"
+    },
+    "coordinates": {
+      "lat": 47.3745,
+      "lng": 8.5485,
+      "source": "curated"
+    },
+    "contact": {
+      "phone": null,
+      "email": null,
+      "website": "https://www.plaene.uzh.ch/"
+    },
+    "operator": "ZFV",
+    "operatorUrl": "https://zfv.ch",
+    "paymentOptions": [
+      "UZH card",
+      "Credit Card",
+      "Twint"
+    ],
+    "features": [
+      "Tower restaurant",
+      "Panoramic view",
+      "Service lunch"
+    ],
+    "description": "Iconic restaurant in the UZH tower with panoramic view of Zürich.",
+    "hasMenu": true,
+    "temporarilyClosed": false,
+    "openingHours": {
+      "mon": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "14:00"
+        }
+      ],
+      "tue": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "14:00"
+        }
+      ],
+      "wed": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "14:00"
+        }
+      ],
+      "thu": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "14:00"
+        }
+      ],
+      "fri": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "14:00"
+        }
+      ],
+      "sat": [],
+      "sun": []
+    },
+    "buildingHours": {
+      "mon": [
+        {
+          "open": "08:00",
+          "close": "17:00"
+        }
+      ],
+      "tue": [
+        {
+          "open": "08:00",
+          "close": "17:00"
+        }
+      ],
+      "wed": [
+        {
+          "open": "08:00",
+          "close": "17:00"
+        }
+      ],
+      "thu": [
+        {
+          "open": "08:00",
+          "close": "17:00"
+        }
+      ],
+      "fri": [
+        {
+          "open": "08:00",
+          "close": "17:00"
+        }
+      ],
+      "sat": [],
+      "sun": []
+    },
+    "closures": [],
+    "pictures": [
+      {
+        "kind": "mensa",
+        "url": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&auto=format&fit=crop",
+        "caption": "Restaurant UniTurm view",
+        "source": "unsplash"
+      }
+    ],
+    "source": {
+      "provider": "uzh-plaene",
+      "url": "https://www.plaene.uzh.ch/"
+    },
+    "rating": {
+      "synthetic": true,
+      "average": 4.7,
+      "count": 76
+    }
+  },
+  {
+    "id": "botanischer-garten",
+    "name": "Cafeteria Botanischer Garten",
+    "institution": "UZH",
+    "campusId": "zentrum",
+    "address": {
+      "street": "Zollikerstrasse 107",
+      "postalCode": "8008",
+      "city": "Zürich",
+      "building": "BOT"
+    },
+    "coordinates": {
+      "lat": 47.3585,
+      "lng": 8.5615,
+      "source": "curated"
+    },
+    "contact": {
+      "phone": null,
+      "email": null,
+      "website": "https://www.plaene.uzh.ch/"
+    },
+    "operator": "ZFV",
+    "operatorUrl": "https://zfv.ch",
+    "paymentOptions": [
+      "UZH card",
+      "Credit Card",
+      "Twint"
+    ],
+    "features": [
+      "Garden terrace",
+      "Botanical park",
+      "Food2050"
+    ],
+    "description": "Idyllic cafeteria located within the UZH Botanical Garden.",
+    "hasMenu": true,
+    "temporarilyClosed": false,
+    "openingHours": {
+      "mon": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "14:00"
+        }
+      ],
+      "tue": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "14:00"
+        }
+      ],
+      "wed": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "14:00"
+        }
+      ],
+      "thu": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "14:00"
+        }
+      ],
+      "fri": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "14:00"
+        }
+      ],
+      "sat": [],
+      "sun": []
+    },
+    "buildingHours": {
+      "mon": [
+        {
+          "open": "09:00",
+          "close": "17:00"
+        }
+      ],
+      "tue": [
+        {
+          "open": "09:00",
+          "close": "17:00"
+        }
+      ],
+      "wed": [
+        {
+          "open": "09:00",
+          "close": "17:00"
+        }
+      ],
+      "thu": [
+        {
+          "open": "09:00",
+          "close": "17:00"
+        }
+      ],
+      "fri": [
+        {
+          "open": "09:00",
+          "close": "17:00"
+        }
+      ],
+      "sat": [],
+      "sun": []
+    },
+    "closures": [],
+    "pictures": [
+      {
+        "kind": "mensa",
+        "url": "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?w=800&auto=format&fit=crop",
+        "caption": "Botanischer Garten Cafeteria",
+        "source": "unsplash"
+      }
+    ],
+    "source": {
+      "provider": "food2050",
+      "url": "https://app.food2050.ch"
+    },
+    "rating": {
+      "synthetic": true,
+      "average": 4.6,
+      "count": 49
+    }
+  },
+  {
+    "id": "phzh",
+    "name": "Mensa PHZH",
+    "institution": "PHZH",
+    "campusId": "europaallee",
+    "address": {
+      "street": "Lagerstrasse 2",
+      "postalCode": "8004",
+      "city": "Zürich",
+      "building": "LAA"
+    },
+    "coordinates": {
+      "lat": 47.3785,
+      "lng": 8.533,
+      "source": "curated"
+    },
+    "contact": {
+      "phone": null,
+      "email": null,
+      "website": "https://app.food2050.ch/o/zfv-phzh"
+    },
+    "operator": "ZFV",
+    "operatorUrl": "https://zfv.ch",
+    "paymentOptions": [
+      "Legi",
+      "Credit Card",
+      "Twint"
+    ],
+    "features": [
+      "Food2050",
+      "Europaallee",
+      "Large buffet"
+    ],
+    "description": "Spacious modern dining facility at Pädagogische Hochschule Zürich next to Zurich HB.",
+    "hasMenu": true,
+    "temporarilyClosed": false,
+    "openingHours": {
+      "mon": [
+        {
+          "service": "lunch",
+          "open": "11:15",
+          "close": "14:00"
+        }
+      ],
+      "tue": [
+        {
+          "service": "lunch",
+          "open": "11:15",
+          "close": "14:00"
+        }
+      ],
+      "wed": [
+        {
+          "service": "lunch",
+          "open": "11:15",
+          "close": "14:00"
+        }
+      ],
+      "thu": [
+        {
+          "service": "lunch",
+          "open": "11:15",
+          "close": "14:00"
+        }
+      ],
+      "fri": [
+        {
+          "service": "lunch",
+          "open": "11:15",
+          "close": "14:00"
+        }
+      ],
+      "sat": [
+        {
+          "service": "lunch",
+          "open": "11:45",
+          "close": "13:30"
+        }
+      ],
+      "sun": []
+    },
+    "buildingHours": {
+      "mon": [
+        {
+          "open": "07:30",
+          "close": "17:00"
+        }
+      ],
+      "tue": [
+        {
+          "open": "07:30",
+          "close": "17:00"
+        }
+      ],
+      "wed": [
+        {
+          "open": "07:30",
+          "close": "17:00"
+        }
+      ],
+      "thu": [
+        {
+          "open": "07:30",
+          "close": "17:00"
+        }
+      ],
+      "fri": [
+        {
+          "open": "07:30",
+          "close": "17:00"
+        }
+      ],
+      "sat": [],
+      "sun": []
+    },
+    "closures": [],
+    "pictures": [
+      {
+        "kind": "mensa",
+        "url": "https://images.unsplash.com/photo-1567521464027-f127ff144326?w=800&auto=format&fit=crop",
+        "caption": "Mensa PHZH",
+        "source": "unsplash"
+      }
+    ],
+    "source": {
+      "provider": "food2050",
+      "url": "https://app.food2050.ch/o/zfv-phzh"
+    },
+    "rating": {
+      "synthetic": true,
+      "average": 4.4,
+      "count": 83
+    }
+  },
+  {
+    "id": "molki",
+    "name": "Mensa Molki",
+    "institution": "ZHAW",
+    "campusId": "toni-areal",
+    "address": {
+      "street": "Pfingstweidstrasse 96",
+      "postalCode": "8005",
+      "city": "Zürich",
+      "building": "Toni"
+    },
+    "coordinates": {
+      "lat": 47.3908,
+      "lng": 8.5126,
+      "source": "curated"
+    },
+    "contact": {
+      "phone": null,
+      "email": null,
+      "website": "https://www.zfv.ch"
+    },
+    "operator": "ZFV",
+    "operatorUrl": "https://zfv.ch",
+    "paymentOptions": [
+      "Campus Card",
+      "Credit Card",
+      "Twint"
+    ],
+    "features": [
+      "Toni-Areal",
+      "ZHdK/ZHAW",
+      "Food2050",
+      "Market buffet"
+    ],
+    "description": "Flagship campus restaurant at Toni-Areal serving art, music and design students.",
+    "hasMenu": true,
+    "temporarilyClosed": false,
+    "openingHours": {
+      "mon": [
+        {
+          "service": "lunch",
+          "open": "11:00",
+          "close": "14:00"
+        }
+      ],
+      "tue": [
+        {
+          "service": "lunch",
+          "open": "11:00",
+          "close": "14:00"
+        }
+      ],
+      "wed": [
+        {
+          "service": "lunch",
+          "open": "11:00",
+          "close": "14:00"
+        }
+      ],
+      "thu": [
+        {
+          "service": "lunch",
+          "open": "11:00",
+          "close": "14:00"
+        }
+      ],
+      "fri": [
+        {
+          "service": "lunch",
+          "open": "11:00",
+          "close": "14:00"
+        }
+      ],
+      "sat": [
+        {
+          "service": "lunch",
+          "open": "11:45",
+          "close": "14:00"
+        }
+      ],
+      "sun": []
+    },
+    "buildingHours": {
+      "mon": [
+        {
+          "open": "08:00",
+          "close": "17:00"
+        }
+      ],
+      "tue": [
+        {
+          "open": "08:00",
+          "close": "17:00"
+        }
+      ],
+      "wed": [
+        {
+          "open": "08:00",
+          "close": "17:00"
+        }
+      ],
+      "thu": [
+        {
+          "open": "08:00",
+          "close": "17:00"
+        }
+      ],
+      "fri": [
+        {
+          "open": "08:00",
+          "close": "17:00"
+        }
+      ],
+      "sat": [],
+      "sun": []
+    },
+    "closures": [],
+    "pictures": [
+      {
+        "kind": "mensa",
+        "url": "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?w=800&auto=format&fit=crop",
+        "caption": "Mensa Molki at Toni-Areal",
+        "source": "unsplash"
+      }
+    ],
+    "source": {
+      "provider": "food2050",
+      "url": "https://app.food2050.ch"
+    },
+    "rating": {
+      "synthetic": true,
+      "average": 4.5,
+      "count": 91
+    }
+  },
+  {
+    "id": "bistro-tonino",
+    "name": "Bistro Tonino",
+    "institution": "ZHAW",
+    "campusId": "toni-areal",
+    "address": {
+      "street": "Pfingstweidstrasse 96",
+      "postalCode": "8005",
+      "city": "Zürich",
+      "building": "Toni"
+    },
+    "coordinates": {
+      "lat": 47.391,
+      "lng": 8.513,
+      "source": "curated"
+    },
+    "contact": {
+      "phone": null,
+      "email": null,
+      "website": "https://www.zfv.ch"
+    },
+    "operator": "ZFV",
+    "operatorUrl": "https://zfv.ch",
+    "paymentOptions": [
+      "Campus Card",
+      "Credit Card",
+      "Twint"
+    ],
+    "features": [
+      "Pinsa",
+      "Fresh pasta",
+      "Italian bistro"
+    ],
+    "description": "Italian bistro at Toni-Areal known for pinsa, espresso and fresh focaccia.",
+    "hasMenu": true,
+    "temporarilyClosed": false,
+    "openingHours": {
+      "mon": [
+        {
+          "service": "lunch",
+          "open": "11:00",
+          "close": "14:00"
+        }
+      ],
+      "tue": [
+        {
+          "service": "lunch",
+          "open": "11:00",
+          "close": "14:00"
+        }
+      ],
+      "wed": [
+        {
+          "service": "lunch",
+          "open": "11:00",
+          "close": "14:00"
+        }
+      ],
+      "thu": [
+        {
+          "service": "lunch",
+          "open": "11:00",
+          "close": "14:00"
+        }
+      ],
+      "fri": [
+        {
+          "service": "lunch",
+          "open": "11:00",
+          "close": "14:00"
+        }
+      ],
+      "sat": [],
+      "sun": []
+    },
+    "buildingHours": {
+      "mon": [
+        {
+          "open": "08:00",
+          "close": "17:00"
+        }
+      ],
+      "tue": [
+        {
+          "open": "08:00",
+          "close": "17:00"
+        }
+      ],
+      "wed": [
+        {
+          "open": "08:00",
+          "close": "17:00"
+        }
+      ],
+      "thu": [
+        {
+          "open": "08:00",
+          "close": "17:00"
+        }
+      ],
+      "fri": [
+        {
+          "open": "08:00",
+          "close": "17:00"
+        }
+      ],
+      "sat": [],
+      "sun": []
+    },
+    "closures": [],
+    "pictures": [
+      {
+        "kind": "mensa",
+        "url": "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800&auto=format&fit=crop",
+        "caption": "Bistro Tonino",
+        "source": "unsplash"
+      }
+    ],
+    "source": {
+      "provider": "zfv",
+      "url": "https://zfv.ch"
+    },
+    "rating": {
+      "synthetic": true,
+      "average": 4.4,
+      "count": 54
+    }
+  },
+  {
+    "id": "zhaw-lagerstrasse",
+    "name": "ZHAW Cafeteria Lagerstrasse & Sihlhof",
+    "institution": "ZHAW",
+    "campusId": "europaallee",
+    "address": {
+      "street": "Lagerstrasse 41",
+      "postalCode": "8004",
+      "city": "Zürich",
+      "building": "LAG"
+    },
+    "coordinates": {
+      "lat": 47.3778,
+      "lng": 8.5298,
+      "source": "curated"
+    },
+    "contact": {
+      "phone": null,
+      "email": null,
+      "website": "https://www.zhaw.ch"
+    },
+    "operator": "ZFV",
+    "operatorUrl": "https://zfv.ch",
+    "paymentOptions": [
+      "Campus Card",
+      "Credit Card",
+      "Twint"
+    ],
+    "features": [
+      "ZHAW School of Management & Law",
+      "Europaallee"
+    ],
+    "description": "Cafeteria and lunch counter at ZHAW Lagerstrasse / Sihlhof campus.",
+    "hasMenu": true,
+    "temporarilyClosed": false,
+    "openingHours": {
+      "mon": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "14:00"
+        }
+      ],
+      "tue": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "14:00"
+        }
+      ],
+      "wed": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "14:00"
+        }
+      ],
+      "thu": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "14:00"
+        }
+      ],
+      "fri": [
+        {
+          "service": "lunch",
+          "open": "11:30",
+          "close": "14:00"
+        }
+      ],
+      "sat": [],
+      "sun": []
+    },
+    "buildingHours": {
+      "mon": [
+        {
+          "open": "08:00",
+          "close": "16:30"
+        }
+      ],
+      "tue": [
+        {
+          "open": "08:00",
+          "close": "16:30"
+        }
+      ],
+      "wed": [
+        {
+          "open": "08:00",
+          "close": "16:30"
+        }
+      ],
+      "thu": [
+        {
+          "open": "08:00",
+          "close": "16:30"
+        }
+      ],
+      "fri": [
+        {
+          "open": "08:00",
+          "close": "16:30"
+        }
+      ],
+      "sat": [],
+      "sun": []
+    },
+    "closures": [],
+    "pictures": [
+      {
+        "kind": "mensa",
+        "url": "https://images.unsplash.com/photo-1521017432531-fbd92d768814?w=800&auto=format&fit=crop",
+        "caption": "ZHAW Cafeteria Lagerstrasse",
+        "source": "unsplash"
+      }
+    ],
+    "source": {
+      "provider": "zhaw",
+      "url": "https://www.zhaw.ch"
+    },
+    "rating": {
+      "synthetic": true,
+      "average": 4.1,
+      "count": 37
+    }
+  }
+];
+
+for (const c of ADDITIONAL_CAMPUSES) {
+  if (!DB.campuses.some(existing => existing.id === c.id)) {
+    DB.campuses.push(c);
+  }
+}
+for (const m of ADDITIONAL_MENSAS) {
+  if (!DB.mensas.some(existing => existing.id === m.id)) {
+    DB.mensas.push(m);
+  }
+}
+
 export const CAMPUSES: Campus[] = DB.campuses;
 export const MENSAS: Mensa[] = DB.mensas;
 export const MEALS: Meal[] = DB.meals;
@@ -67737,7 +69993,7 @@ export interface Canteen {
   id: string;
   name: string;
   /** Display label, e.g. "ETH Zentrum" or "UZH Zentrum". */
-  campus: 'ETH Zentrum' | 'ETH Hönggerberg' | 'UZH Zentrum' | 'UZH Irchel';
+  campus: string;
   /** Filter key. "Zentrum" covers ETH and UZH. */
   campusId: CampusId;
   location: string;
@@ -67780,7 +70036,7 @@ export const MENU_DATE: string = pickMenuDate();
 function windowsOf(m: Mensa): Record<Weekday, Array<[number, number]>> {
   const out = {} as Record<Weekday, Array<[number, number]>>;
   for (const d of WEEKDAYS) {
-    const src = m.openingHours[d].length ? m.openingHours[d] : m.buildingHours[d];
+    const src = (m.openingHours && m.openingHours[d]?.length) ? m.openingHours[d] : ((m.buildingHours && m.buildingHours[d]?.length) ? m.buildingHours[d] : []);
     out[d] = src.map((w) => [toMin(w.open), toMin(w.close)]);
   }
   return out;
