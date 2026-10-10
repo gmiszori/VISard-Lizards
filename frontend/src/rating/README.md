@@ -31,8 +31,14 @@ must provide its trusted identity at this boundary.
 Meal IDs come directly from DB `Meal.id`, and `mealDate` from `Meal.date`. The
 picker filters by the exact mensa and target date; it never substitutes the
 home screen's fallback menu date. Saved meal stars continue using names.
-The DB has no meal-rating table, authenticated user ID, or save endpoint.
-Mensa aggregate ratings are explicitly synthetic and use a separate 1–5 scale.
+The frontend's bundled DB has no meal-rating table or authenticated user ID.
+The separately developed backend branch now has `POST /api/meals/{id}/ratings`,
+but accepts 1–5 `stars` and optional tags, with IP-based 24-hour throttling.
+Its rating entity has no user identity or unique user/meal constraint, so it does
+not yet implement this prompt's payload or duplicate rule. The mock remains
+behind `saveMealRating()` until that contract is aligned; no scale conversion is
+silently applied. Backend source reviewed: commit `7ec8898` on 2026-10-10.
+Mensa aggregate ratings in the bundled frontend data are explicitly synthetic and use a separate 1–5 scale.
 This feature uses the requested 1–3 scale without changing those aggregates.
 
 The mock rejects duplicate `(userId, mealId)` pairs. Web Locks serialize writes
