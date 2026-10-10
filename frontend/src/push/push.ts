@@ -3,7 +3,7 @@
  * The service worker public/sw.js shows them. Nothing is subscribed without the user's explicit yes
  * (the opt-in in optin.ts or the switch in Settings); the browser's own permission prompt comes after that.
  */
-import { API_URL, apiDelete, apiGet, apiPost, apiPut } from '../data/api.ts';
+import { API_URL, ApiError, apiDelete, apiGet, apiPost, apiPut } from '../data/api.ts';
 import { readStarredMeals } from '../meals/stars.ts';
 
 /** { asked: true } once the opt-in was shown, so it is never shown again. */
@@ -145,10 +145,21 @@ export async function syncStarredDishes(): Promise<void> {
   await send(subscription);
 }
 
-/** "Notifications are on" to this browser. */
+/** "Notifications are on" to this browser. Re-sync once when the backend forgot this subscription. */
 export async function sendTestPush(): Promise<boolean> {
   const subscription = await currentSubscription();
   if (!subscription) return false;
-  const result = await apiPost<{ delivered: boolean }>('/api/push/test', { endpoint: subscription.endpoint });
-  return result.delivered;
+  await send(subscription);
+  try {
+    const result = await apiPost<{ delivered: boolean }>('/api/push/test', { endpoint: subscription.endpoint });
+    return result.delivered;
+  } catch (error) {
+    // A restart, restore or cleanup can drop the row server-side while the browser still has a valid subscription.
+    if (error instanceof ApiError && error.status === 404) {
+      await send(subscription);
+      const retry = await apiPost<{ delivered: boolean }>('/api/push/test', { endpoint: subscription.endpoint });
+      return retry.delivered;
+    }
+    throw error;
+  }
 }

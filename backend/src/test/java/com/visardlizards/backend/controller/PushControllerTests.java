@@ -54,6 +54,15 @@ class PushControllerTests {
 	}
 
 	@Test
+	void acceptsLongAppleSubscriptionEndpoints() throws Exception {
+		String longPath = "a".repeat(3000);
+		String endpoint = "https://web.push.apple.com/" + longPath;
+		mockMvc.perform(put("/api/push/subscription").contentType(MediaType.APPLICATION_JSON).content(subscription(endpoint)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.endpoint").value(endpoint));
+	}
+
+	@Test
 	void rejectsEndpointsOutsideThePushServices() throws Exception {
 		mockMvc.perform(put("/api/push/subscription").contentType(MediaType.APPLICATION_JSON)
 						.content(subscription("https://internal.example.com/admin")))

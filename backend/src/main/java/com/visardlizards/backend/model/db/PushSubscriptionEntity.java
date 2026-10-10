@@ -27,7 +27,7 @@ public class PushSubscriptionEntity {
 	@GeneratedValue
 	private Long id;
 
-	@Column(nullable = false, length = 1024)
+	@Column(nullable = false, length = 4096)
 	private String endpoint;
 
 	@Column(nullable = false, length = 128)

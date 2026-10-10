@@ -96,6 +96,17 @@ docker compose exec -T meal-scraper sh -c 'curl -fsS -X POST -H "Authorization: 
 The command uses the container's configured token; no key needs to be pasted into your shell.
 You can also attach to the backend terminal (PowerShell or Bash):
 
+On Windows, the simplest terminal console is `powershell -ExecutionPolicy Bypass -File .\scraper-console.ps1`
+from the repository root. Type **r + Enter** in that console; it forwards the authenticated
+refresh request to the running backend even when Docker is detached. Type **s** for progress,
+or **q** to exit. For a single refresh use `powershell -ExecutionPolicy Bypass -File .\scraper-console.ps1 -Refresh`.
+The helper reads only the connector token and web port from the root `.env` and never prints
+credentials. It also accepts `-BackendUrl https://your-server`.
+
+Typing `r` at a normal PowerShell prompt, in `docker compose logs`, or after `up -d` does
+not reach Java's standard input. Use the helper above or attach below. The website polls
+saved results every minute; `lastCompleted` changes only after the entire batch finishes.
+
 ```sh
 docker attach --sig-proxy=false $(docker compose ps -q backend)
 ```

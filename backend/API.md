@@ -389,9 +389,9 @@ accept deliveries.
   `PushManager.subscribe()`.
 - `PUT /api/push/subscription` with `PushSubscription.toJSON()` plus dishes and language:
   `{"endpoint": "https://fcm.googleapis.com/fcm/send/...", "keys": {"p256dh": "...", "auth": "..."}, "dishes": ["Pad Thai"], "language": "de"}`.
-  Creates the subscription or replaces its dishes. `200` with `{endpoint, dishes, language}`; `400` for an
-  endpoint outside the browsers' push services (Google, Mozilla, Microsoft, Apple), malformed keys or more
-  than 100 dishes.
+  Creates the subscription or replaces its dishes. Endpoints up to 4096 characters are accepted (Apple
+  Web Push tokens can be long). `200` with `{endpoint, dishes, language}`; `400` for an endpoint outside
+  the browsers' push services (Google, Mozilla, Microsoft, Apple), malformed keys or more than 100 dishes.
 - `DELETE /api/push/subscription` with `{"endpoint": "..."}` → `204`, also for unknown endpoints.
 - `POST /api/push/test` with `{"endpoint": "..."}` sends "Notifications are on" → `200`
   `{"delivered": true, "pushServiceStatus": 201}`; `404` without such a subscription; `429` more than once a
