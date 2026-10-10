@@ -1,3 +1,5 @@
+import { minutesOfDay, zurichParts } from '../time/clock.ts';
+
 /** How the app knows the user ate at a mensa: located there, reported its crowd, or a guess to ask about. */
 export type RatingSource = 'location' | 'crowd' | 'guess';
 /**
@@ -24,13 +26,9 @@ const VISIT_WINDOW_MS = 2 * 60 * 60 * 1000;
 const MAX_VISITED = 4;
 const MAX_GUESSES = 3;
 
-const formatter = new Intl.DateTimeFormat('en-GB', {
-  timeZone: 'Europe/Zurich', year: 'numeric', month: '2-digit', day: '2-digit',
-  hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
-});
 export function zurichTime(now: Date) {
-  const parts = Object.fromEntries(formatter.formatToParts(now).map(p => [p.type, p.value]));
-  return { date: `${parts.year}-${parts.month}-${parts.day}`, minutes: Number(parts.hour) * 60 + Number(parts.minute) };
+  const { date, time } = zurichParts(now);
+  return { date, minutes: minutesOfDay(time) };
 }
 function unique(choices: readonly MensaChoice[]): MensaChoice[] {
   const seen = new Set<string>();

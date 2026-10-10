@@ -1,5 +1,6 @@
 import type { Mensa, MenuItem, Service, Weekday } from './canteens.ts';
 import { cuisineForDish, type CuisineCategory } from './cuisine.ts';
+import { minutesOfDay, zurichParts } from '../time/clock.ts';
 
 export type DisplayMenuItem = MenuItem & {
   cuisine?: CuisineCategory;
@@ -21,24 +22,19 @@ export function serviceWindowsForDate(mensa: Mensa | undefined, date: string): S
 }
 
 function zurichDateAndMinute(now = new Date()): { date: string; minute: number } {
-  const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Europe/Zurich', year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', hour12: false,
-  }).formatToParts(now);
-  const get = (type: string) => parts.find(part => part.type === type)?.value ?? '';
-  return { date: `${get('year')}-${get('month')}-${get('day')}`, minute: (Number(get('hour')) % 24) * 60 + Number(get('minute')) };
+  const { date, time } = zurichParts(now);
+  return { date, minute: minutesOfDay(time) };
 }
 
 export function currentServiceLine(windows: readonly ServiceWindow[], date: string, now = new Date()): CurrentServiceLine {
   const sorted = [...windows].sort((a, b) => a.open.localeCompare(b.open));
-  const minuteOf = (time: string) => Number(time.slice(0, 2)) * 60 + Number(time.slice(3, 5));
   const local = zurichDateAndMinute(now);
   if (date !== local.date) {
     const first = sorted[0];
     return first ? { service: first.service, time: `${first.open}–${first.close}` } : { service: 'closed', time: 'Closed' };
   }
-  const active = sorted.find(window => minuteOf(window.open) <= local.minute && local.minute < minuteOf(window.close));
-  const next = sorted.find(window => minuteOf(window.open) > local.minute);
+  const active = sorted.find(window => minutesOfDay(window.open) <= local.minute && local.minute < minutesOfDay(window.close));
+  const next = sorted.find(window => minutesOfDay(window.open) > local.minute);
   const chosen = active ?? next;
   return chosen
     ? { service: chosen.service, time: `${chosen.open}–${chosen.close}` }

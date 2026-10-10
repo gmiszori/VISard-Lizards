@@ -14,6 +14,7 @@ import { compareMealServiceAndKind, prepareMenu, type DisplayMenuItem } from './
 import { API_URL, apiGet, type BackendMealDetail } from './api';
 import { DataError, hasOnlyOnePriceCategory, mergePrices, parseMealList, parseMensas, parseMeta } from './validate';
 import { isIsoDate, latestToday, menuDateCandidates, selectableMenuDays } from './menuDate';
+import { zurichParts } from '../time/clock';
 
 /** A canteen as the pages show it. rating is null when nobody has rated it yet. */
 export type AppCanteen = Omit<Canteen, 'rating' | 'menu'> & { rating: number | null; menu: DisplayMenuItem[] };
@@ -59,7 +60,7 @@ const BY_WEIGHT = mensasSoldByWeight(MEALS);
 
 /** Today's date (YYYY-MM-DD) in Zurich. */
 function zurichToday(): string {
-  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Zurich', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+  return zurichParts(new Date()).date;
 }
 
 /** The bundled sample menu of one mensa on one day, in the same shape as the default sample menu. */
