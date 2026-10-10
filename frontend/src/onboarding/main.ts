@@ -6,6 +6,7 @@ import { steps, skipStep, type Context, type OnboardingData } from './steps';
 import { t, translate } from './i18n';
 import { ONBOARDING_AUTO_START } from './config';
 import { appNow, zurichParts } from '../time/clock';
+import { WELCOME_KEY } from '../welcome/state';
 
 const root = document.querySelector<HTMLElement>('#onboarding');
 
@@ -33,7 +34,9 @@ function initialise(root: HTMLElement) {
     const url = new URL(window.location.href);
     const restart = url.searchParams.get('restart') === '1';
     const editSavedProfile = url.searchParams.get('edit') === '1';
-    const store = createOnboardingStore(data.campuses.map(c => c.id), steps.length, restart, editSavedProfile);
+    const inWelcomeTour = !restart && !editSavedProfile && localStorage.getItem(WELCOME_KEY) === 'personalise';
+    const flowSteps = inWelcomeTour ? steps.filter(step => step.id !== 'install') : steps;
+    const store = createOnboardingStore(data.campuses.map(c => c.id), flowSteps.length, restart, editSavedProfile);
     if (restart || editSavedProfile) {
       // Consume the command so reloads resume this draft rather than resetting it.
       url.searchParams.delete('restart');
@@ -41,7 +44,7 @@ function initialise(root: HTMLElement) {
       window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
     }
     const initial = defaults(data.campuses[0]!.id, savedLanguage(), savedTheme());
-    const sections = steps.map(step => root.querySelector<HTMLElement>(`[data-step="${step.id}"]`)!);
+    const sections = flowSteps.map(step => root.querySelector<HTMLElement>(`[data-step="${step.id}"]`)!);
     const flow = root.querySelector<HTMLElement>('[data-flow]')!;
     const payoff = root.querySelector<HTMLElement>('[data-payoff]')!;
     const next = root.querySelector<HTMLButtonElement>('[data-next]')!;
@@ -50,15 +53,13 @@ function initialise(root: HTMLElement) {
     let completed = false;
     let lastMoveAt = -Infinity;
     const settled = () => performance.now() - lastMoveAt >= STEP_COOLDOWN_MS;
-    // From here on the overview no longer sends this visitor back to onboarding during this browser session.
-    try { window.sessionStorage.setItem('campuseats-onboarding-seen', '1'); } catch { /* storage blocked: the redirect may repeat */ }
     const guard =(action: () => void) => { try { error.hidden = true; action(); } catch { showError(); } };
     const ctx: Context = { store, data,
       update(patch) { guard(() => { store.update(patch); refresh(); }); },
       refresh() { refresh(); },
       advance() { guard(advance); },
     };
-    const renders = steps.map((step, i) => step.mount(sections[i]!, ctx));
+    const renders = flowSteps.map((step, i) => step.mount(sections[i]!, ctx));
 
     function renderPayoff() {
       const p = store.state.profile;
@@ -89,13 +90,13 @@ function initialise(root: HTMLElement) {
       const index = store.state.step;
       sections.forEach((section, i) => { section.hidden = i !== index; });
       renders.forEach(render => render());
-      progress.max = steps.length; progress.value = index + 1;
-      const label = `${t('step')} ${index + 1} ${t('of')} ${steps.length} · ${t(steps[index]!.titleKey)}`;
+      progress.max = flowSteps.length; progress.value = index + 1;
+      const label = `${t('step')} ${index + 1} ${t('of')} ${flowSteps.length} · ${t(flowSteps[index]!.titleKey)}`;
       root.querySelector<HTMLElement>('[data-progress-label]')!.textContent = label;
       progress.setAttribute('aria-label', label);
-      next.dataset.obI18n = index === steps.length - 1 ? 'finish' : 'next';
-      next.textContent = t(index === steps.length - 1 ? 'finish' : 'next');
-      skip.hidden = !steps[index]!.skippable;
+      next.dataset.obI18n = index === flowSteps.length - 1 ? 'finish' : 'next';
+      next.textContent = t(index === flowSteps.length - 1 ? 'finish' : 'next');
+      skip.hidden = !flowSteps[index]!.skippable;
     }
     function move(step: number) {
       lastMoveAt = performance.now();
@@ -106,6 +107,12 @@ function initialise(root: HTMLElement) {
     function finish() {
       lastMoveAt = performance.now();
       const saved = saveProfile(store.state.profile);
+      if (inWelcomeTour && saved) {
+        localStorage.setItem(WELCOME_KEY, 'settings');
+        store.clear();
+        window.location.replace('/');
+        return;
+      }
       store.clear(); completed = true; refresh();
       // If the device could not store the answers, say so instead of implying they were saved.
       payoff.querySelector<HTMLElement>('[data-save-note]')!.hidden = saved;
@@ -114,7 +121,7 @@ function initialise(root: HTMLElement) {
     }
     function advance() {
       if (!settled()) return;
-      if (store.state.step < steps.length - 1) move(store.state.step + 1); else finish();
+      if (store.state.step < flowSteps.length - 1) move(store.state.step + 1); else finish();
     }
     next.addEventListener('click', () => guard(advance));
     root.querySelector('[data-back]')!.addEventListener('click', () => guard(() => {
@@ -124,7 +131,7 @@ function initialise(root: HTMLElement) {
     }));
     skip.addEventListener('click', () => guard(() => {
       if (!settled()) return;
-      const stepId = steps[store.state.step]!.id;
+      const stepId = flowSteps[store.state.step]!.id;
       if (stepId === 'campus') store.setPicks([]);
       store.update(skipStep(stepId, { ...initial,
         lang: savedLanguage() })); advance();
