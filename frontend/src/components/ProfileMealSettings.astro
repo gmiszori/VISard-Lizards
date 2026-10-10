@@ -49,10 +49,11 @@ const ranges = {
   .settings-subsection{margin-top:18px;padding-top:17px;border-top:1px solid var(--line)}
   .settings-subsection h3{margin:0 0 11px;color:var(--ink);font:700 14px Manrope,sans-serif}
   .settings-hard-options{display:flex;flex-wrap:wrap;gap:8px}
-  .settings-hard-option{position:relative;display:grid;gap:3px;min-width:0;min-height:44px;padding:8px 12px;border:1px solid var(--line);border-radius:13px;background:var(--paper);color:var(--ink);font-size:13px;line-height:1.35;cursor:pointer}
+  .settings-hard-option{position:relative;box-sizing:border-box;display:flex;align-items:center;min-width:0;min-height:44px;padding:8px 12px;border:1px solid var(--line);border-radius:13px;background:var(--paper);color:var(--ink);font-size:13px;line-height:1.35;cursor:pointer}
   .settings-hard-option input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
   .settings-hard-option small{color:var(--muted);font-size:10px;pointer-events:none}
-  .settings-hard-option:has(input:checked){border-color:var(--green);background:color-mix(in srgb,var(--green) 8%,var(--paper));color:var(--green)}
+  .settings-hard-option:has(input:checked){border-color:#bd4450;background:#fff0f1;color:#9b2430}
+  :global(:root[data-theme="dark"]) .settings-hard-option:has(input:checked){border-color:#b95b65;background:#30191d;color:#ffb3b9}
   .settings-hard-option:has(input:focus-visible){outline:3px solid #7eb594;outline-offset:2px}
   .settings-profile-hint{margin:12px 0 0!important;color:var(--muted);font-size:11px;line-height:1.5}
   .settings-budget-range{padding:0;border:0;background:transparent}

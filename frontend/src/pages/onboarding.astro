@@ -71,7 +71,8 @@ const payload = {
         <section data-step="diet" hidden>
           <h1 tabindex="-1" data-ob-i18n="dietTitle">{t('dietTitle')}</h1>
           <p class="ob-lead" data-ob-i18n="dietHint">{t('dietHint')}</p>
-          <ChipSelect name="diet" labelKey="diet" mode="single" options={keys(DIETS)} />
+          <ChipSelect name="diet" labelKey="diet" mode="single" className="ob-diet-choices"
+            options={DIETS.map(value => ({ value, key: value, descriptionKey: `dietDescription_${value}` as Key }))} />
           <div class="ob-constraints">
             <ChipSelect name="hard" labelKey="never" options={HARD.map(value => ({ value, key: value }))} />
             <p class="ob-note" data-ob-i18n="hardHint">{t('hardHint')}</p>
