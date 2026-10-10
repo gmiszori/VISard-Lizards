@@ -109,6 +109,10 @@
   font-size: 10px;
 }
 
+.canteen-card .compact-service-heading {
+  display: none;
+}
+
 :root[data-density="list"] :is(#canteen-grid, #favourites-grid) .canteen-card .dish-preview,
 :root[data-density="list"] :is(#canteen-grid, #favourites-grid) .canteen-card .dish-preview:not([hidden]) ~ .dish-preview:not([hidden]) {
   display: grid;
@@ -282,6 +286,10 @@
 :root[data-density="compact"] article.canteen-card[data-canteen-card] .card-body {
   min-width: 0;
   padding: 10px 12px 12px;
+  border-top: 1px solid var(--line);
+}
+:root[data-density="compact"] article.canteen-card[data-canteen-card] .compact-service-heading {
+  display: block;
 }
 @media (max-width: 700px) {
   :root .canteen-card .canteen-photo-title .status { position: absolute; top: 8px; left: 8px; right: auto; }
