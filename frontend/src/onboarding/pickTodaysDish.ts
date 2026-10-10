@@ -3,7 +3,8 @@ import type { Profile } from './profile.ts';
 import { matchesConstraints } from './constraints.ts';
 import { tierPrice } from './priceRange.ts';
 
-export type RecommendationMensa = Pick<Mensa, 'id' | 'name' | 'campusId' | 'hasMenu' | 'temporarilyClosed'>;
+/** closedOnMenuDay: the mensa has no service on the weekday of the menu (or is closed for good). */
+export type RecommendationMensa = Pick<Mensa, 'id' | 'name' | 'campusId' | 'hasMenu' | 'temporarilyClosed'> & { closedOnMenuDay?: boolean };
 export type RecommendationMeal = Pick<Meal, 'id' | 'mensaId' | 'date' | 'title' | 'titleDe' | 'kind' | 'service' |
   'dietTag' | 'allergens' | 'originDetail' | 'components' | 'price' | 'nutrition'>;
 
@@ -41,4 +42,16 @@ export function pickTodaysDish(profile: Profile, mensas: RecommendationMensa[], 
       return { meal, mensa: places.get(meal.mensaId)!, price, score };
     }).sort((a, b) => b.score - a.score || a.meal.id.localeCompare(b.meal.id));
   return ranked[0] ?? null;
+}
+
+/**
+ * The pick, preferring mensas that serve on the menu's weekday (closedOnMenuDay = false). Only when no open mensa has a
+ * fitting dish are closed ones considered, and the result says so (closed = true) so the page can warn instead of sending
+ * someone to a mensa that cannot serve that lunch.
+ */
+export function pickTodaysDishOpenFirst(profile: Profile, mensas: RecommendationMensa[], meals: RecommendationMeal[]) {
+  const open = pickTodaysDish(profile, mensas.filter(mensa => !mensa.closedOnMenuDay), meals);
+  if (open) return { pick: open, closed: false };
+  const any = pickTodaysDish(profile, mensas, meals);
+  return { pick: any, closed: any !== null };
 }
