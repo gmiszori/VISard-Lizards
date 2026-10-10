@@ -19,3 +19,6 @@
   .site-header .settings-link::before { content: "⚙"; font-size: 20px; line-height: 1; }
   .site-header .brand small { display: none; }
 }
+
+/* Contrast: the count under a selected onboarding chip was grey on light green (3.7:1). */
+.ob-chip[aria-pressed="true"] small { color: var(--ink); }
