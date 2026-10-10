@@ -82,14 +82,7 @@ public class LiveMenuImportService {
 			LocalDate weekEnd = weekStart.plusDays(6);
 			try {
 				List<String> pages = ethMensaClient.fetchWeeklyRotaPages(weekStart, "en");
-				List<String> germanPages;
-				try {
-					germanPages = ethMensaClient.fetchWeeklyRotaPages(weekStart, "de");
-				} catch (RuntimeException e) {
-					log.warn("German ETH menu fallback for {} unavailable; keeping valid English meals: {}",
-							weekStart, e.getMessage());
-					germanPages = List.of();
-				}
+				List<String> germanPages = germanPages(weekStart);
 				Map<String, List<Meal>> byMensa = ethMenuMapper.map(pages, germanPages, mensaIdsByFacility, weekStart, weekEnd)
 						.stream()
 						.collect(Collectors.groupingBy(Meal::mensaId));
@@ -106,6 +99,16 @@ public class LiveMenuImportService {
 			}
 		}
 		return new ImportResult(weeks, mensas, meals);
+	}
+
+	/** German menus, used where the English translation is broken (see EthMenuMapper). Optional. */
+	private List<String> germanPages(LocalDate weekStart) {
+		try {
+			return ethMensaClient.fetchWeeklyRotaPages(weekStart, "de");
+		} catch (RuntimeException e) {
+			log.warn("German ETH menus for the week of {} unavailable, using English only: {}", weekStart, e.getMessage());
+			return List.of();
+		}
 	}
 
 }
