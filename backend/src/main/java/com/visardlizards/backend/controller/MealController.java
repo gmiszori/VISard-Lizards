@@ -17,12 +17,19 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.math.BigDecimal;
+import java.util.Comparator;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+
 import com.visardlizards.backend.model.domain.Meal;
 import com.visardlizards.backend.model.domain.PriceCategory;
 import com.visardlizards.backend.model.domain.Rating;
 import com.visardlizards.backend.model.dto.MealDetailDTO;
 import com.visardlizards.backend.model.dto.MealRatingDTO;
 import com.visardlizards.backend.model.dto.MealRatingRequestDTO;
+import com.visardlizards.backend.service.MealScoringService;
 import com.visardlizards.backend.service.MealService;
 import com.visardlizards.backend.service.MensaService;
 
@@ -38,15 +45,21 @@ import jakarta.validation.Valid;
 @Tag(name = "Meals", description = "Meal search, single meals and their ratings")
 public class MealController {
 
+	public static final Set<String> ALLOWED_SORTS =
+			Set.of("mensa", "score", "relevance", "rating", "price", "price_asc", "price_desc", "name", "eco");
+
 	private final MealService mealService;
 	private final MensaService mensaService;
 	private final MensaDtoMapper mapper;
+	private final MealScoringService scoringService;
 	private final Clock clock;
 
-	public MealController(MealService mealService, MensaService mensaService, MensaDtoMapper mapper, Clock clock) {
+	public MealController(MealService mealService, MensaService mensaService, MensaDtoMapper mapper,
+			MealScoringService scoringService, Clock clock) {
 		this.mealService = mealService;
 		this.mensaService = mensaService;
 		this.mapper = mapper;
+		this.scoringService = scoringService;
 		this.clock = clock;
 	}
 
@@ -54,11 +67,11 @@ public class MealController {
 	@Operation(summary = "Search meals across all mensas", description = """
 			Returns the meals of all mensas on one day, for questions like "which vegan meals without gluten
 			are there today on Zentrum?". Every filter is optional; without any, all meals of the menu date are
-			returned. Each result says which mensa serves it and includes its ratings, like `GET /api/meals/{id}`.
-			Results are ordered by mensa.
+			returned. Each result says which mensa serves it and includes its ratings and score, like `GET /api/meals/{id}`.
+			Supports optional free-text search query and sorting criteria (`mensa`, `score`, `rating`, `price_asc`, `price_desc`, `name`, `eco`).
 			""")
 	@ApiResponse(responseCode = "200", description = "Matching meals (empty list if none)")
-	@ApiResponse(responseCode = "400", description = "Unknown diet or invalid date")
+	@ApiResponse(responseCode = "400", description = "Unknown diet, invalid sortBy, or invalid date")
 	public List<MealDetailDTO> searchMeals(
 			@Parameter(description = "Day to search. Default: the menu date (see `GET /api/meta`)")
 			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @Nullable LocalDate date,
@@ -69,12 +82,27 @@ public class MealController {
 			@Parameter(description = "Comma-separated allergen ids to leave out, e.g. `gluten,milk`")
 			@RequestParam(required = false) @Nullable List<String> excludeAllergens,
 			@Parameter(description = "Which price to put into each meal")
-			@RequestParam(defaultValue = "STUDENT") PriceCategory priceCategory) {
+			@RequestParam(defaultValue = "STUDENT") PriceCategory priceCategory,
+			@Parameter(description = "Optional text search query to filter dishes by name or ingredients")
+			@RequestParam(required = false) @Nullable String query,
+			@Parameter(description = "Optional explicit ranking criteria (e.g. `cheap`, `eco`, `rating`, `portion`, `taste`)")
+			@RequestParam(required = false) @Nullable List<String> criteria,
+			@Parameter(description = "Sort criteria: `mensa` (default), `score`, `rating`, `price_asc`, `price_desc`, `name`, `eco`")
+			@RequestParam(required = false) @Nullable String sortBy) {
+		if (sortBy != null && !sortBy.isBlank() && !ALLOWED_SORTS.contains(sortBy.trim().toLowerCase(Locale.ROOT))) {
+			throw new IllegalArgumentException("Unknown sortBy: " + sortBy + ", allowed: " + ALLOWED_SORTS);
+		}
 		LocalDate day = date != null ? date : mensaService.getMenuDate(LocalDate.now(clock));
-		return mealService.searchMeals(day, campus, diet, excludeAllergens == null ? List.of() : excludeAllergens)
+		List<MealDetailDTO> details = mealService.searchMeals(day, campus, diet,
+						excludeAllergens == null ? List.of() : excludeAllergens)
 				.stream()
-				.map(meal -> toDetail(meal, priceCategory))
+				.map(meal -> toDetail(meal, priceCategory, query, criteria))
 				.toList();
+
+		boolean hasScoringIntent = (query != null && !query.isBlank()) || (criteria != null && !criteria.isEmpty());
+		String sort = sortBy != null && !sortBy.isBlank() ? sortBy.trim().toLowerCase(Locale.ROOT)
+				: (hasScoringIntent ? "score" : "mensa");
+		return sortMeals(details, sort);
 	}
 
 	@GetMapping("/{id}")
@@ -119,8 +147,70 @@ public class MealController {
 	}
 
 	private MealDetailDTO toDetail(Meal meal, PriceCategory priceCategory) {
+		return toDetail(meal, priceCategory, null, null);
+	}
+
+	private MealDetailDTO toDetail(Meal meal, PriceCategory priceCategory, @Nullable String query,
+			@Nullable List<String> criteria) {
+		BigDecimal avgRating = mealService.getAverageRating(meal.id());
+		Map<String, Integer> tagCounts = mealService.getTagCounts(meal.id());
+		double score = scoringService.computeScore(meal, priceCategory, avgRating, tagCounts, query, criteria);
 		return new MealDetailDTO(meal.mensaId(), meal.date(), mapper.toMealDTO(meal, priceCategory),
-				mealService.getAverageRating(meal.id()), mealService.getTagCounts(meal.id()));
+				avgRating, tagCounts, score);
+	}
+
+	private List<MealDetailDTO> sortMeals(List<MealDetailDTO> list, String sort) {
+		return switch (sort) {
+			case "score", "relevance" -> list.stream()
+					.sorted(Comparator.comparing(MealDetailDTO::score, Comparator.nullsLast(Comparator.reverseOrder()))
+							.thenComparing(MealDetailDTO::mensaId))
+					.toList();
+			case "rating" -> list.stream()
+					.sorted(Comparator.comparing(MealDetailDTO::avgRating, Comparator.nullsLast(Comparator.reverseOrder()))
+							.thenComparing(MealDetailDTO::score, Comparator.nullsLast(Comparator.reverseOrder()))
+							.thenComparing(MealDetailDTO::mensaId))
+					.toList();
+			case "price", "price_asc" -> list.stream()
+					.sorted(Comparator.comparing((MealDetailDTO d) -> d.meal().price().price(),
+									Comparator.nullsLast(Comparator.naturalOrder()))
+							.thenComparing(MealDetailDTO::mensaId))
+					.toList();
+			case "price_desc" -> list.stream()
+					.sorted(Comparator.comparing((MealDetailDTO d) -> d.meal().price().price(),
+									Comparator.nullsLast(Comparator.reverseOrder()))
+							.thenComparing(MealDetailDTO::mensaId))
+					.toList();
+			case "name" -> list.stream()
+					.sorted(Comparator.comparing((MealDetailDTO d) -> d.meal().name(), String.CASE_INSENSITIVE_ORDER)
+							.thenComparing(MealDetailDTO::mensaId))
+					.toList();
+			case "eco" -> list.stream()
+					.sorted(Comparator.comparingInt(this::ecoRank).reversed()
+							.thenComparing(MealDetailDTO::mensaId))
+					.toList();
+			default -> list; // "mensa" preserves natural order by mensa
+		};
+	}
+
+	private int ecoRank(MealDetailDTO dto) {
+		int rank = 0;
+		if (dto.meal().classification() != null) {
+			if (dto.meal().classification().contains("vegan")) {
+				rank += 10;
+			} else if (dto.meal().classification().contains("vegetarian")) {
+				rank += 5;
+			}
+		}
+		String env = dto.meal().envImp();
+		if (env != null) {
+			switch (env.toUpperCase(Locale.ROOT)) {
+				case "A", "LOW" -> rank += 4;
+				case "B" -> rank += 2;
+				case "C", "MEDIUM" -> rank += 1;
+				default -> {}
+			}
+		}
+		return rank;
 	}
 
 }

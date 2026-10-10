@@ -2,14 +2,16 @@
 import { CAMPUSES } from '../data/canteens';
 ---
 <div class="toolbar">
-  <label class="search"><span class="search-icon" aria-hidden="true">⌕</span><input type="search" id="search-input" data-i18n-placeholder="search" data-i18n-aria="search" placeholder="Search canteens or dishes" aria-label="Search canteens or dishes" /></label>
+  <label class="search"><span class="search-icon" aria-hidden="true">⌕</span><input type="search" id="search-input" maxlength="200" data-i18n-placeholder="search" data-i18n-aria="search" placeholder="Search canteens or dishes" aria-label="Search canteens or dishes" /></label>
   <select id="campus-select" class="campus-select" data-i18n-aria="campusSelect" aria-label="Campus">
     <option value="preset" data-i18n="campusPreset">My campuses</option>
     <option value="all" data-i18n="campusAll">All campuses</option>
     {CAMPUSES.map((campus) => <option value={campus.id}>{campus.name}</option>)}
   </select>
 </div>
+<p id="search-status" class="search-status" role="status" aria-live="polite" hidden></p>
 <style>
+  .search-status{margin:-8px 0 14px;color:var(--muted);font-size:12px}
   .toolbar{display:flex;gap:8px;align-items:center}
   .toolbar :global(.search){flex:0 1 240px;min-width:0;margin:0}
   .toolbar :global(.search input){height:40px;font-size:14px}

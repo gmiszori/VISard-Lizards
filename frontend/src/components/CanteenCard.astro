@@ -10,7 +10,7 @@ const { canteen } = Astro.props;
 const menuGroups = groupMenuByService(canteen.menu);
 const showServiceHeadings = menuGroups.some(group => group.service === 'lunch') && menuGroups.some(group => group.service === 'dinner');
 ---
-<article data-canteen-card data-canteen-id={canteen.id} data-campus={canteen.campus} data-campus-id={canteen.campusId} data-is-open={String(canteen.isOpen)} data-has-menu={String(canteen.menu.length > 0)} data-name={canteen.name} class="canteen-card">
+<article data-canteen-card data-canteen-id={canteen.id} data-campus={canteen.campus} data-campus-id={canteen.campusId} data-is-open={String(canteen.isOpen)} data-has-menu={String(canteen.menu.length > 0)} data-name={canteen.name} data-menu={canteen.menu.map((item) => item.name).join(' ')} data-diets={canteen.menu.map((item) => item.dietary).join(' ')} class="canteen-card">
   <button class="favorite-toggle" type="button" data-favorite-toggle aria-pressed="false" aria-label="Add to favourites"><span aria-hidden="true">☆</span></button>
   <div class="canteen-card-link">
     <div class="card-image">

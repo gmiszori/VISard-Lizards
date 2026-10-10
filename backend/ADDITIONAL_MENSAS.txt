@@ -1,0 +1,174 @@
+# Additional Mensas in Zurich & Connected to ETH / UZH (Live Scrapers)
+
+This document lists all the dining locations in Zurich (or connected to ETH / UZH) that are NOT part of the standard 22 mensas covered by the ETH Cookpit API and standard UZH Food2050 endpoints, along with how to scrape them.
+
+================================================================================
+1. ETH FACILITIES NOT IN ETH COOKPIT / ETH GASTRO API
+================================================================================
+
+Name: Restaurant Bellavista
+Location: ETH Hoenggerberg (HGP building, Hoenggerbergring 47, 8093 Zuerich)
+Operator: Private caterer
+Website: https://bellavista-ethz.ch/mittagessen/
+Opening Hours: Mon-Fri 11:15 - 13:30
+Menu Format: Semantic HTML on their custom website.
+How to Scrape:
+  - Send an HTTP GET request to https://bellavista-ethz.ch/mittagessen/
+  - Use Jsoup to select the menu items (selectors: .menu-item, article, or header/body sections).
+  - Extract dish name, description, and price (CHF).
+
+Name: Restaurant Octavo
+Location: ETH Oerlikon (Binzmuehlestrasse 130, 8050 Zuerich)
+Operator: SV Group
+Website: https://www.restaurant-octavo.ch/unsere-menues
+Opening Hours: Mon-Thu 07:30 - 15:30, Fri 07:30 - 14:30
+Menu Format: Standard SV Group responsive CMS HTML page.
+How to Scrape:
+  - Send HTTP GET request to https://www.restaurant-octavo.ch/unsere-menues
+  - Select daily menus via Jsoup from the tabbed week view (.menu-plan, .item-content).
+  - Alternatively, query the underlying SV Group JSON endpoint used by sv-restaurant.ch.
+
+Name: Zwei Grad Bistro
+Location: ETH Zentrum (CHN building, Universitaetstrasse 16, 8092 Zuerich)
+Operator: SV Group
+Website: https://ethz.ch/de/campus/erleben/gastronomie-und-einkaufen/gastronomie/restaurants-und-cafeterias/zentrum/zwei-grad-bistro.html
+Menu Format: Bistro food, sandwiches, warm daily specials posted on the ETH Gastronomy portal.
+How to Scrape:
+  - Scrape the ETH Gastronomy subpage using Jsoup for CHN Zwei Grad Bistro announcements and menus.
+
+Name: Science Lounge
+Location: ETH Basel (D-BSSE, Klingelbergstrasse / Schanzenstrasse, Rosental Mitte, 4056 Basel)
+Operator: ZFV
+Website: https://www.zfv.ch/de/gastronomie/eth-zuerich-science-lounge
+Menu Format: ZFV web page / Food2050 integration.
+How to Scrape:
+  - Scrape the ZFV restaurant subpage or query the Food2050 tenant endpoint for ETH Basel Science Lounge.
+
+Name: bQm Kulturcafe & Bar
+Location: ETH Zentrum (Under Polyterrasse, Leonhardstrasse 34, 8001 Zuerich)
+Operator: Student Association / Kulturverein
+Website: https://bqm.ch/
+Menu Format: Daily toast/panini specials, snacks, and student drinks.
+How to Scrape:
+  - Scrape https://bqm.ch/ via Jsoup.
+
+Name: Bistro HPI
+Location: ETH Hoenggerberg (HPI building)
+Operator: ETH / SV Group
+Website: https://ethz.ch/en/campus/getting-to-know/cafes-restaurants-shops/gastronomy/restaurants-and-cafeterias/hoenggerberg/bistro-hpi.html
+Menu Format: Snacks, coffee, quick lunch offerings.
+
+================================================================================
+2. UZH FACILITIES MISSING FROM THE CURRENT 22 MENSAS
+================================================================================
+
+Name: Mensa Oerlikon
+Location: UZH Campus Oerlikon (Binzmuehlestrasse 14 / AND building, 8050 Zuerich)
+Operator: ZFV / UZH
+Website: https://www.plaene.uzh.ch/ and https://app.food2050.ch
+Menu Format: Food2050 tenant / UZH menu page.
+How to Scrape:
+  - Query Food2050 for UZH Oerlikon or parse the HTML table from https://www.plaene.uzh.ch/.
+
+Name: BIM11
+Location: UZH Campus Oerlikon (Binzmuehlestrasse 11, 8050 Zuerich)
+Operator: ZFV / UZH
+Website: https://www.plaene.uzh.ch/
+Opening: Newly opened in September 2026.
+How to Scrape:
+  - Listed on UZH Plaene portal (https://www.plaene.uzh.ch/).
+
+Name: Cityport Mensa
+Location: UZH Campus Oerlikon (Affolternstrasse 56, 8050 Zuerich)
+Operator: ZFV / UZH
+Website: https://www.plaene.uzh.ch/ and https://app.food2050.ch
+How to Scrape:
+  - Food2050 tenant for UZH or scrape https://www.plaene.uzh.ch/.
+
+Name: Tierspital Mensa
+Location: UZH Campus Irchel / Vetsuisse (Winterthurerstrasse 260, 8057 Zuerich)
+Operator: ZFV / UZH
+Website: https://www.plaene.uzh.ch/ and https://app.food2050.ch
+How to Scrape:
+  - Full canteen for veterinary students. Uses Food2050 and plaene.uzh.ch.
+
+Name: The YARD & Cafeteria Brunnenhof
+Location: UZH Campus Irchel (Winterthurerstrasse 190, 8057 Zuerich)
+Operator: ZFV / UZH
+Website: https://www.plaene.uzh.ch/
+How to Scrape:
+  - Irchel bistros/cafeterias published on the UZH Plaene website.
+
+Name: Restaurant UniTurm & Cafeteria Raemi 74
+Location: UZH Campus Zentrum (Raemistrasse 71 / 74, 8006 Zuerich)
+Operator: ZFV / UZH
+Website: https://www.plaene.uzh.ch/
+How to Scrape:
+  - Top-floor restaurant in the UZH tower and Raemi 74 cafeteria published on plaene.uzh.ch.
+
+Name: Cafeteria Botanischer Garten
+Location: UZH Botanical Garden (Zollikerstrasse 107, 8008 Zuerich)
+Operator: ZFV / UZH
+Website: https://www.plaene.uzh.ch/
+
+================================================================================
+3. OTHER HIGHER EDUCATION MENSAS IN ZUERICH (ACCESSIBLE TO STUDENTS)
+================================================================================
+
+Name: Mensa PHZH (Paedagogische Hochschule Zuerich)
+Location: Zuerich HB / Europaallee (Lagerstrasse 2, Gebaeude LAA, 8004 Zuerich)
+Operator: ZFV
+Website: https://app.food2050.ch/o/zfv-phzh and https://www.phzh.ch/de/ueber-uns/campus/verpflegung/
+Opening Hours: Mon-Fri 07:30 - 17:00 (Warm food 11:15 - 14:00), Sat 07:30 - 15:00
+Menu Format: Food2050 organization page (Next.js app).
+How to Scrape:
+  - Recommended: Fetch https://app.food2050.ch/o/zfv-phzh and extract the JSON inside the <script id="__NEXT_DATA__"> tag. This provides 100% structured daily meals, CO2 footprint, and allergens without parsing HTML.
+  - Alternative: Scrape the weekly menu document on phzh.ch.
+
+Name: Mensa Molki (Toni-Areal)
+Location: ZHdK / ZHAW (Pfingstweidstrasse 96, 8005 Zuerich)
+Operator: ZFV
+Website: https://www.zfv.ch/de/gastronomie/gastronomie-im-toni-areal and Food2050
+Opening Hours: Mon-Fri 11:00 - 14:00, Sat 11:45 - 14:00
+Menu Format: Multi-line menu (Traditional, Global, ExQuisit, Market & Salad buffet) via Food2050 / ZFV website.
+How to Scrape:
+  - Extract structured JSON from the Food2050 organization slug for Toni-Areal or parse the ZFV HTML page with Jsoup.
+
+Name: Bistro Tonino (Toni-Areal)
+Location: ZHdK / ZHAW (Pfingstweidstrasse 96, 8005 Zuerich)
+Operator: ZFV
+Website: https://www.zfv.ch/de/gastronomie/gastronomie-im-toni-areal and Food2050
+Menu Format: Italian lunch specials (Pinsa, fresh pasta, baked goods).
+How to Scrape:
+  - Extracted alongside Mensa Molki on Food2050 / ZFV portal.
+
+Name: ZHAW Cafeteria Lagerstrasse & Sihlhof
+Location: Lagerstrasse 41 / 45, 8004 Zuerich
+Operator: ZFV
+Website: https://www.zhaw.ch and https://www.zfv.ch
+How to Scrape:
+  - Scrape ZFV ZHAW menu pages via Jsoup.
+
+Name: USZ Bistros (Bistro NORD & Bistro SUED)
+Location: Universitaetsspital Zuerich (Frauenklinikstrasse / Raemistrasse, 8091 Zuerich)
+Operator: USZ Gastronomie
+Website: https://www.usz.ch
+How to Scrape:
+  - Located directly between ETH Zentrum and UZH Zentrum. Check USZ catering pages.
+
+================================================================================
+4. SUMMARY OF SCRAPING ARCHITECTURES
+================================================================================
+
+1. Direct Static HTML Scraping (Jsoup in Java):
+   - Targets: Restaurant Bellavista (bellavista-ethz.ch), Restaurant Octavo (restaurant-octavo.ch), bQm (bqm.ch).
+   - Tool: org.jsoup.Jsoup
+   - Strategy: Connect via HTTP GET, select menu containers, extract text and price.
+
+2. Food2050 Multi-Tenant Scraping (__NEXT_DATA__ JSON):
+   - Targets: PHZH (app.food2050.ch/o/zfv-phzh), Mensa Molki & Bistro Tonino (ZHdK / ZHAW Toni-Areal), UZH Oerlikon, UZH Tierspital.
+   - Strategy: Fetch the page HTML, extract <script id="__NEXT_DATA__" type="application/json">, parse the JSON tree with Jackson (ObjectMapper). This yields clean structured meals with zero DOM parsing errors.
+
+3. UZH Plaene Aggregator:
+   - Targets: All remaining UZH locations (BIM11, Cityport, UniTurm, The YARD, Raemi 74, Botanischer Garten).
+   - Strategy: Scrape https://www.plaene.uzh.ch/ which acts as the official master directory for all UZH food services.
