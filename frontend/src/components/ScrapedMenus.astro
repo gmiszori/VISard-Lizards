@@ -54,7 +54,7 @@
         for (const meal of meals.values()) {
           const entry = document.createElement('article'); entry.className = 'scraped-dish';
           entry.append(node('h3', meal.name ?? 'Unnamed entry'));
-          entry.append(node('p', `${meal.date ?? 'Undated offer · availability unknown'}${meal.timeStart ? ` · ${meal.timeStart}–${meal.timeEnd ?? '?'}` : ''}`));
+          entry.append(node('p', `${meal.date || 'Every day'}${meal.timeStart ? ` · ${meal.timeStart}–${meal.timeEnd ?? '?'}` : ''}`));
           if (meal.description) entry.append(node('p', meal.description));
           const prices = meal.prices?.length ? meal.prices : meal.price ? [meal.price] : [];
           entry.append(node('p', prices.length ? prices.map((price: RecordValue) => `${price.customerGroup ?? 'Price'}: ${price.currency} ${price.amount}`).join(' · ') : 'Price unknown'));
