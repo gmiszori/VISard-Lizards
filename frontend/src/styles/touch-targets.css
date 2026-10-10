@@ -51,3 +51,5 @@
 @supports (-webkit-touch-callout: none) {
   select, textarea, input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]) { font-size: 16px !important; }
 }
+/* The accent colour is light in dark mode: white text on it is unreadable (contrast about 1.7:1). */
+:root[data-theme="dark"] .skip-link { color: var(--paper); }

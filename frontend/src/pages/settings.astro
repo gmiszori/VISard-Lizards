@@ -148,5 +148,6 @@ import WelcomeTour from '../welcome/WelcomeTour.astro';
   .view-mode-option input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}
   .view-mode-option span{display:grid;place-items:center;min-height:44px;padding:0 8px;background:var(--paper);color:var(--ink);font-size:13px;font-weight:700}
   .view-mode-option input:checked+span{background:var(--green);color:white}
+  :global(:root[data-theme="dark"]) .view-mode-option input:checked+span{color:var(--paper)}
   .view-mode-option input:focus-visible+span{outline:3px solid #7eb594;outline-offset:-3px}
 </style>
