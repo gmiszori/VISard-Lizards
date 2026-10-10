@@ -24,7 +24,7 @@ class MensaControllerTests {
 	void listsAllMensas() throws Exception {
 		mockMvc.perform(get("/api/mensas"))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.length()").value(22))
+				.andExpect(jsonPath("$.length()").value(39))
 				.andExpect(jsonPath("$[0].title").value("Alumni quattro Lounge"))
 				.andExpect(jsonPath("$[?(@.id == 'archimedes')].title").value("Archimedes"))
 				.andExpect(jsonPath("$[?(@.id == 'archimedes')].location").value("Gloriastrasse 37/39, 8092 Zürich"))
@@ -37,7 +37,7 @@ class MensaControllerTests {
 	void filtersMensasByCampus() throws Exception {
 		mockMvc.perform(get("/api/mensas").param("campus", "irchel"))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.length()").value(4));
+				.andExpect(jsonPath("$.length()").value(6));
 	}
 
 	@Test
@@ -104,7 +104,7 @@ class MensaControllerTests {
 	void listsCampuses() throws Exception {
 		mockMvc.perform(get("/api/campuses"))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$[*].id").value(containsInAnyOrder("zentrum", "hoenggerberg", "irchel")));
+				.andExpect(jsonPath("$[*].id").value(containsInAnyOrder("zentrum", "hoenggerberg", "irchel", "oerlikon", "basel", "toni-areal", "europaallee")));
 	}
 
 	@Test
