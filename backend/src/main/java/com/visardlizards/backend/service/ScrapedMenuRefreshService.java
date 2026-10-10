@@ -28,6 +28,10 @@ public class ScrapedMenuRefreshService {
     private final ConcurrentHashMap<String,Object> locks=new ConcurrentHashMap<>();
     private final AtomicBoolean running=new AtomicBoolean();
     private final ExecutorService worker=Executors.newSingleThreadExecutor();
+    @Value("${app.scraper.console-enabled:true}")
+    private boolean consoleEnabled;
+    private volatile boolean closed;
+    private Thread consoleThread;
     private volatile String lastAttempt, lastCompleted;
     public ScrapedMenuRefreshService(ScraperAiClient ai, JsonMapper mapper, ScrapedMenuStore store,
             @Value("${app.scraper.enabled:true}") boolean enabled,
@@ -47,7 +51,43 @@ public class ScrapedMenuRefreshService {
         }
     }
     @EventListener(ApplicationReadyEvent.class)
-    public void onStartup() { enqueueMissing(); }
+    public void onStartup() {
+        enqueueMissing();
+        if(consoleEnabled) startConsoleListener();
+    }
+    /** Operator input only: type r and Enter in the backend's own terminal. */
+    public boolean handleConsoleCommand(String command) {
+        if(command==null || !command.strip().equalsIgnoreCase("r")) return false;
+        String message=switch(requestRefresh()) {
+            case STARTED -> "Scraper refresh started in the background.";
+            case ALREADY_RUNNING -> "Scraper refresh is already running.";
+            case DISABLED -> "Scraping is disabled; set MEAL_SCRAPER_ENABLED=true.";
+            case NOT_CONFIGURED -> "Backend OpenAI key is missing or invalid.";
+        };
+        System.out.println(message);
+        return true;
+    }
+    private synchronized void startConsoleListener() {
+        if(consoleThread!=null || closed) return;
+        consoleThread=new Thread(() -> {
+            System.out.println("Scraper console: type r and Enter to refresh all configured cafeterias.");
+            readConsoleCommands(new java.io.BufferedReader(new java.io.InputStreamReader(System.in,StandardCharsets.UTF_8)));
+        },"scraper-console");
+        consoleThread.setDaemon(true);
+        consoleThread.start();
+    }
+    void readConsoleCommands(java.io.BufferedReader input) {
+        // Do not close System.in; EOF ends the listener instead of spinning in detached processes.
+        try {
+            String line;
+            while(!closed && (line=input.readLine())!=null) {
+                if(closed) break;
+                handleConsoleCommand(line);
+            }
+        } catch(java.io.IOException ignored) {
+            if(!closed) System.err.println("Scraper console input is unavailable; use the manual refresh API.");
+        }
+    }
     @Scheduled(cron="${app.scraper.cron:0 0 6 * * *}",zone="Europe/Zurich")
     public void onSchedule() { enqueue(); }
     public void enqueue() {
@@ -146,5 +186,9 @@ public class ScrapedMenuRefreshService {
     private void persist() {
         store.save(mapper.createObjectNode().put("id","__meta").put("lastCompleted",lastCompleted).put("lastAttempt",lastAttempt));
     }
-    @PreDestroy public void close() { worker.shutdownNow(); }
+    @PreDestroy public void close() {
+        closed=true;
+        if(consoleThread!=null) consoleThread.interrupt();
+        worker.shutdownNow();
+    }
 }
