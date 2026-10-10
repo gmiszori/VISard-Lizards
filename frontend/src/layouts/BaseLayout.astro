@@ -14,7 +14,7 @@ const { title } = Astro.props;
     <meta name="theme-color" content="#f5f6f1" />
     <meta name="description" content="Find what's cooking at ETH and UZH campus canteens." />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>{title} | CampusEats</title>
+    <title data-page-title={title}>{title} | CampusEats</title>
   </head>
   <body>
     <a class="skip-link" href="#main" data-i18n="skipToContent">Skip to content</a>
@@ -61,10 +61,14 @@ const { title } = Astro.props;
         get: (key) => { try { return localStorage.getItem(key); } catch { return null; } },
         set: (key, value) => { try { localStorage.setItem(key, value); } catch { /* the choice is just not remembered */ } },
       };
+      const pageTitlesDe = { 'Campus canteens': 'Mensen auf dem Campus', 'Settings': 'Einstellungen', 'Personalise your menu': 'Menü personalisieren', 'Page not found': 'Seite nicht gefunden' };
       const knownLanguage = (lang) => (lang === 'de' ? 'de' : 'en');
       const applyLanguage = (requested) => {
         const lang = knownLanguage(requested);
         document.documentElement.lang = lang;
+        // The tab title and the screen-reader page name follow the page language (canteen names stay as they are).
+        const titleElement = document.querySelector('title[data-page-title]');
+        if (titleElement) { const english = titleElement.dataset.pageTitle; titleElement.textContent = ((lang === 'de' && pageTitlesDe[english]) || english) + ' | CampusEats'; }
         campusStorage.set('campuseats-language', lang);
         document.querySelectorAll('[data-i18n]').forEach(el => { const key = el.dataset.i18n; if (translations[lang][key]) el.textContent = translations[lang][key]; });
         document.querySelectorAll('[data-i18n-placeholder]').forEach(el => el.placeholder = translations[lang][el.dataset.i18nPlaceholder]);
