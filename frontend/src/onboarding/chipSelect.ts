@@ -2,14 +2,18 @@ export interface ChipChange { name: string; values: string[] }
 
 /** Delegation also supports rating rows cloned after mounting. */
 export function mountChipSelect(root: HTMLElement, onChange: (change: ChipChange) => void): void {
-  const choose = (button: HTMLButtonElement) => {
+  const choose = (button: HTMLButtonElement, fromKeyboardArrow = false) => {
     const group = button.closest<HTMLElement>('[data-chip-group]')!;
+    const name = group.dataset.chipGroup!;
     if (group.dataset.mode === 'single') {
-      syncChipSelect(group, [button.dataset.value!]);
-    } else {
-      button.setAttribute('aria-pressed', String(button.getAttribute('aria-pressed') !== 'true'));
+      // A clearable group (the mensa stars) lets a second click on the chosen value take the answer back.
+      const clear = group.dataset.clearable === 'true' && !fromKeyboardArrow && button.getAttribute('aria-checked') === 'true';
+      syncChipSelect(group, clear ? [] : [button.dataset.value!]);
+      onChange({ name, values: clear ? [] : [button.dataset.value!] });
+      return;
     }
-    onChange({ name: group.dataset.chipGroup!, values: [...group.querySelectorAll<HTMLButtonElement>('[data-value][aria-pressed="true"]')].map(b => b.dataset.value!) });
+    button.setAttribute('aria-pressed', String(button.getAttribute('aria-pressed') !== 'true'));
+    onChange({ name, values: [...group.querySelectorAll<HTMLButtonElement>('[data-value][aria-pressed="true"]')].map(b => b.dataset.value!) });
   };
   root.addEventListener('click', event => {
     const button = (event.target as HTMLElement).closest<HTMLButtonElement>('button[data-value]');
@@ -26,17 +30,20 @@ export function mountChipSelect(root: HTMLElement, onChange: (change: ChipChange
     const next = event.key === 'Home' ? 0 : event.key === 'End' ? buttons.length - 1 :
       (i + (['ArrowLeft', 'ArrowUp'].includes(event.key) ? -1 : 1) + buttons.length) % buttons.length;
     buttons[next]?.focus();
-    if (buttons[next]) choose(buttons[next]);
+    if (buttons[next]) choose(buttons[next], true);
   });
 }
 export function syncChipSelect(group: HTMLElement, values: string[]): void {
   const buttons = [...group.querySelectorAll<HTMLButtonElement>('button[data-value]')];
   for (const button of buttons) {
     const selected = values.includes(button.dataset.value!);
-    button.setAttribute('aria-pressed', String(selected));
     if (group.dataset.mode === 'single') {
+      // role="radio" has aria-checked; aria-pressed belongs to toggle buttons and must not be combined with it.
+      button.removeAttribute('aria-pressed');
       button.setAttribute('aria-checked', String(selected));
       button.tabIndex = selected || (!values.length && button === buttons[0]) ? 0 : -1;
+    } else {
+      button.setAttribute('aria-pressed', String(selected));
     }
   }
 }

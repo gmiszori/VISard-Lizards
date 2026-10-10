@@ -105,8 +105,9 @@ function mountRatings(root: HTMLElement, ctx: Context) {
   let rendered = '';
   mountChipSelect(rows, ({ name, values }) => {
     const mensaId = name.slice('rating:'.length);
-    ctx.update({ mensaRatings: [...ctx.store.state.profile.mensaRatings.filter(r => r.mensaId !== mensaId),
-      { mensaId, rating: Number(values[0]) as MensaRating }] });
+    const others = ctx.store.state.profile.mensaRatings.filter(r => r.mensaId !== mensaId);
+    // No value: the visitor took the rating back.
+    ctx.update({ mensaRatings: values.length ? [...others, { mensaId, rating: Number(values[0]) as MensaRating }] : others });
   });
   // "I haven't been to any of these" answers the step: no ratings, then continue (finish on the last step).
   root.querySelector('[data-no-ratings]')!.addEventListener('click', () => { ctx.update({ mensaRatings: [] }); ctx.advance(); });

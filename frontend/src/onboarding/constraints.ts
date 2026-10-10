@@ -16,8 +16,8 @@ export function matchesConstraints(meal: ConstraintMeal, profile: Pick<Profile, 
       case 'lactose_free': return !meal.allergens.includes('milk');
       case 'gluten_free': return !meal.allergens.includes('gluten');
       case 'nut_free': return !meal.allergens.some(allergen => allergen === 'nuts' || allergen === 'peanuts');
-      // TODO(data): halal and kosher cannot be inferred from published fields.
-      case 'halal': case 'kosher': return true;
+      // Constraints removed from the app (halal, kosher: not determinable from the menu data) never exclude a dish.
+      default: return true;
     }
   });
 }

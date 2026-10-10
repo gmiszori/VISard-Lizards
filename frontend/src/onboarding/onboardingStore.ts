@@ -1,5 +1,7 @@
 import type { CampusId } from '../data/canteens';
 import { DIETS, HARD, PRIORITIES, TIERS, defaults, type MensaRating, type Profile } from './profile.ts';
+import { readPreferences } from '../preferences/state.ts';
+import { seedProfile } from './seed.ts';
 
 export interface Draft { profile: Profile; step: number; picks: string[]; ratingScale: 5 }
 const KEY = 'campuseats-onboarding';
@@ -16,7 +18,10 @@ export function createOnboardingStore(campuses: CampusId[], stepCount: number, r
   // This factory is called only by main.ts in the browser, never during SSR.
   const lang = savedLanguage();
   const initial = defaults(campuses[0]!, lang, savedTheme());
-  let state: Draft = { profile: initial, step: 0, picks: [], ratingScale: 5 };
+  // Replaying onboarding starts from what the user already answered (and changed in Settings), not from the defaults.
+  let seed: Partial<Profile> = {};
+  try { seed = seedProfile(JSON.parse(localStorage.getItem('campuseats-profile') ?? 'null'), readPreferences(localStorage), campuses); } catch { /* defaults */ }
+  let state: Draft = { profile: { ...initial, ...seed }, step: 0, picks: [], ratingScale: 5 };
   if (restart) { try { localStorage.removeItem(KEY); } catch { /* nothing saved to remove */ } }
   try {
     const saved = JSON.parse(localStorage.getItem(KEY) ?? 'null') as Draft | null;

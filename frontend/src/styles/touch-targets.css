@@ -21,7 +21,7 @@
 }
 
 /* Contrast: the count under a selected onboarding chip was grey on light green (3.7:1). */
-.ob-chip[aria-pressed="true"] small { color: var(--ink); }
+.ob-chip:is([aria-pressed="true"],[aria-checked="true"]) small { color: var(--ink); }
 
 /* Keyboard users can jump past the header. The link is only visible while it has focus. */
 .skip-link { position: absolute; left: 12px; top: -64px; z-index: 100; min-height: 44px; display: inline-flex; align-items: center; padding: 0 16px; border-radius: 12px; background: var(--green); color: #fff; font-weight: 700; text-decoration: none; }

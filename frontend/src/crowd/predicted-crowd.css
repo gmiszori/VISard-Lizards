@@ -40,3 +40,8 @@
   .crowd-legend{gap:10px;font-size:10px}
 }
 @media(prefers-reduced-motion:reduce){.predicted-crowd *{transition:none!important;animation:none!important}}
+
+.crowd-readout{min-height:1.5em;margin:8px 0 0;color:var(--muted);font-size:13px}
+.crowd-bars{cursor:pointer}
+.crowd-bars:focus-visible{outline:3px solid var(--green);outline-offset:3px;border-radius:6px}
+.crowd-bars .is-selected{stroke:var(--ink);stroke-width:1.5;vector-effect:non-scaling-stroke}

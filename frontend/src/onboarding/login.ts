@@ -16,7 +16,7 @@ const copy = {
   },
   de: {
     navigation: 'Konto', settings: 'Einstellungen', login: 'Login',
-    close: 'Login schließen', welcome: 'Willkommen zurück.', intro: 'Finde ein Mittagessen, das zu deinem Tag passt.',
+    close: 'Login schliessen', welcome: 'Willkommen zurück.', intro: 'Finde ein Mittagessen, das zu deinem Tag passt.',
     email: 'E-Mail-Adresse', password: 'Passwort', show: 'Zeigen', hide: 'Verbergen',
     quickAccess: 'Einfach ausprobieren?', helperHint: 'Starte eine Demo-Sitzung. Ganz ohne Angaben.',
     previewNote: 'Login-Vorschau · Kontoanbindung folgt bald.',

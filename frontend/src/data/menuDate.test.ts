@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { addDays, isIsoDate, isWeekend, menuDateCandidates, pickSampleMenuDate, weekdayIndex, wantedMenuDate } from './menuDate.ts';
+import { addDays, isIsoDate, isWeekend, menuDateCandidates, nearestMenuDay, pickSampleMenuDate, weekdayIndex, wantedMenuDate } from './menuDate.ts';
 
 // 2026-10-10 is a Saturday.
 test('weekday numbers and weekend detection', () => {
@@ -97,4 +97,14 @@ test('selectableMenuDays: weekdays from the wanted day up to the data, plus the 
   // a shown day before the range (backend fallback) is included
   assert.deepEqual(selectableMenuDays('2026-10-10', '2026-10-09', '2026-10-09'), ['2026-10-09']);
   assert.equal(selectableMenuDays('2026-10-12', '2026-10-12', '2026-12-31', 3).length, 3);
+});
+
+test('nearestMenuDay sends a weekend or out-of-range date to the next menu day, else the last one', () => {
+  const days = ['2026-10-07', '2026-10-08', '2026-10-09', '2026-10-12'];
+  assert.equal(nearestMenuDay('2026-10-10', days), '2026-10-12'); // Saturday -> Monday
+  assert.equal(nearestMenuDay('2026-10-11', days), '2026-10-12'); // Sunday -> Monday
+  assert.equal(nearestMenuDay('2026-10-13', days), '2026-10-12'); // after the data -> last day
+  assert.equal(nearestMenuDay('2026-01-01', days), '2026-10-07'); // before the data -> first day
+  assert.equal(nearestMenuDay('2026-02-31', days), null); // not a real date
+  assert.equal(nearestMenuDay('2026-10-10', []), null);
 });

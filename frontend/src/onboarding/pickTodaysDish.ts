@@ -3,6 +3,14 @@ import type { Profile } from './profile.ts';
 import { matchesConstraints } from './constraints.ts';
 import { tierPrice } from './priceRange.ts';
 
+/** Below this price (CHF, in the visitor's own price category) a dish labelled "main" is almost always a soup, starter or dessert. */
+export const MIN_MAIN_PRICE = 4;
+const starter = /suppe|soup|dessert|nachtisch/i;
+const looksLikeMain = (meal: RecommendationMeal, tier: Profile['priceTier']) => {
+  const price = tierPrice(meal, tier);
+  return (price === null || price >= MIN_MAIN_PRICE) && !starter.test(meal.title);
+};
+
 export type RecommendationMensa = Pick<Mensa, 'id' | 'name' | 'campusId' | 'hasMenu' | 'temporarilyClosed'>;
 export type RecommendationMeal = Pick<Meal, 'id' | 'mensaId' | 'date' | 'title' | 'titleDe' | 'kind' | 'service' |
   'dietTag' | 'allergens' | 'originDetail' | 'components' | 'price' | 'nutrition'>;
@@ -15,11 +23,14 @@ export function pickTodaysDish(profile: Profile, mensas: RecommendationMensa[], 
   const campuses = new Set([profile.campus, ...profile.campusSecondary]);
   const places = new Map(mensas.filter(m => campuses.has(m.campusId) && m.hasMenu && !m.temporarilyClosed).map(m => [m.id, m]));
   const ratings = new Map(profile.mensaRatings.map(r => [r.mensaId, r.rating]));
-  const ranked = meals.filter(meal => meal.kind === 'main' && places.has(meal.mensaId) && matchesConstraints(meal, profile))
+  const eligible = meals.filter(meal => meal.kind === 'main' && places.has(meal.mensaId) && matchesConstraints(meal, profile))
     .filter(meal => profile.priceMode !== 'hard' || profile.maxPrice === null ||
       (tierPrice(meal, profile.priceTier) !== null && tierPrice(meal, profile.priceTier)! <= profile.maxPrice))
     .filter(meal => !profile.dislikes.some(dislike => `${meal.title} ${meal.titleDe ?? ''} ${meal.components.join(' ')}`
-      .toLocaleLowerCase().includes(dislike.toLocaleLowerCase())))
+      .toLocaleLowerCase().includes(dislike.toLocaleLowerCase())));
+  // A soup priced CHF 1.80 is not "today's pick for lunch"; only if nothing else fits is it still offered.
+  const realMains = eligible.filter(meal => looksLikeMain(meal, profile.priceTier));
+  const ranked = (realMains.length ? realMains : eligible)
     .map(meal => {
       const price = tierPrice(meal, profile.priceTier);
       const text = `${meal.title} ${meal.titleDe ?? ''} ${meal.components.join(' ')}`.toLowerCase();
