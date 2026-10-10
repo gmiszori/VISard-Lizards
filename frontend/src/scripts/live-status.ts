@@ -67,7 +67,8 @@ function refresh(): boolean {
       }
     } else if (el.dataset.live === 'hours' && el.textContent !== state.hours) {
       el.textContent = state.hours;
-    } else if (el.dataset.live === 'crowd' && el.dataset.i18n !== state.occupancy) {
+    } else if (el.dataset.live === 'crowd' && !el.dataset.crowdReported && el.dataset.i18n !== state.occupancy) {
+      // crowdReported: the crowd survey (src/crowd/survey.ts) shows real reports instead of the illustrative value.
       el.dataset.i18n = state.occupancy;
       el.textContent = state.occupancy[0].toUpperCase() + state.occupancy.slice(1);
       changed = true;
@@ -75,7 +76,10 @@ function refresh(): boolean {
   });
 
   const total = document.querySelector<HTMLElement>('[data-live="open-count"]');
-  if (total && seen.size > 0 && total.textContent !== String(openCount)) total.textContent = String(openCount);
+  if (total && seen.size > 0) {
+    if (total.textContent !== String(openCount)) total.textContent = String(openCount);
+    if (total.parentElement) total.parentElement.hidden = openCount === 0;
+  }
   return changed;
 }
 

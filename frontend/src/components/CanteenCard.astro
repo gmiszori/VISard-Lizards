@@ -10,11 +10,7 @@ const { canteen } = Astro.props;
 const menuGroups = groupMenuByService(canteen.menu);
 const showServiceHeadings = menuGroups.some(group => group.service === 'lunch') && menuGroups.some(group => group.service === 'dinner');
 ---
-<<<<<<< HEAD
-<article data-canteen-card data-canteen-id={canteen.id} data-campus={canteen.campus} data-campus-id={canteen.campusId} data-is-open={String(canteen.isOpen)} data-name={canteen.name} class="canteen-card">
-=======
-<article data-canteen-card data-canteen-id={canteen.id} data-campus={canteen.campus} data-campus-id={canteen.campusId} data-is-open={String(canteen.isOpen)} data-name={canteen.name} data-menu={canteen.menu.map((item) => item.name).join(' ')} data-diets={canteen.menu.map((item) => item.dietary).join(' ')} class="canteen-card">
->>>>>>> feature/ai-dish-search
+<article data-canteen-card data-canteen-id={canteen.id} data-campus={canteen.campus} data-campus-id={canteen.campusId} data-is-open={String(canteen.isOpen)} data-has-menu={String(canteen.menu.length > 0)} data-name={canteen.name} data-menu={canteen.menu.map((item) => item.name).join(' ')} data-diets={canteen.menu.map((item) => item.dietary).join(' ')} class="canteen-card">
   <button class="favorite-toggle" type="button" data-favorite-toggle aria-pressed="false" aria-label="Add to favourites"><span aria-hidden="true">☆</span></button>
   <div class="canteen-card-link">
     <div class="card-image">
@@ -22,7 +18,7 @@ const showServiceHeadings = menuGroups.some(group => group.service === 'lunch') 
       <div class="detail-overlay canteen-photo-caption">
         <div><div class="canteen-photo-title"><h3 class="card-title"><a href={`/canteen/${canteen.id}`}>{canteen.name}</a></h3><span data-live="status" data-live-id={canteen.id} class={`status ${canteen.isOpen ? 'open' : 'closed'}`}>● <span data-i18n={canteen.isOpen ? 'open' : 'closed'}>{canteen.isOpen ? 'Open now' : 'Closed'}</span></span><LocationLink mensaId={canteen.id} /></div><div class="campus">{canteen.campus} <span aria-hidden="true">·</span> {canteen.location}</div></div>
       </div>
-      <span class="rating" title={canteen.rating === null ? 'No ratings yet' : undefined}>★ {canteen.rating !== null ? canteen.rating.toFixed(1) : '–'}</span>
+      {canteen.rating !== null && <span class="rating">★ {canteen.rating.toFixed(1)}</span>}
     </div>
   <div class="card-body">
     <div class="menu-preview" data-preference-list data-meal-list>
@@ -32,6 +28,7 @@ const showServiceHeadings = menuGroups.some(group => group.service === 'lunch') 
       </div>)}
       <p class="preference-empty" data-no-preference-meals hidden data-i18n={canteen.menu.length ? 'noPreferenceMeals' : 'menuEmpty'}>{canteen.menu.length ? 'No dishes match your food preferences.' : 'No menu available for this date.'}</p>
     </div>
+    <a class="full-menu-link" data-preview-link href={`/canteen/${canteen.id}`} hidden>View full menu</a>
   </div>
   </div>
 </article>
@@ -54,6 +51,9 @@ const showServiceHeadings = menuGroups.some(group => group.service === 'lunch') 
   .canteen-card .meal-service-heading{margin:0 0 8px;color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase}
   .canteen-card .meal-preview-heading{align-items:center}.canteen-card .meal-preview-heading>.dish{margin-top:0}
   .canteen-card .menu-preview>.preference-empty{margin:0;padding:8px 0;font-size:12px;line-height:1.5}
+  .canteen-card .dish-preview.preview-clipped,.canteen-card .meal-service-group.preview-empty{display:none}
+  .canteen-card .full-menu-link{display:flex;align-items:center;min-height:44px;margin-top:8px;border-top:1px solid var(--line);color:var(--green);font-size:12px;font-weight:700}
+  .canteen-card .full-menu-link[hidden]{display:none}
   :root[data-density=compact] .canteen-card .card-image{height:auto;min-height:110px}
   :root[data-density=compact] .canteen-card .card-body{padding:10px 12px 12px}
   :root[data-density=compact] .canteen-card .favorite-toggle{width:44px;height:44px}
