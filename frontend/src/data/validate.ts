@@ -70,7 +70,7 @@ export function average(value: unknown): number | null {
 
 export function parseMeta(value: unknown): BackendMeta {
   if (!isObject(value) || !isIsoDate(value.today) || !isIsoDate(value.menuDate)) throw new DataError('Invalid /api/meta response');
-  return { today: value.today, menuDate: value.menuDate };
+  return { today: value.today, menuDate: value.menuDate, ...(isIsoDate(value.dataTo) ? { dataTo: value.dataTo } : {}) };
 }
 
 /** Ratings are optional extras, so an unreadable list means "no ratings", not an error. */

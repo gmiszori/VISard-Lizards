@@ -8,13 +8,17 @@ import CrowdIndicator from '../../components/CrowdIndicator.astro';
 import { CANTEENS, CROWD, LIVE_DATA } from '../../data/canteens';
 import { loadAppData } from '../../data/app-data';
 import MenuDate from '../../components/MenuDate.astro';
+import DayPicker from '../../components/DayPicker.astro';
 import { groupMenuByService } from '../../data/menu-display';
 import { WEEKDAYS, type CrowdPrediction } from '../../crowd/prediction';
 // Only the ids come from here: `astro dev` caches getStaticPaths, so menus passed as props would go stale.
+// No props: [id]/[date].astro renders this page as a component.
+type Props = Record<string, never>;
 export function getStaticPaths() {
   return CANTEENS.map((canteen) => ({ params: { id: canteen.id } }));
 }
-const { menuDate, today, canteens } = await loadAppData();
+// Also rendered by /canteen/[id]/[date] (pages/canteen/[id]/[date].astro) with the picked day in Astro.params.date.
+const { menuDate, today, canteens, days, chosenDay } = await loadAppData((Astro.params as { date?: string }).date);
 const canteen = canteens.find((c) => c.id === Astro.params.id)!;
 const crowd = CROWD[canteen.id];
 const live = LIVE_DATA[canteen.id];
@@ -31,12 +35,13 @@ const menuGroups = groupMenuByService(canteen.menu);
 const showServiceHeadings = menuGroups.some(group => group.service === 'lunch') && menuGroups.some(group => group.service === 'dinner');
 ---
 <BaseLayout title={canteen.name}>
-  <a href="/" class="detail-back" data-i18n="back">← All canteens</a>
+  <a href={chosenDay ? `/day/${menuDate}` : '/'} class="detail-back" data-i18n="back">← All canteens</a>
   <section class="detail-hero"><img src={canteen.imageUrl} alt="" /><div class="detail-overlay"><div><div class="detail-hero-title"><h1>{canteen.name}</h1><LocationLink mensaId={canteen.id} /></div><p>{canteen.campus} · {canteen.location}{canteen.rating !== null && <> · ★ {canteen.rating.toFixed(1)}</>}</p></div><span data-live="status" data-live-id={canteen.id} class={`status ${canteen.isOpen ? 'open' : 'closed'}`}>● <span data-i18n={canteen.isOpen ? 'open' : 'closed'}>{canteen.isOpen ? 'Open now' : 'Closed'}</span></span></div></section>
   <div class="detail-info"><div class="info-box"><small data-i18n="hours">Opening hours</small><strong data-live="hours" data-live-id={canteen.id}>{canteen.hours}</strong></div><div class="info-box"><small data-i18n="crowd">Current crowd</small><strong><CrowdIndicator mensaId={canteen.id} occupancy={canteen.isOpen ? canteen.occupancy : 'closed'} /></strong></div></div>
   <CrowdSurvey mensaId={canteen.id} />
   <section><h2 class="menu-section-title"><MenuDate date={menuDate} today={today} variant="heading" /> <span class="count">· {canteen.menu.length} <span data-i18n="dishes">dishes</span></span></h2>
-    {canteen.menu.length ? <><div class="menu-list" data-preference-list data-meal-list>{menuGroups.map(group => <div class="menu-service-group" data-meal-group>
+    <DayPicker days={days} menuDate={menuDate} today={today} chosenDay={chosenDay} canteenId={canteen.id} />
+    {canteen.menu.length ? <><div class="menu-list" data-preference-list data-meal-list>{menuGroups.map(group => <div class="menu-service-group" data-meal-group data-service={group.service}>
       {showServiceHeadings && group.service && <h3 class="menu-service-heading" data-i18n={group.service}>{group.service === 'dinner' ? 'Dinner' : 'Lunch'}</h3>}
       {group.items.map(item => <MenuItem item={item} />)}
     </div>)}</div><div class="empty-state preference-empty" data-no-preference-meals hidden data-i18n="noPreferenceMeals">No dishes match your food preferences.</div></> : <div class="empty-state" style="display:block" data-i18n="menuEmpty">No menu available for this date.</div>}

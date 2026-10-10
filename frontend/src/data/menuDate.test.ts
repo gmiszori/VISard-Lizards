@@ -85,3 +85,16 @@ test('isIsoDate accepts only real calendar dates', () => {
   const bad = ['2026-02-31', '2027-02-29', '2026-13-01', '2026-00-01', '2026-10-32', '2026-1-1', '10.10.2026', '', ' 2026-10-09', '2026-10-09T00:00:00Z', null, undefined, 20261009, {}];
   for (const value of bad) assert.equal(isIsoDate(value), false, String(value));
 });
+
+test('selectableMenuDays: weekdays from the wanted day up to the data, plus the shown day', async () => {
+  const { selectableMenuDays } = await import('./menuDate.ts');
+  // Saturday 10 Oct: Monday 12 to Friday 16 (data ends 16)
+  assert.deepEqual(selectableMenuDays('2026-10-10', '2026-10-12', '2026-10-16'),
+    ['2026-10-12', '2026-10-13', '2026-10-14', '2026-10-15', '2026-10-16']);
+  // Wednesday without dataTo: one week ahead, weekends skipped
+  assert.deepEqual(selectableMenuDays('2026-10-14', '2026-10-14', undefined),
+    ['2026-10-14', '2026-10-15', '2026-10-16', '2026-10-19', '2026-10-20']);
+  // a shown day before the range (backend fallback) is included
+  assert.deepEqual(selectableMenuDays('2026-10-10', '2026-10-09', '2026-10-09'), ['2026-10-09']);
+  assert.equal(selectableMenuDays('2026-10-12', '2026-10-12', '2026-12-31', 3).length, 3);
+});

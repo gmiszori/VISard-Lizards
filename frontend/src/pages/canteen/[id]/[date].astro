@@ -1,0 +1,11 @@
+---
+// One canteen's menu on a picked day (/canteen/<id>/YYYY-MM-DD); [id].astro reads the day from Astro.params.date.
+import CanteenPage from '../[id].astro';
+import { CANTEENS } from '../../../data/canteens';
+import { loadAppData } from '../../../data/app-data';
+export async function getStaticPaths() {
+  const { days } = await loadAppData();
+  return CANTEENS.flatMap(canteen => days.map(date => ({ params: { id: canteen.id, date } })));
+}
+---
+<CanteenPage />

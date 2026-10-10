@@ -45,11 +45,14 @@ function applyPreferences() {
   document.querySelectorAll<HTMLSelectElement>('[data-price-tier]').forEach(select => select.value = preferences.priceTier);
 
   const query = document.querySelector<HTMLInputElement>('#search-input')?.value ?? '';
+  // Lunch / dinner choice of the day picker (components/DayPicker.astro); unset shows both.
+  const service = document.documentElement.dataset.serviceFilter;
   document.querySelectorAll<HTMLElement>('[data-diet]').forEach((meal) => {
     const diet = meal.dataset.diet as keyof Pick<Preferences, 'vegan' | 'vegetarian' | 'meat'>;
     const card = meal.closest<HTMLElement>('[data-canteen-card]');
     const matchesName = card && matchesQuery(card.dataset.name ?? '', query);
-    meal.hidden = !preferences[diet] || !!(card && !matchesName && !matchesQuery(meal.dataset.mealName ?? '', query));
+    const otherService = !!service && meal.closest<HTMLElement>('[data-meal-group]')?.dataset.service === (service === 'lunch' ? 'dinner' : 'lunch');
+    meal.hidden = !preferences[diet] || otherService || !!(card && !matchesName && !matchesQuery(meal.dataset.mealName ?? '', query));
   });
 
   document.querySelectorAll<HTMLElement>('[data-meal-group]').forEach(group => {
@@ -90,7 +93,9 @@ function applyPreferences() {
     const fallbackSearch = matchesQuery(card.dataset.name ?? '', query) || card.querySelector('[data-meal-row]:not([hidden])') !== null;
     const matchesSearch = aiMatchedIds && aiQuery === query
       ? aiMatchedIds.has(card.dataset.canteenId ?? '') : fallbackSearch;
-    return { card, matches: matchesCampus && matchesOpen && matchesSearch, hasMenu: card.dataset.hasMenu === 'true' };
+    // With lunch or dinner picked, a canteen without that service counts as having no menu.
+    const servesChoice = !service || card.querySelector(`[data-meal-group][data-service="${service}"], [data-meal-group]:not([data-service])`) !== null;
+    return { card, matches: matchesCampus && matchesOpen && matchesSearch, hasMenu: card.dataset.hasMenu === 'true' && servesChoice };
   });
   const withMenuCount = candidates.filter(candidate => candidate.matches && candidate.hasMenu).length;
   const withoutMenuCount = candidates.filter(candidate => candidate.matches && !candidate.hasMenu).length;
@@ -198,6 +203,7 @@ document.querySelector<HTMLElement>('[data-reset-filters]')?.addEventListener('c
   search?.focus();
 });
 document.addEventListener('languagechange', applyPreferences);
+document.addEventListener('campuseats:service-filter-changed', applyPreferences);
 
 function showSavedState(success = true) {
   const saved = document.querySelector<HTMLElement>('#settings-saved');

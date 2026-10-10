@@ -47,6 +47,22 @@ export function wantedMenuDate(today: string): string {
 }
 
 /**
+ * The days people can pick a menu for: weekdays from the wanted day (today, or Monday on weekends)
+ * up to the last day with data (dataTo, else one week), at most `max`, plus the shown menu day.
+ */
+export function selectableMenuDays(today: string, menuDate: string, dataTo: string | undefined, max = 10): string[] {
+  const start = wantedMenuDate(today);
+  const end = dataTo && parse(dataTo) ? dataTo : addDays(start, 6) ?? start;
+  const days = new Set<string>();
+  let day: string | null = start;
+  for (let i = 0; day && day <= end && days.size < max && i < 60; i++, day = addDays(day, 1)) {
+    if (!isWeekend(day)) days.add(day);
+  }
+  if (parse(menuDate)) days.add(menuDate);
+  return [...days].sort();
+}
+
+/**
  * Dates to try in order: the wanted day, then the backend's suggestion (no duplicates).
  * The first one with meals wins; if none has meals the last one is shown (an honest empty menu).
  */

@@ -1,0 +1,10 @@
+---
+// The start page for one picked menu day (/day/YYYY-MM-DD); index.astro reads the day from Astro.params.date.
+import Home from '../index.astro';
+import { loadAppData } from '../../data/app-data';
+export async function getStaticPaths() {
+  const { days } = await loadAppData();
+  return days.map(date => ({ params: { date } }));
+}
+---
+<Home />

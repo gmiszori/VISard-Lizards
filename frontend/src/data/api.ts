@@ -102,6 +102,8 @@ export interface BackendMensa {
 export interface BackendMeta {
   today: string;
   menuDate: string;
+  /** Last day with meals, if the backend says. */
+  dataTo?: string;
 }
 
 /** GET /api/mensas/{id}/crowd */

@@ -17,7 +17,7 @@ export function mountClockPanel(onChange: () => void): void {
     const at = zurichToEpoch(day, hhmm);
     if (at === null) { status.textContent = 'Enter a valid date and time.'; return; }
     setSimulatedClock(at, running.checked);
-    status.textContent = `App time set to ${day} ${hhmm} (Zurich)${running.checked ? ', running' : ', frozen'}.`;
+    status.textContent = `App time set to ${day} ${hhmm} (Zurich)${running.checked ? ', running' : ', frozen'}. Menus follow the day.`;
     renderClockPanel();
     onChange();
   }

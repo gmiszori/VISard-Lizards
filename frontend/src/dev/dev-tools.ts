@@ -292,9 +292,32 @@ async function readPosition() {
   renderAll();
 }
 
+const COLLAPSED_KEY = 'campuseats-dev-tools-collapsed';
+
+/** The developer tools fold down to their header; remembered on the device. */
+function mountCollapse() {
+  const root = document.querySelector<HTMLElement>('[data-dev-tools]');
+  const button = root?.querySelector<HTMLButtonElement>('[data-dev-collapse]');
+  if (!root || !button) return;
+  const apply = (collapsed: boolean) => {
+    root.classList.toggle('is-collapsed', collapsed);
+    button.setAttribute('aria-expanded', String(!collapsed));
+    button.textContent = collapsed ? 'Expand' : 'Collapse';
+  };
+  let collapsed = false;
+  try { collapsed = localStorage.getItem(COLLAPSED_KEY) === 'true'; } catch { /* storage blocked */ }
+  apply(collapsed);
+  button.addEventListener('click', () => {
+    collapsed = !collapsed;
+    try { localStorage.setItem(COLLAPSED_KEY, String(collapsed)); } catch { /* storage blocked */ }
+    apply(collapsed);
+  });
+}
+
 export function mountDevTools(): void {
   if (mounted) return;
   mounted = true;
+  mountCollapse();
   void checkPermission().then(renderAll);
   void pingBackend().then(renderAll);
   mountCrowdMockPanel(renderAll);
