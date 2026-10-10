@@ -46,3 +46,5 @@
 :root[data-theme=dark] .ob [data-chip-group=diet] .ob-chip[data-value=carnivore][aria-pressed=true] small{color:#ffc18b}
 @media(max-width:900px){.app-shell>.site-header{grid-template-columns:minmax(0,1fr) auto;gap:10px;padding-block:12px}.site-header>.brand{min-width:0}.ob [data-flow]{min-height:calc(100svh - 242px)}}
 @media(max-width:400px){.site-header>.brand{font-size:16px;gap:6px}.site-header .settings-link{padding-inline:7px}.site-header>.header-controls{gap:5px}.site-header .brand small{font-size:7px}}
+@media(max-width:700px){.ob-actions{width:min(calc(100vw - 32px),480px)}}
+@media(max-width:380px){.ob-actions{width:min(calc(100vw - 24px),480px)}}
