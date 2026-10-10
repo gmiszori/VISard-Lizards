@@ -7,6 +7,7 @@ import { readVisits, VISITS_KEY } from '../location/visits.ts';
 import { mountCrowdMockPanel, renderCrowdMockPanel } from './crowd-mock-panel.ts';
 import { appNow, CLOCK_EVENT } from '../time/clock.ts';
 import { mountClockPanel, renderClockPanel } from './clock-panel.ts';
+import { mountPushPanel } from './push-panel.ts';
 import { CROWD_MOCK_KEY } from '../crowd/survey-mock.ts';
 import { LAST_REPORT_KEY } from '../crowd/survey-logic.ts';
 
@@ -339,6 +340,7 @@ export function mountDevTools(): void {
   void checkPermission().then(renderAll);
   void pingBackend().then(renderAll);
   mountCrowdMockPanel(renderAll);
+  mountPushPanel();
   mountClockPanel(renderAll);
   document.addEventListener(CLOCK_EVENT, renderAll);
   renderAll();
