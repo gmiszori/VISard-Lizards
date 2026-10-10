@@ -1,5 +1,6 @@
 import { allergenLabel, conflicts, type AllergenId } from '../allergens/allergens';
 import { allergenNotice } from '../allergens/notice';
+import { matchesQuery } from '../search/fold';
 import { isPriceTier, readPreferences, PREFERENCES_KEY, type Preferences } from '../preferences/state';
 let preferences: Preferences;
 try { preferences = readPreferences(); } catch { preferences = { vegan: true, vegetarian: true, meat: true, compact: false, openOnly: false, locations: ['zentrum', 'hoenggerberg', 'irchel'], priceTier: 'student', devMode: false, avoid: [] }; }
@@ -49,7 +50,7 @@ function applyPreferences() {
     if (emptyMessage) emptyMessage.hidden = hasVisibleMeals;
   });
 
-  const query = document.querySelector<HTMLInputElement>('#search-input')?.value.trim().normalize('NFKC').toLocaleLowerCase() ?? '';
+  const query = document.querySelector<HTMLInputElement>('#search-input')?.value ?? '';
   const campusChoice = document.querySelector<HTMLSelectElement>('#campus-select')?.value ?? 'preset';
   let visibleCanteens = 0;
   document.querySelectorAll<HTMLElement>('[data-canteen-card]').forEach((card) => {
@@ -58,8 +59,8 @@ function applyPreferences() {
       : campusChoice === 'preset' ? preferences.locations.includes(card.dataset.campusId ?? '')
       : card.dataset.campusId === campusChoice;
     const matchesOpen = !preferences.openOnly || card.dataset.isOpen === 'true';
-    const searchText = `${card.dataset.name ?? ''} ${card.dataset.menu ?? ''}`.normalize('NFKC').toLocaleLowerCase();
-    const matchesSearch = searchText.includes(query);
+    // Umlauts are optional: "zurich", "zuerich" and "Zürich" all find the same dishes.
+    const matchesSearch = matchesQuery(`${card.dataset.name ?? ''} ${card.dataset.menu ?? ''}`, query);
     card.hidden = !(matchesCampus && matchesOpen && matchesSearch);
     if (!card.hidden) visibleCanteens++;
   });

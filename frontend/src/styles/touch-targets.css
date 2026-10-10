@@ -11,3 +11,23 @@
 .dish-preview { position: relative; }
 .dish-preview .dish a::after { content: ''; position: absolute; inset: 0; }
 .dish-preview .meal-star { position: relative; z-index: 1; }
+
+/* Very narrow phones (320px) with long German labels: the settings link becomes a gear so the brand and
+   the controls do not overlap. The text stays in the page for screen readers (font-size 0, not hidden). */
+@media (max-width: 350px) {
+  .site-header .settings-link { font-size: 0; min-width: 44px; padding-inline: 0; justify-content: center; }
+  .site-header .settings-link::before { content: "⚙"; font-size: 20px; line-height: 1; }
+  .site-header .brand small { display: none; }
+}
+
+/* Contrast: the count under a selected onboarding chip was grey on light green (3.7:1). */
+.ob-chip[aria-pressed="true"] small { color: var(--ink); }
+
+/* Keyboard users can jump past the header. The link is only visible while it has focus. */
+.skip-link { position: absolute; left: 12px; top: -64px; z-index: 100; min-height: 44px; display: inline-flex; align-items: center; padding: 0 16px; border-radius: 12px; background: var(--green); color: #fff; font-weight: 700; text-decoration: none; }
+.skip-link:focus { top: 12px; outline: 3px solid var(--ink); outline-offset: 2px; }
+#main:focus { outline: none; }
+
+/* When a photo does not load (offline, blocked, broken link) the white canteen name must still be readable:
+   the pale placeholder made it invisible. A dark green behind the photo fixes that. */
+.card-image, .detail-hero { background: linear-gradient(145deg, #1d765a, #124a3b); }

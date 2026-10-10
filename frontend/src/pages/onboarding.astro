@@ -6,23 +6,33 @@ import RankList from '../onboarding/components/RankList.astro';
 import RatingRow from '../onboarding/components/RatingRow.astro';
 import { DIETS, HARD, TIERS } from '../onboarding/profile';
 import { priceRange } from '../onboarding/priceRange';
+import { loadAppData } from '../data/app-data';
+import { liveRecommendationMeals } from '../onboarding/liveMeals';
+import MenuDate from '../components/MenuDate.astro';
 import { t, type Key } from '../onboarding/i18n';
 import '../onboarding/onboarding.css';
 
 const campusOptions = CAMPUSES.map(campus => ({ value: campus.id, label: campus.name,
   count: MENSAS.filter(m => m.campusId === campus.id && m.hasMenu && !m.temporarilyClosed).length }));
 const keys = (values: string[]) => values.map(value => ({ value, key: value as Key }));
+// The pick uses the same menus as the home page (backend). Only when the backend is not available, the bundled snapshot is used.
+const app = await loadAppData();
+const live = app.source === 'backend';
+const menuDate = live ? app.menuDate : MENU_DATE;
+const liveMeals = live ? liveRecommendationMeals(app.canteens, app.menuDate) : [];
+const bundledMeals = MEALS.filter(meal => meal.date === MENU_DATE && meal.kind === 'main').map(meal => ({
+  id: meal.id, mensaId: meal.mensaId, date: meal.date, title: meal.title, titleDe: meal.titleDe,
+  kind: meal.kind, service: meal.service, dietTag: meal.dietTag, allergens: meal.allergens,
+  originDetail: meal.originDetail, components: meal.components, price: meal.price, nutrition: meal.nutrition,
+}));
 const payload = {
-  campuses: CAMPUSES.map(({ id, name }) => ({ id, name })), menuDate: MENU_DATE,
-  mensas: MENSAS.map(({ id, name, campusId, hasMenu, temporarilyClosed }) => ({ id, name, campusId, hasMenu, temporarilyClosed })),
+  campuses: CAMPUSES.map(({ id, name }) => ({ id, name })), menuDate,
+  mensas: MENSAS.map(({ id, name, campusId, hasMenu, temporarilyClosed }) => ({ id, name, campusId, temporarilyClosed,
+    hasMenu: live ? liveMeals.some(meal => meal.mensaId === id) : hasMenu })),
   // TODO(backend): real rating counts. Current database ratings are synthetic.
   ratingCounts: Object.fromEntries(MENSAS.map(m => [m.id, m.rating.count])),
-  ranges: Object.fromEntries(TIERS.map(tier => [tier, priceRange(MEALS, tier)])),
-  meals: MEALS.filter(meal => meal.date === MENU_DATE && meal.kind === 'main').map(meal => ({
-    id: meal.id, mensaId: meal.mensaId, date: meal.date, title: meal.title, titleDe: meal.titleDe,
-    kind: meal.kind, service: meal.service, dietTag: meal.dietTag, allergens: meal.allergens,
-    originDetail: meal.originDetail, components: meal.components, price: meal.price, nutrition: meal.nutrition,
-  })),
+  ranges: Object.fromEntries(TIERS.map(tier => [tier, priceRange(live && liveMeals.length ? liveMeals : MEALS, tier)])),
+  meals: live ? liveMeals : bundledMeals,
 };
 ---
 <BaseLayout title="Personalise your menu">
@@ -83,7 +93,7 @@ const payload = {
       <span class="ob-payoff-mark" aria-hidden="true">✳</span>
       <h1 tabindex="-1" data-ob-i18n="payoffTitle">{t('payoffTitle')}</h1>
       <p class="ob-lead" data-ob-i18n="payoffHint">{t('payoffHint')}</p>
-      <p class="ob-note"><span data-ob-i18n="menuDate">{t('menuDate')}</span>: <time datetime={MENU_DATE}>{MENU_DATE}</time></p>
+      <p class="ob-note"><MenuDate date={menuDate} today={app.today} variant="heading" /></p>
       <article class="ob-pick" data-pick hidden><p class="eyebrow" data-pick-mensa></p><h2 data-pick-title></h2><p data-pick-components></p><strong class="ob-pick-price" data-pick-price></strong><a class="ob-primary" data-pick-link data-ob-i18n="viewMensa">{t('viewMensa')}</a></article>
       <p class="ob-empty" data-pick-empty hidden data-ob-i18n="nothing">{t('nothing')}</p>
       <p class="ob-note" data-ob-i18n="payoffNotice">{t('payoffNotice')}</p>

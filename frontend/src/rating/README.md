@@ -6,8 +6,9 @@ framework. No React runtime, TSX renderer, or production dependency was added.
 `getRatingPrompt(now, lastEatenCandidates, state)` is pure. All clock decisions use
 Europe/Zurich, even on devices in another timezone. Its today window is
 [13:30, 21:00); before 11:00 it targets yesterday. Candidate dates are optional:
-profile recommendations are undated; dated visit candidates must match the target.
-An empty recommendation list still offers Other mensa and No / skip.
+Production candidates come from location-confirmed mensa visits and must match the target.
+With no matching visit, the card stays hidden. The development simulator can still use
+profile recommendations to preview the flow.
 
 `useRatingPrompt()` owns localStorage state at `campuseats-meal-rating-state`:
 `resolvedDates`, `dismissedDates`, and `promptedDays` (Zurich day -> target date).
@@ -16,9 +17,9 @@ prompt that afternoon. An unresolved target can resume after a reload. All
 terminal choices are retained, not pruned. Missing menus resolve the target too.
 Storage failures leave the choice unresolved and show retry feedback.
 
-The four recommendations prefer saved favourites, then descending profile
-`mensaRatings`. There is no visit history or rating frequency in Profile; its
-ratings are preference scores, not counts.
+The production question offers up to four mensas visited on the target date. Saved
+favourites and profile `mensaRatings` are used only by the development simulator;
+those preference scores are not evidence of a visit.
 
 ## Persistence and backend
 

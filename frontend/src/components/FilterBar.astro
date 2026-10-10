@@ -22,4 +22,10 @@ import { CAMPUSES } from '../data/canteens';
     .toolbar :global(.search-icon){top:12px}
     .campus-select{height:44px;min-height:44px;font-size:14px;max-width:46%}
   }
+  /* After the 700px block so it wins: on small phones the search and the selector get a row each. */
+  @media(max-width:400px){
+    .toolbar{flex-wrap:wrap}
+    .toolbar :global(.search){flex:1 1 100%}
+    .campus-select{flex:1 1 100%;max-width:none}
+  }
 </style>

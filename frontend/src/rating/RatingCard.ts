@@ -6,6 +6,7 @@ import { API_URL, apiGet, type BackendMealDetail } from '../data/api.ts';
 import type { Profile } from '../onboarding/profile';
 import { ratingText, translateRating, type RatingText } from './i18n';
 import { readVisits } from '../location/visits.ts';
+import { visitCandidates } from './visitCandidates.ts';
 
 interface MealOption { id: string; mensaId: string; date: string; name: string }
 interface CardData { mensas: MensaChoice[]; meals: MealOption[] }
@@ -45,14 +46,11 @@ export function mountRatingCard(): void {
   const stateKey = `${STATE_KEY}${simulated ? ':dev' : ''}`;
   const ratingsKey = `${RATINGS_KEY}${simulated ? ':dev' : ''}`;
   const candidates = () => {
+    const visited = visitCandidates(data.mensas, readVisits(storage));
+    if (!simulated) return visited;
     const profile = readOptional<Partial<Profile>>('campuseats-profile');
     const rawFavourites = readOptional<unknown>('campuseats-favourites');
     const favourites = Array.isArray(rawFavourites) ? rawFavourites.filter((id): id is string => typeof id === 'string') : [];
-    const mensasById = new Map(data.mensas.map(mensa => [mensa.mensaId, mensa]));
-    const visited = readVisits(storage).flatMap(visit => {
-      const mensa = mensasById.get(visit.mensaId);
-      return mensa ? [{ ...mensa, date: visit.date }] : [];
-    });
     const preferred = mensaCandidates(data.mensas, profile, favourites);
     const seen = new Set<string>();
     return [...visited, ...preferred].filter(choice => {
