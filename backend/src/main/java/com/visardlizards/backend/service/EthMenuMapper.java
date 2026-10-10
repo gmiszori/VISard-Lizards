@@ -137,7 +137,7 @@ public class EthMenuMapper {
 		return germanMeals;
 	}
 
-	/** Preserve the collaborator's detection of one English placeholder used for different German dishes. */
+	/** Detect one repeated English name used for meals with different German dish names. */
 	private static Set<String> placeholderNames(JsonNode rota, @Nullable JsonNode germanRota) {
 		Map<String, Set<String>> names = new HashMap<>();
 		for (JsonNode day : rota.path("day-of-week-array")) {

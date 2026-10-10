@@ -22,6 +22,10 @@ names/descriptions, including Cookpit's `novalue` marker, use matching German
 text by facility, date and line ID. Valid English text, prices and allergens stay
 unchanged. Meals with no usable name in either response are omitted. Restarting
 the backend runs this refresh and repairs previously imported placeholders.
+The mapper also detects repeated English names that correspond to different
+German dishes in the same facility/week (such as Tannenbar's repeated "Chicken
+Katsu"), and uses those dishes' German text. Description whitespace is normalized
+and duplicate components are removed.
 UZH remains snapshot-based until a live mapper is supplied. The raw clients and
 optional `/api/upstream` responses are unchanged and expose the original data.
 
