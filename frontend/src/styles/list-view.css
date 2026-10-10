@@ -112,10 +112,6 @@
   margin: 2px 0;
   font-size: 10px;
 }
-
-.canteen-card .compact-service-heading {
-  display: none;
-}
 .canteen-card .meal-service-heading .meal-service-time {
   color: var(--muted);
 }
@@ -317,9 +313,6 @@
 :root[data-density="compact"] article.canteen-card[data-canteen-card] .meal-service-group > .dish-preview:not([hidden]) ~ .dish-preview:not([hidden]) {
   margin-top: 7px;
   padding-top: 7px;
-}
-:root[data-density="compact"] article.canteen-card[data-canteen-card] .compact-service-heading {
-  display: block;
 }
 :root[data-density="compact"] article.canteen-card[data-canteen-card] .meal-service-group[data-service="lunch"] > .dish-preview .meal-service-time,
 :root[data-density="compact"] article.canteen-card[data-canteen-card] .meal-service-group[data-service="dinner"] > .dish-preview .meal-service-time {
