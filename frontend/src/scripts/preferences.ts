@@ -187,6 +187,13 @@ document.querySelector<HTMLFormElement>('#preferences-form')?.addEventListener('
       else locations.delete(input.value);
       preferences = { ...preferences, locations: [...locations] };
     } else {
+      // Keep at least one food category on: with none, every canteen would only say "No dishes match".
+      const diets = ['vegan', 'vegetarian', 'meat'] as const;
+      if (!input.checked && (diets as readonly string[]).includes(input.name) && diets.every(key => key === input.name || !preferences[key])) {
+        input.checked = true;
+        showSettingsNote('Keep at least one food category on, otherwise there would be nothing to show.', 'Mindestens eine Essensart muss aktiv bleiben, sonst gäbe es nichts anzuzeigen.');
+        return;
+      }
       preferences = { ...preferences, [input.name]: input.checked };
     }
   } else return;
@@ -249,6 +256,14 @@ document.querySelector<HTMLElement>('[data-reset-filters]')?.addEventListener('c
 });
 document.addEventListener('languagechange', applyPreferences);
 document.addEventListener('campuseats:service-filter-changed', applyPreferences);
+
+function showSettingsNote(en: string, de: string) {
+  const note = document.querySelector<HTMLElement>('#settings-saved');
+  if (!note) return;
+  note.hidden = false;
+  delete note.dataset.i18n; // a language switch must not turn this note back into "Saved"
+  note.textContent = document.documentElement.lang === 'de' ? de : en;
+}
 
 function showSavedState(success = true) {
   const saved = document.querySelector<HTMLElement>('#settings-saved');

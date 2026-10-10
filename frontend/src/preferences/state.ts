@@ -19,7 +19,10 @@ export function normalizePreferences(value: unknown, profileTier: unknown = 'stu
   const valid = raw.filter((v): v is string => typeof v === 'string').map(v => legacy[v] ?? v).filter(v => ALL_CAMPUS_IDS.includes(v));
   const locations = raw.length && !valid.length ? [...ALL_CAMPUS_IDS] : [...new Set(valid)];
   const bool = (key: string, fallback: boolean) => typeof saved[key] === 'boolean' ? saved[key] as boolean : fallback;
-  return { vegan: bool('vegan', true), vegetarian: bool('vegetarian', true), meat: bool('meat', true),
+  // All three food categories off would hide every dish; an older save may hold that, so it means "all on".
+  const diets = { vegan: bool('vegan', true), vegetarian: bool('vegetarian', true), meat: bool('meat', true) };
+  if (!diets.vegan && !diets.vegetarian && !diets.meat) { diets.vegan = true; diets.vegetarian = true; diets.meat = true; }
+  return { ...diets,
     viewMode: isViewMode(saved.viewMode) ? saved.viewMode : bool('compact', false) ? 'compact' : 'standard',
     openOnly: bool('openOnly', false), priceTier: isPriceTier(saved.priceTier) ? saved.priceTier : isPriceTier(profileTier) ? profileTier : 'student',
     locations, devMode: bool('devMode', false) };
