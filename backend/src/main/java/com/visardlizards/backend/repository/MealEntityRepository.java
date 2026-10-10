@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.domain.Pageable;
 
 import com.visardlizards.backend.model.db.MealEntity;
 
@@ -16,5 +17,7 @@ interface MealEntityRepository extends JpaRepository<MealEntity, String> {
 
 	@Query("select distinct m.date from MealEntity m order by m.date")
 	List<LocalDate> findDistinctDates();
+
+	List<MealEntity> findBySemanticEmbeddingIsNull(Pageable pageable);
 
 }

@@ -35,6 +35,11 @@ import YourRatings from '../components/YourRatings.astro';
     <YourRatings />
   </div>
   <form id="preferences-form" class="settings-form">
+    <fieldset class="settings-group">
+      <legend data-i18n="searchMode">Search mode</legend>
+      <p data-i18n="searchModeHint">Typed queries use word matching. Spoken queries can use AI intent parsing and semantic ranking.</p>
+      <label class="setting-option compact-option"><span class="compact-icon" aria-hidden="true">✳</span><span class="setting-copy"><strong data-i18n="aiSearch">AI for voice search</strong><small data-i18n="aiSearchHint">When enabled, spoken queries use AI intent parsing and semantic ranking. Typed queries always use word matching.</small></span><input type="checkbox" name="useAiVoiceSearch" value="true" /></label>
+    </fieldset>
     <fieldset class="settings-group price-category">
       <legend data-i18n="priceCategory">Price category</legend>
       <p data-i18n="priceCategoryHint">Show only your selected price on every dish. Student is the default.</p>

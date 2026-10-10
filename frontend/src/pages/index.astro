@@ -31,6 +31,7 @@ const openCount = canteens.filter((canteen) => canteen.isOpen).length;
   <div class="section-head all-canteens-heading"><div><h2 data-i18n="canteensTitle">Canteens</h2></div></div>
   <MenuDate date={menuDate} today={today} variant="note" />
   <DayPicker days={days} menuDate={menuDate} today={today} chosenDay={chosenDay} />
+  <p id="ai-menu-hint" class="ai-menu-hint" data-i18n="aiMenuHint" hidden>The ranked list above shows individual dish matches across all canteens. Below, those same matches are grouped by canteen.</p>
   <div class="menu-list-controls"><div id="visible-count" class="count">{canteens.length} canteens</div><button id="no-menu-toggle" type="button" aria-pressed="false" hidden></button></div>
   <p id="favourites-status" role="status" hidden></p>
   <div id="canteen-grid" class="canteen-grid">{canteens.map((canteen) => <CanteenCard canteen={canteen} day={chosenDay ? menuDate : undefined} />)}</div>
@@ -99,6 +100,7 @@ const openCount = canteens.filter((canteen) => canteen.isOpen).length;
 <style>
   .data-source-note{margin:0 0 14px;padding:10px 14px;border:1px solid var(--line);border-radius:12px;color:var(--muted);font-size:13px}
   .menu-list-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 12px}
+  .ai-menu-hint{margin:0 0 12px;color:var(--muted);font-size:12px;line-height:1.5}
   #no-menu-toggle{min-height:44px;padding:5px 0;border:0;background:none;color:var(--green);font-size:12px;font-weight:700;text-decoration:underline;text-underline-offset:3px}
   #no-menu-toggle[hidden]{display:none}
   .back-to-top{position:fixed;right:max(16px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom));z-index:30;display:grid;place-items:center;width:44px;height:44px;padding:0;border:1px solid var(--line);border-radius:50%;background:var(--paper);color:var(--green);box-shadow:var(--shadow);font:700 22px/1 'DM Sans',sans-serif;cursor:pointer;transition:transform .18s,background .18s}

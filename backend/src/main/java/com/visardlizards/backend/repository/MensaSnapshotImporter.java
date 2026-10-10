@@ -27,6 +27,7 @@ import com.visardlizards.backend.model.domain.Meal;
 import com.visardlizards.backend.model.domain.Mensa;
 import com.visardlizards.backend.model.domain.MensaDb;
 import com.visardlizards.backend.model.domain.ServiceHours;
+import com.visardlizards.backend.service.MealEmbeddingService;
 
 import jakarta.persistence.EntityManager;
 import tools.jackson.databind.json.JsonMapper;
@@ -48,6 +49,9 @@ public class MensaSnapshotImporter implements ApplicationRunner {
 	private final MensaEntityRepository mensas;
 	private final EntityManager entityManager;
 	private final JsonMapper jsonMapper;
+
+	@org.springframework.beans.factory.annotation.Autowired(required = false)
+	private MealEmbeddingService embeddingService;
 
 	public MensaSnapshotImporter(MensaEntityRepository mensas, EntityManager entityManager, JsonMapper jsonMapper) {
 		this.mensas = mensas;
@@ -76,7 +80,9 @@ public class MensaSnapshotImporter implements ApplicationRunner {
 		}
 		Long mealCount = entityManager.createQuery("select count(m) from MealEntity m", Long.class).getSingleResult();
 		if (mealCount == 0) {
-			db.meals().forEach(m -> entityManager.persist(toEntity(m)));
+			List<MealEntity> rows = db.meals().stream().map(MensaSnapshotImporter::toEntity).toList();
+			if (embeddingService != null) embeddingService.fill(rows);
+			rows.forEach(entityManager::persist);
 			log.info("Imported {} snapshot meals from {}", db.meals().size(), SNAPSHOT);
 		}
 		backfillFacilityIds();

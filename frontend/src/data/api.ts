@@ -198,3 +198,48 @@ export const searchStructuredMeals = (
   timeoutMs = 15000
 ): Promise<StructuredMealSearchResponse> =>
   apiPost<StructuredMealSearchResponse>('/api/meals/search-structured', params, baseUrl, timeoutMs);
+
+export interface HybridSearchCriteria {
+  semanticQuery: string | null;
+  isLocationScoped: boolean;
+  hardFilters: {
+    dietTag: string | null;
+    kind: string | null;
+    service: string | null;
+    priceStudent: { gte: number | null; lte: number | null; gt: number | null; lt: number | null } | null;
+    priceStaff: { gte: number | null; lte: number | null; gt: number | null; lt: number | null } | null;
+    priceExternal: { gte: number | null; lte: number | null; gt: number | null; lt: number | null } | null;
+    excludeAllergens: string[];
+  };
+  sortBy: 'RELEVANCE' | 'PRICE_ASC' | 'PRICE_DESC' | 'DISTANCE_ASC';
+}
+
+export interface HybridMealSearchResponse {
+  criteria: HybridSearchCriteria;
+  totalMatches: number;
+  results: Array<{
+    mensaId: string;
+    mensaName: string;
+    date: string;
+    meal: BackendMeal;
+    similarity: number | null;
+    distanceM: number | null;
+  }>;
+}
+
+export const searchHybridMeals = (
+  params: {
+    query: string;
+    mensaId?: string | null;
+    campusId?: string | null;
+    campusIds?: string[] | null;
+    date?: string | null;
+    priceCategory?: 'STUDENT' | 'STAFF' | 'EXTERNAL';
+    userLat?: number | null;
+    userLng?: number | null;
+    limit?: number;
+  },
+  baseUrl = API_URL,
+  timeoutMs = 20000
+): Promise<HybridMealSearchResponse> =>
+  apiPost<HybridMealSearchResponse>('/api/meals/hybrid-search', params, baseUrl, timeoutMs);

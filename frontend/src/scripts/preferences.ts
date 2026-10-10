@@ -1,18 +1,47 @@
 import { matchesQuery } from '../search/fold';
+import { addSpeechPhraseHints, chooseFoodAwareTranscript, speechRecognitionConstructor, type SpeechRecognitionLike } from '../search/speech';
 import { ALL_CAMPUS_IDS, isPriceTier, isViewMode, readPreferences, PREFERENCES_KEY, type Preferences } from '../preferences/state';
-import { API_URL, apiPost, searchStructuredMeals } from '../data/api';
+import { API_URL, ApiError, searchHybridMeals, type HybridMealSearchResponse } from '../data/api';
 let aiMatchedIds: Set<string> | null = null;
+let aiMatchedMealIds: Set<string> | null = null;
 let aiQuery = '';
+let latestHybridResponse: HybridMealSearchResponse | null = null;
+let searchPending = false;
 let searchVersion = 0;
 let searchTimer: ReturnType<typeof setTimeout> | undefined;
 let userCoords: { lat: number; lng: number } | null = null;
+let activeMensaIds: string[] = [];
+let activeCampusId: string | null = null;
+let speechSubmission = false;
+
+function explicitlyRequestsCurrentMensa(query: string) {
+  const normalized = query.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase();
+  return /(?:^|\s)(?:here|right here|this place|this canteen|this mensa|this cafeteria|this restaurant|at my location|where i am|current menu|current mensa|hier|hier vor ort|diese mensa|diese kantine|dieser ort|aktuelles menue|aktuelle mensa)(?:$|\s)/u.test(normalized);
+}
 
 if (typeof document !== 'undefined') {
-  document.addEventListener('campuseats:user-located', ((event: CustomEvent<{ fix?: { lat: number; lng: number } }>) => {
+  document.addEventListener('campuseats:user-located', ((event: CustomEvent<{
+    fix?: { lat: number; lng: number };
+    atMensaIds?: string[];
+    nearby?: Array<{ id: string; campus: string }>;
+  }>) => {
     if (event.detail?.fix) {
       userCoords = { lat: event.detail.fix.lat, lng: event.detail.fix.lng };
+      activeMensaIds = event.detail.atMensaIds ?? [];
+      activeCampusId = event.detail.nearby?.[0]?.campus ?? null;
     }
   }) as EventListener);
+  document.addEventListener('campuseats:user-unlocated', () => {
+    userCoords = null;
+    activeMensaIds = [];
+    activeCampusId = null;
+  });
+}
+
+function currentSearchMensaId() {
+  const nearestMensaId = activeMensaIds[0] ?? null;
+  return preferences.priceTier === 'student' && nearestMensaId === 'dozentenfoyer'
+    ? null : nearestMensaId;
 }
 
 function searchStatus(message: string) {
@@ -22,15 +51,69 @@ function searchStatus(message: string) {
     status.hidden = !message;
   }
 }
+
+function showHybridResults(response: HybridMealSearchResponse | null) {
+  const panel = document.querySelector<HTMLElement>('#ai-results');
+  const list = document.querySelector<HTMLElement>('#ai-results-list');
+  const count = document.querySelector<HTMLElement>('#ai-results-count');
+  const intent = document.querySelector<HTMLElement>('#ai-results-intent');
+  if (!panel || !list || !count || !intent) return;
+  panel.hidden = response === null;
+  list.replaceChildren();
+  if (!response) return;
+  const visibleResults = visibleHybridResults(response);
+  const lang = document.documentElement.lang;
+  count.textContent = `${visibleResults.length} ${lang === 'de' ? 'Treffer' : 'matches'}`;
+  const criteria = response.criteria;
+  const hints = [criteria.hardFilters.dietTag, criteria.semanticQuery,
+    criteria.sortBy === 'PRICE_ASC' ? (lang === 'de' ? 'Günstigste zuerst' : 'Lowest price first') : null,
+    criteria.sortBy === 'DISTANCE_ASC' ? (lang === 'de' ? 'Nächste zuerst' : 'Nearest first') : null]
+    .filter((value): value is string => Boolean(value));
+  intent.textContent = hints.length ? hints.join(' · ') : (lang === 'de' ? 'Passende Gerichte' : 'Matching dishes');
+  if (!visibleResults.length) {
+    const empty = document.createElement('p');
+    empty.textContent = lang === 'de' ? 'Keine Gerichte erfüllen diese Kriterien.' : 'No dishes meet these criteria.';
+    list.append(empty);
+    return;
+  }
+  const fragment = document.createDocumentFragment();
+  for (const result of visibleResults) {
+    const link = document.createElement('a');
+    link.className = 'ai-result';
+    link.href = `/canteen/${encodeURIComponent(result.mensaId)}/${result.date}`;
+    const title = document.createElement('strong');
+    title.textContent = result.meal.name;
+    const venue = document.createElement('span');
+    const tier = preferences.priceTier === 'worker' ? 'staff' : preferences.priceTier;
+    const price = result.meal.prices[tier];
+    venue.textContent = `${result.mensaName}${price != null ? ` · CHF ${price.toFixed(2)}` : ''}`;
+    link.append(title, venue);
+    if (result.meal.description) {
+      const description = document.createElement('span');
+      description.textContent = result.meal.description;
+      link.append(description);
+    }
+    fragment.append(link);
+  }
+  list.append(fragment);
+}
+
+function visibleHybridResults(response: HybridMealSearchResponse) {
+  return preferences.priceTier === 'student'
+    ? response.results.filter(result => result.mensaId !== 'dozentenfoyer')
+    : response.results;
+}
+
 let preferences: Preferences;
 try {
   preferences = readPreferences();
-} catch { preferences = { vegan: true, vegetarian: true, meat: true, viewMode: 'standard', openOnly: false, locations: [...ALL_CAMPUS_IDS], priceTier: 'student', devMode: false }; }
+} catch { preferences = { vegan: true, vegetarian: true, meat: true, viewMode: 'standard', openOnly: false, useAiVoiceSearch: true, locations: [...ALL_CAMPUS_IDS], priceTier: 'student', devMode: false }; }
 let showWithoutMenu = false;
 
 function applyPreferences() {
   document.documentElement.dataset.density = preferences.viewMode;
   document.documentElement.dataset.devMode = String(preferences.devMode);
+  document.documentElement.dataset.priceTier = preferences.priceTier;
   document.querySelectorAll<HTMLElement>('[data-meal-price]').forEach(price => {
     const amount = price.querySelector<HTMLElement>('[data-price-amount]');
     const label = price.querySelector<HTMLElement>('[data-price-label]');
@@ -47,6 +130,16 @@ function applyPreferences() {
   document.querySelectorAll<HTMLSelectElement>('[data-price-tier]').forEach(select => select.value = preferences.priceTier);
 
   const query = document.querySelector<HTMLInputElement>('#search-input')?.value ?? '';
+  if (latestHybridResponse && aiQuery === query) {
+    const visibleResults = visibleHybridResults(latestHybridResponse);
+    aiMatchedIds = new Set(visibleResults.map(result => result.mensaId));
+    aiMatchedMealIds = new Set(visibleResults.map(result => result.meal.id));
+    showHybridResults(latestHybridResponse);
+  }
+  const useTextQuery = !searchPending && !(aiMatchedIds && aiQuery === query);
+  const aiResultsActive = aiMatchedMealIds !== null && aiQuery === query;
+  const aiMenuHint = document.querySelector<HTMLElement>('#ai-menu-hint');
+  if (aiMenuHint) aiMenuHint.hidden = !aiResultsActive;
   // Lunch / dinner choice of the day picker (components/DayPicker.astro); unset shows both.
   const service = document.documentElement.dataset.serviceFilter;
   document.querySelectorAll<HTMLElement>('[data-diet]').forEach((meal) => {
@@ -54,7 +147,10 @@ function applyPreferences() {
     const card = meal.closest<HTMLElement>('[data-canteen-card]');
     const matchesName = card && matchesQuery(card.dataset.name ?? '', query);
     const otherService = !!service && meal.closest<HTMLElement>('[data-meal-group]')?.dataset.service === (service === 'lunch' ? 'dinner' : 'lunch');
-    meal.hidden = !preferences[diet] || otherService || !!(card && !matchesName && !matchesQuery(meal.dataset.mealName ?? '', query));
+    const isAiMatch = aiResultsActive && aiMatchedMealIds?.has(meal.dataset.mealId ?? '');
+    const textMatchesMeal = matchesQuery(meal.dataset.mealSearch ?? meal.dataset.mealName ?? '', query);
+    meal.hidden = !preferences[diet] || otherService
+      || (aiResultsActive ? !isAiMatch : !!(useTextQuery && card && !matchesName && !textMatchesMeal));
   });
 
   document.querySelectorAll<HTMLElement>('[data-meal-group]').forEach(group => {
@@ -94,17 +190,18 @@ function applyPreferences() {
     const matchesOpen = !preferences.openOnly || card.dataset.isOpen === 'true';
     const fallbackSearch = matchesQuery(card.dataset.name ?? '', query) || card.querySelector('[data-meal-row]:not([hidden])') !== null;
     const matchesSearch = aiMatchedIds && aiQuery === query
-      ? aiMatchedIds.has(card.dataset.canteenId ?? '') : fallbackSearch;
+      ? aiMatchedIds.has(card.dataset.canteenId ?? '') : searchPending || fallbackSearch;
     // With lunch or dinner picked, a canteen without that service counts as having no menu.
     const servesChoice = !service || card.querySelector(`[data-meal-group][data-service="${service}"], [data-meal-group]:not([data-service])`) !== null;
     const hasMenu = preferences.viewMode === 'list'
       ? card.querySelector('[data-meal-row]:not([hidden])') !== null
       : card.dataset.hasMenu === 'true' && servesChoice;
-    return { card, matches: matchesCampus && matchesOpen && matchesSearch, hasMenu };
+    const excludedForStudent = preferences.priceTier === 'student' && card.dataset.canteenId === 'dozentenfoyer';
+    return { card, matches: !excludedForStudent && matchesCampus && matchesOpen && matchesSearch, hasMenu };
   });
   const withMenuCount = candidates.filter(candidate => candidate.matches && candidate.hasMenu).length;
   const withoutMenuCount = candidates.filter(candidate => candidate.matches && !candidate.hasMenu).length;
-  const collapseWithoutMenu = preferences.viewMode === 'list' || (!showWithoutMenu && !query.trim() && withMenuCount > 0);
+  const collapseWithoutMenu = preferences.viewMode === 'list' || searchPending || (!showWithoutMenu && !query.trim() && withMenuCount > 0);
   let visibleCanteens = 0;
   candidates.forEach(({ card, matches, hasMenu }) => {
     card.hidden = !matches || (!hasMenu && collapseWithoutMenu);
@@ -171,97 +268,195 @@ document.querySelector<HTMLFormElement>('#preferences-form')?.addEventListener('
 
 document.querySelector<HTMLInputElement>('#search-input')?.addEventListener('input', (event) => {
   const query = (event.target as HTMLInputElement).value.trim();
+  const fromVoice = speechSubmission;
+  speechSubmission = false;
   const version = ++searchVersion;
   clearTimeout(searchTimer);
-  aiMatchedIds = null;
-  aiQuery = '';
+  if (!fromVoice) {
+    aiMatchedIds = null;
+    aiMatchedMealIds = null;
+    aiQuery = '';
+    latestHybridResponse = null;
+  }
+  searchPending = fromVoice && query.length >= 2 && !!API_URL && preferences.useAiVoiceSearch;
   searchStatus('');
+  showHybridResults(null);
   applyPreferences();
-  if (query.length < 2 || !API_URL) return;
+  if (!fromVoice || query.length < 2 || !API_URL) return;
+  if (!preferences.useAiVoiceSearch) {
+    searchStatus(document.documentElement.lang === 'de'
+      ? 'KI für die Sprachsuche ist ausgeschaltet. Zeige Worttreffer.'
+      : 'AI voice search is off. Showing word matches.');
+    return;
+  }
 
   searchTimer = setTimeout(async () => {
-    const candidates = [...document.querySelectorAll<HTMLElement>('[data-canteen-card]')].map(card => ({
-      id: card.dataset.canteenId ?? '',
-      name: card.dataset.name ?? '',
-      campus: card.dataset.campus ?? '',
-      menu: card.dataset.menu ?? '',
-      diets: card.dataset.diets ?? '',
-    }));
-    if (!candidates.length) return;
     searchStatus(document.documentElement.lang === 'de' ? 'Suche nach passenden Gerichten …' : 'Finding matching dishes…');
 
-    // 1. Try structured database search with OpenAI (handles max price, fish varieties, distance & price ranking)
+    // The hybrid endpoint performs one intent extraction, hard filtering, and vector ranking.
     try {
       const priceCategory = preferences.priceTier === 'worker' ? 'STAFF' : preferences.priceTier === 'external' ? 'EXTERNAL' : 'STUDENT';
       const campusSelect = document.querySelector<HTMLSelectElement>('#campus-select')?.value;
       const campusParam = campusSelect && campusSelect !== 'all' && campusSelect !== 'preset' ? campusSelect : null;
+      const wantsCurrentPlace = explicitlyRequestsCurrentMensa(query);
+      const mensaId = wantsCurrentPlace ? currentSearchMensaId() : null;
+      const useCurrentCampus = wantsCurrentPlace && !mensaId && activeCampusId !== null;
+      const campusIds = useCurrentCampus ? [activeCampusId!]
+        : campusSelect === 'all' ? null
+        : campusParam ? [campusParam] : preferences.locations;
+      const campusId = campusParam ?? (useCurrentCampus ? activeCampusId : null);
+      const date = document.querySelector<HTMLElement>('[data-day-picker]')?.dataset.pickerDate ?? null;
 
-      const structuredRes = await searchStructuredMeals({
+      const hybridRes = await searchHybridMeals({
         query,
+        // GPS gives us context for explicit "here" requests; it must not narrow every voice query.
+        mensaId,
+        date,
         userLat: userCoords?.lat ?? null,
         userLng: userCoords?.lng ?? null,
-        campus: campusParam,
+        campusId,
+        campusIds,
         priceCategory,
+        limit: 10,
       }, API_URL, 15000);
 
       if (version !== searchVersion) return;
-
-      if (structuredRes && structuredRes.results && structuredRes.results.length > 0) {
-        aiMatchedIds = new Set(structuredRes.results.map(r => r.mensaId));
-        aiQuery = query.normalize('NFKC').toLocaleLowerCase();
-        applyPreferences();
-
-        // Sort canteen cards according to rank (lower price & closer distance)
-        const grid = document.querySelector<HTMLElement>('#canteen-grid');
-        if (grid) {
-          const rankMap = new Map<string, number>();
-          structuredRes.results.forEach((r, idx) => {
-            if (!rankMap.has(r.mensaId)) rankMap.set(r.mensaId, idx);
-          });
-          const cards = [...grid.querySelectorAll<HTMLElement>(':scope > [data-canteen-card]')];
-          cards.sort((a, b) => {
-            const rankA = rankMap.get(a.dataset.canteenId ?? '') ?? 9999;
-            const rankB = rankMap.get(b.dataset.canteenId ?? '') ?? 9999;
-            return rankA - rankB;
-          }).forEach(card => grid.append(card));
-        }
-
-        const q = structuredRes.structuredQuery;
-        const lang = document.documentElement.lang;
-        const badges: string[] = [];
-        if (q.diet) badges.push(q.diet === 'fish' ? (lang === 'de' ? 'Fisch' : 'Fish') : q.diet);
-        if (q.maxPrice != null) badges.push(`≤ CHF ${q.maxPrice.toFixed(2)}`);
-        if (q.prioritizePrice && q.prioritizeDistance) {
-          badges.push(lang === 'de' ? 'Preis & Nähe priorisiert' : 'Ranked by price & distance');
-        } else if (q.prioritizePrice) {
-          badges.push(lang === 'de' ? 'Günstigste zuerst' : 'Cheapest first');
-        } else if (q.prioritizeDistance) {
-          badges.push(lang === 'de' ? 'Nächste zuerst' : 'Closest first');
-        }
-
-        const countText = `${structuredRes.totalMatches} ${lang === 'de' ? (structuredRes.totalMatches === 1 ? 'Treffer' : 'Treffer') : (structuredRes.totalMatches === 1 ? 'match' : 'matches')}`;
-        searchStatus(`🎯 ${badges.join(' · ')} (${countText})`);
-        return;
-      }
-    } catch {
-      // Fallback below
-    }
-
-    // 2. Fallback: candidate match via /api/search
-    try {
-      const result = await apiPost<{ ids: string[] }>('/api/search', { query, candidates }, API_URL, 15000);
-      if (version !== searchVersion) return;
-      aiMatchedIds = new Set(result.ids);
-      aiQuery = query.normalize('NFKC').toLocaleLowerCase();
+      searchPending = false;
+      latestHybridResponse = hybridRes;
+      aiQuery = query;
+      const visibleResults = visibleHybridResults(hybridRes);
+      aiMatchedIds = new Set(visibleResults.map(result => result.mensaId));
+      aiMatchedMealIds = new Set(visibleResults.map(result => result.meal.id));
       applyPreferences();
+      const grid = document.querySelector<HTMLElement>('#canteen-grid');
+      if (grid) {
+        const ranks = new Map<string, number>();
+        visibleResults.forEach((result, index) => {
+          if (!ranks.has(result.mensaId)) ranks.set(result.mensaId, index);
+        });
+        [...grid.querySelectorAll<HTMLElement>(':scope > [data-canteen-card]')]
+          .sort((a, b) => (ranks.get(a.dataset.canteenId ?? '') ?? 9999) - (ranks.get(b.dataset.canteenId ?? '') ?? 9999))
+          .forEach(card => grid.append(card));
+      }
       searchStatus('');
-    } catch {
+      return;
+    } catch (error) {
       if (version !== searchVersion) return;
-      searchStatus(document.documentElement.lang === 'de'
-        ? 'KI-Suche nicht verfügbar. Textsuche wird angezeigt.'
-        : 'AI search unavailable. Showing text matches.');
+      searchPending = false;
+      applyPreferences();
+      const de = document.documentElement.lang === 'de';
+      const message = error instanceof ApiError
+        ? error.status === 503
+          ? (de ? 'KI-Suche benötigt einen konfigurierten OpenAI-API-Schlüssel im Backend.' : 'AI search needs an OpenAI API key configured in the backend.')
+          : error.status === 404
+            ? (de ? 'Das Backend unterstützt die KI-Suche noch nicht.' : 'The backend does not have the AI search endpoint yet.')
+            : (de ? `KI-Suche fehlgeschlagen: ${error.message}` : `AI search failed: ${error.message}`)
+        : (de ? 'Backend auf localhost:8080 nicht erreichbar. Lokale Textsuche wird angezeigt.'
+          : 'Backend at localhost:8080 is unreachable. Showing local text matches.');
+      searchStatus(message);
     }
   }, 650);
+});
+
+const voiceSearchButton = document.querySelector<HTMLButtonElement>('#voice-search-button');
+const searchInput = document.querySelector<HTMLInputElement>('#search-input');
+const SpeechRecognition = speechRecognitionConstructor(window);
+let speechRecognition: SpeechRecognitionLike | null = null;
+if (voiceSearchButton && !SpeechRecognition) {
+  voiceSearchButton.disabled = true;
+  voiceSearchButton.title = document.documentElement.lang === 'de'
+    ? 'Dieser Browser unterstützt keine Sprachsuche.' : 'Voice search is not supported in this browser.';
+}
+voiceSearchButton?.addEventListener('click', () => {
+  if (!SpeechRecognition || !searchInput) {
+    searchStatus(document.documentElement.lang === 'de'
+      ? 'Dieser Browser unterstützt keine Sprachsuche.' : 'Voice search is not supported in this browser.');
+    return;
+  }
+  if (speechRecognition && voiceSearchButton.getAttribute('aria-pressed') === 'true') {
+    speechRecognition.stop();
+    return;
+  }
+  aiMatchedIds = null;
+  aiMatchedMealIds = null;
+  aiQuery = '';
+  latestHybridResponse = null;
+  searchStatus('');
+  showHybridResults(null);
+  applyPreferences();
+  const startRecognition = (withHints: boolean) => {
+    const recognition = new SpeechRecognition();
+    speechRecognition = recognition;
+    recognition.lang = document.documentElement.lang === 'de' ? 'de-CH' : 'en-US';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 5;
+    const canteenCards = [...document.querySelectorAll<HTMLElement>('[data-canteen-card]')];
+    const placePhrases = [
+      ...canteenCards.flatMap(card => [card.dataset.name ?? '', card.dataset.campus ?? '', card.dataset.campusId ?? '']),
+    ].filter(Boolean);
+    const centerLabel = canteenCards.find(card => card.dataset.campusId === 'zentrum')?.dataset.campus
+      ?.trim().split(/\s+/).at(-1);
+    const placeAliases = centerLabel
+      ? [{ alias: 'center', canonical: centerLabel }, { alias: 'centre', canonical: centerLabel }]
+      : [];
+    const placeHints = [...placePhrases,
+      ...placeAliases.map(alias => alias.alias)];
+    const contextPhrases = [
+      'food', 'dish', 'meal', 'menu', 'chicken', 'chicken curry', 'chicken breast', 'poulet', 'Hähnchen',
+      'egg', 'eggs', 'Ei', 'Eier', 'chickpea', 'chickpeas', 'Kichererbsen', 'fish', 'salmon', 'beef', 'pork',
+      'tofu', 'rice', 'pasta', 'vegetarian', 'vegan', 'vegetarisch', 'gluten-free', 'lactose-free',
+      'CHF', 'Swiss francs', 'francs', 'Franken', 'ten francs', '10 francs', 'zehn Franken', '10 Franken',
+      'under ten francs', 'under 10 francs', 'unter zehn Franken', 'unter 10 Franken',
+      ...placeHints,
+      ...[...document.querySelectorAll<HTMLElement>('[data-meal-row]')]
+        .flatMap(row => [row.dataset.mealName ?? '', row.dataset.mealSearch ?? '']),
+    ];
+    if (withHints) {
+      addSpeechPhraseHints(window, recognition, contextPhrases);
+    }
+    let retryWithoutHints = false;
+    recognition.onstart = () => {
+      voiceSearchButton.setAttribute('aria-pressed', 'true');
+      searchStatus(document.documentElement.lang === 'de' ? 'Höre zu … Sag, wonach du suchst.' : 'Listening… say what you are looking for.');
+    };
+    recognition.onresult = (event) => {
+      const finalResult = Array.from({ length: event.results.length - event.resultIndex }, (_, index) =>
+        event.results[event.resultIndex + index]).find(result => result.isFinal);
+      const transcript = finalResult
+        ? chooseFoodAwareTranscript(Array.from({ length: finalResult.length }, (_, index) => finalResult[index]), contextPhrases, placePhrases, placeAliases)
+        : null;
+      if (!transcript) {
+        searchStatus(document.documentElement.lang === 'de' ? 'Keine Sprache erkannt. Bitte versuche es erneut.' : 'No speech was heard. Try again.');
+        return;
+      }
+      speechSubmission = true;
+      searchInput.value = transcript;
+      searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+    recognition.onerror = (event) => {
+      if (withHints && event.error === 'phrases-not-supported') {
+        retryWithoutHints = true;
+        return;
+      }
+      const de = document.documentElement.lang === 'de';
+      searchStatus(event.error === 'not-allowed' || event.error === 'service-not-allowed'
+        ? (de ? 'Erlaube den Mikrofonzugriff für die Sprachsuche.' : 'Allow microphone access to search by voice.')
+        : event.error === 'no-speech'
+          ? (de ? 'Keine Sprache erkannt. Bitte versuche es erneut.' : 'No speech was heard. Try again.')
+          : (de ? 'Mikrofonzugriff fehlgeschlagen. Prüfe die Browserberechtigungen.' : 'Microphone access failed. Check browser permissions and try again.'));
+    };
+    recognition.onend = () => {
+      voiceSearchButton.setAttribute('aria-pressed', 'false');
+      if (retryWithoutHints) startRecognition(false);
+    };
+    try { recognition.start(); }
+    catch {
+      voiceSearchButton.setAttribute('aria-pressed', 'false');
+      searchStatus(document.documentElement.lang === 'de' ? 'Sprachsuche konnte nicht gestartet werden.' : 'Could not start voice search. Try again.');
+    }
+  };
+  startRecognition(true);
 });
 document.querySelector<HTMLSelectElement>('#campus-select')?.addEventListener('change', applyPreferences);
 document.querySelector<HTMLButtonElement>('#no-menu-toggle')?.addEventListener('click', () => {

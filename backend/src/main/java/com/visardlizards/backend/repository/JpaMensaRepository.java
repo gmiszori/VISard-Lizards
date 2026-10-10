@@ -27,6 +27,7 @@ import com.visardlizards.backend.model.domain.Mensa;
 import com.visardlizards.backend.model.domain.MensaSource;
 import com.visardlizards.backend.model.domain.Price;
 import com.visardlizards.backend.model.domain.ServiceHours;
+import com.visardlizards.backend.service.MealEmbeddingService;
 
 /** Mensas, campuses and meals from the database, mapped to domain models. Filled by MensaSnapshotImporter. */
 @Repository
@@ -38,6 +39,9 @@ public class JpaMensaRepository implements MensaRepository {
 	private final MensaEntityRepository mensas;
 	private final CampusEntityRepository campuses;
 	private final MealEntityRepository meals;
+
+	@org.springframework.beans.factory.annotation.Autowired(required = false)
+	private MealEmbeddingService embeddingService;
 
 	public JpaMensaRepository(MensaEntityRepository mensas, CampusEntityRepository campuses, MealEntityRepository meals) {
 		this.mensas = mensas;
@@ -92,7 +96,9 @@ public class JpaMensaRepository implements MensaRepository {
 	public void replaceMeals(String mensaId, LocalDate dateStart, LocalDate dateEnd, List<Meal> newMeals) {
 		meals.deleteAll(meals.findByMensaIdAndDateBetweenOrderByDateAsc(mensaId, dateStart, dateEnd));
 		meals.flush();
-		meals.saveAll(newMeals.stream().map(JpaMensaRepository::toEntity).toList());
+		List<MealEntity> rows = newMeals.stream().map(JpaMensaRepository::toEntity).toList();
+		if (embeddingService != null) embeddingService.fill(rows);
+		meals.saveAll(rows);
 	}
 
 	private static MealEntity toEntity(Meal m) {

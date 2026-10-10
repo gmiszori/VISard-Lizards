@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.visardlizards.backend.model.db.MealEntity;
 import com.visardlizards.backend.service.EthMensaClient;
+import com.visardlizards.backend.service.MealEmbeddingService;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
@@ -44,6 +45,9 @@ public class EthLiveMealImporter {
     private final EthMensaClient ethClient;
     private final MealEntityRepository mealRepository;
     private final JsonMapper jsonMapper;
+
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private MealEmbeddingService embeddingService;
 
     public EthLiveMealImporter(EthMensaClient ethClient, MealEntityRepository mealRepository, JsonMapper jsonMapper) {
         this.ethClient = ethClient;
@@ -164,6 +168,7 @@ public class EthLiveMealImporter {
             }
         }
 
+        if (embeddingService != null) embeddingService.fill(toSave);
         mealRepository.saveAll(toSave);
         log.info("Live ETH meal import for date {} saved {} meals", date, toSave.size());
         return toSave.size();

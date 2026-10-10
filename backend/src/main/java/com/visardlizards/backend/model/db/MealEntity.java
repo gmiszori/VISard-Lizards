@@ -64,6 +64,11 @@ public class MealEntity {
 
 	private String climateImpact;
 
+	/** JSON encoded embedding of title, line and components; the only search schema addition. */
+	@jakarta.persistence.Lob
+	@Column(name = "semantic_embedding")
+	private String semanticEmbedding;
+
 	@ElementCollection
 	@CollectionTable(name = "meal_component", joinColumns = @JoinColumn(name = "meal_id"))
 	@OrderColumn(name = "position")
@@ -159,6 +164,14 @@ public class MealEntity {
 
 	public List<String> getAllergens() {
 		return allergens;
+	}
+
+	public String getSemanticEmbedding() {
+		return semanticEmbedding;
+	}
+
+	public void setSemanticEmbedding(String semanticEmbedding) {
+		this.semanticEmbedding = semanticEmbedding;
 	}
 
 }

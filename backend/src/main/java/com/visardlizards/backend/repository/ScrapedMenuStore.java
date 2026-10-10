@@ -9,12 +9,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
+import com.visardlizards.backend.service.MealEmbeddingService;
 
 @Service
 public class ScrapedMenuStore {
     private final ScrapedMenuEntityRepository raw;
     private final MealEntityRepository meals;
     private final JsonMapper mapper;
+
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private MealEmbeddingService embeddingService;
     public ScrapedMenuStore(ScrapedMenuEntityRepository raw, MealEntityRepository meals, JsonMapper mapper) {
         this.raw=raw; this.meals=meals; this.mapper=mapper;
     }
@@ -72,6 +76,7 @@ public class ScrapedMenuStore {
                 }
             }
         }
+        if (embeddingService != null) embeddingService.fill(new ArrayList<>(rows.values()));
         meals.saveAll(rows.values());
     }
     private static boolean closed(JsonNode entry, LocalDate date) {

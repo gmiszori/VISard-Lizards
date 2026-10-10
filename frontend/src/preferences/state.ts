@@ -1,6 +1,6 @@
 export interface Preferences {
   vegan: boolean; vegetarian: boolean; meat: boolean; viewMode: 'standard' | 'compact' | 'list';
-  locations: string[]; openOnly: boolean; priceTier: 'student' | 'worker' | 'external';
+  locations: string[]; openOnly: boolean; useAiVoiceSearch: boolean; priceTier: 'student' | 'worker' | 'external';
   devMode: boolean;
 }
 export const PREFERENCES_KEY = 'campuseats-preferences';
@@ -21,7 +21,9 @@ export function normalizePreferences(value: unknown, profileTier: unknown = 'stu
   const bool = (key: string, fallback: boolean) => typeof saved[key] === 'boolean' ? saved[key] as boolean : fallback;
   return { vegan: bool('vegan', true), vegetarian: bool('vegetarian', true), meat: bool('meat', true),
     viewMode: isViewMode(saved.viewMode) ? saved.viewMode : bool('compact', false) ? 'compact' : 'standard',
-    openOnly: bool('openOnly', false), priceTier: isPriceTier(saved.priceTier) ? saved.priceTier : isPriceTier(profileTier) ? profileTier : 'student',
+    openOnly: bool('openOnly', false),
+    useAiVoiceSearch: bool('useAiVoiceSearch', bool('useAiSearch', true)),
+    priceTier: isPriceTier(saved.priceTier) ? saved.priceTier : isPriceTier(profileTier) ? profileTier : 'student',
     locations, devMode: bool('devMode', false) };
 }
 export function readPreferences(storage: Pick<Storage, 'getItem'> = localStorage): Preferences {

@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.visardlizards.backend.model.db.MealEntity;
 import com.visardlizards.backend.service.UzhMensaClient;
+import com.visardlizards.backend.service.MealEmbeddingService;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
@@ -74,6 +75,9 @@ public class UzhLiveMealImporter {
     private final UzhMensaClient uzhClient;
     private final MealEntityRepository mealRepository;
     private final JsonMapper jsonMapper;
+
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private MealEmbeddingService embeddingService;
     private final HttpClient httpClient;
 
     @Value("${app.live-import.enabled:true}")
@@ -146,6 +150,7 @@ public class UzhLiveMealImporter {
             }
         }
 
+        if (embeddingService != null) embeddingService.fill(toSave);
         mealRepository.saveAll(toSave);
         log.info("Live UZH meal import for date {} saved {} meals", date, toSave.size());
         return toSave.size();

@@ -127,6 +127,7 @@ export function mountNearMe(): void {
     } catch (error) {
       if (id !== requestId) return;
       location = null;
+      document.dispatchEvent(new Event('campuseats:user-unlocated'));
       const reason = error instanceof LocationUnavailableError ? error.reason : 'unavailable';
       if (reason === 'denied') writePreference(false);
       show(() => text().errors[reason]);
@@ -137,6 +138,7 @@ export function mountNearMe(): void {
   function turnOff() {
     requestId++;
     location = null;
+    document.dispatchEvent(new Event('campuseats:user-unlocated'));
     writePreference(false);
     show(null);
     render();
