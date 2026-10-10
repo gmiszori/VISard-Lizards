@@ -46,6 +46,7 @@ const { title } = Astro.props;
         <a class="brand" href="/" aria-label="UniEats home"><span class="brand-mark" aria-hidden="true">U</span><span>UniEats</span></a>
         <div class="header-controls"><a class="settings-link" href="/settings" data-tour-settings-target data-i18n="settings">Settings</a></div>
       </header>
+      <p class="offline-banner" data-offline-banner role="status" hidden>You are offline. Showing the last cached version.</p>
       <main class="main" id="main" tabindex="-1"><slot /></main>
       <SimulatedClockBanner />
     </div>
@@ -133,11 +134,81 @@ const { title } = Astro.props;
       if (languageSelect) languageSelect.addEventListener('change', () => applyLanguage(languageSelect.value));
       if (themeSelect) themeSelect.addEventListener('change', () => setTheme(themeSelect.value));
     </script>
+    <script is:inline>
+      const OFFLINE_VISIT_KEY = 'campuseats-has-visited';
+      const offlineBanner = document.querySelector('[data-offline-banner]');
+      const offlineMessage = () => document.documentElement.lang === 'de'
+        ? 'Du bist offline. Es wird die zuletzt gespeicherte Version angezeigt.'
+        : 'You are offline. Showing the last cached version.';
+      const wasOpenedBefore = () => {
+        try { return localStorage.getItem(OFFLINE_VISIT_KEY) === '1'; } catch { return false; }
+      };
+      const updateOfflineBanner = () => {
+        if (!offlineBanner) return;
+        const show = !navigator.onLine && wasOpenedBefore();
+        offlineBanner.hidden = !show;
+        if (show) offlineBanner.textContent = offlineMessage();
+      };
+      const collectInternalLinks = () => {
+        const links = new Set([location.pathname + location.search, '/']);
+        document.querySelectorAll('a[href]').forEach((anchor) => {
+          const href = anchor.getAttribute('href');
+          if (!href) return;
+          try {
+            const url = new URL(href, location.origin);
+            if (url.origin === location.origin && !url.pathname.startsWith('/api/')) links.add(url.pathname + url.search);
+          } catch { /* ignore malformed href */ }
+        });
+        return [...links];
+      };
+      const warmOfflineCache = async () => {
+        try {
+          const registration = await navigator.serviceWorker.ready;
+          const worker = registration.active ?? navigator.serviceWorker.controller;
+          if (!worker) return;
+          worker.postMessage({ type: 'CACHE_URLS', urls: collectInternalLinks() });
+        } catch { /* service worker not ready */ }
+      };
+      if ('serviceWorker' in navigator && window.isSecureContext) {
+        window.addEventListener('load', () => {
+          void (async () => {
+            try { await navigator.serviceWorker.register('/sw.js', { scope: '/' }); } catch { return; }
+            await warmOfflineCache();
+          })();
+        }, { once: true });
+      }
+      try { localStorage.setItem(OFFLINE_VISIT_KEY, '1'); } catch { /* storage blocked */ }
+      window.addEventListener('online', updateOfflineBanner);
+      window.addEventListener('offline', updateOfflineBanner);
+      document.addEventListener('languagechange', updateOfflineBanner);
+      updateOfflineBanner();
+    </script>
     <script type="application/json" id="live-data" is:inline set:html={JSON.stringify(LIVE_DATA).replace(/</g, '\\u003c')} />
     <script>
       import '../scripts/live-status';
       import '../scripts/preferences';
       import '../scripts/meal-stars';
     </script>
+    <style>
+      .offline-banner {
+        position: sticky;
+        top: var(--site-header-height, 82px);
+        z-index: 39;
+        margin: 0;
+        padding: 10px 14px;
+        border: 1px solid #d98b2b;
+        border-radius: 12px;
+        background: #fff3dc;
+        color: #6f3d07;
+        font-size: 13px;
+        font-weight: 600;
+      }
+      :root[data-theme="dark"] .offline-banner {
+        border-color: #b3772e;
+        background: #3a2b19;
+        color: #ffd69f;
+      }
+      .offline-banner[hidden] { display: none; }
+    </style>
   </body>
 </html>

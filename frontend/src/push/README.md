@@ -11,7 +11,7 @@ Backend side, payload and configuration: `backend/API.md`, section "Push notific
   and only while the browser has not decided yet (`Notification.permission === 'default'`).
 - `components/StarredMealsSettings.astro`: the switch in Settings under the starred dishes (which are the
   watched list), with a status line (blocked, unsupported, iPhone hint) and "Send a test notification".
-- `public/sw.js`: the service worker. It only shows notifications and opens the canteen on click; no caching.
+- `public/sw.js`: the service worker. It shows notifications, opens the canteen on click, caches visited pages, and prewarms internal links (including canteen/date links) so more pages open offline.
 - `public/manifest.webmanifest`: makes the app installable; on iPhone and iPad push works only from the
   home screen.
 
