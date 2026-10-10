@@ -86,13 +86,23 @@ public class LiveMenuImportService {
 				Map<String, List<Meal>> byMensa = ethMenuMapper.map(pages, germanPages, mensaIdsByFacility, weekStart, weekEnd)
 						.stream()
 						.collect(Collectors.groupingBy(Meal::mensaId));
-				byMensa.forEach((mensaId, mealsOfMensa) ->
-						mensaRepository.replaceMeals(mensaId, weekStart, weekEnd, mealsOfMensa));
+				int weeklyMensas = 0;
+				int weeklyMeals = 0;
+				for (var entry : byMensa.entrySet()) {
+					try {
+						mensaRepository.replaceMeals(entry.getKey(), weekStart, weekEnd, entry.getValue());
+						weeklyMensas++;
+						weeklyMeals += entry.getValue().size();
+					} catch (RuntimeException e) {
+						log.warn("Live ETH menu import for {} at {} failed, keeping existing meals: {}",
+								entry.getKey(), weekStart, e.getMessage());
+					}
+				}
 				weeks++;
-				mensas += byMensa.size();
-				meals += byMensa.values().stream().mapToInt(List::size).sum();
+				mensas += weeklyMensas;
+				meals += weeklyMeals;
 				log.info("Imported live ETH menus for {} to {}: {} meals of {} mensas", weekStart, weekEnd,
-						byMensa.values().stream().mapToInt(List::size).sum(), byMensa.size());
+						weeklyMeals, weeklyMensas);
 			} catch (RuntimeException e) {
 				log.warn("Live ETH menu import for the week of {} failed, keeping existing meals: {}", weekStart,
 						e.getMessage());

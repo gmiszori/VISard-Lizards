@@ -38,6 +38,21 @@ test('F05: server errors are still reported, and 409 still means already rated',
   await assert.rejects(withBackend(() => new Response('{"detail":"dup"}', { status: 409 }), () => saveMealRating(rating, memoryStorage(), 'ratings', 'http://backend')), DuplicateMealRatingError);
 });
 
+test('a location-based rating does not disclose location provenance to the backend', async () => {
+  const original = globalThis.fetch;
+  const bodies: Record<string, unknown>[] = [];
+  globalThis.fetch = (async (_url: string, init?: RequestInit) => {
+    bodies.push(JSON.parse(String(init?.body)));
+    return accepted();
+  }) as typeof fetch;
+  try {
+    await saveMealRating({ ...rating, source: 'location' }, memoryStorage(), 'ratings', 'http://backend');
+    await saveMealRating({ ...rating, source: 'crowd' }, memoryStorage(), 'ratings', 'http://backend');
+  } finally { globalThis.fetch = original; }
+  assert.deepEqual(bodies[0], { userId: rating.userId, stars: 4 });
+  assert.deepEqual(bodies[1], { userId: rating.userId, stars: 4, source: 'crowd' });
+});
+
 const ANON = /^anon:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 test('F22: a valid stored anonymous id is kept', () => {

@@ -53,8 +53,10 @@ export async function saveMealRating(value: MealRating, storage: Storage = local
   let saved = value;
   if (apiUrl) {
     try {
+      // A location-derived prompt may affect the local UI, but the server does not need that signal.
       const response = await apiPost<BackendMealRating>(`/api/meals/${encodeURIComponent(value.mealId)}/ratings`,
-        { userId: value.userId, stars: value.rating, ...(value.source ? { source: value.source } : {}) }, apiUrl);
+        { userId: value.userId, stars: value.rating,
+          ...(value.source && value.source !== 'location' ? { source: value.source } : {}) }, apiUrl);
       saved = { ...value, userId: response.userId, mensaId: response.mensaId, mealDate: response.mealDate, ratedAt: response.ratedAt };
     } catch (error) {
       if (error instanceof ApiError && error.status === 409) throw new DuplicateMealRatingError();
