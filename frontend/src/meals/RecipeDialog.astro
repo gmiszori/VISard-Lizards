@@ -47,8 +47,8 @@
   let requestId = 0;
 
   const labels = {
-    en: { action: 'Recreate as recipe', kicker: 'AI recipe', close: 'Close', disclaimer: 'Inspired by the dish, not its official recipe. Check ingredients and allergens yourself.', servings: 'Servings', generate: 'Generate recipe', regenerate: 'Regenerate', generating: 'Creating your recipe…', missing: 'Recipe generation is not configured yet. Add OPENAI_API_KEY to the backend and restart it.', failed: 'Could not create a recipe right now. Please try again.', rate: 'Please wait a little before generating another recipe.', ingredients: 'Ingredients', method: 'Method', download: 'Download PDF', minute: 'min' },
-    de: { action: 'Als Rezept nachkochen', kicker: 'KI-Rezept', close: 'Schließen', disclaimer: 'Vom Gericht inspiriert, kein Originalrezept. Zutaten und Allergene selbst prüfen.', servings: 'Portionen', generate: 'Rezept erstellen', regenerate: 'Neu erstellen', generating: 'Rezept wird erstellt…', missing: 'Die Rezepterstellung ist noch nicht eingerichtet. OPENAI_API_KEY im Backend setzen und es neu starten.', failed: 'Das Rezept konnte gerade nicht erstellt werden. Bitte erneut versuchen.', rate: 'Bitte kurz warten, bevor du ein weiteres Rezept erstellst.', ingredients: 'Zutaten', method: 'Zubereitung', download: 'PDF herunterladen', minute: 'Min.' },
+    en: { action: 'Recreate as recipe', kicker: 'AI recipe', close: 'Close', disclaimer: 'Inspired by the dish, not its official recipe. Check ingredients and allergens yourself.', servings: 'Servings', generate: 'Generate recipe', regenerate: 'Regenerate', generating: 'Creating your recipe…', missing: 'Recipe generation is not configured yet. Add OPENAI_API_KEY to the backend and restart it.', failed: 'Could not create a recipe right now. Please try again.', pdfFailed: 'Could not download the PDF. Please try again.', rate: 'Please wait a little before generating another recipe.', ingredients: 'Ingredients', method: 'Method', download: 'Download PDF', minute: 'min' },
+    de: { action: 'Als Rezept nachkochen', kicker: 'KI-Rezept', close: 'Schließen', disclaimer: 'Vom Gericht inspiriert, kein Originalrezept. Zutaten und Allergene selbst prüfen.', servings: 'Portionen', generate: 'Rezept erstellen', regenerate: 'Neu erstellen', generating: 'Rezept wird erstellt…', missing: 'Die Rezepterstellung ist noch nicht eingerichtet. OPENAI_API_KEY im Backend setzen und es neu starten.', failed: 'Das Rezept konnte gerade nicht erstellt werden. Bitte erneut versuchen.', pdfFailed: 'Das PDF konnte nicht heruntergeladen werden. Bitte erneut versuchen.', rate: 'Bitte kurz warten, bevor du ein weiteres Rezept erstellst.', ingredients: 'Zutaten', method: 'Zubereitung', download: 'PDF herunterladen', minute: 'Min.' },
   };
   const language = (): 'en' | 'de' => document.documentElement.lang === 'de' ? 'de' : 'en';
   const t = () => labels[language()];
@@ -165,8 +165,10 @@
   servingsInput.addEventListener('input', () => { recipe = null; result.hidden = true; translate(); });
   downloadButton.addEventListener('click', async () => {
     if (!recipe) return;
-    const { downloadRecipePdf } = await import('./recipePdf');
-    downloadRecipePdf(recipe, language());
+    try {
+      const { downloadRecipePdf } = await import('./recipePdf');
+      await downloadRecipePdf(recipe, language());
+    } catch { status.textContent = t().pdfFailed; }
   });
   document.addEventListener('languagechange', translate);
   translate();
