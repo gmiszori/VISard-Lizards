@@ -18,6 +18,8 @@ COPY --from=caddy /usr/bin/caddy /usr/bin/caddy
 COPY Caddyfile /etc/caddy/Caddyfile
 COPY --from=build /app /app
 COPY scripts/container-entrypoint.sh /usr/local/bin/container-entrypoint.sh
+# Checkouts on Windows (core.autocrlf) give the script CRLF line endings, which sh rejects.
+RUN sed -i 's/\r$//' /usr/local/bin/container-entrypoint.sh
 ENTRYPOINT ["sh", "/usr/local/bin/container-entrypoint.sh"]
 CMD ["caddy", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]
 EXPOSE 8080
