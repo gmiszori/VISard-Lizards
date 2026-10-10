@@ -423,6 +423,12 @@ Details, configuration (ZFV API key) and error codes: [MENSA_API.md](MENSA_API.m
 
 ## Scheduled website menus
 
+The scraper model defaults to `gpt-5-mini` (`MEAL_SCRAPER_MODEL` overrides it). The GPT-5 Mini
+Responses requests use low reasoning effort and an 8,000-token combined reasoning/output cap per
+turn; reasoning items are carried forward with tool results. Existing `.env` values override updated
+defaults: set `MEAL_SCRAPER_MODEL=gpt-5-mini` there and rebuild/recreate the backend to upgrade.
+The separate canteen AI search keeps its independently configured `OPENAI_MODEL`.
+
 `POST /api/scraped-menus/refresh` forces the full AI/MCP background batch, bypassing today's cache.
 Requires `Authorization: Bearer <MEAL_CONNECTOR_TOKEN>`; a configured token shorter than 32 characters always denies
 access. Returns 202 `started`, 409 `already_running`, 503 `disabled`/`not_configured`, or 401

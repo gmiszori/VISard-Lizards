@@ -86,6 +86,8 @@ To force a fresh AI/MCP batch before 06:00, run this from the repository directo
 After installing this update, rebuild once with `docker compose --profile scraper up --build -d`.
 Set `MEAL_SCRAPER_ENABLED=true`, `OPENAI_API_KEY`, and a random `MEAL_CONNECTOR_TOKEN` of at
 least 32 characters in `.env`. The short default development token cannot authorize manual refreshes.
+For the GPT-5 scraper, set `MEAL_SCRAPER_MODEL=gpt-5-mini`; remove an old model override or replace
+it explicitly. Updated code defaults do not override existing `.env` settings.
 
 ```sh
 docker compose exec -T meal-scraper sh -c 'curl -fsS -X POST -H "Authorization: Bearer $MEAL_CONNECTOR_TOKEN" http://backend:8080/api/scraped-menus/refresh'

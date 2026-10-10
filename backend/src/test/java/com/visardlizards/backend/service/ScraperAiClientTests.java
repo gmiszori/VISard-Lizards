@@ -19,10 +19,13 @@ class ScraperAiClientTests {
     private String toolOutput(String id,Object data) {return json(Map.of("type","function_call_output","call_id",id,"output",json(data)));}
     @Test void modelChoosesPdfViaMcpAndKeyStaysOnOpenAi() {
         var builder=RestClient.builder(); var server=MockRestServiceServer.bindTo(builder).build();
-        var client=new ScraperAiClient(mapper,"openai-secret","test-model","http://connector","relay-secret",builder.build());
+        var client=new ScraperAiClient(mapper,"openai-secret","gpt-5-mini","http://connector","relay-secret",builder.build());
         server.expect(requestTo("http://connector/api/ai/tools")).andExpect(header("Authorization","Bearer relay-secret")).andRespond(withSuccess(tools(),MediaType.APPLICATION_JSON));
         server.expect(requestTo("https://api.openai.com/v1/responses")).andExpect(header("Authorization","Bearer openai-secret"))
             .andExpect(jsonPath("$.tool_choice.name").value("discover_menu_sources"))
+            .andExpect(jsonPath("$.model").value("gpt-5-mini"))
+            .andExpect(jsonPath("$.reasoning.effort").value("low"))
+            .andExpect(jsonPath("$.max_output_tokens").value(8000))
             .andRespond(withSuccess(response(Map.of("type","reasoning","id","r1","summary",List.of()),call("discover_menu_sources","d1","https://venue.example")),MediaType.APPLICATION_JSON));
         server.expect(requestTo("http://connector/api/ai/tools/call")).andExpect(header("Authorization","Bearer relay-secret"))
             .andExpect(jsonPath("$.name").value("discover_menu_sources"))
