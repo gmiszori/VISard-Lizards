@@ -116,3 +116,9 @@ Codex MCP tool improvements (2026-10-10):
 - Current main commits inspected: search improvements, manual refresh endpoint and PWA credentials fix. No changes to the main running stack.
 - Map enabled and real Google tiles verified after user supplied separate browser key; only ignored .env stores it. No credentials committed.
 - Frontend checks: zero errors; existing suite 226 passed plus added route interaction regression passed. Backend route/config tests: 5 passed. Preview rebuilt successfully.
+
+2026-10-11 - Codex: diagnosed route planner 502.
+- Google Routes returns HTTP 429 RESOURCE_EXHAUSTED: ComputeRoutesRequestsPerDay quota is 100 and exhausted. OpenAI and MCP health remain healthy.
+- Adding structured quota error codes in Kotlin MCP and mapping them to clear HTTP 429 messages in Java backend; no raw provider payload/credentials forwarded.
+- User must increase the daily Routes quota in Google Cloud or wait for reset. No billing/quota settings changed automatically.
+- One plan can use up to 40 Google calls; repeated full smoke runs are suspended while quota is exhausted.

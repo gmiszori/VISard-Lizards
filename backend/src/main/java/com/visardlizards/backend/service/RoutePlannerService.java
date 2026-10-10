@@ -147,6 +147,17 @@ public class RoutePlannerService {
             } catch(RuntimeException failure) { explanation="AI explanation unavailable; showing the verified MCP itinerary below."; }
             var result=mapper.createObjectNode().put("explanation",explanation); result.set("plan",plan); return result;
         } catch(RestClientResponseException ex) {
+            // The private MCP bridge uses 422 for tool errors; preserve known provider categories.
+            if(ex.getStatusCode().value()==422) {
+                String code="";
+                try { code=mapper.readTree(ex.getResponseBodyAsString()).path("code").asText(); } catch(RuntimeException ignored) {}
+                if("google_routes_daily_quota".equals(code))
+                    throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS,
+                        "Google Routes daily quota is exhausted. Increase ComputeRoutes requests per day in Google Cloud or wait for the quota reset.");
+                if("google_quota".equals(code))
+                    throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS,
+                        "Google Maps quota is exhausted. Check the project's Google Cloud quotas before retrying.");
+            }
             if(ex.getStatusCode().value()==401) throw new ResponseStatusException(HttpStatus.BAD_GATEWAY,"OpenAI key or connector authentication was rejected.");
             if(ex.getStatusCode().value()==429) throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS,"The route connector or AI provider is busy or has reached its quota.");
             throw new ResponseStatusException(HttpStatus.BAD_GATEWAY,"Route provider request failed. Check enabled Google APIs, billing, OpenAI model access and connector logs.");

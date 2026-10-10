@@ -42,7 +42,10 @@ private suspend fun serve() {
             CallToolResult(content = listOf(TextContent(result.toString())), structuredContent = result)
         } catch (ex: Exception) {
             if (ex is CancellationException) throw ex
-            val error = buildJsonObject { put("error", ex.message?.take(200) ?: "Route planning failed.") }
+            val error = buildJsonObject {
+                put("error", ex.message?.take(200) ?: "Route planning failed.")
+                if (ex is GoogleProviderException) put("code", ex.code)
+            }
             CallToolResult(content = listOf(TextContent(error.toString())), structuredContent = error, isError = true)
         }
     }

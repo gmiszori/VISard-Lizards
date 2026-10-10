@@ -12,6 +12,24 @@ fun JsonObject.text(key: String) = (get(key) as? JsonPrimitive)?.contentOrNull.o
 fun JsonObject.obj(key: String) = get(key) as? JsonObject ?: buildJsonObject {}
 fun JsonObject.array(key: String) = get(key) as? JsonArray ?: JsonArray(emptyList())
 fun number(value: Double) = JsonPrimitive(value)
+
+class GoogleProviderException(val code: String, message: String) : IllegalStateException(message)
+/** Classify provider failures without forwarding raw provider payloads or credentials. */
+fun googleFailure(status: Int, body: String, routes: Boolean): GoogleProviderException {
+    val daily = runCatching {
+        json.parseToJsonElement(body).jsonObject.obj("error").array("details").any {
+            it.jsonObject.obj("metadata").text("quota_limit").contains("PerDay", ignoreCase = true)
+        }
+    }.getOrDefault(false)
+    return when {
+        status == 429 && routes && daily -> GoogleProviderException("google_routes_daily_quota",
+            "Google Routes daily request quota is exhausted. Increase the daily quota in Google Cloud or wait for its reset.")
+        status == 429 -> GoogleProviderException("google_quota",
+            "Google Maps request quota is exhausted. Check Google Cloud quotas before retrying.")
+        else -> GoogleProviderException("google_request_failed",
+            "Google Maps request failed (HTTP $status); check enabled APIs, billing and key restrictions.")
+    }
+}
 data class Point(val lat: Double, val lng: Double) {
     init { require(lat.isFinite() && lng.isFinite() && lat in -90.0..90.0 && lng in -180.0..180.0) }
     override fun toString() = "$lat,$lng"
@@ -31,7 +49,8 @@ class GoogleMaps(private val key: String) : RouteProvider {
             .header("Content-Type", "application/json").header("X-Goog-Api-Key", key)
             .header("X-Goog-FieldMask", mask).POST(HttpRequest.BodyPublishers.ofString(body.toString())).build()
         val response = http.send(request, HttpResponse.BodyHandlers.ofString())
-        check(response.statusCode() in 200..299) { "Google Maps request failed (HTTP ${response.statusCode()}); check enabled APIs, billing and key restrictions." }
+        if (response.statusCode() !in 200..299)
+            throw googleFailure(response.statusCode(), response.body(), endpoint.startsWith("https://routes.googleapis.com/"))
         return json.parseToJsonElement(response.body()).jsonObject
     }
     override fun route(origin: String, destination: String, departure: Instant): RouteLeg? =

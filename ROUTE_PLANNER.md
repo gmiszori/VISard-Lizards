@@ -49,6 +49,8 @@ The Kotlin application has a native stdio MCP mode and a private HTTP bridge mod
 - Estimated routes do not guarantee arrival during disruptions. Google attribution and any returned third-party attributions are displayed. Each journey leg also opens in Google Maps.
 - Bistro HPI and Bellavista remain excluded.
 
+If planning reports a Google Routes daily quota error, check **Google Maps Platform → Quotas → Routes API → Compute Routes requests per day** in Google Cloud. A plan checks multiple legs and can make up to 40 Google requests, so a daily limit of 100 permits only a few full plans. Increase the quota within your intended budget or wait for its reset. The MCP returns a structured quota code and the backend reports HTTP 429 with an explanation; a healthy MCP status does not mean Google quota is available.
+
 ## Validation
 
 ```powershell

@@ -17,6 +17,18 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.*;
 
 class RoutePlannerServiceTests {
+    @Test void reportsGoogleDailyQuotaInsteadOfGenericBadGateway() {
+        var builder=RestClient.builder(); var server=MockRestServiceServer.bindTo(builder).build();
+        server.expect(requestTo("https://api.openai.com/v1/responses"))
+            .andRespond(withSuccess("{\"status\":\"completed\",\"output\":[{\"type\":\"function_call\",\"name\":\"plan_meal_route\",\"call_id\":\"c1\"}]}",MediaType.APPLICATION_JSON));
+        server.expect(requestTo("http://router/api/tools/plan"))
+            .andRespond(withStatus(org.springframework.http.HttpStatus.UNPROCESSABLE_CONTENT)
+                .contentType(MediaType.APPLICATION_JSON).body("{\"code\":\"google_routes_daily_quota\",\"error\":\"private-provider-payload\"}"));
+        var failure=assertThrows(ResponseStatusException.class,()->service(builder.build()).plan(trip(),"key"));
+        assertEquals(429,failure.getStatusCode().value());
+        assertTrue(failure.getReason().contains("Google Routes daily quota"));
+        assertFalse(failure.getReason().contains("private-provider-payload")); server.verify();
+    }
     private final JsonMapper mapper=JsonMapper.builder().build();
     private final MensaRepository repository=mock(MensaRepository.class);
     private final Clock clock=Clock.fixed(Instant.parse("2026-10-10T20:00:00Z"),ZoneOffset.UTC);

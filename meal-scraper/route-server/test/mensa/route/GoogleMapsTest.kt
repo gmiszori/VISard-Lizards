@@ -5,6 +5,15 @@ import kotlinx.serialization.json.*
 import kotlin.test.*
 
 class GoogleMapsTest {
+    @Test fun classifiesDailyQuotaWithoutLeakingProviderPayload() {
+        val payload = """{"error":{"message":"secret-provider-payload","details":[{"metadata":{"quota_limit":"ComputeRoutesRequestsPerDay","quota_limit_value":"100"}}]}}"""
+        val daily = googleFailure(429, payload, true)
+        assertEquals("google_routes_daily_quota", daily.code)
+        assertFalse(daily.message!!.contains("secret-provider-payload"))
+        assertEquals("google_quota", googleFailure(429, payload, false).code)
+        assertEquals("google_quota", googleFailure(429, "not JSON", true).code)
+        assertEquals("google_request_failed", googleFailure(403, payload, true).code)
+    }
     private fun parse(value: String) = json.parseToJsonElement(value).jsonObject
     @Test fun accountsForWaitingBetweenWalkingAndScheduledTransit() {
         val route = parse("""{"distanceMeters":5000,"polyline":{"encodedPolyline":"abc"},"legs":[{"steps":[
