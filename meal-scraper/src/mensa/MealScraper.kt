@@ -16,21 +16,24 @@ class MealScraper(private val fetch: (String) -> SourceDocument, private val ext
         val uri = URI(document.url)
         if (uri.host == "app.food2050.ch" && (uri.path.endsWith("/menu/weekly") || uri.path.endsWith("/menu/weekly.pdf"))) {
             val firstWeek = UpcomingMenus.firstFoodWeek(document.url, date)
-            var last: ReadResult? = null
+            val weeks = mutableListOf<ReadResult>()
             val failures = mutableListOf<String>()
             for (offset in 0..2) {
                 val url = UpcomingMenus.foodWeek(document.url, firstWeek.plusWeeks(offset.toLong()))
                 try {
                     val page = if (url == document.url) document else fetch(url)
-                    val result = UpcomingMenus.select(extractor.read(page), date)
-                    last = result
-                    if (result.meals.any { it.date != null }) return details.enrich(result).let {
-                        it.copy(warnings = (it.warnings + failures).distinct())
-                    }
+                    weeks += extractor.read(page)
                 } catch (ex: Exception) { failures += "Could not check upcoming menu $url: ${ex.message}" }
             }
-            return (last ?: ReadResult(document.url, document.fetchedAt, "", emptyList(), emptyList())).let {
-                it.copy(warnings = (it.warnings + failures + "No upcoming meals found in the checked three-week window; past meals were excluded.").distinct())
+            val combined = ReadResult(weeks.firstOrNull()?.url ?: document.url, document.fetchedAt,
+                weeks.joinToString("\n") { it.text }.take(12000),
+                MenuExtractor.unique(weeks.flatMap { it.meals }),
+                (weeks.flatMap { it.warnings } + failures).distinct(),
+                weeks.flatMap { it.availability }.distinct())
+            val selected = UpcomingMenus.select(combined, date)
+            return details.enrich(selected).let {
+                if (it.meals.isEmpty()) it.copy(warnings = (it.warnings +
+                    "No upcoming meals found in the checked three-week window; past meals were excluded.").distinct()) else it
             }
         }
         if (uri.host == "idapps.ethz.ch" && uri.path == "/cookpit-pub-services/v1/weeklyrotas") {
