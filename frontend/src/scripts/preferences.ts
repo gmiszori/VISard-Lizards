@@ -1,10 +1,19 @@
 import { matchesQuery } from '../search/fold';
 import { isPriceTier, readPreferences, PREFERENCES_KEY, type Preferences } from '../preferences/state';
-import { API_URL, apiPost } from '../data/api';
+import { API_URL, apiPost, searchStructuredMeals } from '../data/api';
 let aiMatchedIds: Set<string> | null = null;
 let aiQuery = '';
 let searchVersion = 0;
 let searchTimer: ReturnType<typeof setTimeout> | undefined;
+let userCoords: { lat: number; lng: number } | null = null;
+
+if (typeof document !== 'undefined') {
+  document.addEventListener('campuseats:user-located', ((event: CustomEvent<{ fix?: { lat: number; lng: number } }>) => {
+    if (event.detail?.fix) {
+      userCoords = { lat: event.detail.fix.lat, lng: event.detail.fix.lng };
+    }
+  }) as EventListener);
+}
 
 function searchStatus(message: string) {
   const status = document.querySelector<HTMLElement>('#search-status');
@@ -172,7 +181,66 @@ document.querySelector<HTMLInputElement>('#search-input')?.addEventListener('inp
       diets: card.dataset.diets ?? '',
     }));
     if (!candidates.length) return;
-    searchStatus(document.documentElement.lang === 'de' ? 'Suche nach passenden Mensen …' : 'Finding matching canteens…');
+    searchStatus(document.documentElement.lang === 'de' ? 'Suche nach passenden Gerichten …' : 'Finding matching dishes…');
+
+    // 1. Try structured database search with OpenAI (handles max price, fish varieties, distance & price ranking)
+    try {
+      const priceCategory = preferences.priceTier === 'worker' ? 'STAFF' : preferences.priceTier === 'external' ? 'EXTERNAL' : 'STUDENT';
+      const campusSelect = document.querySelector<HTMLSelectElement>('#campus-select')?.value;
+      const campusParam = campusSelect && campusSelect !== 'all' && campusSelect !== 'preset' ? campusSelect : null;
+
+      const structuredRes = await searchStructuredMeals({
+        query,
+        userLat: userCoords?.lat ?? null,
+        userLng: userCoords?.lng ?? null,
+        campus: campusParam,
+        priceCategory,
+      }, API_URL, 15000);
+
+      if (version !== searchVersion) return;
+
+      if (structuredRes && structuredRes.results && structuredRes.results.length > 0) {
+        aiMatchedIds = new Set(structuredRes.results.map(r => r.mensaId));
+        aiQuery = query.normalize('NFKC').toLocaleLowerCase();
+        applyPreferences();
+
+        // Sort canteen cards according to rank (lower price & closer distance)
+        const grid = document.querySelector<HTMLElement>('#canteen-grid');
+        if (grid) {
+          const rankMap = new Map<string, number>();
+          structuredRes.results.forEach((r, idx) => {
+            if (!rankMap.has(r.mensaId)) rankMap.set(r.mensaId, idx);
+          });
+          const cards = [...grid.querySelectorAll<HTMLElement>(':scope > [data-canteen-card]')];
+          cards.sort((a, b) => {
+            const rankA = rankMap.get(a.dataset.canteenId ?? '') ?? 9999;
+            const rankB = rankMap.get(b.dataset.canteenId ?? '') ?? 9999;
+            return rankA - rankB;
+          }).forEach(card => grid.append(card));
+        }
+
+        const q = structuredRes.structuredQuery;
+        const lang = document.documentElement.lang;
+        const badges: string[] = [];
+        if (q.diet) badges.push(q.diet === 'fish' ? (lang === 'de' ? 'Fisch' : 'Fish') : q.diet);
+        if (q.maxPrice != null) badges.push(`≤ CHF ${q.maxPrice.toFixed(2)}`);
+        if (q.prioritizePrice && q.prioritizeDistance) {
+          badges.push(lang === 'de' ? 'Preis & Nähe priorisiert' : 'Ranked by price & distance');
+        } else if (q.prioritizePrice) {
+          badges.push(lang === 'de' ? 'Günstigste zuerst' : 'Cheapest first');
+        } else if (q.prioritizeDistance) {
+          badges.push(lang === 'de' ? 'Nächste zuerst' : 'Closest first');
+        }
+
+        const countText = `${structuredRes.totalMatches} ${lang === 'de' ? (structuredRes.totalMatches === 1 ? 'Treffer' : 'Treffer') : (structuredRes.totalMatches === 1 ? 'match' : 'matches')}`;
+        searchStatus(`🎯 ${badges.join(' · ')} (${countText})`);
+        return;
+      }
+    } catch {
+      // Fallback below
+    }
+
+    // 2. Fallback: candidate match via /api/search
     try {
       const result = await apiPost<{ ids: string[] }>('/api/search', { query, candidates }, API_URL, 15000);
       if (version !== searchVersion) return;

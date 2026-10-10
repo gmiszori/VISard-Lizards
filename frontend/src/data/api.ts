@@ -129,3 +129,61 @@ export interface BackendMealRating {
   /** location, crowd or guess; null if the request had none. */
   source?: string | null;
 }
+
+/** Structured database query extracted from natural language via OpenAI */
+export interface StructuredMealQuery {
+  originalQuery: string;
+  maxPrice: number | null;
+  minPrice: number | null;
+  diet: string | null;
+  searchTerms: string[];
+  excludeAllergens: string[];
+  campus: string | null;
+  prioritizePrice: boolean;
+  prioritizeDistance: boolean;
+  prioritizeRating: boolean;
+  prioritizeEco: boolean;
+  explanation: string | null;
+}
+
+export interface StructuredMealResult {
+  mensaId: string;
+  mensaName: string;
+  campus: string;
+  distanceM: number | null;
+  date: string;
+  meal: BackendMeal;
+  avgRating: number | null;
+  tagCounts: Record<string, number>;
+  score: number;
+  price: number | null;
+  matchReason: string | null;
+}
+
+export interface StructuredMealSearchResponse {
+  structuredQuery: StructuredMealQuery;
+  totalMatches: number;
+  results: StructuredMealResult[];
+  userLat: number | null;
+  userLng: number | null;
+}
+
+/** Extract structured query using OpenAI from natural language */
+export const extractStructuredQuery = (query: string, baseUrl = API_URL, timeoutMs = 15000): Promise<StructuredMealQuery> =>
+  apiPost<StructuredMealQuery>('/api/search/extract-query', { query }, baseUrl, timeoutMs);
+
+/** Execute structured search against backend meals database */
+export const searchStructuredMeals = (
+  params: {
+    query?: string;
+    userLat?: number | null;
+    userLng?: number | null;
+    date?: string;
+    campus?: string | null;
+    priceCategory?: 'STUDENT' | 'STAFF' | 'EXTERNAL';
+    structuredQuery?: StructuredMealQuery | null;
+  },
+  baseUrl = API_URL,
+  timeoutMs = 15000
+): Promise<StructuredMealSearchResponse> =>
+  apiPost<StructuredMealSearchResponse>('/api/meals/search-structured', params, baseUrl, timeoutMs);

@@ -59,6 +59,8 @@ Services only see domain models through `MensaRepository` (implemented by `JpaMe
 | GET | [`/api/mensas/{id}/crowd`](#get-apimensasidcrowd) | How full a mensa is now and usually |
 | POST | [`/api/mensas/{id}/crowd-reports`](#post-apimensasidcrowd-reports) | Report how full a mensa is |
 | GET | [`/api/meals`](#get-apimeals) | Search meals across all mensas |
+| POST | [`/api/meals/search-structured`](#post-apimealssearch-structured) | Structured AI meal search with hard constraints, price and distance ranking |
+| POST | [`/api/search/extract-query`](#post-apisearchextract-query) | Extract structured database query with OpenAI from natural language |
 | POST | [`/api/search`](#post-apisearch) | Match a search query to displayed canteens with OpenAI |
 | GET | [`/api/meals/{id}`](#get-apimealsid) | One meal with its ratings |
 | POST | [`/api/meals/{id}/ratings`](#post-apimealsidratings) | Rate a meal |
@@ -95,6 +97,68 @@ on the backend to enable this endpoint; `OPENAI_MODEL` defaults to `gpt-4.1-mini
 For Docker Compose, copy the repository-root `.env.example` to `.env`, set `OPENAI_API_KEY`, then run
 `docker compose up -d --build backend`. Compose passes the key to the container at runtime; `.env` is
 git-ignored and is not copied into the image.
+
+### POST /api/meals/search-structured
+
+Parses a natural language query with OpenAI into a structured database query, queries the backend meals database with hard constraints, and ranks matching dishes according to price and distance preferences.
+
+**Example Request:**
+```json
+{
+  "query": "i want to eat fish for a low price in a close place for at most 15chf",
+  "userLat": 47.3764,
+  "userLng": 8.5477,
+  "date": "2026-09-29",
+  "priceCategory": "STUDENT"
+}
+```
+
+**Example Response `200`:**
+```json
+{
+  "structuredQuery": {
+    "originalQuery": "i want to eat fish for a low price in a close place for at most 15chf",
+    "maxPrice": 15.0,
+    "minPrice": null,
+    "diet": "fish",
+    "searchTerms": ["fish", "fisch", "salmon", "lachs", "trout", "forelle", "tuna", "thunfisch", "cod", "kabeljau"],
+    "excludeAllergens": [],
+    "campus": null,
+    "prioritizePrice": true,
+    "prioritizeDistance": true,
+    "prioritizeRating": false,
+    "prioritizeEco": false,
+    "explanation": "Extracted structured query: diet=fish, maxPrice=15.0 CHF, prioritizePrice=true, prioritizeDistance=true"
+  },
+  "totalMatches": 2,
+  "results": [
+    {
+      "mensaId": "polyterrasse",
+      "mensaName": "Mensa Polyterrasse",
+      "campus": "zentrum",
+      "distanceM": 285.4,
+      "date": "2026-09-29",
+      "meal": { ... },
+      "avgRating": 4.0,
+      "tagCounts": { "tasty": 2 },
+      "score": 38.2,
+      "price": 11.5,
+      "matchReason": "Fish selection · CHF 11.50 (≤ 15.00) · 285 m away"
+    }
+  ],
+  "userLat": 47.3764,
+  "userLng": 8.5477
+}
+```
+
+### POST /api/search/extract-query
+
+Extracts only the structured query object from a natural language request using OpenAI:
+
+Body: `{"query": "i want to eat fish for a low price in a close place for at most 15chf"}`
+Response `200`: `StructuredMealQuery` object.
+
+Also available via `GET /api/meals/search-structured?query=...&userLat=...&userLng=...&priceCategory=STUDENT`.
 
 ## Mensas
 
