@@ -8,6 +8,21 @@ import { ONBOARDING_AUTO_START } from './config';
 import { appNow, zurichParts } from '../time/clock';
 
 const root = document.querySelector<HTMLElement>('#onboarding');
+
+/** A double-click or double-tap must not skip a step the visitor has not seen yet. */
+const STEP_COOLDOWN_MS = 400;
+
+/** Back on the first step: return to where the visitor came from, else to the overview (never to a page they did not visit). */
+function leaveOnboarding() {
+  let cameFromThisSite = false;
+  try {
+    const referrer = new URL(document.referrer);
+    cameFromThisSite = referrer.origin === window.location.origin && referrer.pathname.replace(/\/+$/, '') !== '/onboarding';
+  } catch { /* no referrer: go to the overview */ }
+  if (cameFromThisSite && window.history.length > 1) window.history.back();
+  else window.location.assign('/');
+}
+
 if (root) initialise(root);
 
 function initialise(root: HTMLElement) {
@@ -33,7 +48,11 @@ function initialise(root: HTMLElement) {
     const skip = root.querySelector<HTMLButtonElement>('[data-skip]')!;
     const progress = root.querySelector<HTMLProgressElement>('[data-progress]')!;
     let completed = false;
-    const guard = (action: () => void) => { try { error.hidden = true; action(); } catch { showError(); } };
+    let lastMoveAt = -Infinity;
+    const settled = () => performance.now() - lastMoveAt >= STEP_COOLDOWN_MS;
+    // From here on the overview no longer sends this visitor back to onboarding during this browser session.
+    try { window.sessionStorage.setItem('campuseats-onboarding-seen', '1'); } catch { /* storage blocked: the redirect may repeat */ }
+    const guard =(action: () => void) => { try { error.hidden = true; action(); } catch { showError(); } };
     const ctx: Context = { store, data,
       update(patch) { guard(() => { store.update(patch); refresh(); }); },
       refresh() { refresh(); },
@@ -79,11 +98,13 @@ function initialise(root: HTMLElement) {
       skip.hidden = !steps[index]!.skippable;
     }
     function move(step: number) {
+      lastMoveAt = performance.now();
       store.setStep(step); refresh();
       sections[step]!.querySelector<HTMLElement>('h1')!.focus();
       root.scrollIntoView({ block: 'start', behavior: 'instant' });
     }
     function finish() {
+      lastMoveAt = performance.now();
       const saved = saveProfile(store.state.profile);
       store.clear(); completed = true; refresh();
       // If the device could not store the answers, say so instead of implying they were saved.
@@ -91,13 +112,18 @@ function initialise(root: HTMLElement) {
       payoff.querySelector<HTMLElement>('h1')!.focus();
       root.scrollIntoView({ block: 'start', behavior: 'instant' });
     }
-    function advance() { if (store.state.step < steps.length - 1) move(store.state.step + 1); else finish(); }
+    function advance() {
+      if (!settled()) return;
+      if (store.state.step < steps.length - 1) move(store.state.step + 1); else finish();
+    }
     next.addEventListener('click', () => guard(advance));
     root.querySelector('[data-back]')!.addEventListener('click', () => guard(() => {
+      if (!settled()) return;
       if (store.state.step > 0) move(store.state.step - 1);
-      else window.location.assign('/settings');
+      else leaveOnboarding();
     }));
     skip.addEventListener('click', () => guard(() => {
+      if (!settled()) return;
       const stepId = steps[store.state.step]!.id;
       if (stepId === 'campus') store.setPicks([]);
       store.update(skipStep(stepId, { ...initial,
@@ -107,7 +133,7 @@ function initialise(root: HTMLElement) {
     root.addEventListener('keydown', event => {
       // Native button, input and radio keys remain intact; Alt+arrows navigate steps.
       if (!event.altKey || completed) return;
-      if (event.key === 'ArrowLeft' && store.state.step > 0) { event.preventDefault(); guard(() => move(store.state.step - 1)); }
+      if (event.key === 'ArrowLeft' && store.state.step > 0) { event.preventDefault(); guard(() => { if (settled()) move(store.state.step - 1); }); }
       if (event.key === 'ArrowRight') { event.preventDefault(); guard(advance); }
     });
     document.addEventListener('languagechange', () => guard(() => {
