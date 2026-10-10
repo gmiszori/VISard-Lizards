@@ -8,11 +8,12 @@
  * Pages call loadAppData() in their frontmatter: in `astro dev` that runs per request, so menus stay
  * current; a static build takes the data of build time.
  */
-import { CANTEENS, MENU_DATE, type Canteen, type MenuItem } from './canteens';
+import { CANTEENS, MENSAS, MENU_DATE, type Canteen, type MenuItem } from './canteens';
+import { prepareMenu, type DisplayMenuItem } from './menu-display';
 import { API_URL, apiGet, type BackendMealDetail, type BackendMensa, type BackendMeta } from './api';
 
 /** A canteen as the pages show it. rating is null when nobody has rated it yet. */
-export type AppCanteen = Omit<Canteen, 'rating'> & { rating: number | null };
+export type AppCanteen = Omit<Canteen, 'rating' | 'menu'> & { rating: number | null; menu: DisplayMenuItem[] };
 
 export interface AppData {
   /** Where menus and ratings come from. */
@@ -44,7 +45,9 @@ function zurichToday(): string {
 }
 
 function sampleData(): AppData {
-  return { source: 'sample', menuDate: MENU_DATE, today: zurichToday(), canteens: CANTEENS };
+  return { source: 'sample', menuDate: MENU_DATE, today: zurichToday(), canteens: CANTEENS.map(canteen => ({
+    ...canteen, menu: prepareMenu(canteen.menu, MENSAS.find(m => m.id === canteen.id), MENU_DATE),
+  })) };
 }
 
 async function fetchAppData(): Promise<AppData> {
@@ -64,7 +67,7 @@ async function fetchAppData(): Promise<AppData> {
       today: meta.today,
       canteens: CANTEENS.map((canteen) => ({
         ...canteen,
-        menu: toMenu(menus.get(canteen.id) ?? []),
+        menu: prepareMenu(toMenu(menus.get(canteen.id) ?? []), MENSAS.find(m => m.id === canteen.id), meta.menuDate),
         rating: ratings.get(canteen.id) ?? null,
       })),
     };

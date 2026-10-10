@@ -1,0 +1,11 @@
+---
+import type { DisplayMenuItem } from '../data/menu-display';
+interface Props { item: DisplayMenuItem }
+const { item } = Astro.props;
+---
+<p class="meal-service-time">
+  {item.service && <span data-i18n={item.service}>{item.service === 'dinner' ? 'Dinner' : 'Lunch'}</span>}
+  {item.service && ' · '}
+  {item.servingWindows?.length ? item.servingWindows.map(window => `${window.open}–${window.close}`).join(' · ') : <span data-i18n="servingTimeUnknown">Serving time unavailable</span>}
+</p>
+<style>.meal-service-time{margin:6px 0 10px;font-size:12px;font-weight:600;color:var(--green)}</style>
