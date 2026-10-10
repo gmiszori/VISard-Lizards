@@ -1,5 +1,6 @@
 import type { CampusId } from '../data/canteens';
 import { DIETS, HARD, PRIORITIES, TIERS, defaults, type MensaRating, type Profile } from './profile.ts';
+import { readProfileSettings } from './profileSettings.ts';
 
 export interface Draft { profile: Profile; step: number; picks: string[]; ratingScale: 5 }
 const KEY = 'campuseats-onboarding';
@@ -18,7 +19,7 @@ const strings = (value: unknown): value is string[] => Array.isArray(value) && v
 export function createOnboardingStore(campuses: CampusId[], stepCount: number, restart = false, editSavedProfile = false) {
   // This factory is called only by main.ts in the browser, never during SSR.
   const lang = savedLanguage();
-  const initial = defaults(campuses[0]!, lang, savedTheme());
+  const initial = { ...defaults(campuses[0]!, lang, savedTheme()), ...readProfileSettings() };
   let state: Draft = { profile: initial, step: 0, picks: [], ratingScale: 5 };
   if (restart) { try { localStorage.removeItem(KEY); } catch { /* nothing saved to remove */ } }
   try {
@@ -33,7 +34,7 @@ export function createOnboardingStore(campuses: CampusId[], stepCount: number, r
       (p.lunchTime === null || /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(p.lunchTime)) &&
       Array.isArray(p.mensaRatings) && p.mensaRatings.every(r => typeof r.mensaId === 'string' &&
         [1, 2, 3, 4, 5].includes(r.rating) && (saved.ratingScale === 5 || r.rating <= 3))) {
-      state = { profile: { ...p,
+      state = { profile: { ...p, ...readProfileSettings(),
         theme: p.theme === 'dark' || p.theme === 'light' || p.theme === 'system' ? p.theme : initial.theme,
         // Preserve the rest of a draft made before the diet choices were simplified.
         diet: DIETS.includes(p.diet) ? p.diet : 'omnivore',
@@ -60,7 +61,7 @@ export function createOnboardingStore(campuses: CampusId[], stepCount: number, r
         p.priority.length === PRIORITIES.length && new Set(p.priority).size === PRIORITIES.length &&
         p.priority.every(value => PRIORITIES.includes(value as Profile['priority'][number])) &&
         Array.isArray(p.mensaRatings) && p.mensaRatings.every(r => typeof r.mensaId === 'string' && [1, 2, 3, 4, 5].includes(r.rating))) {
-        state = { profile: { ...initial, ...p,
+        state = { profile: { ...initial, ...p, ...readProfileSettings(),
           campusSecondary: [...new Set(p.campusSecondary.filter(id => campuses.includes(id as CampusId) && id !== p.campus))],
           hard: p.hard.filter(value => HARD.includes(value as Profile['hard'][number])),
           priority: [...p.priority] as Profile['priority'],

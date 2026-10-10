@@ -138,7 +138,7 @@ function applyPreferences() {
       : `${visibleCanteens} ${canteenLabel}`;
   }
 
-  document.querySelectorAll<HTMLInputElement>('#preferences-form input[type="checkbox"]').forEach((input) => {
+  document.querySelectorAll<HTMLInputElement>('#preferences-form input[type="checkbox"]:not([data-profile-hard])').forEach((input) => {
     input.checked = input.name === 'locations'
       ? preferences.locations.includes(input.value)
       : preferences[input.name as keyof Omit<Preferences, 'locations'>] as boolean;
