@@ -212,12 +212,12 @@
 :root[data-density="compact"] article.canteen-card[data-canteen-card] .card-image {
   display: grid;
   grid-template-columns: 58px minmax(0, 1fr) auto;
-  grid-template-rows: auto auto;
+  grid-template-rows: auto;
   align-items: start;
   column-gap: 10px;
   height: auto;
   min-height: 0;
-  padding: 12px 54px 10px 12px;
+  padding: 12px 54px 4px 12px;
   background: transparent;
 }
 :root[data-density="compact"] article.canteen-card[data-canteen-card] .canteen-image-link {
@@ -225,7 +225,7 @@
   inset: auto;
   display: block;
   grid-column: 1;
-  grid-row: 1 / span 2;
+  grid-row: 1;
   width: 58px;
   height: 58px;
   overflow: hidden;
@@ -301,8 +301,18 @@
 }
 :root[data-density="compact"] article.canteen-card[data-canteen-card] .card-body {
   min-width: 0;
-  padding: 10px 12px 12px;
+  padding: 8px 12px 10px;
   border-top: 1px solid var(--line);
+}
+:root[data-density="compact"] article.canteen-card[data-canteen-card] .meal-service-heading {
+  margin-bottom: 6px;
+}
+:root[data-density="compact"] article.canteen-card[data-canteen-card] .meal-price-compact {
+  margin-top: 4px;
+}
+:root[data-density="compact"] article.canteen-card[data-canteen-card] .meal-service-group > .dish-preview:not([hidden]) ~ .dish-preview:not([hidden]) {
+  margin-top: 7px;
+  padding-top: 7px;
 }
 :root[data-density="compact"] article.canteen-card[data-canteen-card] .compact-service-heading {
   display: block;
