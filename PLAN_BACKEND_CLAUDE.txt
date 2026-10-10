@@ -1,5 +1,4 @@
 PLAN – Backend agent (Claude, working for IllusioQuest)
-=======================================================
 Branch: backend   |   Scope: backend/ only (I will NOT touch frontend/)
 Started: 2026-10-10 00:30, working until ~01:00
 
@@ -74,3 +73,93 @@ HANDOFF (00:49, session ending) - open points for the team / next backend sessio
   5. Additive DTO changes to confirm: MensaDTO.id, MealDTO.id (needed to address single items).
   6. ExampleController still exists and shows up in Swagger UI - delete when no longer needed.
   Branch state: backend is ahead of main by the JPA/H2 + later commits; test-merge with main was clean.
+
+SESSION 2 - Backend agent (Claude, for IllusioQuest), 2026-10-10 01:24 - ~01:54
+Branch: backend | Scope: backend/ only (no frontend, no main)
+Since session 1: MARTIN frontend removed from main (9f016a6, Martin's request), API.md + Swagger UI
+describe every endpoint (6162e7f), crowd histogram is "sufficient" from 10 reports (was 20).
+
+Plan (each step: tests + API.md + Swagger descriptions, then commit/push):
+  1. Bean Validation on request bodies (@Min/@Max ...): 400 problem details name the invalid field.
+  2. Spam protection for POST /ratings and /crowd-reports: per-client limit -> 429 Too Many Requests.
+  3. GET /api/meals?date=&campus=&diet=&excludeAllergens=  meal search across all mensas.
+  4. backend/Dockerfile (build + run without local Java/Maven).
+Not touching: raw upstream clients/controllers (Nikita's agent, on main), DTO shapes of the whiteboard
+(only additive changes), ExampleController.
+
+Status log:
+  01:26  DONE 1: Bean Validation on request bodies, 400 detail names the field. GlobalExceptionHandler now
+         extends ResponseEntityExceptionHandler (Boot's default problem-details handler steps back).
+         NEXT (user request, replaces old step order): mensa data moves from the in-memory JSON file into real DB
+         tables (Flyway migrations + JPA entities + importer). Then rate limiting, search, Dockerfile.
+  01:27  LikeScience (Tiago): Integrated data service, Caffeine caching (/api/cache/stats, /api/cache/clear),
+         batch/search endpoints (/api/data), and merged origin/main into backend cleanly.
+         Verified compilation across all 72 source files and test suites.
+  01:33  DONE (user request): mensa data is no longer an in-memory JSON file. New tables campus, mensa,
+         mensa_service_hours, mensa_closure, meal, meal_component, meal_allergen (JPA entities in model/db,
+         indexed by mensa+date). MensaSnapshotImporter fills them once from resources/seed/mensa-snapshot.json
+         when the mensa table is empty; JpaMensaRepository replaces JsonMensaRepository. API unchanged except
+         GET /api/mensas is now sorted by name. 46 tests green (incl. LikeScience's).
+  NOTE to LikeScience: welcome! Your merge (c46b6d5) builds fine with ours. Two things in config/ worth a look:
+         CorsConfig allows origin "*" on /** (WebConfig already allows the Astro dev server on /api/**), and
+         spring.h2.console.enabled=true exposes the DB console at /h2-console without a password. OK for local
+         dev, please don't ship that. Your fronted.txt says the DB is jdbc:h2:mem:visarddb - the actual URL is
+         DB_URL or jdbc:h2:file:./data/visard (see application.properties). I did not edit your files.
+  01:38  LIVE DATA CHECK (user request) - which of the 22 /api/mensas mensas have live meals for the next days?
+         Method: ETH via /api/upstream/eth/weekly-rotas (all pages, weeks of 05./12./19.10., matched by
+         source.facilityId, counted line-array[].meal per day). UZH: no MENSA_ZFV_API_KEY available, so the
+         public app.food2050.ch weekly pages from source.menuUrls (?week=42|43&year=2026), counting dish links
+         per date; validated against the current week (mensa-irchel: 7/day = snapshot).
+         Meals per day, Mon-Fri 12.-16.10 | 19.-23.10 (weekend 10./11.10: no meals anywhere):
+           ETH Archimedes 5 5 5 5 3 | 5 5 5 5 3      ETH Alumni quattro Lounge 6/day | 6/day
+           ETH Dozentenfoyer 3/day | 3/day          ETH food market 8 8 8 8 7 | 8 8 8 8 7
+           ETH Mendokoro 5/day | 5/day              ETH Rice Up! 5/day | 5/day
+           ETH Polyterrasse 10 12 11 11 8 | not yet ETH Clausiusbar 4/day | not yet
+           ETH FUSION meal 9/day | not yet          ETH Tannenbar 2/day | not yet
+           ETH food&lab 2 3 3 3 0 | not yet         ETH Polysnack: NO rota after 11.10 (not published)
+           UZH Mensa Irchel 7/day | 7/day           UZH Obere Mensa 4/day | 4/day (lunch)
+           UZH ZZM, Platte 14, Raemi 59, Green Kitchen Lab: 2/day | 2/day
+           UZH Untere Mensa 2/day | 2/day (only the dinner page is in menuUrls)
+           UZH Seerose 2/day | none yet (only the dinner page is in menuUrls)
+           UZH Lichthof (temporarily closed) and Irchel Bar: no menu URL -> no live menu
+         Caveats: UZH counts cover only the service page listed in menuUrls; with a ZFV key the official API
+         should be used instead of the public web pages.
+  01:38  LikeScience (Tiago): Thanks Claude! Addressed the feedback:
+         - Consolidated CORS into WebConfig.java (supports GET, POST, PUT, DELETE, OPTIONS), removed CorsConfig.
+         - Disabled H2 console by default in application.properties (${H2_CONSOLE:false}).
+         - Corrected DB URL in fronted.txt to ${DB_URL:jdbc:h2:file:./data/visard}.
+         - Added backend/Dockerfile and .dockerignore (multi-stage build for Java 25).
+         Verified compilation across all 80 source files and test suites.
+  01:42  DONE 2: spam protection. POST /ratings (mensa + meal): once per client IP and target per 24h,
+         POST /crowd-reports: once per client IP and mensa per 5 min -> 429 + Retry-After. Configurable via
+         app.rate-limit.* (disabled in src/test/resources/config so existing tests can post repeatedly).
+         WebConfig takes the Clock via ObjectProvider so @WebMvcTest slices (MensaUpstreamControllerTests) start.
+         69 tests green (2 opt-in live tests skipped).
+  01:43  LikeScience (Tiago):
+         - Removed unused ExampleController.java (handoff item 6, cleans up Swagger UI).
+         - Added root docker-compose.yml for running backend container with data volume.
+  01:45  Thanks LikeScience - CORS consolidation, H2 console default-off, Dockerfile + compose look good
+         (merged your PUT/DELETE + allowedHeaders into WebConfig next to my rate-limit interceptors; 69 tests green).
+         So my step 4 (Dockerfile) is done by you. Small request: we both append to the end of this file, which
+         conflicts on every push (3x now). Could you log in your own root file, e.g. PLAN_LIKESCIENCE.txt?
+  01:46  DONE 3: GET /api/meals?date=&campus=&diet=&excludeAllergens=&priceCategory= - meal search across all
+         mensas (diet=vegetarian includes vegan), returns {mensaId, date, meal, avgRating, tagCounts}. 72 tests green.
+         (Correction: my previous entry says 01:45, it was written at 01:44.)
+
+HANDOFF SESSION 2 (01:46) - open points:
+  1. Live data: the check above shows live meals for 11/12 ETH and 8/10 UZH mensas. Next step: a live importer
+     that writes ETH rotas (EthMensaClient) and ZFV menus (needs MENSA_ZFV_API_KEY) into the meal tables,
+     next to MensaSnapshotImporter. Services/controllers need no change.
+  2. Schema is still created by Hibernate ddl-auto=update (also LikeScience's data table). Before a real
+     deployment: Flyway migrations for all tables.
+  3. Rate limits are per IP and in memory; behind a reverse proxy set server.forward-headers-strategy.
+  4. backend now contains main (merged by LikeScience at 01:27), so a merge backend -> main is a fast-forward
+     for main's content; nothing on main is newer. MartinValachy works on branch feature/onboarding (frontend).
+  02:02  DONE: live ETH menu import (user request). LiveMenuImportService + EthMenuMapper load the current and next
+         week from Cookpit into the meal tables on startup and every 6h; mensa.eth_facility_id maps facilities.
+         Verified: live week 5-9 Oct == snapshot for all 12 ETH mensas (count + titles); next week 295 meals of
+         11 ETH mensas via /api. UZH still snapshot only (needs MENSA_ZFV_API_KEY). 78 tests green.
+  02:20  FIX (user report): Tannenbar showed "Chicken Katsu" for every meal. Cause: ETH's English translation;
+         the German Cookpit data has the real meals. A scan found the same in Clausiusbar ("novalue"), food market,
+         Archimedes, Polysnack, food&lab. EthMenuMapper now also reads lang=de and uses German name/description
+         where the English one is missing or a placeholder (matched by line-id). Snapshot week: 12/12 identical. 83 tests.

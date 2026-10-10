@@ -36,7 +36,7 @@ class MensaTests {
 
 	private static Mensa mensa(boolean temporarilyClosed, List<Closure> closures) {
 		return new Mensa("test", "Test", "UZH", "zentrum", new Address("Street 1", "8000", "Zürich", null),
-				true, temporarilyClosed, Map.of("mon", List.of(LUNCH)), closures);
+				true, temporarilyClosed, Map.of("mon", List.of(LUNCH)), closures, null);
 	}
 
 }

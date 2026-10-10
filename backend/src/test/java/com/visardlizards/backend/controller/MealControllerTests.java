@@ -1,5 +1,7 @@
 package com.visardlizards.backend.controller;
 
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -73,6 +75,36 @@ class MealControllerTests {
 		mockMvc.perform(post("/api/meals/" + MEAL_ID + "/ratings")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("{\"stars\": 4, \"tags\": [null]}"))
+				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void searchReturnsAllMealsOfADay() throws Exception {
+		mockMvc.perform(get("/api/meals").param("date", "2026-10-06"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.length()").value(93))
+				.andExpect(jsonPath("$[0].mensaId").isString())
+				.andExpect(jsonPath("$[0].meal.id").isString());
+	}
+
+	@Test
+	void searchFiltersByCampusDietAndAllergens() throws Exception {
+		mockMvc.perform(get("/api/meals").param("date", "2026-10-06").param("campus", "irchel"))
+				.andExpect(jsonPath("$.length()").value(12));
+		mockMvc.perform(get("/api/meals").param("date", "2026-10-06").param("campus", "irchel").param("diet", "vegan"))
+				.andExpect(jsonPath("$.length()").value(3));
+		// vegetarian includes vegan
+		mockMvc.perform(get("/api/meals").param("date", "2026-10-06").param("campus", "irchel").param("diet", "vegetarian"))
+				.andExpect(jsonPath("$.length()").value(6));
+		mockMvc.perform(get("/api/meals").param("date", "2026-10-06").param("campus", "irchel")
+						.param("diet", "vegetarian").param("excludeAllergens", "gluten"))
+				.andExpect(jsonPath("$.length()").value(2))
+				.andExpect(jsonPath("$[*].meal.allergens[*]").value(not(hasItem("gluten"))));
+	}
+
+	@Test
+	void searchRejectsUnknownDiet() throws Exception {
+		mockMvc.perform(get("/api/meals").param("diet", "carnivore"))
 				.andExpect(status().isBadRequest());
 	}
 

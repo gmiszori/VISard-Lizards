@@ -102,6 +102,31 @@ public class EthMensaClient {
         throw new IllegalStateException("ETH pagination exceeded 100 pages");
     }
 
+    /**
+     * Retrieves one facility's requested week as raw Cookpit JSON.
+     * Keeps all upstream fields, including meal lines, prices and closure info.
+     * Polysnack uses facility ID 10. An absent week returns an empty array.
+     */
+    public String fetchFacilityWeeklyRotas(int facilityId, LocalDate date, String language) {
+        if (facilityId <= 0) {
+            throw new IllegalArgumentException("facilityId must be positive");
+        }
+        Objects.requireNonNull(date, "date must not be null");
+        String monday = date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).toString();
+        JsonMapper mapper = JsonMapper.builder().build();
+        var result = mapper.createObjectNode();
+        var selected = result.putArray("weekly-rota-array");
+        for (String page : fetchWeeklyRotaPages(date, language)) {
+            for (var rota : mapper.readTree(page).path("weekly-rota-array")) {
+                if (rota.path("facility-id").asInt() == facilityId
+                        && rota.path("valid-from").asText().equals(monday)) {
+                    selected.add(rota);
+                }
+            }
+        }
+        return mapper.writeValueAsString(result);
+    }
+
     private static JdkClientHttpRequestFactory requestFactory() {
         HttpClient httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(10))

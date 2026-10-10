@@ -1,0 +1,2830 @@
+{
+ "weekly-rota-array": [
+  {
+   "weekly-rota-id": 2949,
+   "facility-id": 11,
+   "valid-from": "2026-12-28",
+   "valid-to": "2027-01-03",
+   "day-of-week-array": [
+    {
+     "day-of-week-code": 1,
+     "day-of-week-desc": "Monday",
+     "day-of-week-desc-short": "Mon"
+    },
+    {
+     "day-of-week-code": 2,
+     "day-of-week-desc": "Tuesday",
+     "day-of-week-desc-short": "Tue"
+    },
+    {
+     "day-of-week-code": 3,
+     "day-of-week-desc": "Wednesday",
+     "day-of-week-desc-short": "Wed"
+    },
+    {
+     "day-of-week-code": 4,
+     "day-of-week-desc": "Thursday",
+     "day-of-week-desc-short": "Thu"
+    },
+    {
+     "day-of-week-code": 5,
+     "day-of-week-desc": "Friday",
+     "day-of-week-desc-short": "Fri"
+    },
+    {
+     "day-of-week-code": 6,
+     "day-of-week-desc": "Saturday",
+     "day-of-week-desc-short": "Sat"
+    },
+    {
+     "day-of-week-code": 7,
+     "day-of-week-desc": "Sunday",
+     "day-of-week-desc-short": "Sun"
+    }
+   ]
+  },
+  {
+   "weekly-rota-id": 2950,
+   "facility-id": 11,
+   "valid-from": "2026-12-21",
+   "valid-to": "2026-12-27",
+   "day-of-week-array": [
+    {
+     "day-of-week-code": 1,
+     "day-of-week-desc": "Monday",
+     "day-of-week-desc-short": "Mon",
+     "opening-hour-array": [
+      {
+       "time-from": "08:00",
+       "time-to": "13:30"
+      }
+     ]
+    },
+    {
+     "day-of-week-code": 2,
+     "day-of-week-desc": "Tuesday",
+     "day-of-week-desc-short": "Tue",
+     "opening-hour-array": [
+      {
+       "time-from": "08:00",
+       "time-to": "13:30"
+      }
+     ]
+    },
+    {
+     "day-of-week-code": 3,
+     "day-of-week-desc": "Wednesday",
+     "day-of-week-desc-short": "Wed",
+     "opening-hour-array": [
+      {
+       "time-from": "08:00",
+       "time-to": "13:30"
+      }
+     ]
+    },
+    {
+     "day-of-week-code": 4,
+     "day-of-week-desc": "Thursday",
+     "day-of-week-desc-short": "Thu"
+    },
+    {
+     "day-of-week-code": 5,
+     "day-of-week-desc": "Friday",
+     "day-of-week-desc-short": "Fri"
+    },
+    {
+     "day-of-week-code": 6,
+     "day-of-week-desc": "Saturday",
+     "day-of-week-desc-short": "Sat"
+    },
+    {
+     "day-of-week-code": 7,
+     "day-of-week-desc": "Sunday",
+     "day-of-week-desc-short": "Sun"
+    }
+   ]
+  },
+  {
+   "weekly-rota-id": 3658,
+   "facility-id": 11,
+   "valid-from": "2026-10-12",
+   "valid-to": "2026-10-18",
+   "day-of-week-array": [
+    {
+     "day-of-week-code": 1,
+     "day-of-week-desc": "Monday",
+     "day-of-week-desc-short": "Mon",
+     "opening-hour-array": [
+      {
+       "time-from": "07:00",
+       "time-to": "17:00",
+       "meal-time-array": [
+        {
+         "name": "Lunch",
+         "time-from": "11:30",
+         "time-to": "13:30",
+         "line-array": [
+          {
+           "name": "Viola's Diner 2",
+           "meal": {
+            "line-id": 78496,
+            "name": "Chicken Katsu",
+            "description": "Paniertes Pouletschnitzel in Pankopanade mit Tonkatsu Sauce,\nKrautsalat und Jasminreis",
+            "energy": "511",
+            "protein": "7.0",
+            "fat": "3.8",
+            "saturated-fatty-acids": "0.2",
+            "carbohydrates": "14",
+            "sugar": "1.4",
+            "salt": "0.91",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 9.9,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 9.9,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 14.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 11,
+              "position": 11,
+              "desc-short": "Meat",
+              "desc": "Meat"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 15,
+              "position": 15,
+              "desc-short": "6",
+              "desc": "soya"
+             },
+             {
+              "code": 19,
+              "position": 19,
+              "desc-short": "10",
+              "desc": "mustard"
+             },
+             {
+              "code": 20,
+              "position": 20,
+              "desc-short": "11",
+              "desc": "sesame"
+             }
+            ],
+            "meat-type-array": [
+             {
+              "code": 15,
+              "position": 15,
+              "desc-short": "chicken",
+              "desc": "chicken",
+              "origin-array": [
+               {
+                "code": 143,
+                "position": 1,
+                "desc-short": "CHE",
+                "desc": "Switzerland"
+               }
+              ]
+             }
+            ],
+            "energy-outdated": "122"
+           }
+          },
+          {
+           "name": "Viola's Diner 3",
+           "meal": {
+            "line-id": 78497,
+            "name": "Chicken Katsu",
+            "description": "Paniertes Pouletschnitzel in Pankopanade mit Tonkatsu Sauce,\nKrautsalat und Jasminreis",
+            "energy": "552",
+            "protein": "5.4",
+            "fat": "5.4",
+            "saturated-fatty-acids": "0.6",
+            "carbohydrates": "15",
+            "sugar": "1.4",
+            "salt": "0.96",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 9.9,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 9.9,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 14.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "Vegan",
+              "desc": "Vegan"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 15,
+              "position": 15,
+              "desc-short": "6",
+              "desc": "soya"
+             },
+             {
+              "code": 19,
+              "position": 19,
+              "desc-short": "10",
+              "desc": "mustard"
+             },
+             {
+              "code": 20,
+              "position": 20,
+              "desc-short": "11",
+              "desc": "sesame"
+             }
+            ],
+            "energy-outdated": "132"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "day-of-week-code": 2,
+     "day-of-week-desc": "Tuesday",
+     "day-of-week-desc-short": "Tue",
+     "opening-hour-array": [
+      {
+       "time-from": "07:00",
+       "time-to": "17:00",
+       "meal-time-array": [
+        {
+         "name": "Lunch",
+         "time-from": "11:30",
+         "time-to": "13:30",
+         "line-array": [
+          {
+           "name": "Viola's Diner 2",
+           "meal": {
+            "line-id": 78498,
+            "name": "Chicken Katsu",
+            "description": "Paniertes Pouletschnitzel in Pankopanade mit Tonkatsu Sauce,\nKrautsalat und Jasminreis",
+            "energy": "613",
+            "protein": "6.2",
+            "fat": "6.8",
+            "saturated-fatty-acids": "1.8",
+            "carbohydrates": "15",
+            "sugar": "1.4",
+            "salt": "1.04",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 9.9,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 9.9,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 14.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 11,
+              "position": 11,
+              "desc-short": "Meat",
+              "desc": "Meat"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 15,
+              "position": 15,
+              "desc-short": "6",
+              "desc": "soya"
+             },
+             {
+              "code": 19,
+              "position": 19,
+              "desc-short": "10",
+              "desc": "mustard"
+             },
+             {
+              "code": 20,
+              "position": 20,
+              "desc-short": "11",
+              "desc": "sesame"
+             }
+            ],
+            "meat-type-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "beef",
+              "desc": "beef",
+              "origin-array": [
+               {
+                "code": 143,
+                "position": 1,
+                "desc-short": "CHE",
+                "desc": "Switzerland"
+               }
+              ]
+             },
+             {
+              "code": 12,
+              "position": 12,
+              "desc-short": "pork",
+              "desc": "pork",
+              "origin-array": [
+               {
+                "code": 143,
+                "position": 1,
+                "desc-short": "CHE",
+                "desc": "Switzerland"
+               }
+              ]
+             }
+            ],
+            "energy-outdated": "147"
+           }
+          },
+          {
+           "name": "Viola's Diner 3",
+           "meal": {
+            "line-id": 78499,
+            "name": "Chicken Katsu",
+            "description": "Paniertes Pouletschnitzel in Pankopanade mit Tonkatsu Sauce,\nKrautsalat und Jasminreis",
+            "energy": "518",
+            "protein": "4.1",
+            "fat": "4.7",
+            "saturated-fatty-acids": "0.5",
+            "carbohydrates": "14",
+            "sugar": "4.9",
+            "salt": "1.04",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 9.9,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 9.9,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 14.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 17,
+              "position": 17,
+              "desc-short": "Vegetarian",
+              "desc": "Vegetarian"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 12,
+              "position": 12,
+              "desc-short": "3",
+              "desc": "eggs"
+             },
+             {
+              "code": 15,
+              "position": 15,
+              "desc-short": "6",
+              "desc": "soya"
+             },
+             {
+              "code": 19,
+              "position": 19,
+              "desc-short": "10",
+              "desc": "mustard"
+             },
+             {
+              "code": 20,
+              "position": 20,
+              "desc-short": "11",
+              "desc": "sesame"
+             }
+            ],
+            "energy-outdated": "124"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "day-of-week-code": 3,
+     "day-of-week-desc": "Wednesday",
+     "day-of-week-desc-short": "Wed",
+     "opening-hour-array": [
+      {
+       "time-from": "07:00",
+       "time-to": "17:00",
+       "meal-time-array": [
+        {
+         "name": "Lunch",
+         "time-from": "11:30",
+         "time-to": "13:30",
+         "line-array": [
+          {
+           "name": "Viola's Diner 2",
+           "meal": {
+            "line-id": 78500,
+            "name": "Chicken Katsu",
+            "description": "Paniertes Pouletschnitzel in Pankopanade mit Tonkatsu Sauce,\nKrautsalat und Jasminreis",
+            "energy": "613",
+            "protein": "6.2",
+            "fat": "6.8",
+            "saturated-fatty-acids": "1.8",
+            "carbohydrates": "15",
+            "sugar": "1.4",
+            "salt": "1.04",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 9.9,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 9.9,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 14.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 11,
+              "position": 11,
+              "desc-short": "Meat",
+              "desc": "Meat"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 15,
+              "position": 15,
+              "desc-short": "6",
+              "desc": "soya"
+             },
+             {
+              "code": 19,
+              "position": 19,
+              "desc-short": "10",
+              "desc": "mustard"
+             },
+             {
+              "code": 20,
+              "position": 20,
+              "desc-short": "11",
+              "desc": "sesame"
+             }
+            ],
+            "meat-type-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "beef",
+              "desc": "beef",
+              "origin-array": [
+               {
+                "code": 143,
+                "position": 1,
+                "desc-short": "CHE",
+                "desc": "Switzerland"
+               }
+              ]
+             },
+             {
+              "code": 12,
+              "position": 12,
+              "desc-short": "pork",
+              "desc": "pork",
+              "origin-array": [
+               {
+                "code": 143,
+                "position": 1,
+                "desc-short": "CHE",
+                "desc": "Switzerland"
+               }
+              ]
+             }
+            ],
+            "energy-outdated": "147"
+           }
+          },
+          {
+           "name": "Viola's Diner 3",
+           "meal": {
+            "line-id": 78501,
+            "name": "Chicken Katsu",
+            "description": "Paniertes Pouletschnitzel in Pankopanade mit Tonkatsu Sauce,\nKrautsalat und Jasminreis",
+            "energy": "496",
+            "protein": "3.9",
+            "fat": "3.4",
+            "saturated-fatty-acids": "0.3",
+            "carbohydrates": "17",
+            "sugar": "2.7",
+            "salt": "0.93",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 9.9,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 9.9,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 14.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 17,
+              "position": 17,
+              "desc-short": "Vegetarian",
+              "desc": "Vegetarian"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 12,
+              "position": 12,
+              "desc-short": "3",
+              "desc": "eggs"
+             },
+             {
+              "code": 15,
+              "position": 15,
+              "desc-short": "6",
+              "desc": "soya"
+             },
+             {
+              "code": 19,
+              "position": 19,
+              "desc-short": "10",
+              "desc": "mustard"
+             },
+             {
+              "code": 20,
+              "position": 20,
+              "desc-short": "11",
+              "desc": "sesame"
+             }
+            ],
+            "energy-outdated": "119"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "day-of-week-code": 4,
+     "day-of-week-desc": "Thursday",
+     "day-of-week-desc-short": "Thu",
+     "opening-hour-array": [
+      {
+       "time-from": "07:00",
+       "time-to": "17:00",
+       "meal-time-array": [
+        {
+         "name": "Lunch",
+         "time-from": "11:30",
+         "time-to": "13:30",
+         "line-array": [
+          {
+           "name": "Viola's Diner 2",
+           "meal": {
+            "line-id": 78502,
+            "name": "Chicken Katsu",
+            "description": "Paniertes Pouletschnitzel in Pankopanade mit Tonkatsu Sauce,\nKrautsalat und Jasminreis",
+            "energy": "505",
+            "protein": "7.0",
+            "fat": "3.8",
+            "saturated-fatty-acids": "0.2",
+            "carbohydrates": "14",
+            "sugar": "1.3",
+            "salt": "0.91",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 9.9,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 9.9,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 14.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 11,
+              "position": 11,
+              "desc-short": "Meat",
+              "desc": "Meat"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 15,
+              "position": 15,
+              "desc-short": "6",
+              "desc": "soya"
+             },
+             {
+              "code": 19,
+              "position": 19,
+              "desc-short": "10",
+              "desc": "mustard"
+             },
+             {
+              "code": 20,
+              "position": 20,
+              "desc-short": "11",
+              "desc": "sesame"
+             }
+            ],
+            "meat-type-array": [
+             {
+              "code": 15,
+              "position": 15,
+              "desc-short": "chicken",
+              "desc": "chicken",
+              "origin-array": [
+               {
+                "code": 143,
+                "position": 1,
+                "desc-short": "CHE",
+                "desc": "Switzerland"
+               }
+              ]
+             }
+            ],
+            "energy-outdated": "121"
+           }
+          },
+          {
+           "name": "Viola's Diner 3",
+           "meal": {
+            "line-id": 78503,
+            "name": "Chicken Katsu",
+            "description": "Paniertes Pouletschnitzel in Pankopanade mit Tonkatsu Sauce,\nKrautsalat und Jasminreis",
+            "energy": "604",
+            "protein": "6.9",
+            "fat": "6.3",
+            "saturated-fatty-acids": "3.0",
+            "carbohydrates": "15",
+            "sugar": "1.9",
+            "salt": "1.25",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 9.9,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 9.9,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 14.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 15,
+              "position": 15,
+              "desc-short": "6",
+              "desc": "soya"
+             },
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "7",
+              "desc": "milk, lactose"
+             },
+             {
+              "code": 19,
+              "position": 19,
+              "desc-short": "10",
+              "desc": "mustard"
+             },
+             {
+              "code": 20,
+              "position": 20,
+              "desc-short": "11",
+              "desc": "sesame"
+             }
+            ],
+            "energy-outdated": "144"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "day-of-week-code": 5,
+     "day-of-week-desc": "Friday",
+     "day-of-week-desc-short": "Fri",
+     "opening-hour-array": [
+      {
+       "time-from": "07:00",
+       "time-to": "17:00",
+       "meal-time-array": [
+        {
+         "name": "Lunch",
+         "time-from": "11:30",
+         "time-to": "13:30",
+         "line-array": [
+          {
+           "name": "Viola's Diner 2",
+           "meal": {
+            "line-id": 78504,
+            "name": "Chicken Katsu",
+            "description": "Paniertes Pouletschnitzel in Pankopanade mit Tonkatsu Sauce,\nKrautsalat und Jasminreis",
+            "energy": "505",
+            "protein": "7.0",
+            "fat": "3.8",
+            "saturated-fatty-acids": "0.2",
+            "carbohydrates": "14",
+            "sugar": "1.3",
+            "salt": "0.91",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 9.9,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 9.9,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 14.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 11,
+              "position": 11,
+              "desc-short": "Meat",
+              "desc": "Meat"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 15,
+              "position": 15,
+              "desc-short": "6",
+              "desc": "soya"
+             },
+             {
+              "code": 19,
+              "position": 19,
+              "desc-short": "10",
+              "desc": "mustard"
+             },
+             {
+              "code": 20,
+              "position": 20,
+              "desc-short": "11",
+              "desc": "sesame"
+             }
+            ],
+            "meat-type-array": [
+             {
+              "code": 15,
+              "position": 15,
+              "desc-short": "chicken",
+              "desc": "chicken",
+              "origin-array": [
+               {
+                "code": 143,
+                "position": 1,
+                "desc-short": "CHE",
+                "desc": "Switzerland"
+               }
+              ]
+             }
+            ],
+            "energy-outdated": "121"
+           }
+          },
+          {
+           "name": "Viola's Diner 3",
+           "meal": {
+            "line-id": 78505,
+            "name": "Chicken Katsu",
+            "description": "Paniertes Pouletschnitzel in Pankopanade mit Tonkatsu Sauce,\nKrautsalat und Jasminreis",
+            "energy": "604",
+            "protein": "6.9",
+            "fat": "6.3",
+            "saturated-fatty-acids": "3.0",
+            "carbohydrates": "15",
+            "sugar": "1.9",
+            "salt": "1.25",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 9.9,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 9.9,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 14.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 15,
+              "position": 15,
+              "desc-short": "6",
+              "desc": "soya"
+             },
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "7",
+              "desc": "milk, lactose"
+             },
+             {
+              "code": 19,
+              "position": 19,
+              "desc-short": "10",
+              "desc": "mustard"
+             },
+             {
+              "code": 20,
+              "position": 20,
+              "desc-short": "11",
+              "desc": "sesame"
+             }
+            ],
+            "energy-outdated": "144"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "day-of-week-code": 6,
+     "day-of-week-desc": "Saturday",
+     "day-of-week-desc-short": "Sat"
+    },
+    {
+     "day-of-week-code": 7,
+     "day-of-week-desc": "Sunday",
+     "day-of-week-desc-short": "Sun"
+    }
+   ]
+  },
+  {
+   "weekly-rota-id": 3661,
+   "facility-id": 3,
+   "valid-from": "2026-10-12",
+   "valid-to": "2026-10-18",
+   "day-of-week-array": [
+    {
+     "day-of-week-code": 1,
+     "day-of-week-desc": "Monday",
+     "day-of-week-desc-short": "Mon",
+     "opening-hour-array": [
+      {
+       "time-from": "11:00",
+       "time-to": "14:00",
+       "meal-time-array": [
+        {
+         "name": "Lunch",
+         "time-from": "11:00",
+         "time-to": "14:00",
+         "line-array": [
+          {
+           "name": "WOK STREET",
+           "meal": {
+            "line-id": 78588,
+            "name": "novalue",
+            "description": "novalue",
+            "energy": "379",
+            "protein": "5.9",
+            "fat": "2.1",
+            "saturated-fatty-acids": "0.3",
+            "carbohydrates": "11",
+            "sugar": "1.4",
+            "salt": "0.52",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 13.2,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 14.2,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 16.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 11,
+              "position": 11,
+              "desc-short": "Meat",
+              "desc": "Meat"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 12,
+              "position": 12,
+              "desc-short": "3",
+              "desc": "eggs"
+             },
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "7",
+              "desc": "milk, lactose"
+             },
+             {
+              "code": 18,
+              "position": 18,
+              "desc-short": "9",
+              "desc": "celery"
+             },
+             {
+              "code": 19,
+              "position": 19,
+              "desc-short": "10",
+              "desc": "mustard"
+             }
+            ],
+            "meat-type-array": [
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "turkey",
+              "desc": "turkey",
+              "origin-array": [
+               {
+                "code": 143,
+                "position": 1,
+                "desc-short": "CHE",
+                "desc": "Switzerland"
+               }
+              ]
+             }
+            ],
+            "energy-outdated": "91"
+           }
+          },
+          {
+           "name": "WOK GREEN",
+           "meal": {
+            "line-id": 78589,
+            "name": "novalue",
+            "description": "novalue",
+            "energy": "351",
+            "protein": "4.0",
+            "fat": "1.5",
+            "saturated-fatty-acids": "0.2",
+            "carbohydrates": "12",
+            "sugar": "1.5",
+            "salt": "0.53",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 12.9,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 13.9,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 15.9,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 17,
+              "position": 17,
+              "desc-short": "Vegetarian",
+              "desc": "Vegetarian"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 12,
+              "position": 12,
+              "desc-short": "3",
+              "desc": "eggs"
+             },
+             {
+              "code": 18,
+              "position": 18,
+              "desc-short": "9",
+              "desc": "celery"
+             }
+            ],
+            "energy-outdated": "84"
+           }
+          },
+          {
+           "name": "DELIGHT",
+           "meal": {
+            "line-id": 78590,
+            "name": "novalue",
+            "description": "novalue",
+            "energy": "494",
+            "protein": "5.3",
+            "fat": "3.0",
+            "saturated-fatty-acids": "1.2",
+            "carbohydrates": "17",
+            "sugar": "2.7",
+            "salt": "1.56",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 9.2,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 12.2,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 14.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 11,
+              "position": 11,
+              "desc-short": "Meat",
+              "desc": "Meat"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 14,
+              "position": 14,
+              "desc-short": "5",
+              "desc": "peanuts"
+             },
+             {
+              "code": 15,
+              "position": 15,
+              "desc-short": "6",
+              "desc": "soya"
+             },
+             {
+              "code": 18,
+              "position": 18,
+              "desc-short": "9",
+              "desc": "celery"
+             },
+             {
+              "code": 21,
+              "position": 21,
+              "desc-short": "12",
+              "desc": "sulfites"
+             }
+            ],
+            "meat-type-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "beef",
+              "desc": "beef",
+              "origin-array": [
+               {
+                "code": 143,
+                "position": 1,
+                "desc-short": "CHE",
+                "desc": "Switzerland"
+               }
+              ]
+             }
+            ],
+            "energy-outdated": "118"
+           }
+          },
+          {
+           "name": "GARDEN",
+           "meal": {
+            "line-id": 78591,
+            "name": "novalue",
+            "description": "novalue",
+            "energy": "773",
+            "protein": "8.3",
+            "fat": "1.9",
+            "saturated-fatty-acids": "0.5",
+            "carbohydrates": "32",
+            "sugar": "1.9",
+            "salt": "1.96",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 8.9,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 11.9,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 13.9,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 17,
+              "position": 17,
+              "desc-short": "Vegetarian",
+              "desc": "Vegetarian"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 12,
+              "position": 12,
+              "desc-short": "3",
+              "desc": "eggs"
+             },
+             {
+              "code": 15,
+              "position": 15,
+              "desc-short": "6",
+              "desc": "soya"
+             }
+            ],
+            "energy-outdated": "185"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "day-of-week-code": 2,
+     "day-of-week-desc": "Tuesday",
+     "day-of-week-desc-short": "Tue",
+     "opening-hour-array": [
+      {
+       "time-from": "11:00",
+       "time-to": "14:00",
+       "meal-time-array": [
+        {
+         "name": "Lunch",
+         "time-from": "11:00",
+         "time-to": "14:00",
+         "line-array": [
+          {
+           "name": "WOK STREET",
+           "meal": {
+            "line-id": 78592,
+            "name": "novalue",
+            "description": "novalue",
+            "energy": "420",
+            "protein": "6.7",
+            "fat": "3.5",
+            "saturated-fatty-acids": "0.8",
+            "carbohydrates": "10",
+            "sugar": "1.5",
+            "salt": "0.63",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 13.2,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 14.2,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 16.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "Fish",
+              "desc": "Fish"
+             },
+             {
+              "code": 11,
+              "position": 11,
+              "desc-short": "Meat",
+              "desc": "Meat"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 13,
+              "position": 13,
+              "desc-short": "4",
+              "desc": "fish"
+             },
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "7",
+              "desc": "milk, lactose"
+             },
+             {
+              "code": 17,
+              "position": 17,
+              "desc-short": "8",
+              "desc": "nuts"
+             }
+            ],
+            "meat-type-array": [
+             {
+              "code": 12,
+              "position": 12,
+              "desc-short": "pork",
+              "desc": "pork",
+              "origin-array": [
+               {
+                "code": 143,
+                "position": 1,
+                "desc-short": "CHE",
+                "desc": "Switzerland"
+               }
+              ]
+             }
+            ],
+            "fishing-method-array": [
+             {
+              "code": 11,
+              "position": 11,
+              "desc-short": "farming",
+              "desc": "farming",
+              "origin-array": [
+               {
+                "code": 268,
+                "position": 268,
+                "desc-short": "NOR",
+                "desc": "Norway"
+               }
+              ]
+             }
+            ],
+            "energy-outdated": "100"
+           }
+          },
+          {
+           "name": "WOK GREEN",
+           "meal": {
+            "line-id": 78593,
+            "name": "novalue",
+            "description": "novalue",
+            "energy": "401",
+            "protein": "4.3",
+            "fat": "2.4",
+            "saturated-fatty-acids": "0.4",
+            "carbohydrates": "14",
+            "sugar": "3.1",
+            "salt": "0.85",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 12.9,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 13.9,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 15.9,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "Vegan",
+              "desc": "Vegan"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 15,
+              "position": 15,
+              "desc-short": "6",
+              "desc": "soya"
+             },
+             {
+              "code": 18,
+              "position": 18,
+              "desc-short": "9",
+              "desc": "celery"
+             },
+             {
+              "code": 19,
+              "position": 19,
+              "desc-short": "10",
+              "desc": "mustard"
+             }
+            ],
+            "energy-outdated": "96"
+           }
+          },
+          {
+           "name": "DELIGHT",
+           "meal": {
+            "line-id": 78594,
+            "name": "novalue",
+            "description": "novalue",
+            "energy": "519",
+            "protein": "4.9",
+            "fat": "3.9",
+            "saturated-fatty-acids": "2.1",
+            "carbohydrates": "14",
+            "sugar": "1.0",
+            "salt": "0.36",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 9.2,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 12.2,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 14.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "Fish",
+              "desc": "Fish"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 13,
+              "position": 13,
+              "desc-short": "4",
+              "desc": "fish"
+             },
+             {
+              "code": 15,
+              "position": 15,
+              "desc-short": "6",
+              "desc": "soya"
+             },
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "7",
+              "desc": "milk, lactose"
+             },
+             {
+              "code": 18,
+              "position": 18,
+              "desc-short": "9",
+              "desc": "celery"
+             }
+            ],
+            "fishing-method-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "catch",
+              "desc": "catch",
+              "origin-array": [
+               {
+                "code": 30,
+                "position": 30,
+                "desc-short": "Pacific NW",
+                "desc": "Pacific, Northwest"
+               }
+              ]
+             }
+            ],
+            "energy-outdated": "124"
+           }
+          },
+          {
+           "name": "GARDEN",
+           "meal": {
+            "line-id": 78595,
+            "name": "novalue",
+            "description": "novalue",
+            "energy": "462",
+            "protein": "2.6",
+            "fat": "1.3",
+            "saturated-fatty-acids": "0.2",
+            "carbohydrates": "21",
+            "sugar": "1.9",
+            "salt": "0.97",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 8.9,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 11.9,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 13.9,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "Vegan",
+              "desc": "Vegan"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 15,
+              "position": 15,
+              "desc-short": "6",
+              "desc": "soya"
+             },
+             {
+              "code": 18,
+              "position": 18,
+              "desc-short": "9",
+              "desc": "celery"
+             },
+             {
+              "code": 20,
+              "position": 20,
+              "desc-short": "11",
+              "desc": "sesame"
+             }
+            ],
+            "energy-outdated": "110"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "day-of-week-code": 3,
+     "day-of-week-desc": "Wednesday",
+     "day-of-week-desc-short": "Wed",
+     "opening-hour-array": [
+      {
+       "time-from": "11:00",
+       "time-to": "14:00",
+       "meal-time-array": [
+        {
+         "name": "Lunch",
+         "time-from": "11:00",
+         "time-to": "14:00",
+         "line-array": [
+          {
+           "name": "WOK STREET",
+           "meal": {
+            "line-id": 78596,
+            "name": "novalue",
+            "description": "novalue",
+            "energy": "484",
+            "protein": "5.4",
+            "fat": "1.8",
+            "saturated-fatty-acids": "0.0",
+            "carbohydrates": "18",
+            "sugar": "12",
+            "salt": "2.62",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 13.2,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 14.2,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 16.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 11,
+              "position": 11,
+              "desc-short": "Meat",
+              "desc": "Meat"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 15,
+              "position": 15,
+              "desc-short": "6",
+              "desc": "soya"
+             },
+             {
+              "code": 18,
+              "position": 18,
+              "desc-short": "9",
+              "desc": "celery"
+             }
+            ],
+            "meat-type-array": [
+             {
+              "code": 15,
+              "position": 15,
+              "desc-short": "chicken",
+              "desc": "chicken",
+              "origin-array": [
+               {
+                "code": 143,
+                "position": 1,
+                "desc-short": "CHE",
+                "desc": "Switzerland"
+               }
+              ]
+             }
+            ],
+            "energy-outdated": "116"
+           }
+          },
+          {
+           "name": "WOK GREEN",
+           "meal": {
+            "line-id": 78597,
+            "name": "novalue",
+            "description": "novalue",
+            "energy": "655",
+            "protein": "5.2",
+            "fat": "4.4",
+            "saturated-fatty-acids": "0.4",
+            "carbohydrates": "22",
+            "sugar": "9.7",
+            "salt": "2.03",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 12.9,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 13.9,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 15.9,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "Vegan",
+              "desc": "Vegan"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 15,
+              "position": 15,
+              "desc-short": "6",
+              "desc": "soya"
+             },
+             {
+              "code": 18,
+              "position": 18,
+              "desc-short": "9",
+              "desc": "celery"
+             }
+            ],
+            "energy-outdated": "157"
+           }
+          },
+          {
+           "name": "DELIGHT",
+           "meal": {
+            "line-id": 78598,
+            "name": "novalue",
+            "description": "novalue",
+            "energy": "494",
+            "protein": "6.8",
+            "fat": "1.9",
+            "saturated-fatty-acids": "0.3",
+            "carbohydrates": "18",
+            "sugar": "0.7",
+            "salt": "0.82",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 9.2,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 12.2,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 14.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 11,
+              "position": 11,
+              "desc-short": "Meat",
+              "desc": "Meat"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 21,
+              "position": 21,
+              "desc-short": "12",
+              "desc": "sulfites"
+             }
+            ],
+            "meat-type-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "beef",
+              "desc": "beef",
+              "origin-array": [
+               {
+                "code": 143,
+                "position": 1,
+                "desc-short": "CHE",
+                "desc": "Switzerland"
+               }
+              ]
+             }
+            ],
+            "energy-outdated": "118"
+           }
+          },
+          {
+           "name": "GARDEN",
+           "meal": {
+            "line-id": 78599,
+            "name": "novalue",
+            "description": "novalue",
+            "energy": "427",
+            "protein": "3.4",
+            "fat": "1.7",
+            "saturated-fatty-acids": "0.2",
+            "carbohydrates": "17",
+            "sugar": "3.3",
+            "salt": "0.84",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 8.9,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 11.9,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 13.9,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "Vegan",
+              "desc": "Vegan"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 19,
+              "position": 19,
+              "desc-short": "10",
+              "desc": "mustard"
+             },
+             {
+              "code": 20,
+              "position": 20,
+              "desc-short": "11",
+              "desc": "sesame"
+             }
+            ],
+            "energy-outdated": "102"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "day-of-week-code": 4,
+     "day-of-week-desc": "Thursday",
+     "day-of-week-desc-short": "Thu",
+     "opening-hour-array": [
+      {
+       "time-from": "11:00",
+       "time-to": "14:00",
+       "meal-time-array": [
+        {
+         "name": "Lunch",
+         "time-from": "11:00",
+         "time-to": "14:00",
+         "line-array": [
+          {
+           "name": "WOK STREET",
+           "meal": {
+            "line-id": 78600,
+            "name": "novalue",
+            "description": "novalue",
+            "energy": "484",
+            "protein": "5.4",
+            "fat": "1.8",
+            "saturated-fatty-acids": "0.0",
+            "carbohydrates": "18",
+            "sugar": "12",
+            "salt": "2.62",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 13.2,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 14.2,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 16.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 11,
+              "position": 11,
+              "desc-short": "Meat",
+              "desc": "Meat"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 15,
+              "position": 15,
+              "desc-short": "6",
+              "desc": "soya"
+             },
+             {
+              "code": 18,
+              "position": 18,
+              "desc-short": "9",
+              "desc": "celery"
+             }
+            ],
+            "meat-type-array": [
+             {
+              "code": 15,
+              "position": 15,
+              "desc-short": "chicken",
+              "desc": "chicken",
+              "origin-array": [
+               {
+                "code": 143,
+                "position": 1,
+                "desc-short": "CHE",
+                "desc": "Switzerland"
+               }
+              ]
+             }
+            ],
+            "energy-outdated": "116"
+           }
+          },
+          {
+           "name": "WOK GREEN",
+           "meal": {
+            "line-id": 78601,
+            "name": "novalue",
+            "description": "novalue",
+            "energy": "655",
+            "protein": "5.2",
+            "fat": "4.4",
+            "saturated-fatty-acids": "0.4",
+            "carbohydrates": "22",
+            "sugar": "9.7",
+            "salt": "2.03",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 12.9,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 13.9,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 15.9,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "Vegan",
+              "desc": "Vegan"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 15,
+              "position": 15,
+              "desc-short": "6",
+              "desc": "soya"
+             },
+             {
+              "code": 18,
+              "position": 18,
+              "desc-short": "9",
+              "desc": "celery"
+             }
+            ],
+            "energy-outdated": "157"
+           }
+          },
+          {
+           "name": "DELIGHT",
+           "meal": {
+            "line-id": 78602,
+            "name": "novalue",
+            "description": "novalue",
+            "energy": "436",
+            "protein": "6.3",
+            "fat": "3.4",
+            "saturated-fatty-acids": "0.9",
+            "carbohydrates": "12",
+            "sugar": "1.3",
+            "salt": "0.66",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 9.2,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 12.2,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 14.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 11,
+              "position": 11,
+              "desc-short": "Meat",
+              "desc": "Meat"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 15,
+              "position": 15,
+              "desc-short": "6",
+              "desc": "soya"
+             },
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "7",
+              "desc": "milk, lactose"
+             },
+             {
+              "code": 19,
+              "position": 19,
+              "desc-short": "10",
+              "desc": "mustard"
+             },
+             {
+              "code": 20,
+              "position": 20,
+              "desc-short": "11",
+              "desc": "sesame"
+             }
+            ],
+            "meat-type-array": [
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "turkey",
+              "desc": "turkey",
+              "origin-array": [
+               {
+                "code": 143,
+                "position": 1,
+                "desc-short": "CHE",
+                "desc": "Switzerland"
+               }
+              ]
+             }
+            ],
+            "energy-outdated": "104"
+           }
+          },
+          {
+           "name": "GARDEN",
+           "meal": {
+            "line-id": 78603,
+            "name": "novalue",
+            "description": "novalue",
+            "energy": "749",
+            "protein": "3.2",
+            "fat": "7.8",
+            "saturated-fatty-acids": "1.5",
+            "carbohydrates": "24",
+            "sugar": "4.4",
+            "salt": "0.40",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 8.9,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 11.9,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 13.9,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "Vegan",
+              "desc": "Vegan"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 15,
+              "position": 15,
+              "desc-short": "6",
+              "desc": "soya"
+             },
+             {
+              "code": 19,
+              "position": 19,
+              "desc-short": "10",
+              "desc": "mustard"
+             },
+             {
+              "code": 20,
+              "position": 20,
+              "desc-short": "11",
+              "desc": "sesame"
+             },
+             {
+              "code": 21,
+              "position": 21,
+              "desc-short": "12",
+              "desc": "sulfites"
+             }
+            ],
+            "energy-outdated": "179"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "day-of-week-code": 5,
+     "day-of-week-desc": "Friday",
+     "day-of-week-desc-short": "Fri",
+     "opening-hour-array": [
+      {
+       "time-from": "11:00",
+       "time-to": "14:00",
+       "meal-time-array": [
+        {
+         "name": "Lunch",
+         "time-from": "11:00",
+         "time-to": "14:00",
+         "line-array": [
+          {
+           "name": "WOK STREET",
+           "meal": {
+            "line-id": 78604,
+            "name": "novalue",
+            "description": "novalue",
+            "energy": "469",
+            "protein": "4.7",
+            "fat": "4.6",
+            "saturated-fatty-acids": "1.8",
+            "carbohydrates": "13",
+            "sugar": "3.0",
+            "salt": "0.76",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 13.2,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 14.2,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 16.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 11,
+              "position": 11,
+              "desc-short": "Meat",
+              "desc": "Meat"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 12,
+              "position": 12,
+              "desc-short": "3",
+              "desc": "eggs"
+             },
+             {
+              "code": 14,
+              "position": 14,
+              "desc-short": "5",
+              "desc": "peanuts"
+             },
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "7",
+              "desc": "milk, lactose"
+             },
+             {
+              "code": 18,
+              "position": 18,
+              "desc-short": "9",
+              "desc": "celery"
+             },
+             {
+              "code": 19,
+              "position": 19,
+              "desc-short": "10",
+              "desc": "mustard"
+             }
+            ],
+            "meat-type-array": [
+             {
+              "code": 17,
+              "position": 17,
+              "desc-short": "duck",
+              "desc": "duck",
+              "origin-array": [
+               {
+                "code": 201,
+                "position": 201,
+                "desc-short": "HUN",
+                "desc": "Hungary"
+               }
+              ]
+             }
+            ],
+            "energy-outdated": "112"
+           }
+          },
+          {
+           "name": "WOK GREEN",
+           "meal": {
+            "line-id": 78605,
+            "name": "novalue",
+            "description": "novalue",
+            "energy": "515",
+            "protein": "5.8",
+            "fat": "3.5",
+            "saturated-fatty-acids": "1.2",
+            "carbohydrates": "16",
+            "sugar": "3.0",
+            "salt": "0.74",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 12.9,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 13.9,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 15.9,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "Vegan",
+              "desc": "Vegan"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 14,
+              "position": 14,
+              "desc-short": "5",
+              "desc": "peanuts"
+             },
+             {
+              "code": 18,
+              "position": 18,
+              "desc-short": "9",
+              "desc": "celery"
+             }
+            ],
+            "energy-outdated": "123"
+           }
+          },
+          {
+           "name": "DELIGHT",
+           "meal": {
+            "line-id": 78606,
+            "name": "novalue",
+            "description": "novalue",
+            "energy": "843",
+            "protein": "19",
+            "fat": "14",
+            "saturated-fatty-acids": "5.5",
+            "carbohydrates": "0.0",
+            "sugar": "0.0",
+            "salt": "0.10",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 9.2,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 12.2,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 14.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 11,
+              "position": 11,
+              "desc-short": "Meat",
+              "desc": "Meat"
+             }
+            ],
+            "meat-type-array": [
+             {
+              "code": 12,
+              "position": 12,
+              "desc-short": "pork",
+              "desc": "pork",
+              "origin-array": [
+               {
+                "code": 143,
+                "position": 1,
+                "desc-short": "CHE",
+                "desc": "Switzerland"
+               }
+              ]
+             }
+            ],
+            "energy-outdated": "201"
+           }
+          },
+          {
+           "name": "GARDEN",
+           "meal": {
+            "line-id": 78607,
+            "name": "novalue",
+            "description": "novalue",
+            "energy": "446",
+            "protein": "3.0",
+            "fat": "5.0",
+            "saturated-fatty-acids": "2.2",
+            "carbohydrates": "12",
+            "sugar": "0.5",
+            "salt": "0.82",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 8.9,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 11.9,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 13.9,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "Vegan",
+              "desc": "Vegan"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 15,
+              "position": 15,
+              "desc-short": "6",
+              "desc": "soya"
+             },
+             {
+              "code": 21,
+              "position": 21,
+              "desc-short": "12",
+              "desc": "sulfites"
+             }
+            ],
+            "energy-outdated": "107"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "day-of-week-code": 6,
+     "day-of-week-desc": "Saturday",
+     "day-of-week-desc-short": "Sat"
+    },
+    {
+     "day-of-week-code": 7,
+     "day-of-week-desc": "Sunday",
+     "day-of-week-desc-short": "Sun"
+    }
+   ]
+  }
+ ]
+}

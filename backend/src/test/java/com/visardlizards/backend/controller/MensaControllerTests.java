@@ -25,9 +25,9 @@ class MensaControllerTests {
 		mockMvc.perform(get("/api/mensas"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.length()").value(22))
-				.andExpect(jsonPath("$[0].id").value("archimedes"))
-				.andExpect(jsonPath("$[0].title").value("Archimedes"))
-				.andExpect(jsonPath("$[0].location").value("Gloriastrasse 37/39, 8092 Zürich"))
+				.andExpect(jsonPath("$[0].title").value("Alumni quattro Lounge"))
+				.andExpect(jsonPath("$[?(@.id == 'archimedes')].title").value("Archimedes"))
+				.andExpect(jsonPath("$[?(@.id == 'archimedes')].location").value("Gloriastrasse 37/39, 8092 Zürich"))
 				.andExpect(jsonPath("$[0].mealPlan").doesNotExist());
 	}
 
@@ -153,7 +153,8 @@ class MensaControllerTests {
 		mockMvc.perform(post("/api/mensas/polyterrasse/ratings")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("{\"stars\": 9}"))
-				.andExpect(status().isBadRequest());
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.detail").value("stars: must be less than or equal to 5"));
 	}
 
 }

@@ -2,20 +2,18 @@ package com.visardlizards.backend.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.time.Clock;
 import java.time.LocalDate;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
-import com.visardlizards.backend.repository.JsonMensaRepository;
-
-import tools.jackson.databind.json.JsonMapper;
-
-/** Runs against the real data snapshot (meals from 2026-09-28 to 2026-10-09). */
+/** Runs against the imported data snapshot (meals from 2026-09-28 to 2026-10-09). */
+@SpringBootTest
 class MensaServiceTests {
 
-	private final MensaService mensaService =
-			new MensaService(new JsonMensaRepository(JsonMapper.builder().build()), new RatingService(new InMemoryRatingRepository(), Clock.systemUTC()));
+	@Autowired
+	private MensaService mensaService;
 
 	@Test
 	void menuDateIsTodayWhenThereIsData() {

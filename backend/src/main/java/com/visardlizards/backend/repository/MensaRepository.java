@@ -15,6 +15,7 @@ import com.visardlizards.backend.model.domain.Mensa;
  */
 public interface MensaRepository {
 
+	/** All mensas, sorted by name. */
 	List<Mensa> findAllMensas();
 
 	Optional<Mensa> findMensaById(String id);
@@ -25,8 +26,17 @@ public interface MensaRepository {
 
 	Optional<Meal> findMealById(String id);
 
+	/** Meals of all mensas on one day, ordered by mensa. */
+	List<Meal> findMealsOn(LocalDate date);
+
 	/** All dates that have at least one meal, ascending. */
 	SortedSet<LocalDate> findMealDates();
+
+	/**
+	 * Replaces all meals of a mensa between both dates (inclusive) with the given ones, e.g. with a fresh
+	 * live menu. Meals outside the range are not touched.
+	 */
+	void replaceMeals(String mensaId, LocalDate dateStart, LocalDate dateEnd, List<Meal> meals);
 
 	/** Meals of a mensa between both dates (inclusive), ordered by date. */
 	List<Meal> findMeals(String mensaId, LocalDate dateStart, LocalDate dateEnd);

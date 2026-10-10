@@ -1,0 +1,4851 @@
+{
+ "weekly-rota-array": [
+  {
+   "weekly-rota-id": 3580,
+   "facility-id": 9,
+   "valid-from": "2026-11-09",
+   "valid-to": "2026-11-15",
+   "day-of-week-array": [
+    {
+     "day-of-week-code": 1,
+     "day-of-week-desc": "Monday",
+     "day-of-week-desc-short": "Mon",
+     "opening-hour-array": [
+      {
+       "time-from": "11:15",
+       "time-to": "19:30",
+       "meal-time-array": [
+        {
+         "name": "Lunch",
+         "time-from": "11:15",
+         "time-to": "13:30"
+        },
+        {
+         "name": "Dinner",
+         "time-from": "17:30",
+         "time-to": "19:30"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "day-of-week-code": 2,
+     "day-of-week-desc": "Tuesday",
+     "day-of-week-desc-short": "Tue",
+     "opening-hour-array": [
+      {
+       "time-from": "11:15",
+       "time-to": "19:30",
+       "meal-time-array": [
+        {
+         "name": "Lunch",
+         "time-from": "11:15",
+         "time-to": "13:30"
+        },
+        {
+         "name": "Dinner",
+         "time-from": "17:30",
+         "time-to": "19:30"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "day-of-week-code": 3,
+     "day-of-week-desc": "Wednesday",
+     "day-of-week-desc-short": "Wed",
+     "opening-hour-array": [
+      {
+       "time-from": "11:15",
+       "time-to": "19:30",
+       "meal-time-array": [
+        {
+         "name": "Lunch",
+         "time-from": "11:15",
+         "time-to": "13:30"
+        },
+        {
+         "name": "Dinner",
+         "time-from": "17:30",
+         "time-to": "19:30"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "day-of-week-code": 4,
+     "day-of-week-desc": "Thursday",
+     "day-of-week-desc-short": "Thu",
+     "opening-hour-array": [
+      {
+       "time-from": "11:15",
+       "time-to": "19:30",
+       "meal-time-array": [
+        {
+         "name": "Lunch",
+         "time-from": "11:15",
+         "time-to": "13:30"
+        },
+        {
+         "name": "Dinner",
+         "time-from": "17:30",
+         "time-to": "19:30"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "day-of-week-code": 5,
+     "day-of-week-desc": "Friday",
+     "day-of-week-desc-short": "Fri",
+     "opening-hour-array": [
+      {
+       "time-from": "11:15",
+       "time-to": "19:30",
+       "meal-time-array": [
+        {
+         "name": "Lunch",
+         "time-from": "11:15",
+         "time-to": "13:30"
+        },
+        {
+         "name": "Dinner",
+         "time-from": "17:30",
+         "time-to": "19:30"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "day-of-week-code": 6,
+     "day-of-week-desc": "Saturday",
+     "day-of-week-desc-short": "Sat"
+    },
+    {
+     "day-of-week-code": 7,
+     "day-of-week-desc": "Sunday",
+     "day-of-week-desc-short": "Sun"
+    }
+   ]
+  },
+  {
+   "weekly-rota-id": 3660,
+   "facility-id": 9,
+   "valid-from": "2026-10-12",
+   "valid-to": "2026-10-18",
+   "day-of-week-array": [
+    {
+     "day-of-week-code": 1,
+     "day-of-week-desc": "Monday",
+     "day-of-week-desc-short": "Mon",
+     "opening-hour-array": [
+      {
+       "time-from": "11:15",
+       "time-to": "19:30",
+       "meal-time-array": [
+        {
+         "name": "Lunch",
+         "time-from": "11:15",
+         "time-to": "14:00",
+         "line-array": [
+          {
+           "name": "STREET",
+           "meal": {
+            "line-id": 78546,
+            "name": "Arancini Bolognese",
+            "description": "Mozzarella | Ratatouille | Grated Cheese | Salad",
+            "energy": "538",
+            "protein": "5.0",
+            "fat": "4.1",
+            "saturated-fatty-acids": "1.6",
+            "carbohydrates": "16",
+            "sugar": "3.2",
+            "salt": "0.99",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 9.5,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 11.5,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 15.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 11,
+              "position": 11,
+              "desc-short": "Meat",
+              "desc": "Meat"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "7",
+              "desc": "milk, lactose"
+             },
+             {
+              "code": 18,
+              "position": 18,
+              "desc-short": "9",
+              "desc": "celery"
+             },
+             {
+              "code": 21,
+              "position": 21,
+              "desc-short": "12",
+              "desc": "sulfites"
+             }
+            ],
+            "meat-type-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "beef",
+              "desc": "beef",
+              "origin-array": [
+               {
+                "code": 143,
+                "position": 1,
+                "desc-short": "CHE",
+                "desc": "Switzerland"
+               }
+              ]
+             }
+            ],
+            "energy-outdated": "129"
+           }
+          },
+          {
+           "name": "VEGAN",
+           "meal": {
+            "line-id": 78547,
+            "name": "Porcini Mushrooms Bourguignon",
+            "description": "Red Wine Gravy | Carrots | Beets | Pearl Onions | Mashed Potatoes | Rosemary",
+            "energy": "284",
+            "protein": "2.1",
+            "fat": "1.5",
+            "saturated-fatty-acids": "0.2",
+            "carbohydrates": "10",
+            "sugar": "2.5",
+            "salt": "0.39",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 7,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 11.5,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 14.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "Vegan",
+              "desc": "Vegan"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 18,
+              "position": 18,
+              "desc-short": "9",
+              "desc": "celery"
+             },
+             {
+              "code": 21,
+              "position": 21,
+              "desc-short": "12",
+              "desc": "sulfites"
+             }
+            ],
+            "energy-outdated": "68"
+           }
+          },
+          {
+           "name": "GARDEN",
+           "meal": {
+            "line-id": 78548,
+            "name": "Fried Paneer",
+            "description": " Paneer | Coconut Spinach | Couscous with Corn | Vegetables",
+            "energy": "651",
+            "protein": "7.4",
+            "fat": "6.2",
+            "saturated-fatty-acids": "3.7",
+            "carbohydrates": "16",
+            "sugar": "1.8",
+            "salt": "0.56",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 7,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 11.5,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 14.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 17,
+              "position": 17,
+              "desc-short": "Vegetarian",
+              "desc": "Vegetarian"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "7",
+              "desc": "milk, lactose"
+             },
+             {
+              "code": 18,
+              "position": 18,
+              "desc-short": "9",
+              "desc": "celery"
+             },
+             {
+              "code": 19,
+              "position": 19,
+              "desc-short": "10",
+              "desc": "mustard"
+             }
+            ],
+            "energy-outdated": "156"
+           }
+          },
+          {
+           "name": "HOME",
+           "meal": {
+            "line-id": 78549,
+            "name": "Cajun Chicken Pasta",
+            "description": "Macaroni | Chicken strips | Cajun seasoning | Cheese cream sauce | Bell peppers | Parsley | Grate..",
+            "energy": "615",
+            "protein": "6.7",
+            "fat": "4.3",
+            "saturated-fatty-acids": "1.1",
+            "carbohydrates": "19",
+            "sugar": "1.6",
+            "salt": "0.41",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 8.5,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 12.5,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 15.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 11,
+              "position": 11,
+              "desc-short": "Meat",
+              "desc": "Meat"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 12,
+              "position": 12,
+              "desc-short": "3",
+              "desc": "eggs"
+             },
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "7",
+              "desc": "milk, lactose"
+             },
+             {
+              "code": 18,
+              "position": 18,
+              "desc-short": "9",
+              "desc": "celery"
+             }
+            ],
+            "meat-type-array": [
+             {
+              "code": 15,
+              "position": 15,
+              "desc-short": "chicken",
+              "desc": "chicken",
+              "origin-array": [
+               {
+                "code": 143,
+                "position": 1,
+                "desc-short": "CHE",
+                "desc": "Switzerland"
+               }
+              ]
+             }
+            ],
+            "energy-outdated": "147"
+           }
+          },
+          {
+           "name": "Hot & Cold 100g",
+           "meal": {
+            "line-id": 78550,
+            "name": "Hot & Cold Buffet",
+            "description": "A generous salad bar plus hot dishes—healthy and delicious!",
+            "energy": "0.0",
+            "protein": "0.0",
+            "fat": "0.0",
+            "saturated-fatty-acids": "0.0",
+            "carbohydrates": "0.0",
+            "sugar": "0.0",
+            "salt": "0.00",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 2.2,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 2.4,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 3.2,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "energy-outdated": "0.0"
+           }
+          },
+          {
+           "name": "DESSERT",
+           "meal": {
+            "line-id": 78704,
+            "name": "Dessert of the day",
+            "description": "Sweet delicacies every day\n",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 2.4,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 2.4,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 2.4,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ]
+           }
+          }
+         ]
+        },
+        {
+         "name": "Dinner",
+         "time-from": "17:30",
+         "time-to": "19:30",
+         "line-array": [
+          {
+           "name": "STREET ABEND",
+           "meal": {
+            "line-id": 78551,
+            "name": "Pad Thai",
+            "description": "Beef | Egg | Thai noodles | Green onions | Zucchini | Peanuts | Tamarind | Soy sauce | Mung beans...",
+            "energy": "531",
+            "protein": "9.2",
+            "fat": "3.9",
+            "saturated-fatty-acids": "0.7",
+            "carbohydrates": "13",
+            "sugar": "1.4",
+            "salt": "0.43",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 11.5,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 13.5,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 17.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 11,
+              "position": 11,
+              "desc-short": "Meat",
+              "desc": "Meat"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 12,
+              "position": 12,
+              "desc-short": "3",
+              "desc": "eggs"
+             },
+             {
+              "code": 14,
+              "position": 14,
+              "desc-short": "5",
+              "desc": "peanuts"
+             },
+             {
+              "code": 15,
+              "position": 15,
+              "desc-short": "6",
+              "desc": "soya"
+             },
+             {
+              "code": 21,
+              "position": 21,
+              "desc-short": "12",
+              "desc": "sulfites"
+             }
+            ],
+            "meat-type-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "beef",
+              "desc": "beef",
+              "origin-array": [
+               {
+                "code": 143,
+                "position": 1,
+                "desc-short": "CHE",
+                "desc": "Switzerland"
+               }
+              ]
+             }
+            ],
+            "energy-outdated": "127"
+           }
+          },
+          {
+           "name": "GARDEN ABEND",
+           "meal": {
+            "line-id": 78552,
+            "name": "Vegetable Stroganoff",
+            "description": "Paprika sauce | Zucchini | Cauliflower | Broccoli | Bell peppers | Butter spaetzle | Chives",
+            "energy": "510",
+            "protein": "3.2",
+            "fat": "4.3",
+            "saturated-fatty-acids": "0.9",
+            "carbohydrates": "17",
+            "sugar": "1.8",
+            "salt": "1.04",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 7,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 11.5,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 14.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 17,
+              "position": 17,
+              "desc-short": "Vegetarian",
+              "desc": "Vegetarian"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "7",
+              "desc": "milk, lactose"
+             },
+             {
+              "code": 21,
+              "position": 21,
+              "desc-short": "12",
+              "desc": "sulfites"
+             }
+            ],
+            "energy-outdated": "122"
+           }
+          },
+          {
+           "name": "HOME ABEND",
+           "meal": {
+            "line-id": 78553,
+            "name": "Chicken Stroganoff",
+            "description": "Paprika Sauce | Butter Spätzli | Chives",
+            "energy": "546",
+            "protein": "5.0",
+            "fat": "4.9",
+            "saturated-fatty-acids": "0.9",
+            "carbohydrates": "16",
+            "sugar": "1.5",
+            "salt": "1.05",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 8.5,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 12.5,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 15.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 11,
+              "position": 11,
+              "desc-short": "Meat",
+              "desc": "Meat"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "7",
+              "desc": "milk, lactose"
+             },
+             {
+              "code": 21,
+              "position": 21,
+              "desc-short": "12",
+              "desc": "sulfites"
+             }
+            ],
+            "meat-type-array": [
+             {
+              "code": 15,
+              "position": 15,
+              "desc-short": "chicken",
+              "desc": "chicken",
+              "origin-array": [
+               {
+                "code": 143,
+                "position": 1,
+                "desc-short": "CHE",
+                "desc": "Switzerland"
+               }
+              ]
+             }
+            ],
+            "energy-outdated": "130"
+           }
+          },
+          {
+           "name": "POLY-BOWLS",
+           "meal": {
+            "line-id": 78705,
+            "name": "Poly-Bowls",
+            "description": "Prepared fresh daily - with meat or vegetarian options.\nFresh, light and delicious!",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 9.5,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 11.5,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 13.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 14,
+              "position": 14,
+              "desc-short": "Salad",
+              "desc": "Salad"
+             }
+            ]
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "day-of-week-code": 2,
+     "day-of-week-desc": "Tuesday",
+     "day-of-week-desc-short": "Tue",
+     "opening-hour-array": [
+      {
+       "time-from": "11:15",
+       "time-to": "19:30",
+       "meal-time-array": [
+        {
+         "name": "Lunch",
+         "time-from": "11:15",
+         "time-to": "14:00",
+         "line-array": [
+          {
+           "name": "LOCAL",
+           "meal": {
+            "line-id": 78554,
+            "name": "Venison Stew",
+            "description": "Chanterelles | Dried figs | Pearl onions | Parsley | Spätzli | Brussels sprouts | Chestnuts",
+            "energy": "496",
+            "protein": "5.9",
+            "fat": "2.7",
+            "saturated-fatty-acids": "0.3",
+            "carbohydrates": "15",
+            "sugar": "2.8",
+            "salt": "0.80",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 12.5,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 14.5,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 18.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 11,
+              "position": 11,
+              "desc-short": "Meat",
+              "desc": "Meat"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 18,
+              "position": 18,
+              "desc-short": "9",
+              "desc": "celery"
+             },
+             {
+              "code": 21,
+              "position": 21,
+              "desc-short": "12",
+              "desc": "sulfites"
+             }
+            ],
+            "meat-type-array": [
+             {
+              "code": 14,
+              "position": 14,
+              "desc-short": "game",
+              "desc": "game",
+              "origin-array": [
+               {
+                "code": 112,
+                "position": 112,
+                "desc-short": "AUT",
+                "desc": "Austria"
+               }
+              ]
+             }
+            ],
+            "energy-outdated": "118"
+           }
+          },
+          {
+           "name": "STREET",
+           "meal": {
+            "line-id": 78555,
+            "name": "Shiitake Dim Sum Ramen",
+            "description": "Shiitake Dim Sum | Ramen Noodles | Asian Vegetables | Shiitake | Green Onions | Sesame",
+            "energy": "259",
+            "protein": "1.4",
+            "fat": "1.1",
+            "saturated-fatty-acids": "0.2",
+            "carbohydrates": "11",
+            "sugar": "1.6",
+            "salt": "1.02",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 10.5,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 12.5,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 16.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "Vegan",
+              "desc": "Vegan"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 15,
+              "position": 15,
+              "desc-short": "6",
+              "desc": "soya"
+             },
+             {
+              "code": 18,
+              "position": 18,
+              "desc-short": "9",
+              "desc": "celery"
+             },
+             {
+              "code": 20,
+              "position": 20,
+              "desc-short": "11",
+              "desc": "sesame"
+             }
+            ],
+            "energy-outdated": "62"
+           }
+          },
+          {
+           "name": "VEGAN",
+           "meal": {
+            "line-id": 78556,
+            "name": "Eggplant Coconut Curry",
+            "description": "Lentils | Jeera Rice | Roasted Chickpeas | Cilantro",
+            "energy": "687",
+            "protein": "4.5",
+            "fat": "4.4",
+            "saturated-fatty-acids": "2.0",
+            "carbohydrates": "25",
+            "sugar": "1.8",
+            "salt": "0.66",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 7,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 11.5,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 14.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "Vegan",
+              "desc": "Vegan"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 19,
+              "position": 19,
+              "desc-short": "10",
+              "desc": "mustard"
+             }
+            ],
+            "energy-outdated": "164"
+           }
+          },
+          {
+           "name": "GARDEN",
+           "meal": {
+            "line-id": 78557,
+            "name": "Pad Thai",
+            "description": "Tofu | Egg | Wheat noodles | Carrots | Green onions | Peanuts | Tamarind | Soy sauce | Lime",
+            "energy": "603",
+            "protein": "6.2",
+            "fat": "5.6",
+            "saturated-fatty-acids": "1.0",
+            "carbohydrates": "20",
+            "sugar": "3.2",
+            "salt": "0.86",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 7,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 11.5,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 14.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 17,
+              "position": 17,
+              "desc-short": "Vegetarian",
+              "desc": "Vegetarian"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 12,
+              "position": 12,
+              "desc-short": "3",
+              "desc": "eggs"
+             },
+             {
+              "code": 14,
+              "position": 14,
+              "desc-short": "5",
+              "desc": "peanuts"
+             },
+             {
+              "code": 15,
+              "position": 15,
+              "desc-short": "6",
+              "desc": "soya"
+             },
+             {
+              "code": 20,
+              "position": 20,
+              "desc-short": "11",
+              "desc": "sesame"
+             }
+            ],
+            "energy-outdated": "144"
+           }
+          },
+          {
+           "name": "HOME",
+           "meal": {
+            "line-id": 78558,
+            "name": "Bernese Rösti",
+            "description": "Bacon | Onions | Raclette cheese | Fried egg",
+            "energy": "473",
+            "protein": "5.7",
+            "fat": "4.8",
+            "saturated-fatty-acids": "2.4",
+            "carbohydrates": "11",
+            "sugar": "1.3",
+            "salt": "0.45",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 8.5,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 12.5,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 15.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 11,
+              "position": 11,
+              "desc-short": "Meat",
+              "desc": "Meat"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 12,
+              "position": 12,
+              "desc-short": "3",
+              "desc": "eggs"
+             },
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "7",
+              "desc": "milk, lactose"
+             },
+             {
+              "code": 21,
+              "position": 21,
+              "desc-short": "12",
+              "desc": "sulfites"
+             }
+            ],
+            "meat-type-array": [
+             {
+              "code": 12,
+              "position": 12,
+              "desc-short": "pork",
+              "desc": "pork",
+              "origin-array": [
+               {
+                "code": 143,
+                "position": 1,
+                "desc-short": "CHE",
+                "desc": "Switzerland"
+               }
+              ]
+             }
+            ],
+            "energy-outdated": "113"
+           }
+          },
+          {
+           "name": "Hot & Cold 100g",
+           "meal": {
+            "line-id": 78559,
+            "name": "Hot & Cold Buffet",
+            "description": "A generous salad bar plus hot dishes—healthy and delicious!",
+            "energy": "0.0",
+            "protein": "0.0",
+            "fat": "0.0",
+            "saturated-fatty-acids": "0.0",
+            "carbohydrates": "0.0",
+            "sugar": "0.0",
+            "salt": "0.00",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 2.2,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 2.4,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 3.2,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "energy-outdated": "0.0"
+           }
+          },
+          {
+           "name": "DESSERT",
+           "meal": {
+            "line-id": 78706,
+            "name": "Dessert of the day",
+            "description": "Sweet delicacies every day\n",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 2.4,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 2.4,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 2.4,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ]
+           }
+          },
+          {
+           "name": "SMOOTHIE",
+           "meal": {
+            "line-id": 78707,
+            "name": "Smoothie - every Tuesday",
+            "description": "Freshly blended smoothies - refreshing and full of vitamins",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 3.5,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 3.5,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 3.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ]
+           }
+          }
+         ]
+        },
+        {
+         "name": "Dinner",
+         "time-from": "17:30",
+         "time-to": "19:30",
+         "line-array": [
+          {
+           "name": "STREET ABEND",
+           "meal": {
+            "line-id": 78560,
+            "name": "Cheeseburger",
+            "description": "IP-SUISSE Beef | Sesame Bun | Cheddar | Cucumber | Iceberg Lettuce | Mustard Dip | BBQ Potatoes",
+            "energy": "810",
+            "protein": "7.3",
+            "fat": "11",
+            "saturated-fatty-acids": "2.6",
+            "carbohydrates": "15",
+            "sugar": "1.2",
+            "salt": "2.48",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 11.5,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 13.5,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 17.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 11,
+              "position": 11,
+              "desc-short": "Meat",
+              "desc": "Meat"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 12,
+              "position": 12,
+              "desc-short": "3",
+              "desc": "eggs"
+             },
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "7",
+              "desc": "milk, lactose"
+             },
+             {
+              "code": 18,
+              "position": 18,
+              "desc-short": "9",
+              "desc": "celery"
+             },
+             {
+              "code": 19,
+              "position": 19,
+              "desc-short": "10",
+              "desc": "mustard"
+             },
+             {
+              "code": 20,
+              "position": 20,
+              "desc-short": "11",
+              "desc": "sesame"
+             },
+             {
+              "code": 21,
+              "position": 21,
+              "desc-short": "12",
+              "desc": "sulfites"
+             }
+            ],
+            "meat-type-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "beef",
+              "desc": "beef",
+              "origin-array": [
+               {
+                "code": 143,
+                "position": 1,
+                "desc-short": "CHE",
+                "desc": "Switzerland"
+               }
+              ]
+             }
+            ],
+            "energy-outdated": "193"
+           }
+          },
+          {
+           "name": "GARDEN ABEND",
+           "meal": {
+            "line-id": 78561,
+            "name": "Pasta alla Carbonara",
+            "description": "Vegetable sticks | Grated cheese | Salad | Fruit",
+            "energy": "486",
+            "protein": "3.8",
+            "fat": "4.1",
+            "saturated-fatty-acids": "1.9",
+            "carbohydrates": "15",
+            "sugar": "2.0",
+            "salt": "0.27",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 7,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 11.5,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 14.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 17,
+              "position": 17,
+              "desc-short": "Vegetarian",
+              "desc": "Vegetarian"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "7",
+              "desc": "milk, lactose"
+             },
+             {
+              "code": 18,
+              "position": 18,
+              "desc-short": "9",
+              "desc": "celery"
+             }
+            ],
+            "energy-outdated": "116"
+           }
+          },
+          {
+           "name": "HOME ABEND",
+           "meal": {
+            "line-id": 78562,
+            "name": "Pasta alla Carbonara",
+            "description": "Diced bacon | Grated cheese | Salad | Fruit",
+            "energy": "539",
+            "protein": "4.4",
+            "fat": "5.0",
+            "saturated-fatty-acids": "1.6",
+            "carbohydrates": "16",
+            "sugar": "1.8",
+            "salt": "0.39",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 8.5,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 12.5,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 15.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 11,
+              "position": 11,
+              "desc-short": "Meat",
+              "desc": "Meat"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "7",
+              "desc": "milk, lactose"
+             },
+             {
+              "code": 18,
+              "position": 18,
+              "desc-short": "9",
+              "desc": "celery"
+             }
+            ],
+            "meat-type-array": [
+             {
+              "code": 12,
+              "position": 12,
+              "desc-short": "pork",
+              "desc": "pork",
+              "origin-array": [
+               {
+                "code": 143,
+                "position": 1,
+                "desc-short": "CHE",
+                "desc": "Switzerland"
+               }
+              ]
+             }
+            ],
+            "energy-outdated": "129"
+           }
+          },
+          {
+           "name": "POLY-BOWLS",
+           "meal": {
+            "line-id": 78708,
+            "name": "Poly-Bowls",
+            "description": "Prepared fresh daily - with meat or vegetarian options.\nFresh, light and delicious!",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 9.5,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 11.5,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 13.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 14,
+              "position": 14,
+              "desc-short": "Salad",
+              "desc": "Salad"
+             }
+            ]
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "day-of-week-code": 3,
+     "day-of-week-desc": "Wednesday",
+     "day-of-week-desc-short": "Wed",
+     "opening-hour-array": [
+      {
+       "time-from": "11:15",
+       "time-to": "19:30",
+       "meal-time-array": [
+        {
+         "name": "Lunch",
+         "time-from": "11:15",
+         "time-to": "14:00",
+         "line-array": [
+          {
+           "name": "LOCAL",
+           "meal": {
+            "line-id": 78563,
+            "name": "Milanese Piccata",
+            "description": "Turkey Piccata | Tomato Sauce | Saffron Risotto | Broccoli",
+            "energy": "499",
+            "protein": "8.4",
+            "fat": "5.4",
+            "saturated-fatty-acids": "1.5",
+            "carbohydrates": "8.5",
+            "sugar": "1.1",
+            "salt": "0.70",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 11.5,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 13.5,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 17.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 11,
+              "position": 11,
+              "desc-short": "Meat",
+              "desc": "Meat"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 12,
+              "position": 12,
+              "desc-short": "3",
+              "desc": "eggs"
+             },
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "7",
+              "desc": "milk, lactose"
+             },
+             {
+              "code": 21,
+              "position": 21,
+              "desc-short": "12",
+              "desc": "sulfites"
+             }
+            ],
+            "meat-type-array": [
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "turkey",
+              "desc": "turkey",
+              "origin-array": [
+               {
+                "code": 280,
+                "position": 280,
+                "desc-short": "POL",
+                "desc": "Poland"
+               }
+              ]
+             }
+            ],
+            "energy-outdated": "119"
+           }
+          },
+          {
+           "name": "STREET",
+           "meal": {
+            "line-id": 78564,
+            "name": "Cheeseburger",
+            "description": "Beef or veggie burger | Mustard dip | Cheddar | Cucumber | Iceberg lettuce | Sesame bun | French fries",
+            "energy": "932",
+            "protein": "7.7",
+            "fat": "13",
+            "saturated-fatty-acids": "2.8",
+            "carbohydrates": "18",
+            "sugar": "0.9",
+            "salt": "1.23",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 11.5,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 13.5,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 17.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 11,
+              "position": 11,
+              "desc-short": "Meat",
+              "desc": "Meat"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 12,
+              "position": 12,
+              "desc-short": "3",
+              "desc": "eggs"
+             },
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "7",
+              "desc": "milk, lactose"
+             },
+             {
+              "code": 18,
+              "position": 18,
+              "desc-short": "9",
+              "desc": "celery"
+             },
+             {
+              "code": 19,
+              "position": 19,
+              "desc-short": "10",
+              "desc": "mustard"
+             },
+             {
+              "code": 20,
+              "position": 20,
+              "desc-short": "11",
+              "desc": "sesame"
+             },
+             {
+              "code": 21,
+              "position": 21,
+              "desc-short": "12",
+              "desc": "sulfites"
+             }
+            ],
+            "meat-type-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "beef",
+              "desc": "beef",
+              "origin-array": [
+               {
+                "code": 143,
+                "position": 1,
+                "desc-short": "CHE",
+                "desc": "Switzerland"
+               }
+              ]
+             }
+            ],
+            "energy-outdated": "223"
+           }
+          },
+          {
+           "name": "VEGAN",
+           "meal": {
+            "line-id": 78565,
+            "name": "Rigatoni with Meatballs",
+            "description": "Lentil Bolognese | Vegan Balls",
+            "energy": "504",
+            "protein": "6.4",
+            "fat": "2.2",
+            "saturated-fatty-acids": "0.3",
+            "carbohydrates": "16",
+            "sugar": "1.9",
+            "salt": "0.80",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 7,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 11.5,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 14.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "Vegan",
+              "desc": "Vegan"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 15,
+              "position": 15,
+              "desc-short": "6",
+              "desc": "soya"
+             },
+             {
+              "code": 18,
+              "position": 18,
+              "desc-short": "9",
+              "desc": "celery"
+             },
+             {
+              "code": 21,
+              "position": 21,
+              "desc-short": "12",
+              "desc": "sulfites"
+             }
+            ],
+            "energy-outdated": "120"
+           }
+          },
+          {
+           "name": "GARDEN",
+           "meal": {
+            "line-id": 78566,
+            "name": "Traditional Potatoes, Szeged-Style",
+            "description": "Paprika sauce | Sauerkraut | Fried onions | Sour cream | Spätzli",
+            "energy": "483",
+            "protein": "3.1",
+            "fat": "3.4",
+            "saturated-fatty-acids": "1.0",
+            "carbohydrates": "17",
+            "sugar": "1.4",
+            "salt": "0.81",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 7,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 11.5,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 14.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 17,
+              "position": 17,
+              "desc-short": "Vegetarian",
+              "desc": "Vegetarian"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "7",
+              "desc": "milk, lactose"
+             },
+             {
+              "code": 17,
+              "position": 17,
+              "desc-short": "8",
+              "desc": "nuts"
+             },
+             {
+              "code": 21,
+              "position": 21,
+              "desc-short": "12",
+              "desc": "sulfites"
+             }
+            ],
+            "energy-outdated": "115"
+           }
+          },
+          {
+           "name": "HOME",
+           "meal": {
+            "line-id": 78567,
+            "name": "Chicken Yassa",
+            "description": "Chicken Thighs | Caramelized Onions | Lime Juice | Spiced Rice with Carrots",
+            "energy": "613",
+            "protein": "8.2",
+            "fat": "6.7",
+            "saturated-fatty-acids": "1.9",
+            "carbohydrates": "17",
+            "sugar": "1.5",
+            "salt": "0.66",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 8.5,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 12.5,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 15.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 11,
+              "position": 11,
+              "desc-short": "Meat",
+              "desc": "Meat"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 19,
+              "position": 19,
+              "desc-short": "10",
+              "desc": "mustard"
+             },
+             {
+              "code": 21,
+              "position": 21,
+              "desc-short": "12",
+              "desc": "sulfites"
+             }
+            ],
+            "meat-type-array": [
+             {
+              "code": 15,
+              "position": 15,
+              "desc-short": "chicken",
+              "desc": "chicken",
+              "origin-array": [
+               {
+                "code": 143,
+                "position": 1,
+                "desc-short": "CHE",
+                "desc": "Switzerland"
+               }
+              ]
+             }
+            ],
+            "energy-outdated": "146"
+           }
+          },
+          {
+           "name": "Hot & Cold 100g",
+           "meal": {
+            "line-id": 78568,
+            "name": "Hot & Cold Buffet",
+            "description": "A generous salad bar plus hot dishes—healthy and delicious!",
+            "energy": "0.0",
+            "protein": "0.0",
+            "fat": "0.0",
+            "saturated-fatty-acids": "0.0",
+            "carbohydrates": "0.0",
+            "sugar": "0.0",
+            "salt": "0.00",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 2.2,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 2.4,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 3.2,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "energy-outdated": "0.0"
+           }
+          },
+          {
+           "name": "DESSERT",
+           "meal": {
+            "line-id": 78709,
+            "name": "Dessert of the day",
+            "description": "Sweet delicacies every day\n",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 2.4,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 2.4,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 2.4,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ]
+           }
+          }
+         ]
+        },
+        {
+         "name": "Dinner",
+         "time-from": "17:30",
+         "time-to": "19:30",
+         "line-array": [
+          {
+           "name": "STREET ABEND",
+           "meal": {
+            "line-id": 78569,
+            "name": "New Swiss Kitchen",
+            "description": "Alpine Pasta Tips Stuffed with Mushrooms | Mountain Herb Sauce | Twister Potatoes | Grated Cheese | Baco..",
+            "energy": "665",
+            "protein": "5.8",
+            "fat": "5.9",
+            "saturated-fatty-acids": "1.2",
+            "carbohydrates": "20",
+            "sugar": "1.6",
+            "salt": "1.24",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 9.9,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 11.9,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 15.9,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 11,
+              "position": 11,
+              "desc-short": "Meat",
+              "desc": "Meat"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 12,
+              "position": 12,
+              "desc-short": "3",
+              "desc": "eggs"
+             },
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "7",
+              "desc": "milk, lactose"
+             },
+             {
+              "code": 18,
+              "position": 18,
+              "desc-short": "9",
+              "desc": "celery"
+             }
+            ],
+            "meat-type-array": [
+             {
+              "code": 12,
+              "position": 12,
+              "desc-short": "pork",
+              "desc": "pork",
+              "origin-array": [
+               {
+                "code": 143,
+                "position": 1,
+                "desc-short": "CHE",
+                "desc": "Switzerland"
+               }
+              ]
+             }
+            ],
+            "energy-outdated": "159"
+           }
+          },
+          {
+           "name": "GARDEN ABEND",
+           "meal": {
+            "line-id": 78570,
+            "name": "Bombay Vegetable Curry",
+            "description": "Carrots | Leeks | Celery | Basmati rice | Coconut lentils",
+            "energy": "442",
+            "protein": "3.5",
+            "fat": "2.0",
+            "saturated-fatty-acids": "1.2",
+            "carbohydrates": "17",
+            "sugar": "1.3",
+            "salt": "0.80",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 7,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 11.5,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 14.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "Vegan",
+              "desc": "Vegan"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 18,
+              "position": 18,
+              "desc-short": "9",
+              "desc": "celery"
+             }
+            ],
+            "energy-outdated": "105"
+           }
+          },
+          {
+           "name": "HOME ABEND",
+           "meal": {
+            "line-id": 78571,
+            "name": "Bombay Chicken Curry",
+            "description": "Carrots | Leeks | Celery | Basmati rice | Coconut lentils",
+            "energy": "487",
+            "protein": "5.7",
+            "fat": "2.7",
+            "saturated-fatty-acids": "1.2",
+            "carbohydrates": "17",
+            "sugar": "0.9",
+            "salt": "0.80",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 8.5,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 12.5,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 15.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 11,
+              "position": 11,
+              "desc-short": "Meat",
+              "desc": "Meat"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 18,
+              "position": 18,
+              "desc-short": "9",
+              "desc": "celery"
+             }
+            ],
+            "meat-type-array": [
+             {
+              "code": 15,
+              "position": 15,
+              "desc-short": "chicken",
+              "desc": "chicken",
+              "origin-array": [
+               {
+                "code": 143,
+                "position": 1,
+                "desc-short": "CHE",
+                "desc": "Switzerland"
+               }
+              ]
+             }
+            ],
+            "energy-outdated": "116"
+           }
+          },
+          {
+           "name": "POLY-BOWLS",
+           "meal": {
+            "line-id": 78710,
+            "name": "Poly-Bowls",
+            "description": "Prepared fresh daily - with meat or vegetarian options.\nFresh, light and delicious!",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 9.5,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 11.5,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 13.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 14,
+              "position": 14,
+              "desc-short": "Salad",
+              "desc": "Salad"
+             }
+            ]
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "day-of-week-code": 4,
+     "day-of-week-desc": "Thursday",
+     "day-of-week-desc-short": "Thu",
+     "opening-hour-array": [
+      {
+       "time-from": "11:15",
+       "time-to": "19:30",
+       "meal-time-array": [
+        {
+         "name": "Lunch",
+         "time-from": "11:15",
+         "time-to": "14:00",
+         "line-array": [
+          {
+           "name": "LOCAL",
+           "meal": {
+            "line-id": 78572,
+            "name": "Swiss Kitchen",
+            "description": "St. Gallen Schüblig | Onion Sauce | Spätzli | Fall Vegetables",
+            "energy": "692",
+            "protein": "6.6",
+            "fat": "9.0",
+            "saturated-fatty-acids": "2.8",
+            "carbohydrates": "14",
+            "sugar": "1.5",
+            "salt": "1.22",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 10.5,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 12.5,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 16.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 11,
+              "position": 11,
+              "desc-short": "Meat",
+              "desc": "Meat"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 21,
+              "position": 21,
+              "desc-short": "12",
+              "desc": "sulfites"
+             }
+            ],
+            "meat-type-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "beef",
+              "desc": "beef",
+              "origin-array": [
+               {
+                "code": 143,
+                "position": 1,
+                "desc-short": "CHE",
+                "desc": "Switzerland"
+               }
+              ]
+             },
+             {
+              "code": 12,
+              "position": 12,
+              "desc-short": "pork",
+              "desc": "pork",
+              "origin-array": [
+               {
+                "code": 143,
+                "position": 1,
+                "desc-short": "CHE",
+                "desc": "Switzerland"
+               }
+              ]
+             }
+            ],
+            "energy-outdated": "165"
+           }
+          },
+          {
+           "name": "STREET",
+           "meal": {
+            "line-id": 78573,
+            "name": "Butter Chicken",
+            "description": "Chicken | Basmati Rice | Wok-Fried Vegetables | Ginger-Cucumber Raita with Cilantro",
+            "energy": "486",
+            "protein": "5.4",
+            "fat": "2.9",
+            "saturated-fatty-acids": "0.5",
+            "carbohydrates": "16",
+            "sugar": "1.5",
+            "salt": "0.87",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 9.9,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 11.9,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 15.9,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 11,
+              "position": 11,
+              "desc-short": "Meat",
+              "desc": "Meat"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "7",
+              "desc": "milk, lactose"
+             },
+             {
+              "code": 18,
+              "position": 18,
+              "desc-short": "9",
+              "desc": "celery"
+             },
+             {
+              "code": 21,
+              "position": 21,
+              "desc-short": "12",
+              "desc": "sulfites"
+             }
+            ],
+            "meat-type-array": [
+             {
+              "code": 15,
+              "position": 15,
+              "desc-short": "chicken",
+              "desc": "chicken",
+              "origin-array": [
+               {
+                "code": 143,
+                "position": 1,
+                "desc-short": "CHE",
+                "desc": "Switzerland"
+               }
+              ]
+             }
+            ],
+            "energy-outdated": "116"
+           }
+          },
+          {
+           "name": "VEGAN",
+           "meal": {
+            "line-id": 78574,
+            "name": "Tempura Bowl",
+            "description": "Cauliflower | Carrots | Bell Peppers | Quinoa | Kale | Pumpkin Seeds | Curry Mango Dip",
+            "energy": "470",
+            "protein": "4.4",
+            "fat": "5.8",
+            "saturated-fatty-acids": "0.2",
+            "carbohydrates": "16",
+            "sugar": "2.3",
+            "salt": "0.52",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 7,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 11.5,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 14.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 17,
+              "position": 17,
+              "desc-short": "Vegetarian",
+              "desc": "Vegetarian"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 19,
+              "position": 19,
+              "desc-short": "10",
+              "desc": "mustard"
+             },
+             {
+              "code": 21,
+              "position": 21,
+              "desc-short": "12",
+              "desc": "sulfites"
+             }
+            ],
+            "energy-outdated": "112"
+           }
+          },
+          {
+           "name": "GARDEN",
+           "meal": {
+            "line-id": 78575,
+            "name": "Florentine-Style Gratin",
+            "description": "Potatoes | Béchamel sauce | Spinach | Grated cheese | Fried egg | Tomato pesto | Salad",
+            "energy": "417",
+            "protein": "4.3",
+            "fat": "5.7",
+            "saturated-fatty-acids": "1.8",
+            "carbohydrates": "8.0",
+            "sugar": "2.0",
+            "salt": "0.89",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 7,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 11.5,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 14.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 12,
+              "position": 12,
+              "desc-short": "3",
+              "desc": "eggs"
+             },
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "7",
+              "desc": "milk, lactose"
+             },
+             {
+              "code": 17,
+              "position": 17,
+              "desc-short": "8",
+              "desc": "nuts"
+             },
+             {
+              "code": 18,
+              "position": 18,
+              "desc-short": "9",
+              "desc": "celery"
+             },
+             {
+              "code": 21,
+              "position": 21,
+              "desc-short": "12",
+              "desc": "sulfites"
+             }
+            ],
+            "energy-outdated": "99"
+           }
+          },
+          {
+           "name": "HOME",
+           "meal": {
+            "line-id": 78576,
+            "name": "Minced Meat with Horn-Shaped Noodles",
+            "description": "Ground beef | Grated cheese | Applesauce | Salad of the day",
+            "energy": "491",
+            "protein": "5.3",
+            "fat": "3.3",
+            "saturated-fatty-acids": "0.9",
+            "carbohydrates": "15",
+            "sugar": "2.4",
+            "salt": "0.32",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 8.5,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 12.5,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 15.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 11,
+              "position": 11,
+              "desc-short": "Meat",
+              "desc": "Meat"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 12,
+              "position": 12,
+              "desc-short": "3",
+              "desc": "eggs"
+             },
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "7",
+              "desc": "milk, lactose"
+             },
+             {
+              "code": 18,
+              "position": 18,
+              "desc-short": "9",
+              "desc": "celery"
+             },
+             {
+              "code": 21,
+              "position": 21,
+              "desc-short": "12",
+              "desc": "sulfites"
+             }
+            ],
+            "meat-type-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "beef",
+              "desc": "beef",
+              "origin-array": [
+               {
+                "code": 143,
+                "position": 1,
+                "desc-short": "CHE",
+                "desc": "Switzerland"
+               }
+              ]
+             }
+            ],
+            "energy-outdated": "117"
+           }
+          },
+          {
+           "name": "Hot & Cold 100g",
+           "meal": {
+            "line-id": 78577,
+            "name": "Hot & Cold Buffet",
+            "description": "A generous salad bar plus hot dishes—healthy and delicious!",
+            "energy": "0.0",
+            "protein": "0.0",
+            "fat": "0.0",
+            "saturated-fatty-acids": "0.0",
+            "carbohydrates": "0.0",
+            "sugar": "0.0",
+            "salt": "0.00",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 2.2,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 2.4,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 3.2,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "energy-outdated": "0.0"
+           }
+          },
+          {
+           "name": "DESSERT",
+           "meal": {
+            "line-id": 78711,
+            "name": "Dessert of the day",
+            "description": "Sweet delicacies every day\n",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 2.4,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 2.4,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 2.4,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ]
+           }
+          }
+         ]
+        },
+        {
+         "name": "Dinner",
+         "time-from": "17:30",
+         "time-to": "19:30",
+         "line-array": [
+          {
+           "name": "STREET ABEND",
+           "meal": {
+            "line-id": 78578,
+            "name": "Turkey cutlets with jumbo fries",
+            "description": " Chipotle Mayonnaise | French fries | Zucchini | Lemon wedge",
+            "energy": "752",
+            "protein": "5.4",
+            "fat": "11",
+            "saturated-fatty-acids": "1.1",
+            "carbohydrates": "14",
+            "sugar": "1.0",
+            "salt": "1.09",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 10.5,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 12.5,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 16.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 11,
+              "position": 11,
+              "desc-short": "Meat",
+              "desc": "Meat"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 12,
+              "position": 12,
+              "desc-short": "3",
+              "desc": "eggs"
+             },
+             {
+              "code": 19,
+              "position": 19,
+              "desc-short": "10",
+              "desc": "mustard"
+             }
+            ],
+            "meat-type-array": [
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "turkey",
+              "desc": "turkey",
+              "origin-array": [
+               {
+                "code": 157,
+                "position": 157,
+                "desc-short": "DEU",
+                "desc": "Germany"
+               }
+              ]
+             }
+            ],
+            "energy-outdated": "180"
+           }
+          },
+          {
+           "name": "GARDEN ABEND",
+           "meal": {
+            "line-id": 78579,
+            "name": "Vegetable Patty",
+            "description": "Whiskey Sauce | Pasta | Beans",
+            "energy": "474",
+            "protein": "3.8",
+            "fat": "2.9",
+            "saturated-fatty-acids": "0.8",
+            "carbohydrates": "16",
+            "sugar": "2.9",
+            "salt": "0.65",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 7,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 11.5,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 14.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 17,
+              "position": 17,
+              "desc-short": "Vegetarian",
+              "desc": "Vegetarian"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 12,
+              "position": 12,
+              "desc-short": "3",
+              "desc": "eggs"
+             },
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "7",
+              "desc": "milk, lactose"
+             },
+             {
+              "code": 21,
+              "position": 21,
+              "desc-short": "12",
+              "desc": "sulfites"
+             }
+            ],
+            "energy-outdated": "113"
+           }
+          },
+          {
+           "name": "HOME ABEND",
+           "meal": {
+            "line-id": 78580,
+            "name": "Meatball",
+            "description": "Whiskey Sauce | Pasta | Beans",
+            "energy": "605",
+            "protein": "6.3",
+            "fat": "6.7",
+            "saturated-fatty-acids": "2.4",
+            "carbohydrates": "13",
+            "sugar": "1.5",
+            "salt": "0.79",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 8.5,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 12.5,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 15.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 11,
+              "position": 11,
+              "desc-short": "Meat",
+              "desc": "Meat"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "7",
+              "desc": "milk, lactose"
+             },
+             {
+              "code": 21,
+              "position": 21,
+              "desc-short": "12",
+              "desc": "sulfites"
+             }
+            ],
+            "meat-type-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "beef",
+              "desc": "beef",
+              "origin-array": [
+               {
+                "code": 143,
+                "position": 1,
+                "desc-short": "CHE",
+                "desc": "Switzerland"
+               }
+              ]
+             },
+             {
+              "code": 12,
+              "position": 12,
+              "desc-short": "pork",
+              "desc": "pork",
+              "origin-array": [
+               {
+                "code": 143,
+                "position": 1,
+                "desc-short": "CHE",
+                "desc": "Switzerland"
+               }
+              ]
+             }
+            ],
+            "energy-outdated": "144"
+           }
+          },
+          {
+           "name": "POLY-BOWLS",
+           "meal": {
+            "line-id": 78712,
+            "name": "Poly-Bowls",
+            "description": "Prepared fresh daily - with meat or vegetarian options.\nFresh, light and delicious!",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 9.5,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 11.5,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 13.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 14,
+              "position": 14,
+              "desc-short": "Salad",
+              "desc": "Salad"
+             }
+            ]
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "day-of-week-code": 5,
+     "day-of-week-desc": "Friday",
+     "day-of-week-desc-short": "Fri",
+     "opening-hour-array": [
+      {
+       "time-from": "11:15",
+       "time-to": "19:30",
+       "meal-time-array": [
+        {
+         "name": "Lunch",
+         "time-from": "11:15",
+         "time-to": "14:00",
+         "line-array": [
+          {
+           "name": "STREET",
+           "meal": {
+            "line-id": 78581,
+            "name": "Pulled Pork Burrito",
+            "description": "Cheddar | Corn | Red beans | Hot peppers | Nachos | Sour cream | Salsa | Jalapeños",
+            "energy": "884",
+            "protein": "9.0",
+            "fat": "8.9",
+            "saturated-fatty-acids": "4.4",
+            "carbohydrates": "22",
+            "sugar": "2.5",
+            "salt": "1.15",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 11.5,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 13.5,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 17.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 11,
+              "position": 11,
+              "desc-short": "Meat",
+              "desc": "Meat"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "7",
+              "desc": "milk, lactose"
+             },
+             {
+              "code": 20,
+              "position": 20,
+              "desc-short": "11",
+              "desc": "sesame"
+             }
+            ],
+            "meat-type-array": [
+             {
+              "code": 12,
+              "position": 12,
+              "desc-short": "pork",
+              "desc": "pork",
+              "origin-array": [
+               {
+                "code": 143,
+                "position": 1,
+                "desc-short": "CHE",
+                "desc": "Switzerland"
+               }
+              ]
+             }
+            ],
+            "energy-outdated": "211"
+           }
+          },
+          {
+           "name": "VEGAN",
+           "meal": {
+            "line-id": 78582,
+            "name": "Koshari Pyramid",
+            "description": "Chickpeas with Ras el Hanout | Rice | Lentil noodles | Fried onions",
+            "energy": "524",
+            "protein": "4.9",
+            "fat": "1.2",
+            "saturated-fatty-acids": "0.2",
+            "carbohydrates": "22",
+            "sugar": "1.4",
+            "salt": "0.73",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 7,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 11.5,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 14.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "Vegan",
+              "desc": "Vegan"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 19,
+              "position": 19,
+              "desc-short": "10",
+              "desc": "mustard"
+             }
+            ],
+            "energy-outdated": "125"
+           }
+          },
+          {
+           "name": "GARDEN",
+           "meal": {
+            "line-id": 78583,
+            "name": "Pumpkin Risotto",
+            "description": "Sweet-and-Sour Pickled Squash | Risotto | Parsley Oil | Arugula",
+            "energy": "288",
+            "protein": "1.5",
+            "fat": "1.7",
+            "saturated-fatty-acids": "0.4",
+            "carbohydrates": "11",
+            "sugar": "0.3",
+            "salt": "0.46",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 7,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 11.5,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 14.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 17,
+              "position": 17,
+              "desc-short": "Vegetarian",
+              "desc": "Vegetarian"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "7",
+              "desc": "milk, lactose"
+             },
+             {
+              "code": 21,
+              "position": 21,
+              "desc-short": "12",
+              "desc": "sulfites"
+             }
+            ],
+            "energy-outdated": "69"
+           }
+          },
+          {
+           "name": "HOME",
+           "meal": {
+            "line-id": 78584,
+            "name": "Gourmet Filet Bordelaise",
+            "description": "Alaska pollock | Herb marinade | Swiss chard and potatoes | Carrots",
+            "energy": "375",
+            "protein": "4.7",
+            "fat": "3.6",
+            "saturated-fatty-acids": "1.1",
+            "carbohydrates": "8.6",
+            "sugar": "0.8",
+            "salt": "0.60",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 8.5,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 12.5,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 15.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "Fish",
+              "desc": "Fish"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 13,
+              "position": 13,
+              "desc-short": "4",
+              "desc": "fish"
+             },
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "7",
+              "desc": "milk, lactose"
+             },
+             {
+              "code": 21,
+              "position": 21,
+              "desc-short": "12",
+              "desc": "sulfites"
+             }
+            ],
+            "fishing-method-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "catch",
+              "desc": "catch",
+              "origin-array": [
+               {
+                "code": 30,
+                "position": 30,
+                "desc-short": "Pacific NW",
+                "desc": "Pacific, Northwest"
+               }
+              ]
+             }
+            ],
+            "energy-outdated": "90"
+           }
+          },
+          {
+           "name": "Hot & Cold 100g",
+           "meal": {
+            "line-id": 78585,
+            "name": "Hot & Cold Buffet",
+            "description": "A generous salad bar plus hot dishes—healthy and delicious!",
+            "energy": "0.0",
+            "protein": "0.0",
+            "fat": "0.0",
+            "saturated-fatty-acids": "0.0",
+            "carbohydrates": "0.0",
+            "sugar": "0.0",
+            "salt": "0.00",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 2.2,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 2.4,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 3.2,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "energy-outdated": "0.0"
+           }
+          },
+          {
+           "name": "DESSERT",
+           "meal": {
+            "line-id": 78713,
+            "name": "Dessert of the day",
+            "description": "Sweet delicacies every day\n",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 2.4,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 2.4,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 2.4,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ]
+           }
+          }
+         ]
+        },
+        {
+         "name": "Dinner",
+         "time-from": "17:30",
+         "time-to": "19:30",
+         "line-array": [
+          {
+           "name": "GARDEN ABEND",
+           "meal": {
+            "line-id": 78586,
+            "name": "Check out our daily special!",
+            "description": "-",
+            "energy": "104",
+            "protein": "3.0",
+            "fat": "0.4",
+            "saturated-fatty-acids": "0.0",
+            "carbohydrates": "1.9",
+            "sugar": "0.0",
+            "salt": "0.83",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 7,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 11.5,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 14.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "Vegan",
+              "desc": "Vegan"
+             }
+            ],
+            "energy-outdated": "25"
+           }
+          },
+          {
+           "name": "HOME ABEND",
+           "meal": {
+            "line-id": 78587,
+            "name": "Check out our daily special!",
+            "description": "-",
+            "energy": "104",
+            "protein": "3.0",
+            "fat": "0.4",
+            "saturated-fatty-acids": "0.0",
+            "carbohydrates": "1.9",
+            "sugar": "0.0",
+            "salt": "0.82",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 8.5,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 12.5,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 15.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "Vegan",
+              "desc": "Vegan"
+             }
+            ],
+            "energy-outdated": "25"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "day-of-week-code": 6,
+     "day-of-week-desc": "Saturday",
+     "day-of-week-desc-short": "Sat"
+    },
+    {
+     "day-of-week-code": 7,
+     "day-of-week-desc": "Sunday",
+     "day-of-week-desc-short": "Sun"
+    }
+   ]
+  },
+  {
+   "weekly-rota-id": 3665,
+   "facility-id": 7,
+   "valid-from": "2026-10-12",
+   "valid-to": "2026-10-18",
+   "day-of-week-array": [
+    {
+     "day-of-week-code": 1,
+     "day-of-week-desc": "Monday",
+     "day-of-week-desc-short": "Mon",
+     "opening-hour-array": [
+      {
+       "time-from": "08:30",
+       "time-to": "15:00",
+       "meal-time-array": [
+        {
+         "name": "Lunch",
+         "time-from": "11:30",
+         "time-to": "13:30",
+         "line-array": [
+          {
+           "name": "East",
+           "meal": {
+            "line-id": 78678,
+            "name": "PLANTED CARVING",
+            "description": "Market Vegetables | French Fries | Lemon | Salad Platter",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 8.9,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 10.9,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 12.9,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 17,
+              "position": 17,
+              "desc-short": "Vegetarian",
+              "desc": "Vegetarian"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 12,
+              "position": 12,
+              "desc-short": "3",
+              "desc": "eggs"
+             },
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "7",
+              "desc": "milk, lactose"
+             },
+             {
+              "code": 18,
+              "position": 18,
+              "desc-short": "9",
+              "desc": "celery"
+             },
+             {
+              "code": 19,
+              "position": 19,
+              "desc-short": "10",
+              "desc": "mustard"
+             }
+            ]
+           }
+          },
+          {
+           "name": "West",
+           "meal": {
+            "line-id": 78679,
+            "name": "FISH STICKS",
+            "description": "Boiled Potatoes | Tartar Sauce | Lemon | Salad Platter",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 9.9,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 11.9,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 13.9,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "Fish",
+              "desc": "Fish"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 12,
+              "position": 12,
+              "desc-short": "3",
+              "desc": "eggs"
+             },
+             {
+              "code": 13,
+              "position": 13,
+              "desc-short": "4",
+              "desc": "fish"
+             },
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "7",
+              "desc": "milk, lactose"
+             },
+             {
+              "code": 19,
+              "position": 19,
+              "desc-short": "10",
+              "desc": "mustard"
+             },
+             {
+              "code": 21,
+              "position": 21,
+              "desc-short": "12",
+              "desc": "sulfites"
+             }
+            ],
+            "fishing-method-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "catch",
+              "desc": "catch",
+              "origin-array": [
+               {
+                "code": 30,
+                "position": 30,
+                "desc-short": "Pacific NW",
+                "desc": "Pacific, Northwest"
+               }
+              ]
+             }
+            ]
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "day-of-week-code": 2,
+     "day-of-week-desc": "Tuesday",
+     "day-of-week-desc-short": "Tue",
+     "opening-hour-array": [
+      {
+       "time-from": "08:30",
+       "time-to": "15:00",
+       "meal-time-array": [
+        {
+         "name": "Lunch",
+         "time-from": "11:30",
+         "time-to": "13:30",
+         "line-array": [
+          {
+           "name": "East",
+           "meal": {
+            "line-id": 78680,
+            "name": "MEDITERRANEAN SPELT BURGER",
+            "description": "Ciabatta bread | Tomatoes | Iceberg lettuce | Tomato salsa | French fries",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 10.9,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 12.9,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 14.9,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 17,
+              "position": 17,
+              "desc-short": "Vegetarian",
+              "desc": "Vegetarian"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 12,
+              "position": 12,
+              "desc-short": "3",
+              "desc": "eggs"
+             },
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "7",
+              "desc": "milk, lactose"
+             },
+             {
+              "code": 18,
+              "position": 18,
+              "desc-short": "9",
+              "desc": "celery"
+             },
+             {
+              "code": 20,
+              "position": 20,
+              "desc-short": "11",
+              "desc": "sesame"
+             },
+             {
+              "code": 21,
+              "position": 21,
+              "desc-short": "12",
+              "desc": "sulfites"
+             }
+            ]
+           }
+          },
+          {
+           "name": "West",
+           "meal": {
+            "line-id": 78681,
+            "name": "FOODLAB CHEESE BURGER",
+            "description": "Sesame Bun with Red Onions|Beef Burger|\nIceberg Lettuce|Cheese|Tomatoes|Cocktail Sauce|French Fries",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 11.9,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 13.9,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 15.9,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 11,
+              "position": 11,
+              "desc-short": "Meat",
+              "desc": "Meat"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 12,
+              "position": 12,
+              "desc-short": "3",
+              "desc": "eggs"
+             },
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "7",
+              "desc": "milk, lactose"
+             },
+             {
+              "code": 18,
+              "position": 18,
+              "desc-short": "9",
+              "desc": "celery"
+             },
+             {
+              "code": 20,
+              "position": 20,
+              "desc-short": "11",
+              "desc": "sesame"
+             },
+             {
+              "code": 21,
+              "position": 21,
+              "desc-short": "12",
+              "desc": "sulfites"
+             }
+            ],
+            "meat-type-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "beef",
+              "desc": "beef",
+              "origin-array": [
+               {
+                "code": 143,
+                "position": 1,
+                "desc-short": "CHE",
+                "desc": "Switzerland"
+               }
+              ]
+             }
+            ]
+           }
+          },
+          {
+           "name": "Pasta",
+           "meal": {
+            "line-id": 78682,
+            "name": "PASTA CHAT",
+            "description": "Rigatoni | Bolognese | Tomato Sauce | Basil Pesto |\nGrated Cheese",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 7.9,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 9.9,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 11.9,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 11,
+              "position": 11,
+              "desc-short": "Meat",
+              "desc": "Meat"
+             },
+             {
+              "code": 17,
+              "position": 17,
+              "desc-short": "Vegetarian",
+              "desc": "Vegetarian"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 12,
+              "position": 12,
+              "desc-short": "3",
+              "desc": "eggs"
+             },
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "7",
+              "desc": "milk, lactose"
+             },
+             {
+              "code": 17,
+              "position": 17,
+              "desc-short": "8",
+              "desc": "nuts"
+             }
+            ],
+            "meat-type-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "beef",
+              "desc": "beef",
+              "origin-array": [
+               {
+                "code": 143,
+                "position": 1,
+                "desc-short": "CHE",
+                "desc": "Switzerland"
+               }
+              ]
+             }
+            ]
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "day-of-week-code": 3,
+     "day-of-week-desc": "Wednesday",
+     "day-of-week-desc-short": "Wed",
+     "opening-hour-array": [
+      {
+       "time-from": "08:30",
+       "time-to": "15:00",
+       "meal-time-array": [
+        {
+         "name": "Lunch",
+         "time-from": "11:30",
+         "time-to": "13:30",
+         "line-array": [
+          {
+           "name": "East",
+           "meal": {
+            "line-id": 78683,
+            "name": "AUTUMN SYMPHONY",
+            "description": "Red Cabbage | Spätzle | Brussels Sprouts | Chestnuts | Savoy Cabbage",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 8.9,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 10.9,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 12.9,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 17,
+              "position": 17,
+              "desc-short": "Vegetarian",
+              "desc": "Vegetarian"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 12,
+              "position": 12,
+              "desc-short": "3",
+              "desc": "eggs"
+             },
+             {
+              "code": 21,
+              "position": 21,
+              "desc-short": "12",
+              "desc": "sulfites"
+             }
+            ]
+           }
+          },
+          {
+           "name": "West",
+           "meal": {
+            "line-id": 78684,
+            "name": "\"VIENNESE-STYLE\" SCHNITZEL",
+            "description": "Breaded pork cutlet | French fries | Cranberries |\nLemon wedge | Salad",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 9.9,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 11.9,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 13.9,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 11,
+              "position": 11,
+              "desc-short": "Meat",
+              "desc": "Meat"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 21,
+              "position": 21,
+              "desc-short": "12",
+              "desc": "sulfites"
+             }
+            ],
+            "meat-type-array": [
+             {
+              "code": 12,
+              "position": 12,
+              "desc-short": "pork",
+              "desc": "pork",
+              "origin-array": [
+               {
+                "code": 143,
+                "position": 1,
+                "desc-short": "CHE",
+                "desc": "Switzerland"
+               }
+              ]
+             }
+            ]
+           }
+          },
+          {
+           "name": "Pasta",
+           "meal": {
+            "line-id": 78685,
+            "name": "PASTA CHAT",
+            "description": "Rigatoni | Bolognese | Tomato Sauce | Basil Pesto |\nGrated Cheese",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 7.9,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 9.9,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 11.9,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 11,
+              "position": 11,
+              "desc-short": "Meat",
+              "desc": "Meat"
+             },
+             {
+              "code": 17,
+              "position": 17,
+              "desc-short": "Vegetarian",
+              "desc": "Vegetarian"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 12,
+              "position": 12,
+              "desc-short": "3",
+              "desc": "eggs"
+             },
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "7",
+              "desc": "milk, lactose"
+             },
+             {
+              "code": 17,
+              "position": 17,
+              "desc-short": "8",
+              "desc": "nuts"
+             }
+            ],
+            "meat-type-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "beef",
+              "desc": "beef",
+              "origin-array": [
+               {
+                "code": 143,
+                "position": 1,
+                "desc-short": "CHE",
+                "desc": "Switzerland"
+               }
+              ]
+             }
+            ]
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "day-of-week-code": 4,
+     "day-of-week-desc": "Thursday",
+     "day-of-week-desc-short": "Thu",
+     "opening-hour-array": [
+      {
+       "time-from": "08:30",
+       "time-to": "15:00",
+       "meal-time-array": [
+        {
+         "name": "Lunch",
+         "time-from": "11:30",
+         "time-to": "13:30",
+         "line-array": [
+          {
+           "name": "East",
+           "meal": {
+            "line-id": 78686,
+            "name": "Mac & Cheese",
+            "description": "Pasta (macaroni), cheese sauce, fried onions,\ngreen onions, chives",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 8.5,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 10.5,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 12.5,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 17,
+              "position": 17,
+              "desc-short": "Vegetarian",
+              "desc": "Vegetarian"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 12,
+              "position": 12,
+              "desc-short": "3",
+              "desc": "eggs"
+             },
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "7",
+              "desc": "milk, lactose"
+             }
+            ]
+           }
+          },
+          {
+           "name": "West",
+           "meal": {
+            "line-id": 78687,
+            "name": "` HACKETS WITH HÖRNLI",
+            "description": "Ground beef | Gravy | Elbow macaroni | Grated cheese | Applesauce |\nSalad",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 9.9,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 11.9,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 13.9,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 11,
+              "position": 11,
+              "desc-short": "Meat",
+              "desc": "Meat"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 12,
+              "position": 12,
+              "desc-short": "3",
+              "desc": "eggs"
+             },
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "7",
+              "desc": "milk, lactose"
+             },
+             {
+              "code": 21,
+              "position": 21,
+              "desc-short": "12",
+              "desc": "sulfites"
+             }
+            ],
+            "meat-type-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "beef",
+              "desc": "beef",
+              "origin-array": [
+               {
+                "code": 143,
+                "position": 1,
+                "desc-short": "CHE",
+                "desc": "Switzerland"
+               }
+              ]
+             }
+            ]
+           }
+          },
+          {
+           "name": "Pasta",
+           "meal": {
+            "line-id": 78688,
+            "name": "PASTA CHAT",
+            "description": "Rigatoni | Bolognese | Tomato Sauce | Basil Pesto |\nGrated Cheese",
+            "price-unit-code": 10,
+            "price-unit-desc": "serving",
+            "price-unit-desc-short": "serving",
+            "meal-price-array": [
+             {
+              "price": 7.9,
+              "customer-group-code": 10,
+              "customer-group-position": 10,
+              "customer-group-desc": "students",
+              "customer-group-desc-short": "stud."
+             },
+             {
+              "price": 9.9,
+              "customer-group-code": 11,
+              "customer-group-position": 11,
+              "customer-group-desc": "internal",
+              "customer-group-desc-short": "int."
+             },
+             {
+              "price": 11.9,
+              "customer-group-code": 13,
+              "customer-group-position": 13,
+              "customer-group-desc": "external",
+              "customer-group-desc-short": "ext."
+             }
+            ],
+            "meal-class-array": [
+             {
+              "code": 11,
+              "position": 11,
+              "desc-short": "Meat",
+              "desc": "Meat"
+             },
+             {
+              "code": 17,
+              "position": 17,
+              "desc-short": "Vegetarian",
+              "desc": "Vegetarian"
+             }
+            ],
+            "allergen-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "1",
+              "desc": "gluten wheat"
+             },
+             {
+              "code": 12,
+              "position": 12,
+              "desc-short": "3",
+              "desc": "eggs"
+             },
+             {
+              "code": 16,
+              "position": 16,
+              "desc-short": "7",
+              "desc": "milk, lactose"
+             },
+             {
+              "code": 17,
+              "position": 17,
+              "desc-short": "8",
+              "desc": "nuts"
+             }
+            ],
+            "meat-type-array": [
+             {
+              "code": 10,
+              "position": 10,
+              "desc-short": "beef",
+              "desc": "beef",
+              "origin-array": [
+               {
+                "code": 143,
+                "position": 1,
+                "desc-short": "CHE",
+                "desc": "Switzerland"
+               }
+              ]
+             }
+            ]
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "day-of-week-code": 5,
+     "day-of-week-desc": "Friday",
+     "day-of-week-desc-short": "Fri"
+    },
+    {
+     "day-of-week-code": 6,
+     "day-of-week-desc": "Saturday",
+     "day-of-week-desc-short": "Sat"
+    },
+    {
+     "day-of-week-code": 7,
+     "day-of-week-desc": "Sunday",
+     "day-of-week-desc-short": "Sun"
+    }
+   ]
+  }
+ ]
+}

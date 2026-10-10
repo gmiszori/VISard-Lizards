@@ -14,11 +14,20 @@ Map these strings to your own DTOs after retrieval. An empty HTTP body can retur
 `null`. HTTP 4xx/5xx and transport failures throw Spring `RestClientException`
 subclasses. Connect timeout is 10 seconds; read timeout is 30 seconds.
 
-The application's `/api/mensas` and `/api/meals` routes currently read the bundled
-menu snapshot through `JsonMensaRepository`. Adding these clients does not make
-those routes fetch live menus. To use live menus in your app, retrieve the raw
-responses here and map them to your own DTOs or repository implementation. The
-optional `/api/upstream` routes below expose the raw responses for inspection.
+The application's `/api/mensas` and `/api/meals` routes read persisted domain
+meals through `JpaMensaRepository`, initially seeded from the bundled snapshot.
+`LiveMenuImportService` refreshes current/next-week ETH meals on startup and every
+six hours when `app.live-import.enabled=true` (the default). Missing English
+names/descriptions, including Cookpit's `novalue` marker, use matching German
+text by facility, date and line ID. Valid English text, prices and allergens stay
+unchanged. Meals with no usable name in either response are omitted. Restarting
+the backend runs this refresh and repairs previously imported placeholders.
+The mapper also detects repeated English names that correspond to different
+German dishes in the same facility/week (such as Tannenbar's repeated "Chicken
+Katsu"), and uses those dishes' German text. Description whitespace is normalized
+and duplicate components are removed.
+UZH remains snapshot-based until a live mapper is supplied. The raw clients and
+optional `/api/upstream` responses are unchanged and expose the original data.
 
 ## ETH
 
@@ -33,6 +42,12 @@ length to continue at offsets 0, 50, 100, etc. It rejects missing arrays, empty
 responses, repeated pages and more than 100 pages rather than silently losing
 data. For manual pagination use `fetchWeeklyRotas(date, language, offset, pageSize)`.
 The page size must be between 1 and 50.
+
+For a single facility and requested week, use
+`fetchFacilityWeeklyRotas(facilityId, date, language)`. It returns raw JSON with
+the matching `weekly-rota-array` and retains all nested fields. Polysnack uses
+facility ID `10`. See [missing menu investigation](MISSING_MENUS.md) for verified
+availability, closure notices and the reproducible source-check script.
 
 Restaurant metadata and facility IDs:
 https://github.com/famoser/Mensa/blob/main/app/src/main/assets/eth/locations.json
@@ -126,6 +141,7 @@ cd backend
 ```
 
 - `GET /api/upstream/eth/weekly-rotas?date=2026-10-09&language=en&offset=0&pageSize=50`
+- `GET /api/upstream/eth/facilities/10/weekly-rotas?date=2026-10-09&language=en` (Polysnack, requested week)
 - `GET /api/upstream/uzh/week` (current week)
 - `GET /api/upstream/uzh/week?next=true`
 - `GET /api/upstream/uzh/day?date=2026-10-12`

@@ -93,6 +93,9 @@ try {
 
     if ($Live) {
         $date = [TimeZoneInfo]::ConvertTimeBySystemTimeZoneId([DateTime]::UtcNow, 'Europe/Zurich').ToString('yyyy-MM-dd')
+        $liveDay = [DateTime]::ParseExact($date, 'yyyy-MM-dd', [Globalization.CultureInfo]::InvariantCulture)
+        $monday = $liveDay.AddDays(-(([int] $liveDay.DayOfWeek + 6) % 7)).ToString('yyyy-MM-dd')
+        $expectedPolysnackRotas = 0
         $total = 0
         $complete = $false
         for ($page = 0; $page -lt 100; $page++) {
@@ -102,11 +105,26 @@ try {
                 throw 'ETH response has no weekly-rota-array'
             }
             $count = @($json.'weekly-rota-array').Count
+            $expectedPolysnackRotas += @($json.'weekly-rota-array' | Where-Object {
+                $_.'facility-id' -eq 10 -and $_.'valid-from' -eq $monday
+            }).Count
             $total += $count
             if ($count -lt 50) { $complete = $true; break }
         }
         if (-not $complete) { throw 'ETH pagination did not finish within 100 pages' }
         Write-Host "ETH live endpoint: $total rota entries"
+
+        $polysnack = Read-JsonBody (Get-CheckedResponse "/api/upstream/eth/facilities/10/weekly-rotas?date=$date")
+        if (-not ($polysnack.PSObject.Properties.Name -contains 'weekly-rota-array') -or
+                @($polysnack.'weekly-rota-array').Count -ne $expectedPolysnackRotas) {
+            throw 'Polysnack facility endpoint did not return the matching raw rota count'
+        }
+        foreach ($rota in $polysnack.'weekly-rota-array') {
+            if ($rota.'facility-id' -ne 10 -or $rota.'valid-from' -ne $monday) {
+                throw 'Polysnack facility endpoint returned another facility or week'
+            }
+        }
+        Write-Host "Polysnack live endpoint: $expectedPolysnackRotas matching weekly rotas"
 
         if (-not [string]::IsNullOrWhiteSpace($env:MENSA_ZFV_API_KEY)) {
             $zfv = Read-JsonBody (Get-CheckedResponse '/api/upstream/uzh/week')
