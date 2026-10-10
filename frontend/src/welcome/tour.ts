@@ -24,7 +24,7 @@ const copy: Record<'en' | 'de', Record<WelcomeStep, Copy> & { skip: string; prog
   },
 };
 
-const guide: Record<InstallKind, { en: string; de: string; href?: string; anchor: 'top' | 'bottom' }> = {
+const guide: Record<InstallKind, { en: string; de: string; href?: string; hrefDe?: string; anchor: 'top' | 'bottom' }> = {
   installed: { en: 'Already installed. Open it from your home screen or app launcher.', de: 'Bereits installiert. Öffne die App über den Startbildschirm.', anchor: 'top' },
   'ios-safari': { en: 'Tap the Share button in Safari, then Add to Home Screen.', de: 'Tippe in Safari auf Teilen und dann auf Zum Home-Bildschirm.', href: 'https://support.apple.com/guide/iphone/turn-a-website-into-an-app-iph42ab2f3a7/ios', anchor: 'bottom' },
   'ios-other': { en: 'Open this page in Safari, then tap Share and Add to Home Screen.', de: 'Öffne diese Seite in Safari. Tippe auf Teilen und Zum Home-Bildschirm.', href: 'https://support.apple.com/guide/iphone/turn-a-website-into-an-app-iph42ab2f3a7/ios', anchor: 'bottom' },
@@ -32,7 +32,7 @@ const guide: Record<InstallKind, { en: string; de: string; href?: string; anchor
   'android-chrome': { en: 'Tap the browser menu (⋮) and choose Install app or Add to Home screen.', de: 'Tippe auf das Browsermenü (⋮) und wähle App installieren oder Zum Startbildschirm hinzufügen.', href: 'https://support.google.com/chrome/answer/9658361', anchor: 'top' },
   'android-other': { en: 'Open the browser menu and look for Install app or Add to Home screen.', de: 'Öffne das Browsermenü und suche nach App installieren oder Zum Startbildschirm hinzufügen.', anchor: 'top' },
   'desktop-chrome': { en: 'Click the install icon in the address bar, or open the browser menu and choose Install page as app.', de: 'Klicke auf das Installationssymbol in der Adressleiste oder wähle im Browsermenü Seite als App installieren.', href: 'https://support.google.com/chrome/answer/9658361', anchor: 'top' },
-  'desktop-edge': { en: 'Open the browser menu (⋯), then Apps and Install this site as an app.', de: 'Öffne das Browsermenü (⋯), dann Apps und Diese Website als App installieren.', href: 'https://support.microsoft.com/microsoft-edge/install-manage-or-uninstall-apps-in-microsoft-edge', anchor: 'top' },
+  'desktop-edge': { en: 'Open the browser menu (⋯), then More tools, Apps and Install this site as an app.', de: 'Öffne das Browsermenü (⋯), dann Weitere Tools, Apps und Diese Website als App installieren.', href: 'https://support.microsoft.com/en-us/edge/install-manage-or-uninstall-apps-in-microsoft-edge', hrefDe: 'https://support.microsoft.com/de-de/edge/install-manage-or-uninstall-apps-in-microsoft-edge', anchor: 'top' },
   'desktop-safari': { en: 'Click Share in Safari, then Add to Dock.', de: 'Klicke in Safari auf Teilen und dann auf Zum Dock hinzufügen.', href: 'https://support.apple.com/guide/safari/turn-a-website-into-an-app-ibrw9e991864/mac', anchor: 'top' },
   other: { en: 'Look for an install option in your browser menu. You can continue without installing.', de: 'Suche im Browsermenü nach einer Installationsoption. Du kannst auch ohne Installation fortfahren.', anchor: 'top' },
 };
@@ -52,6 +52,8 @@ export function mountWelcomeTour(): void {
   const help = root.querySelector<HTMLAnchorElement>('[data-welcome-help]')!;
   const guideText = root.querySelector<HTMLElement>('[data-welcome-guide]')!;
   const settingsTarget = document.querySelector<HTMLElement>('[data-tour-settings-target]');
+  const settingsSpotlight = root.querySelector<HTMLElement>('[data-welcome-settings-spotlight]')!;
+  const pointer = root.querySelector<HTMLElement>('.welcome-pointer')!;
   let installPrompt: InstallPrompt | null = null;
   const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   const lang = () => document.documentElement.lang === 'de' ? 'de' : 'en';
@@ -65,8 +67,19 @@ export function mountWelcomeTour(): void {
     step = null;
     root!.hidden = true;
     document.body.classList.remove('welcome-open');
-    settingsTarget?.classList.remove('tour-settings-highlight');
     previousFocus?.focus();
+  }
+  function positionSettingsSpotlight(): void {
+    if (step !== 'settings' || !settingsTarget) { settingsSpotlight.hidden = true; return; }
+    const bounds = settingsTarget.getBoundingClientRect();
+    settingsSpotlight.hidden = false;
+    settingsSpotlight.textContent = settingsTarget.textContent;
+    settingsSpotlight.style.left = `${bounds.left}px`;
+    settingsSpotlight.style.top = `${bounds.top}px`;
+    settingsSpotlight.style.width = `${bounds.width}px`;
+    settingsSpotlight.style.height = `${bounds.height}px`;
+    pointer.style.left = `${bounds.left + bounds.width / 2 - 11}px`;
+    pointer.style.top = `${bounds.bottom + 9}px`;
   }
   function render(): void {
     if (!step) return;
@@ -82,13 +95,14 @@ export function mountWelcomeTour(): void {
     const installGuide = guide[kind()];
     guideText.hidden = step !== 'install';
     guideText.textContent = installGuide[language];
-    help.hidden = step !== 'install' || !installGuide.href;
-    if (installGuide.href) help.href = installGuide.href;
+    const helpUrl = language === 'de' ? installGuide.hrefDe ?? installGuide.href : installGuide.href;
+    help.hidden = step !== 'install' || !helpUrl;
+    if (helpUrl) help.href = helpUrl;
     help.textContent = copy[language].help;
     install.hidden = step !== 'install' || !installPrompt || kind() === 'installed';
     install.textContent = copy[language].installAction;
     root!.querySelector<HTMLElement>('[data-welcome-image]')!.hidden = step !== 'finish';
-    settingsTarget?.classList.toggle('tour-settings-highlight', step === 'settings');
+    positionSettingsSpotlight();
     dialog.focus();
   }
   function advance(): void {
@@ -119,6 +133,8 @@ export function mountWelcomeTour(): void {
   });
   window.addEventListener('appinstalled', render);
   document.addEventListener('languagechange', render);
+  window.addEventListener('resize', positionSettingsSpotlight);
+  window.addEventListener('scroll', positionSettingsSpotlight, { passive: true });
   root.addEventListener('keydown', event => {
     if (event.key === 'Escape') { event.preventDefault(); close(); }
     if (event.key !== 'Tab') return;
