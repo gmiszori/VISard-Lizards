@@ -26,7 +26,7 @@ export const HARD: Profile['hard'] = ['no_pork', 'lactose_free', 'gluten_free', 
 export const PRIORITIES: Profile['priority'] = ['taste', 'price', 'speed', 'health'];
 export const TIERS: Profile['priceTier'][] = ['student', 'worker', 'external'];
 
-export function defaults(campus: CampusId, lang: Profile['lang'] = 'en', theme: Profile['theme'] = 'light'): Profile {
+export function defaults(campus: CampusId, lang: Profile['lang'] = 'en', theme: Profile['theme'] = 'system'): Profile {
   return { v: 1, lang, campus, campusSecondary: [], theme, diet: 'omnivore', hard: [], soft: [], dislikes: [],
     priority: [...PRIORITIES], priceTier: 'student', maxPrice: null, priceMode: 'soft',
     lunchTime: null, notifyDaily: false, mensaRatings: [] };

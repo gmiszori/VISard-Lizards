@@ -11,8 +11,8 @@ export function savedLanguage(): 'de' | 'en' {
 export function savedTheme(): Profile['theme'] {
   try {
     const theme = localStorage.getItem('campuseats-theme');
-    return theme === 'dark' || theme === 'system' ? theme : 'light';
-  } catch { return 'light'; }
+    return theme === 'dark' || theme === 'light' || theme === 'system' ? theme : 'system';
+  } catch { return 'system'; }
 }
 const strings = (value: unknown): value is string[] => Array.isArray(value) && value.every(v => typeof v === 'string');
 

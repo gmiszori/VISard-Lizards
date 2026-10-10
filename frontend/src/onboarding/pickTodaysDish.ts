@@ -2,6 +2,7 @@ import type { Meal, Mensa } from '../data/canteens';
 import type { Profile } from './profile.ts';
 import { matchesConstraints } from './constraints.ts';
 import { tierPrice } from './priceRange.ts';
+import { canShowCanteen } from '../preferences/canteenVisibility.ts';
 
 /** Below this price (CHF, in the visitor's own price category) a dish labelled "main" is almost always a soup, starter or dessert. */
 export const MIN_MAIN_PRICE = 4;
@@ -22,7 +23,8 @@ export type RecommendationMeal = Pick<Meal, 'id' | 'mensaId' | 'date' | 'title' 
  */
 export function pickTodaysDish(profile: Profile, mensas: RecommendationMensa[], meals: RecommendationMeal[]) {
   const campuses = new Set([profile.campus, ...profile.campusSecondary]);
-  const places = new Map(mensas.filter(m => campuses.has(m.campusId) && m.hasMenu && !m.temporarilyClosed).map(m => [m.id, m]));
+  const places = new Map(mensas.filter(m => campuses.has(m.campusId) && m.hasMenu && !m.temporarilyClosed &&
+    canShowCanteen(m.id, profile.priceTier)).map(m => [m.id, m]));
   const ratings = new Map(profile.mensaRatings.map(r => [r.mensaId, r.rating]));
   const eligible = meals.filter(meal => meal.kind === 'main' && places.has(meal.mensaId) && matchesConstraints(meal, profile))
     .filter(meal => profile.priceMode !== 'hard' || profile.maxPrice === null ||

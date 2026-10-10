@@ -29,7 +29,7 @@ const showServiceHeadings = menuGroups.some(group => group.service === 'lunch') 
     <div class="menu-preview" data-preference-list data-meal-list>
       {menuGroups.map(group => <div class:list={['meal-service-group', { 'has-service-heading': showServiceHeadings && Boolean(group.service) }]} data-meal-group data-service={group.service}>
         {group.service && <h4 class:list={['meal-service-heading', { 'compact-service-heading': !showServiceHeadings }]}><span data-i18n={group.service}>{group.service === 'dinner' ? 'Dinner' : 'Lunch'}</span>&nbsp;<MealServingTime item={group.items[0]!} /></h4>}
-        {group.items.map((item) => <div class="dish-preview" data-diet={item.dietary} data-meal-row data-meal-id={item.id} data-meal-name={item.name}><div class="meal-preview-heading"><div class="dish"><a href={canteenHref}>{item.name}<span class={`diet diet-${item.dietary}`} data-i18n={`diet_${item.dietary}`}>{item.dietary}</span></a></div><MealStar item={item} /></div><MealServingTime item={item} /><MealPrice item={item} compact /></div>)}
+        {group.items.map((item) => <div class="dish-preview" data-diet={item.dietary} data-meal-row data-meal-id={item.id} data-meal-name={item.name}><div class="meal-preview-heading"><div class="dish"><a href={canteenHref}>{item.name}<span class={`diet diet-${item.dietary}`} data-i18n={`diet_${item.dietary}`}>{item.dietary}</span></a></div><MealStar item={item} /></div><MealPrice item={item} compact /></div>)}
       </div>)}
       <p class="preference-empty" data-no-preference-meals hidden data-i18n={canteen.menu.length ? 'noPreferenceMeals' : 'menuEmpty'}>{canteen.menu.length ? 'No dishes match your food preferences.' : 'No menu available for this date.'}</p>
     </div>

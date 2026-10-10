@@ -9,6 +9,7 @@ import type { OnboardingStore } from './onboardingStore';
 import type { RecommendationMeal, RecommendationMensa } from './pickTodaysDish';
 import { detectInstallKind } from '../welcome/installGuide';
 import { guide } from '../welcome/tour';
+import { canShowCanteen } from '../preferences/canteenVisibility';
 
 export interface OnboardingData {
   campuses: { id: CampusId; name: string }[];
@@ -152,7 +153,8 @@ function mountRatings(root: HTMLElement, ctx: Context) {
     if (ctx.store.state.step !== steps.findIndex(step => step.id === 'ratings')) return;
     const p = ctx.store.state.profile;
     const allowed = new Set([p.campus, ...p.campusSecondary]);
-    const eligible = ctx.data.mensas.filter(m => m.hasMenu && !m.temporarilyClosed && allowed.has(m.campusId));
+    const eligible = ctx.data.mensas.filter(m => m.hasMenu && !m.temporarilyClosed && allowed.has(m.campusId) &&
+      canShowCanteen(m.id, p.priceTier));
     const oldPicks = ctx.store.state.picks;
     if (!oldPicks.length || oldPicks.some(id => !eligible.some(m => m.id === id))) {
       ctx.store.setPicks(pickMensas(eligible, ctx.data.ratingCounts, p, Math.random).map(m => m.id));

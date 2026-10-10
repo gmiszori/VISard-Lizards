@@ -1,6 +1,7 @@
 import { matchesQuery } from '../search/fold';
 import { ALL_CAMPUS_IDS, isPriceTier, isViewMode, readPreferences, PREFERENCES_KEY, type Preferences } from '../preferences/state';
 import { API_URL, apiPost } from '../data/api';
+import { canShowCanteen } from '../preferences/canteenVisibility';
 let aiMatchedIds: Set<string> | null = null;
 let aiQuery = '';
 let searchVersion = 0;
@@ -119,7 +120,7 @@ function applyPreferences() {
     const hasMenu = preferences.viewMode === 'list'
       ? card.querySelector('[data-meal-row]:not([hidden])') !== null
       : card.dataset.hasMenu === 'true' && servesChoice;
-    return { card, matches: matchesCampus && matchesOpen && matchesSearch, hasMenu };
+    return { card, matches: canShowCanteen(card.dataset.canteenId ?? '', preferences.priceTier) && matchesCampus && matchesOpen && matchesSearch, hasMenu };
   });
   const withMenuCount = candidates.filter(candidate => candidate.matches && candidate.hasMenu).length;
   const withoutMenuCount = candidates.filter(candidate => candidate.matches && !candidate.hasMenu).length;
@@ -161,6 +162,12 @@ function applyPreferences() {
     visibleCount.textContent = preferences.viewMode === 'list'
       ? `${visibleDishes} ${dishLabel} · ${visibleCanteens} ${canteenLabel}`
       : `${visibleCanteens} ${canteenLabel}`;
+  }
+  const openCount = document.querySelector<HTMLElement>('[data-live="open-count"]');
+  if (openCount) {
+    const count = candidates.filter(({ card }) => canShowCanteen(card.dataset.canteenId ?? '', preferences.priceTier) && card.dataset.isOpen === 'true').length;
+    openCount.textContent = String(count);
+    if (openCount.parentElement) openCount.parentElement.hidden = count === 0;
   }
 
   document.querySelectorAll<HTMLInputElement>('#preferences-form input[type="checkbox"]:not([data-profile-hard])').forEach((input) => {
@@ -213,7 +220,8 @@ document.querySelector<HTMLInputElement>('#search-input')?.addEventListener('inp
   if (query.length < 2 || !API_URL) return;
 
   searchTimer = setTimeout(async () => {
-    const candidates = [...document.querySelectorAll<HTMLElement>('[data-canteen-card]')].map(card => ({
+    const candidates = [...document.querySelectorAll<HTMLElement>('[data-canteen-card]')]
+      .filter(card => canShowCanteen(card.dataset.canteenId ?? '', preferences.priceTier)).map(card => ({
       id: card.dataset.canteenId ?? '',
       name: card.dataset.name ?? '',
       campus: card.dataset.campus ?? '',

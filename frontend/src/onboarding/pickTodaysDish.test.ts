@@ -47,3 +47,10 @@ test('when only starters are left, one of them is still offered instead of nothi
   assert.equal(pickTodaysDishOpenFirst(profile, mensas, [one('a', 'Pastinakensuppe', 1.8)]).pick?.meal.id, 'a');
   assert.equal(pickTodaysDishOpenFirst(profile, mensas, [one('a', 'Mystery plate', null)]).pick?.meal.id, 'a');
 });
+
+test('Dozentenfoyer is never recommended at student pricing but remains available for staff', () => {
+  const places: RecommendationMensa[] = [{ id: 'dozentenfoyer', name: 'Dozentenfoyer', campusId: 'zentrum', hasMenu: true, temporarilyClosed: false }];
+  const dishes = [meal('dozentenfoyer', 'foyer-lunch', 'Pasta', 9)];
+  assert.equal(pickTodaysDishOpenFirst(profile, places, dishes).pick, null);
+  assert.equal(pickTodaysDishOpenFirst({ ...profile, priceTier: 'worker' }, places, dishes).pick?.meal.id, 'foyer-lunch');
+});

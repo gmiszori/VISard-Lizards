@@ -73,9 +73,11 @@ const shownDays = days.includes(menuDate) ? days : [...days, menuDate].sort();
     root?.querySelectorAll<HTMLButtonElement>('[data-service-choice]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.serviceChoice === service)));
     document.dispatchEvent(new Event('campuseats:service-filter-changed'));
   }
-  let saved = '';
-  try { saved = localStorage.getItem(SERVICE_KEY) ?? ''; } catch { /* storage blocked */ }
-  applyService(saved === 'lunch' || saved === 'dinner' ? saved : '');
+  const serviceByTime = () => zurichParts(appNow()).time < '15:00' ? 'lunch' : 'dinner';
+  let saved: string | null = null;
+  try { saved = localStorage.getItem(SERVICE_KEY); } catch { /* storage blocked */ }
+  const initialService = saved === null ? serviceByTime() : saved === 'lunch' || saved === 'dinner' || saved === '' ? saved : serviceByTime();
+  applyService(initialService);
   root?.querySelectorAll<HTMLButtonElement>('[data-service-choice]').forEach(button => button.addEventListener('click', () => {
     const service = button.dataset.serviceChoice ?? '';
     try { localStorage.setItem(SERVICE_KEY, service); } catch { /* storage blocked */ }

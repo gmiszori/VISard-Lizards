@@ -382,7 +382,8 @@ subscription gets **at most one** notification listing the starred dishes that a
 that it was not told about yet ("Pad Thai is back on the menu", one line per dish and day with the mensas).
 A dish that is already on a menu when it is starred does not trigger a notification for those days; only a
 later menu does. Dish names match ignoring case and spacing. Subscriptions the push service reports as gone
-(404/410) are deleted.
+(404/410) are deleted. The sender prefers HTTP/2 so Apple Web Push endpoints (Safari on macOS/iOS) can
+accept deliveries.
 
 - `GET /api/push/public-key` → `{"publicKey": "BN..."}`: pass it as `applicationServerKey` to
   `PushManager.subscribe()`.

@@ -8,6 +8,8 @@
  * data-live-id="<canteen id>".
  */
 import { appNow, CLOCK_EVENT } from '../time/clock';
+import { readPreferences } from '../preferences/state';
+import { canShowCanteen } from '../preferences/canteenVisibility';
 
 type Weekday = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
 interface LiveInfo {
@@ -65,7 +67,7 @@ function refresh(): boolean {
       if (card) card.dataset.isOpen = String(state.isOpen);
       if (!seen.has(id)) {
         seen.add(id);
-        if (state.isOpen) openCount++;
+        if (state.isOpen && canShowCanteen(id, readPreferences().priceTier)) openCount++;
       }
     } else if (el.dataset.live === 'hours' && el.textContent !== state.hours) {
       el.textContent = state.hours;
