@@ -74,6 +74,16 @@ export function selectableMenuDays(today: string, menuDate: string, dataTo: stri
 }
 
 /**
+ * Where to send a visitor who asked for `date` (a link, a bookmark) when there is no page for it, e.g. a weekend:
+ * the next day that has menus, else the last one before. Null when the date is not a real date or no day exists.
+ */
+export function nearestMenuDay(date: string, days: readonly string[]): string | null {
+  if (!parse(date)) return null;
+  const sorted = [...new Set(days)].filter(day => parse(day) !== null).sort();
+  return sorted.find(day => day >= date) ?? sorted[sorted.length - 1] ?? null;
+}
+
+/**
  * Dates to try in order: the wanted day, then the backend's suggestion (no duplicates).
  * The first one with meals wins; if none has meals the last one is shown (an honest empty menu).
  */
