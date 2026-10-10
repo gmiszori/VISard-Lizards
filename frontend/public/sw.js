@@ -1,9 +1,9 @@
 // UniEats service worker: push notifications for starred dishes (src/push/push.ts)
 // plus an offline cache for visited and prewarmed pages.
 
-// v3: earlier caches held redirected copies (see plainCopy) that could not be shown offline; the activate step drops them.
-const CACHE_NAME = 'unieats-shell-v3';
-const PRECACHE_URLS = ['/', '/settings', '/onboarding', '/offline.html', '/manifest.webmanifest', '/favicon.svg'];
+// v4 refreshes the manifest and raster app icons required by Chromium for installation.
+const CACHE_NAME = 'unieats-shell-v4';
+const PRECACHE_URLS = ['/', '/settings', '/onboarding', '/offline.html', '/manifest.webmanifest', '/favicon.svg', '/icon-192.png', '/icon-512.png'];
 
 /**
  * The server answers /settings with a redirect to /settings/, and fetch() follows it, so the response is marked
