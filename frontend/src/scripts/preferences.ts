@@ -18,6 +18,24 @@ try {
   preferences = readPreferences();
 } catch { preferences = { vegan: true, vegetarian: true, meat: true, viewMode: 'standard', openOnly: false, locations: [...ALL_CAMPUS_IDS], priceTier: 'student', devMode: false }; }
 let showWithoutMenu = false;
+/** "Show all canteens" in the empty state also looks past "Only show open canteens" for this visit (Settings stay as they are). */
+let ignoreOpenOnly = false;
+
+/** Why the list is empty, so the message names the real cause instead of always blaming the search. */
+const EMPTY_MESSAGES = {
+  en: {
+    search: 'No canteens match your search. Try another dish or campus.',
+    closed: 'No canteen is open right now, and “Only show open canteens” is on in Settings.',
+    campus: 'No campus is selected in Settings.',
+    other: 'No canteens to show here. Try another campus.',
+  },
+  de: {
+    search: 'Keine Mensen gefunden. Suche ein anderes Gericht oder einen anderen Campus.',
+    closed: 'Gerade ist keine Mensa geöffnet, und in den Einstellungen ist «Nur geöffnete Mensen anzeigen» aktiv.',
+    campus: 'In den Einstellungen ist kein Campus ausgewählt.',
+    other: 'Hier gibt es keine Mensen zu zeigen. Probiere einen anderen Campus.',
+  },
+} as const;
 
 function applyPreferences() {
   document.documentElement.dataset.density = preferences.viewMode;
@@ -92,7 +110,7 @@ function applyPreferences() {
     const matchesCampus = campusChoice === 'all' ? true
       : campusChoice === 'preset' ? preferences.locations.includes(card.dataset.campusId ?? '')
         : card.dataset.campusId === campusChoice;
-    const matchesOpen = !preferences.openOnly || card.dataset.isOpen === 'true';
+    const matchesOpen = !preferences.openOnly || ignoreOpenOnly || card.dataset.isOpen === 'true';
     const fallbackSearch = matchesQuery(card.dataset.name ?? '', query) || card.querySelector('[data-meal-row]:not([hidden])') !== null;
     const matchesSearch = aiMatchedIds && aiQuery === query
       ? aiMatchedIds.has(card.dataset.canteenId ?? '') : fallbackSearch;
@@ -126,6 +144,13 @@ function applyPreferences() {
   if (favouritesSection) favouritesSection.hidden = visibleFavourites === 0;
   const emptyState = document.querySelector<HTMLElement>('#empty-state');
   if (emptyState) emptyState.style.display = visibleCanteens === 0 ? 'block' : 'none';
+  const emptyMessage = document.querySelector<HTMLElement>('#empty-message');
+  if (emptyMessage && visibleCanteens === 0) {
+    const reason = query.trim() ? 'search'
+      : preferences.openOnly && !ignoreOpenOnly && candidates.some(c => c.card.dataset.isOpen !== 'true') ? 'closed'
+        : campusChoice === 'preset' && preferences.locations.length === 0 ? 'campus' : 'other';
+    emptyMessage.textContent = EMPTY_MESSAGES[document.documentElement.lang === 'de' ? 'de' : 'en'][reason];
+  }
   const visibleCount = document.querySelector<HTMLElement>('#visible-count');
   if (visibleCount) {
     const lang = document.documentElement.lang;
@@ -216,8 +241,11 @@ document.querySelector<HTMLElement>('[data-reset-filters]')?.addEventListener('c
   const campus = document.querySelector<HTMLSelectElement>('#campus-select');
   if (search) search.value = '';
   if (campus) campus.value = 'all';
+  ignoreOpenOnly = true;
   applyPreferences();
-  search?.focus();
+  // The button disappears with the empty state: move focus to the result count (right above the list), not to the far-away search box.
+  const count = document.querySelector<HTMLElement>('#visible-count');
+  if (count) { count.tabIndex = -1; count.focus(); }
 });
 document.addEventListener('languagechange', applyPreferences);
 document.addEventListener('campuseats:service-filter-changed', applyPreferences);
