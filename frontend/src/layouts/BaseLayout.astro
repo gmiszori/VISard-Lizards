@@ -3,7 +3,6 @@ import '../styles/global.css';
 import '../styles/touch-targets.css';
 import '../styles/list-view.css';
 import SimulatedClockBanner from '../time/SimulatedClockBanner.astro';
-import HeaderAccount from '../onboarding/components/HeaderAccount.astro';
 import { LIVE_DATA } from '../data/canteens';
 interface Props { title: string }
 const { title } = Astro.props;
@@ -39,7 +38,6 @@ const { title } = Astro.props;
     <div class="app-shell">
       <header class="site-header">
         <a class="brand" href="/" aria-label="UniEats home"><span class="brand-mark">✳</span><span>UniEats</span></a>
-        <HeaderAccount />
         <div class="header-controls"><a class="settings-link" href="/settings" data-i18n="settings">Settings</a></div>
       </header>
       <main class="main" id="main" tabindex="-1"><slot /></main>

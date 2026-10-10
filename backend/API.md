@@ -347,8 +347,9 @@ Errors: `404` unknown meal.
 
 ### POST /api/meals/{id}/ratings
 
-Saves a user's rating of a meal: 1–5 stars plus optional tags that say why. Users are identified by
-the anonymous id the frontend keeps per device. Each user can rate each meal once. The result shows up
+Saves a user's rating of a meal: 1–5 stars plus optional tags that say why. When present, the trusted
+`X-User-Id` header set by the reverse proxy identifies the user; otherwise the anonymous id from the
+request is used for local development. Each user can rate each meal once. The result shows up
 in [`GET /api/meals/{id}`](#get-apimealsid).
 
 Body: `{"userId": "anon:3f1c2b7e-9a4d-4e8b-8c1f-2d5e6a7b8c9d", "stars": 5, "tags": ["tasty", "worth-it"], "source": "location"}`
@@ -368,7 +369,8 @@ source, or invalid body, `409` this user already rated this meal.
 
 ### DELETE /api/meals/{id}/ratings
 
-Takes back a user's rating of a meal ("Undo" in the rating card): `DELETE /api/meals/{id}/ratings?userId=anon:...`.
+Takes back a user's rating of a meal ("Undo" in the rating card). `X-User-Id` from the reverse proxy
+takes precedence over `userId`: `DELETE /api/meals/{id}/ratings?userId=anon:...`.
 Afterwards `avgRating` and `tagCounts` no longer count it and the user can rate the meal again.
 Response `204`. Errors: `400` missing or invalid `userId`, `404` unknown meal or no rating of this user.
 

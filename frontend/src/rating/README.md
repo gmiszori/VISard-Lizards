@@ -31,14 +31,14 @@ not evidence of a visit.
 ## Persistence and backend
 
 `saveMealRating()` is the only rating save boundary. With a backend (`PUBLIC_API_URL`, see
-`src/data/api.ts`) it sends `{userId, stars, source}` to `POST /api/meals/{id}/ratings`. `source` is `location`
+`src/data/api.ts`) it sends rating data to `POST /api/meals/{id}/ratings`. `X-User-Id` from the trusted reverse
+proxy identifies the user when present; the request userId is only a local-development fallback. `source` is `location`
 (located there), `crowd` (reported its crowd) or `guess` (picked from suggestions or "Other mensa");
 the backend counts `crowd` and `guess` ratings half in the average. The backend stores
 1–5 stars, enforces one rating per `(userId, mealId)` with a unique constraint (`409` →
 `DuplicateMealRatingError`) and returns the meal's mensa and date plus the server's `ratedAt`.
 Every saved rating is also kept in `campuseats-meal-ratings` on the device. The persistent anonymous
-userId is a UUID with an `anon:` prefix; the backend rejects other formats. The demo login is not
-authentication. A real account integration must provide its trusted identity at this boundary.
+userId is a UUID with an `anon:` prefix and is used only when the trusted proxy identity is unavailable.
 
 Ratings use 1–5 stars (decided 2026-10-10, replacing the earlier 1–3 scale), the same scale as the
 mensa ratings. In the development simulator (`?ratingNow=`), ratings stay on the device only.
