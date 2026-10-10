@@ -20,6 +20,12 @@ The backend URL is `PUBLIC_API_URL` (copy `.env.example` to `.env`); it defaults
 | Mensa ratings | `GET /api/mensas` | `src/data/app-data.ts` |
 | Meal rating (1–5 stars) | `GET /api/meals?date=`, `POST /api/meals/{id}/ratings` | `src/rating/` (browser) |
 | Predicted crowd | `GET /api/mensas/{id}/crowd` | `src/pages/canteen/[id].astro` (browser) |
+| AI search | `POST /api/search` | Search bar on the home page (browser) |
+
+Set `OPENAI_API_KEY` in the **backend** environment to enable AI search. `OPENAI_MODEL` defaults to
+`gpt-4.1-mini`. The key is never sent to the browser. Search requests are debounced and include the
+currently displayed canteen names, campuses, dishes and diet labels; the model returns matching canteen
+IDs. If the key or backend is unavailable, the search bar still filters by text locally.
 
 API reference: `../backend/API.md` and the backend's Swagger UI at `/swagger-ui.html`.
 

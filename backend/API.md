@@ -54,6 +54,7 @@ Services only see domain models through `MensaRepository` (implemented by `JpaMe
 | GET | [`/api/mensas/{id}/crowd`](#get-apimensasidcrowd) | How full a mensa is now and usually |
 | POST | [`/api/mensas/{id}/crowd-reports`](#post-apimensasidcrowd-reports) | Report how full a mensa is |
 | GET | [`/api/meals`](#get-apimeals) | Search meals across all mensas |
+| POST | [`/api/search`](#post-apisearch) | Match a search query to displayed canteens with OpenAI |
 | GET | [`/api/meals/{id}`](#get-apimealsid) | One meal with its ratings |
 | POST | [`/api/meals/{id}/ratings`](#post-apimealsidratings) | Rate a meal |
 
@@ -77,7 +78,18 @@ Services only see domain models through `MensaRepository` (implemented by `JpaMe
   one rating per anonymous user id and meal (`409` otherwise).
 - CORS is open for the Astro dev server (`http://localhost:4321`), see `app.cors.allowed-origins`.
 - **Frontend:** the Astro app in `frontend/` uses `/api/meta`, `/api/meals`, `/api/mensas`,
-  `/api/mensas/{id}/crowd` and `POST /api/meals/{id}/ratings` (see `frontend/README.md`).
+  `/api/mensas/{id}/crowd`, `POST /api/search` and `POST /api/meals/{id}/ratings` (see `frontend/README.md`).
+
+### POST /api/search
+
+The frontend sends `{ "query": "vegan curry", "candidates": [{ "id": "polyterrasse", "name": "Polyterrasse", "campus": "Zentrum", "menu": "Vegetable curry", "diets": "vegan" }] }`.
+The response is `{ "ids": ["polyterrasse"] }`. Only IDs supplied in `candidates` can be returned.
+Queries are limited to 200 characters and candidate lists to 100 items. Configure `OPENAI_API_KEY`
+on the backend to enable this endpoint; `OPENAI_MODEL` defaults to `gpt-4.1-mini`. A missing key returns
+503, and an upstream failure returns 502. The browser falls back to local text matching on either error.
+For Docker Compose, copy the repository-root `.env.example` to `.env`, set `OPENAI_API_KEY`, then run
+`docker compose up -d --build backend`. Compose passes the key to the container at runtime; `.env` is
+git-ignored and is not copied into the image.
 
 ## Mensas
 

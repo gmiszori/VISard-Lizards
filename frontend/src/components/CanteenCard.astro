@@ -7,7 +7,7 @@ import LocationLink from './LocationLink.astro';
 interface Props { canteen: AppCanteen }
 const { canteen } = Astro.props;
 ---
-<article data-canteen-card data-canteen-id={canteen.id} data-campus={canteen.campus} data-campus-id={canteen.campusId} data-is-open={String(canteen.isOpen)} data-name={canteen.name} data-menu={canteen.menu.map((item) => item.name).join(' ')} class="canteen-card">
+<article data-canteen-card data-canteen-id={canteen.id} data-campus={canteen.campus} data-campus-id={canteen.campusId} data-is-open={String(canteen.isOpen)} data-name={canteen.name} data-menu={canteen.menu.map((item) => item.name).join(' ')} data-diets={canteen.menu.map((item) => item.dietary).join(' ')} class="canteen-card">
   <button class="favorite-toggle" type="button" data-favorite-toggle aria-pressed="false" aria-label="Add to favourites"><span aria-hidden="true">☆</span></button>
   <div class="canteen-card-link">
     <div class="card-image">

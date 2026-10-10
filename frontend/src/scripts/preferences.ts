@@ -1,4 +1,17 @@
 import { isPriceTier, readPreferences, PREFERENCES_KEY, type Preferences } from '../preferences/state';
+import { API_URL, apiPost } from '../data/api';
+let aiMatchedIds: Set<string> | null = null;
+let aiQuery = '';
+let searchVersion = 0;
+let searchTimer: ReturnType<typeof setTimeout> | undefined;
+
+function searchStatus(message: string) {
+  const status = document.querySelector<HTMLElement>('#search-status');
+  if (status) {
+    status.textContent = message;
+    status.hidden = !message;
+  }
+}
 let preferences: Preferences;
 try {
   preferences = readPreferences();
@@ -52,7 +65,8 @@ function applyPreferences() {
       : card.dataset.campusId === campusChoice;
     const matchesOpen = !preferences.openOnly || card.dataset.isOpen === 'true';
     const searchText = `${card.dataset.name ?? ''} ${card.dataset.menu ?? ''}`.normalize('NFKC').toLocaleLowerCase();
-    const matchesSearch = searchText.includes(query);
+    const matchesSearch = aiMatchedIds && aiQuery === query
+      ? aiMatchedIds.has(card.dataset.canteenId ?? '') : searchText.includes(query);
     card.hidden = !(matchesCampus && matchesOpen && matchesSearch);
     if (!card.hidden) visibleCanteens++;
   });
@@ -95,7 +109,41 @@ document.querySelector<HTMLFormElement>('#preferences-form')?.addEventListener('
   catch { showSavedState(false); }
 });
 
-document.querySelector<HTMLInputElement>('#search-input')?.addEventListener('input', applyPreferences);
+document.querySelector<HTMLInputElement>('#search-input')?.addEventListener('input', (event) => {
+  const query = (event.target as HTMLInputElement).value.trim();
+  const version = ++searchVersion;
+  clearTimeout(searchTimer);
+  aiMatchedIds = null;
+  aiQuery = '';
+  searchStatus('');
+  applyPreferences();
+  if (query.length < 2 || !API_URL) return;
+
+  searchTimer = setTimeout(async () => {
+    const candidates = [...document.querySelectorAll<HTMLElement>('[data-canteen-card]')].map(card => ({
+      id: card.dataset.canteenId ?? '',
+      name: card.dataset.name ?? '',
+      campus: card.dataset.campus ?? '',
+      menu: card.dataset.menu ?? '',
+      diets: card.dataset.diets ?? '',
+    }));
+    if (!candidates.length) return;
+    searchStatus(document.documentElement.lang === 'de' ? 'Suche nach passenden Mensen …' : 'Finding matching canteens…');
+    try {
+      const result = await apiPost<{ ids: string[] }>('/api/search', { query, candidates }, API_URL, 15000);
+      if (version !== searchVersion) return;
+      aiMatchedIds = new Set(result.ids);
+      aiQuery = query.normalize('NFKC').toLocaleLowerCase();
+      applyPreferences();
+      searchStatus('');
+    } catch {
+      if (version !== searchVersion) return;
+      searchStatus(document.documentElement.lang === 'de'
+        ? 'KI-Suche nicht verfügbar. Textsuche wird angezeigt.'
+        : 'AI search unavailable. Showing text matches.');
+    }
+  }, 650);
+});
 document.querySelector<HTMLSelectElement>('#campus-select')?.addEventListener('change', applyPreferences);
 document.addEventListener('languagechange', applyPreferences);
 

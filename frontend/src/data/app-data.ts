@@ -88,11 +88,15 @@ async function fetchAppData(): Promise<AppData> {
       source: 'backend',
       menuDate,
       today: meta.today,
-      canteens: CANTEENS.map((canteen) => ({
-        ...canteen,
-        menu: prepareMenu(toMenu(menus.get(canteen.id) ?? []), MENSAS.find(m => m.id === canteen.id), menuDate),
-        rating: ratings.get(canteen.id) ?? null,
-      })),
+      canteens: CANTEENS.map((canteen) => {
+        const backendMeals = toMenu(menus.get(canteen.id) ?? []);
+        const menuToUse = backendMeals.length > 0 ? backendMeals : canteen.menu;
+        return {
+          ...canteen,
+          menu: prepareMenu(menuToUse, MENSAS.find(m => m.id === canteen.id), menuDate),
+          rating: ratings.get(canteen.id) ?? null,
+        };
+      }),
     };
   } catch (error) {
     // Invalid JSON (SyntaxError) and wrongly shaped data (DataError) mean the backend answered but cannot be used; anything else is unreachable.
