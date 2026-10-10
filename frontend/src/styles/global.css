@@ -70,3 +70,10 @@ html{overflow-x:hidden;overflow-x:clip}
 .setting-option>.preference-icon,.setting-option>.compact-icon{display:grid;place-items:center;flex-direction:initial;gap:0}
 /* A day picked in the day picker that is not today: live status, current crowd and today's hours do not describe that day. */
 :root[data-other-day] [data-live="status"],:root[data-other-day] .canteen-card .crowd-indicator,:root[data-other-day] .detail-info{display:none!important}
+
+/* Keep fieldset legends inside the card, aligned with section headings and controls. */
+.settings-group{margin:0}
+.settings-group>legend,.settings-group>h2{display:block;margin:0 0 6px;padding:0;font:800 18px/1.4 Manrope,sans-serif;letter-spacing:-.3px}
+.settings-group>legend{float:left;width:100%}
+.settings-group>legend+*{clear:both}
+@media(max-width:700px){.settings-group>legend,.settings-group>h2{font-size:16px}}
