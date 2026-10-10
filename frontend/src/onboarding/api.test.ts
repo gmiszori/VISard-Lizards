@@ -32,6 +32,13 @@ test('F29: a successful save writes profile, merged preferences and language', (
   assert.equal(s.data.get('campuseats-language'), 'de');
 });
 
+test('system theme is saved as a preference, not a resolved color', () => {
+  const s = store();
+  writeProfile({ ...profile, theme: 'system' }, s, []);
+  assert.equal(s.data.get('campuseats-theme'), 'system');
+  assert.equal(JSON.parse(s.data.get('campuseats-profile')!).theme, 'system');
+});
+
 test('F29: a failure on the second write puts the first one back', () => {
   const s = store(OLD, ['campuseats-preferences']);
   assert.throws(() => writeProfile(profile, s, []), /full/);

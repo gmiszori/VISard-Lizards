@@ -19,7 +19,8 @@ const { title } = Astro.props;
       // while the rest of the page loads. The full handling stays in the script at the end of the body.
       try {
         if (location.pathname === '/' && localStorage.getItem('campuseats-profile') === null) location.replace('/onboarding');
-        if (localStorage.getItem('campuseats-theme') === 'dark') document.documentElement.dataset.theme = 'dark';
+        const theme = localStorage.getItem('campuseats-theme');
+        if (theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.dataset.theme = 'dark';
         if (localStorage.getItem('campuseats-language') === 'de') document.documentElement.lang = 'de';
         const savedPreferences = JSON.parse(localStorage.getItem('campuseats-preferences') || '{}');
         document.documentElement.dataset.density = ['standard', 'compact', 'list'].includes(savedPreferences?.viewMode)
@@ -76,8 +77,8 @@ const { title } = Astro.props;
       Object.assign(translations.de, { canteensTitle: 'Mensen' });
       Object.assign(translations.en, { sampleMenusInvalid: 'Showing sample menus: the UniEats backend sent data this page could not read.' });
       Object.assign(translations.de, { sampleMenusInvalid: 'Beispielmenüs: Das UniEats-Backend hat Daten gesendet, die diese Seite nicht lesen konnte.' });
-      Object.assign(translations.en, { appearance: 'Appearance', themeLabel: 'Theme', languageLabel: 'Language', english: 'English', german: 'German', lightTheme: 'Light', darkTheme: 'Dark' });
-      Object.assign(translations.de, { appearance: 'Darstellung', themeLabel: 'Design', languageLabel: 'Sprache', english: 'Englisch', german: 'Deutsch', lightTheme: 'Hell', darkTheme: 'Dunkel' });
+      Object.assign(translations.en, { appearance: 'Appearance', themeLabel: 'Theme', languageLabel: 'Language', english: 'English', german: 'German', systemTheme: 'System', lightTheme: 'Light', darkTheme: 'Dark' });
+      Object.assign(translations.de, { appearance: 'Darstellung', themeLabel: 'Design', languageLabel: 'Sprache', english: 'Englisch', german: 'Deutsch', systemTheme: 'System', lightTheme: 'Hell', darkTheme: 'Dunkel' });
       Object.assign(translations.en, { menuFor: 'Menu for', menusFor: 'Menus for' });
       Object.assign(translations.de, { menuFor: 'Menü für', menusFor: 'Menüs für' });
       Object.assign(translations.en, { devMode: 'Dev mode', devModeDescription: 'Show diagnostics for live data, location, storage and backend connectivity.', devTools: 'Developer tools' });
@@ -109,12 +110,23 @@ const { title } = Astro.props;
         document.dispatchEvent(new CustomEvent('languagechange', { detail: { lang, translations: translations[lang] } }));
       };
       const themeSelect = document.querySelector('#theme-select');
-      const setTheme = (requested) => { const theme = requested === 'dark' ? 'dark' : 'light'; document.documentElement.dataset.theme = theme; campusStorage.set('campuseats-theme', theme); if (themeSelect) themeSelect.value = theme; };
+      const colorScheme = window.matchMedia('(prefers-color-scheme: dark)');
+      let themePreference = 'light';
+      const setTheme = (requested) => {
+        themePreference = requested === 'dark' || requested === 'system' ? requested : 'light';
+        document.documentElement.dataset.theme = themePreference === 'dark' || (themePreference === 'system' && colorScheme.matches) ? 'dark' : 'light';
+        campusStorage.set('campuseats-theme', themePreference);
+        if (themeSelect) themeSelect.value = themePreference;
+      };
       const languageSelect = document.querySelector('#language-select');
       const language = knownLanguage(campusStorage.get('campuseats-language'));
       if (languageSelect) languageSelect.value = language;
       applyLanguage(language);
       setTheme(campusStorage.get('campuseats-theme'));
+      colorScheme.addEventListener('change', () => {
+        if (themePreference === 'system') document.documentElement.dataset.theme = colorScheme.matches ? 'dark' : 'light';
+      });
+      document.addEventListener('themepreferencechange', event => setTheme(event.detail));
       if (languageSelect) languageSelect.addEventListener('change', () => applyLanguage(languageSelect.value));
       if (themeSelect) themeSelect.addEventListener('change', () => setTheme(themeSelect.value));
     </script>
