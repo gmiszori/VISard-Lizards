@@ -77,11 +77,17 @@ export function menuDateCandidates(today: string, backendMenuDate: string): stri
 export function pickSampleMenuDate(dates: readonly string[], today: string): string {
   const sorted = [...new Set(dates)].filter((date) => parse(date) !== null).sort();
   if (!sorted.length) return today;
-  const earlier = sorted.filter((date) => date <= today);
   if (isWeekend(today)) {
-    const monday = [...earlier].reverse().find((date) => weekdayIndex(date) === 1);
-    if (monday) return monday;
+    // Prefer the upcoming Monday if data exists for it
+    const nextMonday = wantedMenuDate(today);
+    if (sorted.includes(nextMonday)) return nextMonday;
+    // Fall back to the latest past Monday with data
+    const earlier = sorted.filter((date) => date <= today);
+    const pastMonday = [...earlier].reverse().find((date) => weekdayIndex(date) === 1);
+    if (pastMonday) return pastMonday;
+    return earlier[earlier.length - 1] ?? sorted[0] ?? today;
   }
+  const earlier = sorted.filter((date) => date <= today);
   if (sorted.includes(today)) return today;
-  return earlier[earlier.length - 1] ?? sorted[0] ?? today; // before all data: its first day, like the backend
+  return earlier[earlier.length - 1] ?? sorted[0] ?? today;
 }
