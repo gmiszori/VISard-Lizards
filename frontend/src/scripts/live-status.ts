@@ -32,7 +32,7 @@ function stateOf(info: LiveInfo, now: { weekday: Weekday; minutes: number }) {
   const crowd = info.crowd[now.weekday];
   const slot = crowd ? Math.floor((now.minutes - crowd.start) / 15) : -1;
   const pct = crowd && slot >= 0 ? (crowd.pct[slot] ?? 0) : 0;
-  const occupancy = pct < 40 ? 'low' : pct < 70 ? 'medium' : 'high';
+  const occupancy = !isOpen ? 'closed' : pct < 40 ? 'low' : pct < 70 ? 'medium' : 'high';
   return { isOpen, hours, occupancy };
 }
 

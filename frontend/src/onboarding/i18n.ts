@@ -1,0 +1,68 @@
+const en = {
+  rerunOnboarding: 'Rerun the onboarding',
+  intro: 'A little about you. A better lunch.', saved: 'Your answers stay on this device. Every step is optional.',
+  campusTitle: 'Where do you eat?', campusHint: 'Start with your usual campus. We’ll find your next favourite nearby.',
+  home: 'My main campus', secondary: 'I also eat at', mensas: 'mensas',
+  dietTitle: 'What’s on your plate?', dietHint: 'Choose how you usually eat, then add any firm limits.',
+  diet: 'My usual diet', omnivore: 'A bit of everything', flexitarian: 'Mostly plants, sometimes meat',
+  pescetarian: 'Plants & fish', vegetarian: 'Vegetarian', vegan: 'Vegan', carnivore: 'Carnivore', never: 'Never show me',
+  hardHint: 'Exclude dishes with these ingredients. Halal and kosher checks are not available yet.',
+  no_pork: 'Pork', halal: 'Not halal', kosher: 'Not kosher', lactose_free: 'Milk', gluten_free: 'Gluten', nut_free: 'Nuts & peanuts',
+  cannotCheck: 'We can’t check this yet',
+  priceTitle: 'A lunch that fits your day.', priceHint: 'Set your budget, then tell us what matters most.',
+  tier: 'My price category', student: 'Student', worker: 'Staff', external: 'External',
+  budget: 'Budget per main dish', noLimit: 'No limit', budgetHint: 'Based on typical menu prices. The far right means no limit.',
+  priceMode: 'If a dish costs more', soft: 'Show it, but push it down', hard: 'Hide it from my pick',
+  priorities: 'What matters most?', rankHint: 'Slide a row up or down, or use the arrows.',
+  reorder: 'Drag to reorder', rankOrder: 'Priority order',
+  taste: 'Taste', price: 'Price', speed: 'Speed', health: 'Health', up: 'Move up', down: 'Move down',
+  signalHint: 'Speed uses lunch service as a rough guide. Health uses available nutrition; queue times are not measured.',
+  ratingsTitle: 'Know any of these spots?', ratingsHint: 'Tap a star to rate each mensa out of 5.',
+  ratings: 'Your mensa ratings', outOfFiveStars: 'out of 5 stars', notRated: 'Not rated', notBeen: 'I haven’t been to any of these',
+  ratingsEmpty: 'No eligible mensas here yet. You can continue.',
+  back: 'Back', skip: 'Skip', next: 'Continue', finish: 'Find my lunch', step: 'Step', of: 'of',
+  payoffTitle: 'Today’s pick for you', payoffHint: 'A little less deciding. A little more lunch.', menuDate: 'Menu date',
+  viewMensa: 'See this mensa', allMenus: 'Explore all menus', edit: 'Adjust my answers',
+  nothing: 'No dish fits all your choices on this menu. Try another campus, a higher budget, or fewer exclusions.',
+  unavailablePrice: 'Price not published', payoffNotice: 'Based on the published menu snapshot. Halal and kosher cannot be checked.',
+  saveError: 'We couldn’t save your choices. Check that browser storage is available, then try again.',
+  jsRequired: 'Please enable JavaScript to personalise your menu.',
+};
+export type Key = keyof typeof en;
+const de: Record<Key, string> = {
+  rerunOnboarding: 'Onboarding erneut starten',
+  intro: 'Ein wenig über dich. Ein besseres Mittagessen.', saved: 'Deine Antworten bleiben auf diesem Gerät. Jeder Schritt ist optional.',
+  campusTitle: 'Wo isst du?', campusHint: 'Wähle deinen üblichen Campus. Wir finden deinen nächsten Favoriten in der Nähe.',
+  home: 'Mein Hauptcampus', secondary: 'Hier esse ich auch', mensas: 'Mensen',
+  dietTitle: 'Was kommt auf deinen Teller?', dietHint: 'Wähle deine übliche Ernährung und ergänze feste Einschränkungen.',
+  diet: 'Meine Ernährung', omnivore: 'Von allem etwas', flexitarian: 'Meist Pflanzen, manchmal Fleisch',
+  pescetarian: 'Pflanzen & Fisch', vegetarian: 'Vegetarisch', vegan: 'Vegan', carnivore: 'Fleischesser', never: 'Niemals anzeigen',
+  hardHint: 'Gerichte mit diesen Zutaten ausschliessen. Halal und koscher sind noch nicht prüfbar.',
+  no_pork: 'Schweinefleisch', halal: 'Nicht halal', kosher: 'Nicht koscher', lactose_free: 'Milch', gluten_free: 'Gluten', nut_free: 'Nüsse & Erdnüsse',
+  cannotCheck: 'Das können wir noch nicht prüfen',
+  priceTitle: 'Ein Mittagessen, das zu dir passt.', priceHint: 'Setze dein Budget und sag uns, was dir am wichtigsten ist.',
+  tier: 'Meine Preiskategorie', student: 'Studierende', worker: 'Mitarbeitende', external: 'Externe',
+  budget: 'Budget pro Hauptgericht', noLimit: 'Kein Limit', budgetHint: 'Basierend auf üblichen Menüpreisen. Ganz rechts bedeutet kein Limit.',
+  priceMode: 'Wenn ein Gericht mehr kostet', soft: 'Anzeigen, aber weiter unten', hard: 'Von meinem Vorschlag ausschliessen',
+  priorities: 'Was ist dir am wichtigsten?', rankHint: 'Ziehe eine Zeile nach oben oder unten, oder nutze die Pfeile.',
+  reorder: 'Zum Umsortieren ziehen', rankOrder: 'Reihenfolge der Prioritäten',
+  taste: 'Geschmack', price: 'Preis', speed: 'Tempo', health: 'Gesundheit', up: 'Nach oben', down: 'Nach unten',
+  signalHint: 'Tempo orientiert sich grob am Mittagsservice, Gesundheit an vorhandenen Nährwerten. Wartezeiten werden nicht gemessen.',
+  ratingsTitle: 'Kennst du diese Mensen?', ratingsHint: 'Tippe auf einen Stern und bewerte jede Mensa mit bis zu 5 Sternen.',
+  ratings: 'Deine Mensabewertungen', outOfFiveStars: 'von 5 Sternen', notRated: 'Noch nicht bewertet', notBeen: 'Ich war noch in keiner dieser Mensen',
+  ratingsEmpty: 'Hier gibt es noch keine verfügbaren Mensen. Du kannst fortfahren.',
+  back: 'Zurück', skip: 'Überspringen', next: 'Weiter', finish: 'Mein Mittagessen finden', step: 'Schritt', of: 'von',
+  payoffTitle: 'Dein heutiger Vorschlag', payoffHint: 'Weniger entscheiden. Mehr geniessen.', menuDate: 'Menüdatum',
+  viewMensa: 'Diese Mensa ansehen', allMenus: 'Alle Menüs entdecken', edit: 'Antworten anpassen',
+  nothing: 'An diesem Menütag passt kein Gericht zu all deinen Wünschen. Probiere einen anderen Campus, ein höheres Budget oder weniger Ausschlüsse.',
+  unavailablePrice: 'Preis nicht veröffentlicht', payoffNotice: 'Basierend auf dem veröffentlichten Menüstand. Halal und koscher sind nicht prüfbar.',
+  saveError: 'Deine Auswahl konnte nicht gespeichert werden. Prüfe, ob der Browserspeicher verfügbar ist, und versuche es erneut.',
+  jsRequired: 'Bitte aktiviere JavaScript, um dein Menü zu personalisieren.',
+};
+export function t(key: Key): string {
+  return (typeof document !== 'undefined' && document.documentElement.lang === 'de' ? de : en)[key];
+}
+export function translate(root: ParentNode): void {
+  root.querySelectorAll<HTMLElement>('[data-ob-i18n]').forEach(el => { el.textContent = t(el.dataset.obI18n as Key); });
+  root.querySelectorAll<HTMLElement>('[data-ob-aria]').forEach(el => { el.setAttribute('aria-label', t(el.dataset.obAria as Key)); });
+}

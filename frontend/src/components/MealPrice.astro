@@ -1,0 +1,15 @@
+---
+import { formatPrice, type MenuItem } from '../data/canteens';
+interface Props { item: Pick<MenuItem, 'priceStudent' | 'priceWorker' | 'priceExternal'>; compact?: boolean }
+const { item, compact = false } = Astro.props;
+---
+<div class:list={['meal-price', { 'meal-price-compact': compact }]} data-meal-price
+  data-price-student={formatPrice(item.priceStudent)} data-price-worker={formatPrice(item.priceWorker)} data-price-external={formatPrice(item.priceExternal)}>
+  <strong data-price-amount>CHF {formatPrice(item.priceStudent)}</strong>
+  <small data-price-label data-i18n="student">Student</small>
+</div>
+<style>
+  .meal-price{display:flex;align-items:baseline;gap:9px;padding-top:13px;margin-top:3px;border-top:1px solid var(--line)}
+  .meal-price strong{font-size:15px;color:var(--green);white-space:nowrap}.meal-price small{font-size:11px;color:var(--muted)}
+  .meal-price-compact{padding-top:0;margin-top:7px;border:0}.meal-price-compact strong{font-size:12px}.meal-price-compact small{font-size:10px}
+</style>

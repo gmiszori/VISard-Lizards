@@ -2,12 +2,14 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import CanteenCard from '../components/CanteenCard.astro';
 import FilterBar from '../components/FilterBar.astro';
-import { CANTEENS } from '../data/canteens';
+import StarredMealsToday from '../components/StarredMealsToday.astro';
+import { CANTEENS, MENU_DATE } from '../data/canteens';
 const openCount = CANTEENS.filter((canteen) => canteen.isOpen).length;
 ---
 <BaseLayout title="Campus canteens">
   <div class="section-head" style="margin-top:0"><div><h2 data-i18n="campus">Campus canteens</h2><p data-i18n="campusSub">Fresh picks from around Zürich</p></div><span class="count"><span data-live="open-count">{openCount}</span> <span data-i18n="openCount">open right now</span></span></div>
   <FilterBar />
+  <StarredMealsToday date={MENU_DATE} />
   <section id="favourites-section" hidden>
     <div class="section-head favourites-heading"><div><h2 data-i18n="favourites">Your favourites</h2></div></div>
     <div id="favourites-grid" class="canteen-grid"></div>
@@ -34,10 +36,12 @@ const openCount = CANTEENS.filter((canteen) => canteen.isOpen).length;
           button.classList.toggle('is-favourite', isFavourite);
           button.querySelector('span')!.textContent = isFavourite ? '★' : '☆';
         }
-        (isFavourite ? favouritesGrid : allGrid)?.append(card);
+        const hasMeals = card.querySelector('[data-meal-row]:not([hidden])') !== null;
+        (isFavourite && hasMeals ? favouritesGrid : allGrid)?.append(card);
       });
       const visibleFavourites = favouritesGrid?.querySelectorAll<HTMLElement>('[data-canteen-card]:not([hidden])').length ?? 0;
       if (favouritesSection) favouritesSection.hidden = visibleFavourites === 0;
+      document.dispatchEvent(new Event('campuseats:canteen-favourites-changed'));
     }
     document.addEventListener('click', (event) => {
       const button = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-favorite-toggle]');
@@ -50,6 +54,7 @@ const openCount = CANTEENS.filter((canteen) => canteen.isOpen).length;
       renderFavourites();
     });
     document.addEventListener('languagechange', renderFavourites);
+    document.addEventListener('campuseats:preferences-applied', renderFavourites);
     renderFavourites();
   </script>
 </BaseLayout>
