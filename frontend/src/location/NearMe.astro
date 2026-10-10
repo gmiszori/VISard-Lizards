@@ -1,5 +1,5 @@
 ---
-import { CAMPUSES, MENSAS } from '../data/canteens';
+import { MENSAS } from '../data/canteens';
 import type { MensaPlace } from './locate';
 import type { MensaHours } from './visits';
 
@@ -7,7 +7,6 @@ import type { MensaHours } from './visits';
 const places: MensaPlace[] = MENSAS.flatMap((m) => m.coordinates
   ? [{ id: m.id, name: m.name, campus: m.campusId, lat: m.coordinates.lat, lng: m.coordinates.lng }] : []);
 const hours: MensaHours[] = MENSAS.map(({ id, temporarilyClosed, openingHours, closures }) => ({ id, temporarilyClosed, openingHours, closures }));
-const campusNames = Object.fromEntries(CAMPUSES.map((c) => [c.id, c.name]));
 ---
 <div class="near-me" data-near-me>
   <button class="filter-btn near-me-toggle" type="button" data-near-me-toggle aria-pressed="false">
@@ -15,7 +14,7 @@ const campusNames = Object.fromEntries(CAMPUSES.map((c) => [c.id, c.name]));
   </button>
   <p class="near-me-status" data-near-me-status role="status" aria-live="polite" hidden></p>
 </div>
-<script type="application/json" data-near-me-data is:inline set:html={JSON.stringify({ places, hours, campusNames }).replace(/</g, '\\u003c')} />
+<script type="application/json" data-near-me-data is:inline set:html={JSON.stringify({ places, hours }).replace(/</g, '\\u003c')} />
 <script>
   import { mountNearMe } from './near-me.ts';
   mountNearMe();

@@ -11,15 +11,12 @@ import { appNow } from '../time/clock.ts';
 
 export const NEAR_ME_KEY = 'campuseats-near-me';
 
-interface NearMeData { places: MensaPlace[]; hours: MensaHours[]; campusNames: Record<string, string> }
+interface NearMeData { places: MensaPlace[]; hours: MensaHours[] }
 
 const TEXT = {
   en: {
     label: 'Sort by distance',
     locating: 'Finding your location…',
-    at: (mensa: string, campus: string) => `You are at ${mensa} (${campus}). Canteens sorted by distance.`,
-    campus: (campus: string, mensa: string, distance: string) => `You are on campus ${campus}. Nearest: ${mensa}, ${distance}.`,
-    away: (mensa: string, distance: string) => `Nearest canteen: ${mensa}, ${distance}.`,
     errors: {
       denied: 'Location access is blocked. Allow it in your browser’s site settings to sort by distance.',
       unsupported: 'This browser cannot share your location.',
@@ -30,9 +27,6 @@ const TEXT = {
   de: {
     label: 'Nach Entfernung sortieren',
     locating: 'Standort wird ermittelt…',
-    at: (mensa: string, campus: string) => `Du bist in ${mensa} (${campus}). Mensen nach Entfernung sortiert.`,
-    campus: (campus: string, mensa: string, distance: string) => `Du bist auf dem Campus ${campus}. Am nächsten: ${mensa}, ${distance}.`,
-    away: (mensa: string, distance: string) => `Nächste Mensa: ${mensa}, ${distance}.`,
     errors: {
       denied: 'Der Standortzugriff ist blockiert. Erlaube ihn in den Website-Einstellungen des Browsers.',
       unsupported: 'Dieser Browser kann deinen Standort nicht teilen.',
@@ -98,14 +92,6 @@ export function mountNearMe(): void {
     button.setAttribute('aria-pressed', String(Boolean(location)));
     button.querySelector('[data-near-me-label]')!.textContent = text().label;
   }
-  function describe(found: UserLocation): () => string {
-    const campusName = (id: string) => data.campusNames[id] ?? id;
-    const nearest = found.nearby[0];
-    const here = found.nearby.find(m => m.id === found.atMensaIds[0]);
-    if (here) return () => text().at(found.atMensaIds.map(id => found.nearby.find(m => m.id === id)!.name).join(' / '), campusName(here.campus));
-    if (found.campus && nearest) return () => text().campus(campusName(found.campus!), nearest.name, formatDistance(nearest.distanceM, lang()));
-    return () => (nearest ? text().away(nearest.name, formatDistance(nearest.distanceM, lang())) : '');
-  }
   function captureVisit(found: UserLocation) {
     const now = appNow();
     // The crowd indicator on the page says how long the queue probably is.
@@ -123,7 +109,7 @@ export function mountNearMe(): void {
       location = found;
       writePreference(true);
       captureVisit(found);
-      show(describe(found));
+      show(null);
     } catch (error) {
       if (id !== requestId) return;
       location = null;
