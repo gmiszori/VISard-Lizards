@@ -12,14 +12,14 @@ const copy: Record<'en' | 'de', Record<WelcomeStep, Copy> & { skip: string; clos
     install: { title: 'Keep UniEats close', description: 'Add UniEats to your home screen for a quick way back to the menus.', next: 'Continue' },
     personalise: { title: 'Make it yours', description: 'Choose your campuses, food preferences and budget. It only takes a moment.', next: 'Personalise' },
     settings: { title: 'You are in control', description: 'Settings are always up there. Change any choice whenever you like.', next: 'Got it' },
-    finish: { title: 'Guten Appetit!', description: 'Your next lunch is waiting. Enjoy exploring the menus.', next: 'Explore menus' },
+    finish: { title: 'En Guete!', description: 'Your next lunch is waiting. Enjoy exploring the menus.', next: 'Explore menus' },
     skip: 'Skip tour', close: 'Close', progress: 'Step', help: 'Browser instructions', installAction: 'Install app',
   },
   de: {
     install: { title: 'UniEats immer griffbereit', description: 'Füge UniEats zum Startbildschirm hinzu, um schnell zu den Menüs zurückzukehren.', next: 'Weiter' },
     personalise: { title: 'Mach es zu deinem', description: 'Wähle Standorte, Essenswünsche und Budget. Das dauert nur kurz.', next: 'Personalisieren' },
     settings: { title: 'Du entscheidest', description: 'Hier oben findest du jederzeit die Einstellungen und kannst alles wieder ändern.', next: 'Verstanden' },
-    finish: { title: 'Guten Appetit!', description: 'Dein nächstes Mittagessen wartet schon. Viel Spaß beim Entdecken.', next: 'Menüs entdecken' },
+    finish: { title: 'En Guete!', description: 'Dein nächstes Mittagessen wartet schon. Viel Spaß beim Entdecken.', next: 'Menüs entdecken' },
     skip: 'Tour überspringen', close: 'Schließen', progress: 'Schritt', help: 'Browser-Anleitung', installAction: 'App installieren',
   },
 };
