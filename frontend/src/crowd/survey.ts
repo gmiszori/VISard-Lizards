@@ -1,0 +1,147 @@
+import { API_URL, ApiError, apiGet, apiPost } from '../data/api';
+import { cooldownLeft, isOpenAt, occupancyOf, summarize, type CrowdLevel, type CrowdSummary, type LiveReport, type OpeningWindows } from './survey-logic';
+
+/**
+ * "How busy is it right now?" on the canteen page. Shown only while the mensa is open and a backend is
+ * configured. Reports go to POST /api/mensas/{id}/crowd-reports; the reports of the last 30 minutes
+ * (GET /api/mensas/{id}/crowd, `live`) are summarized in the card and replace the illustrative value in
+ * the "Current crowd" box. With enough reports the backend also feeds the predicted crowd chart.
+ */
+const copy = {
+  en: {
+    title: 'How busy is it right now?', subtitle: 'Tap what you see. Your report helps others pick a good time.',
+    level1: 'Empty', level2: 'Quiet', level3: 'Some queue', level4: 'Busy', level5: 'Packed',
+    now: 'Right now:', reports: (n: number) => `${n} report${n === 1 ? '' : 's'} in the last 30 min`,
+    none: 'No reports in the last 30 minutes yet.',
+    sending: 'Sending…', thanks: 'Thanks! Your report is in.',
+    cooldown: (m: number) => `Thanks for reporting! You can report again in ${m} min.`,
+    error: 'Could not send your report. Please try again.',
+  },
+  de: {
+    title: 'Wie voll ist es gerade?', subtitle: 'Tippe, was du siehst. Deine Meldung hilft anderen, eine gute Zeit zu finden.',
+    level1: 'Leer', level2: 'Ruhig', level3: 'Etwas Schlange', level4: 'Viel los', level5: 'Sehr voll',
+    now: 'Gerade:', reports: (n: number) => `${n} ${n === 1 ? 'Meldung' : 'Meldungen'} in den letzten 30 Min.`,
+    none: 'In den letzten 30 Minuten noch keine Meldung.',
+    sending: 'Wird gesendet…', thanks: 'Danke! Deine Meldung ist angekommen.',
+    cooldown: (m: number) => `Danke fürs Melden! Neue Meldung in ${m} Min. möglich.`,
+    error: 'Meldung konnte nicht gesendet werden. Bitte versuche es erneut.',
+  },
+};
+type Copy = typeof copy.en;
+const t = (): Copy => (document.documentElement.lang === 'de' ? copy.de : copy.en);
+const LAST_REPORT_KEY = 'campuseats-crowd-last-report';
+
+interface LiveInfo { temporarilyClosed: boolean; windows: OpeningWindows }
+interface CrowdResponse { live: LiveReport[] }
+
+function readLastReports(): Record<string, number> {
+  try {
+    const raw: unknown = JSON.parse(localStorage.getItem(LAST_REPORT_KEY) ?? '{}');
+    return raw && typeof raw === 'object' && !Array.isArray(raw) ? raw as Record<string, number> : {};
+  } catch { return {}; }
+}
+function rememberReport(mensaId: string, at: number) {
+  try { localStorage.setItem(LAST_REPORT_KEY, JSON.stringify({ ...readLastReports(), [mensaId]: at })); } catch { /* storage blocked */ }
+}
+
+export function mountCrowdSurvey(): void {
+  const root = document.querySelector<HTMLElement>('[data-crowd-survey]');
+  const mensaId = root?.dataset.mensaId;
+  if (!root || !mensaId || !API_URL) return;
+  const live = (JSON.parse(document.querySelector('#live-data')?.textContent || '{}') as Record<string, LiveInfo>)[mensaId];
+  if (!live) return;
+  const buttons = [...root.querySelectorAll<HTMLButtonElement>('[data-survey-level]')];
+  const summaryEl = root.querySelector<HTMLElement>('[data-survey-summary]')!;
+  const statusEl = root.querySelector<HTMLElement>('[data-survey-status]')!;
+  let summary: CrowdSummary | null = null;
+  let summaryLoaded = false;
+  let status: { kind: 'sending' | 'thanks' | 'error' } | null = null;
+  let busy = false;
+
+  function renderTexts() {
+    const c = t();
+    root!.querySelectorAll<HTMLElement>('[data-survey-text]').forEach(el => {
+      const value = c[el.dataset.surveyText as keyof Copy];
+      if (typeof value === 'string') el.textContent = value;
+    });
+    buttons.forEach(b => b.setAttribute('aria-label', `${b.dataset.surveyLevel} / 5: ${c[`level${b.dataset.surveyLevel}` as keyof Copy]}`));
+    summaryEl.replaceChildren();
+    if (summary) {
+      const label = document.createElement('strong');
+      label.textContent = c[`level${summary.level}` as keyof Copy] as string;
+      summaryEl.append(`${c.now} `, label, ` · ${c.reports(summary.count)}`);
+    } else if (summaryLoaded) {
+      summaryEl.textContent = c.none;
+    }
+    const wait = cooldownLeft(readLastReports()[mensaId!] ?? null, Date.now());
+    buttons.forEach(b => { b.disabled = busy || wait > 0; });
+    if (status?.kind === 'sending') statusEl.textContent = c.sending;
+    else if (status?.kind === 'error') statusEl.textContent = c.error;
+    else if (wait > 0) statusEl.textContent = status?.kind === 'thanks' && wait > 4 * 60_000 ? c.thanks : c.cooldown(Math.ceil(wait / 60_000));
+    else statusEl.textContent = '';
+    updateCurrentCrowdBox();
+  }
+
+  /** Real reports replace the illustrative value of the "Current crowd" box (src/scripts/live-status.ts skips it then). */
+  function updateCurrentCrowdBox() {
+    const box = document.querySelector<HTMLElement>(`[data-live="crowd"][data-live-id="${CSS.escape(mensaId!)}"]`);
+    if (!box || !summary || root!.hidden) return;
+    box.dataset.crowdReported = 'true';
+    box.dataset.occupancy = occupancyOf(summary.level);
+    // The survey translates this label itself; without data-i18n the layout's translation leaves it alone.
+    delete box.dataset.i18n;
+    box.textContent = t()[`level${summary.level}` as keyof Copy] as string;
+    box.title = t().reports(summary.count);
+  }
+
+  async function loadSummary() {
+    try {
+      const { live: reports } = await apiGet<CrowdResponse>(`/api/mensas/${encodeURIComponent(mensaId!)}/crowd`);
+      summary = summarize(reports);
+      summaryLoaded = true;
+    } catch { summaryLoaded = false; }
+    renderTexts();
+  }
+
+  async function report(level: CrowdLevel, button: HTMLButtonElement) {
+    if (busy) return;
+    busy = true;
+    status = { kind: 'sending' };
+    buttons.forEach(b => b.setAttribute('aria-pressed', String(b === button)));
+    renderTexts();
+    try {
+      await apiPost(`/api/mensas/${encodeURIComponent(mensaId!)}/crowd-reports`, { level });
+      rememberReport(mensaId!, Date.now());
+      status = { kind: 'thanks' };
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 429) {
+        // Reported recently from this network or device: treat it like a successful report.
+        rememberReport(mensaId!, Date.now());
+        status = { kind: 'thanks' };
+      } else {
+        status = { kind: 'error' };
+      }
+    } finally {
+      busy = false;
+    }
+    await loadSummary();
+  }
+
+  // Development only: ?crowdNow=2026-10-12T12:00:00%2B02:00 shows the survey as if it were that time (like ?ratingNow=).
+  const override = import.meta.env.DEV ? new URL(location.href).searchParams.get('crowdNow') : null;
+  const now = () => (override && Number.isFinite(Date.parse(override)) ? new Date(override) : new Date());
+
+  function refreshVisibility() {
+    const open = isOpenAt(live!.windows, live!.temporarilyClosed, now());
+    const wasHidden = root!.hidden;
+    root!.hidden = !open;
+    if (open && wasHidden) void loadSummary();
+    else renderTexts();
+  }
+
+  buttons.forEach(button => button.addEventListener('click', () => report(Number(button.dataset.surveyLevel) as CrowdLevel, button)));
+  document.addEventListener('languagechange', renderTexts);
+  refreshVisibility();
+  setInterval(refreshVisibility, 60_000);
+  setInterval(() => { if (!root.hidden) void loadSummary(); }, 2 * 60_000);
+}

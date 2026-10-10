@@ -1,0 +1,32 @@
+---
+import './crowd-survey.css';
+interface Props { mensaId: string }
+const { mensaId } = Astro.props;
+const levels = [
+  { level: 1, label: 'Empty' },
+  { level: 2, label: 'Quiet' },
+  { level: 3, label: 'Some queue' },
+  { level: 4, label: 'Busy' },
+  { level: 5, label: 'Packed' },
+];
+---
+<section class="crowd-survey" data-crowd-survey data-mensa-id={mensaId} hidden aria-labelledby="crowd-survey-title">
+  <div class="crowd-survey-head">
+    <h2 id="crowd-survey-title" data-survey-text="title">How busy is it right now?</h2>
+    <p data-survey-text="subtitle">Tap what you see. Your report helps others pick a good time.</p>
+  </div>
+  <div class="crowd-survey-levels" role="group" aria-labelledby="crowd-survey-title">
+    {levels.map(({ level, label }) => (
+      <button type="button" data-survey-level={level}>
+        <span class="crowd-survey-meter" aria-hidden="true">{[1, 2, 3, 4, 5].map(bar => <i class={bar <= level ? 'on' : undefined}></i>)}</span>
+        <span data-survey-text={`level${level}`}>{label}</span>
+      </button>
+    ))}
+  </div>
+  <p class="crowd-survey-summary" data-survey-summary aria-live="polite"></p>
+  <p class="crowd-survey-status" data-survey-status role="status" aria-live="polite"></p>
+</section>
+<script>
+  import { mountCrowdSurvey } from './survey';
+  mountCrowdSurvey();
+</script>

@@ -1,0 +1,19 @@
+.crowd-survey{margin:0 0 25px;padding:16px 18px;border:1px solid var(--line);border-radius:16px;background:var(--paper);box-shadow:var(--shadow);color:var(--ink)}
+.crowd-survey[hidden]{display:none}
+.crowd-survey-head h2{margin:0;font-size:18px;line-height:1.25}
+.crowd-survey-head p{margin:4px 0 0;color:var(--muted);font-size:13px}
+.crowd-survey-levels{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin:14px 0 10px}
+.crowd-survey-levels button{display:flex;flex-direction:column;align-items:center;gap:7px;min-height:72px;padding:10px 4px;border:1px solid var(--line);border-radius:12px;background:var(--paper);color:var(--ink);font:inherit;font-size:12px;font-weight:600;line-height:1.25;text-align:center;overflow-wrap:anywhere;cursor:pointer}
+.crowd-survey-levels button:hover:not(:disabled){border-color:var(--green)}
+.crowd-survey-levels button:focus-visible{outline:3px solid color-mix(in srgb,var(--green) 45%,transparent);outline-offset:2px}
+.crowd-survey-levels button[aria-pressed=true]{border-color:var(--green);background:color-mix(in srgb,var(--lime) 45%,var(--paper))}
+.crowd-survey-levels button:disabled{cursor:default;opacity:.55}
+.crowd-survey-meter{display:flex;align-items:flex-end;gap:2px;height:18px}
+.crowd-survey-meter i{display:block;width:5px;border-radius:2px;background:var(--line)}
+.crowd-survey-meter i:nth-child(1){height:6px}.crowd-survey-meter i:nth-child(2){height:9px}.crowd-survey-meter i:nth-child(3){height:12px}.crowd-survey-meter i:nth-child(4){height:15px}.crowd-survey-meter i:nth-child(5){height:18px}
+.crowd-survey-meter i.on{background:var(--green)}
+.crowd-survey-summary,.crowd-survey-status{margin:0;font-size:13px;color:var(--muted)}
+.crowd-survey-summary strong{color:var(--ink)}
+.crowd-survey-status:empty,.crowd-survey-summary:empty{display:none}
+.crowd-survey-status{margin-top:4px;color:var(--green);font-weight:600}
+@media(max-width:420px){.crowd-survey{padding:14px}.crowd-survey-levels{gap:4px}.crowd-survey-levels button{font-size:11px;padding:8px 2px}}

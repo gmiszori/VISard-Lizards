@@ -25,3 +25,17 @@ Times are Zurich local start times, aligned to 00/15/30/45. Values are predicted
 Pass this shape as the Astro component's `prediction` prop, or dispatch `new CustomEvent('campuseats:crowd-prediction', { detail: prediction })` from the future API adapter to update an existing chart. Mark actual backend predictions `source: 'backend'`; never relabel the sample series.
 
 The backend's `GET /api/mensas/{id}/crowd` returns `histogram.byWeekday` in exactly this shape (15-minute Zurich slots, `null` for slots without reports, opening hours defining the slots).
+
+## Crowd survey ("How busy is it right now?")
+
+`CrowdSurvey.astro` sits below the opening hours on the canteen page. While the mensa is open (Zurich
+time, opening windows from `#live-data`) and a backend is configured, visitors pick one of five levels
+(empty, quiet, some queue, busy, packed). Reports go to `POST /api/mensas/{id}/crowd-reports`; the card
+then summarizes the reports of the last 30 minutes (`GET /api/mensas/{id}/crowd`, `live`, rounded mean)
+and the "Current crowd" box shows that real level instead of the illustrative value
+(`live-status.ts` skips boxes marked `data-crowd-reported`). With at least 10 reports the backend's
+prediction replaces the preview chart.
+
+A device can report a mensa once every 5 minutes, like the backend's per-IP limit; a `429` from the
+backend is treated as "already reported". Logic lives in `survey-logic.ts` (tested in `survey.test.ts`).
+In development, `?crowdNow=2026-10-12T12:00:00%2B02:00` shows the survey as if it were that time.
