@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { anonymousUserId, DuplicateMealRatingError, saveMealRating, type MealRating } from './saveMealRating.ts';
+import { anonymousUserId, DuplicateMealRatingError, saveMealRating, undoMealRating, type MealRating } from './saveMealRating.ts';
 
 const rating: MealRating = { userId: 'anon:00000000-0000-4000-8000-000000000000', mealId: 'archimedes.2026-10-09.lunch.1', mensaId: 'archimedes', rating: 4, ratedAt: '2026-10-09T12:00:00Z', mealDate: '2026-10-09' };
 
@@ -74,4 +74,24 @@ test('F23: impossible calendar dates are rejected, real ones (including a leap d
   for (const mealDate of ['2028-02-29', '2026-10-09', '2026-12-31']) {
     await saveMealRating({ ...rating, mealDate, mealId: `m-${mealDate}` }, memoryStorage(), 'ratings', '');
   }
+});
+
+test('undo deletes the rating on the backend and on the device, so it can be rated again', async () => {
+  const storage = memoryStorage();
+  await saveMealRating(rating, storage, 'ratings', '');
+  let request: { url: string; method?: string } | undefined;
+  const original = globalThis.fetch;
+  globalThis.fetch = (async (url: string, init?: RequestInit) => { request = { url, method: init?.method }; return new Response(null, { status: 204 }); }) as typeof fetch;
+  try { await undoMealRating(rating, storage, 'ratings', 'http://backend'); } finally { globalThis.fetch = original; }
+  assert.equal(request?.method, 'DELETE');
+  assert.equal(request?.url, `http://backend/api/meals/${rating.mealId}/ratings?userId=${encodeURIComponent(rating.userId)}`);
+  assert.deepEqual(JSON.parse(storage.getItem('ratings')!), []);
+  await saveMealRating(rating, storage, 'ratings', '');
+});
+
+test('undo of a rating the backend no longer has still counts; other errors do not', async () => {
+  const storage = memoryStorage();
+  await withBackend(() => new Response(JSON.stringify({ detail: 'You have not rated this.' }), { status: 404 }),
+    () => undoMealRating(rating, storage, 'ratings', 'http://backend'));
+  await assert.rejects(withBackend(() => new Response('{}', { status: 500 }), () => undoMealRating(rating, storage, 'ratings', 'http://backend')));
 });

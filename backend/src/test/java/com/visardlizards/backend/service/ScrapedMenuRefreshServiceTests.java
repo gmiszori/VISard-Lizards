@@ -35,6 +35,18 @@ class ScrapedMenuRefreshServiceTests {
         try(var service=new TestClose(new ScrapedMenuRefreshService(ai,mapper,memoryStore(),true,dir.resolve("nokey.json").toString()))) {service.value.onStartup(); service.value.onSchedule();}
         verify(ai,never()).retrieve(anyString());
     }
+    @Test void changedVenueUrlInvalidatesAnOtherwiseFreshEmptyCache() throws Exception {
+        var mapper=JsonMapper.builder().build(); var ai=mock(ScraperAiClient.class); var store=memoryStore();
+        when(ai.configured()).thenReturn(true);
+        when(ai.retrieve(anyString())).thenReturn(mapper.readTree("{\"toolResults\":[]}"));
+        store.save(mapper.createObjectNode().put("id","mendokoro").put("url","https://ethz.ch/old-source")
+            .put("lastAttempt",java.time.Instant.now().toString()).set("result",mapper.createObjectNode()));
+        var today=java.time.LocalDate.now(java.time.ZoneId.of("Europe/Zurich"));
+        try(var service=new TestClose(new ScrapedMenuRefreshService(ai,mapper,store,true,dir.resolve("unused.json").toString()))) {
+            service.value.ensureMeals("mendokoro",today,today); service.value.ensureMeals("mendokoro",today,today);
+        }
+        verify(ai,times(1)).retrieve("https://ethz.ch/en/campus/erleben/gastronomie-und-einkaufen/gastronomie/menueplaene/offerWeek.html?date=2026-10-12&id=16");
+    }
     private record TestClose(ScrapedMenuRefreshService value) implements AutoCloseable { public void close() { value.close(); } }
     private static ScrapedMenuStore memoryStore() {
         var store=mock(ScrapedMenuStore.class);

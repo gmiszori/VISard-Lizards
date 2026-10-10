@@ -28,6 +28,15 @@ public class JpaRatingRepository implements RatingRepository {
 	}
 
 	@Override
+	public boolean deleteBySubjectIdAndUserId(String subjectId, String userId) {
+		return entities.findBySubjectIdAndUserId(subjectId, userId).map(entity -> {
+			entities.delete(entity);
+			entities.flush();
+			return true;
+		}).orElse(false);
+	}
+
+	@Override
 	public List<Rating> findBySubjectId(String subjectId) {
 		return entities.findBySubjectId(subjectId).stream()
 				.map(e -> new Rating(e.getSubjectId(), e.getStars(), List.copyOf(e.getTags()), e.getCreatedAt(),

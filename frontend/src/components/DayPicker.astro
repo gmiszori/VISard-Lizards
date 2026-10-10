@@ -32,6 +32,33 @@ const shownDays = days.includes(menuDate) ? days : [...days, menuDate].sort();
     <button type="button" data-service-choice="dinner" aria-pressed="false" data-i18n="dinner">Dinner</button>
   </div>
 </div>
+<script is:inline>
+  // Switching the day loads another page. Keep the picker where it was on screen instead of jumping to the
+  // top: runs while the page is still loading, right after the picker exists (the click saved its position).
+  (() => {
+    try {
+      const raw = sessionStorage.getItem('campuseats-day-scroll');
+      if (!raw) return;
+      sessionStorage.removeItem('campuseats-day-scroll');
+      const saved = JSON.parse(raw);
+      const path = location.pathname.replace(/\/+$/, '');
+      if (saved.path !== path || !(Date.now() - saved.at < 10000)) return;
+      const picker = document.currentScript.previousElementSibling;
+      const body = document.body;
+      const place = () => window.scrollTo(0, picker.getBoundingClientRect().top + window.scrollY - saved.top);
+      // The rest of the page is not loaded yet: make room so the scroll position can be reached now.
+      body.style.minHeight = `${picker.getBoundingClientRect().top + window.scrollY + window.innerHeight * 2}px`;
+      place();
+      let moved = false;
+      const stop = () => { moved = true; };
+      for (const type of ['wheel', 'touchstart', 'keydown']) addEventListener(type, stop, { once: true, passive: true });
+      const settle = () => { if (!moved) place(); };
+      addEventListener('DOMContentLoaded', () => { body.style.minHeight = ''; settle(); });
+      addEventListener('load', settle);
+      setTimeout(settle, 400);
+    } catch { /* storage blocked: the page simply starts at the top */ }
+  })();
+</script>
 <script>
   import { activeSimulatedClock, appNow, CLOCK_EVENT, zurichParts } from '../time/clock';
   import { wantedMenuDate } from '../data/menuDate';
@@ -77,6 +104,15 @@ const shownDays = days.includes(menuDate) ? days : [...days, menuDate].sort();
     if (wanted !== root.dataset.pickerDate && days.includes(wanted)) location.replace(`${root.dataset.hrefBase}${wanted}`);
   }
 
+  // Remember where the picker is on screen; the next day's page restores it (inline script above).
+  root?.querySelectorAll<HTMLAnchorElement>('[data-day]').forEach(link => link.addEventListener('click', () => {
+    try {
+      sessionStorage.setItem('campuseats-day-scroll', JSON.stringify({
+        path: new URL(link.href).pathname.replace(/\/+$/, ''), top: root.getBoundingClientRect().top, at: Date.now(),
+      }));
+    } catch { /* storage blocked */ }
+  }));
+
   renderDays();
   followSimulatedDay();
   document.addEventListener('languagechange', renderDays);
@@ -89,5 +125,7 @@ const shownDays = days.includes(menuDate) ? days : [...days, menuDate].sort();
   .day-picker a:hover,.day-picker button:hover{border-color:var(--green)}
   .day-picker a.is-selected,.day-picker button[aria-pressed="true"]{background:var(--green);border-color:var(--green);color:var(--paper)}
   .day-picker a:focus-visible,.day-picker button:focus-visible{outline:3px solid color-mix(in srgb,var(--green) 45%,transparent);outline-offset:2px}
+  /* Page changes (day, canteen) cross-fade instead of flashing white, where the browser supports it. */
+  @media (prefers-reduced-motion: no-preference) { @view-transition { navigation: auto; } }
   @media(max-width:520px){.day-picker{gap:8px}.day-picker-days{flex-wrap:nowrap;overflow-x:auto;max-width:100%;padding-bottom:2px}}
 </style>

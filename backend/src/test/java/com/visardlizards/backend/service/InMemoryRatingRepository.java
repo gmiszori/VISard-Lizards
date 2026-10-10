@@ -22,6 +22,11 @@ class InMemoryRatingRepository implements RatingRepository {
 	}
 
 	@Override
+	public boolean deleteBySubjectIdAndUserId(String subjectId, String userId) {
+		return ratings.removeIf(r -> r.subjectId().equals(subjectId) && userId.equals(r.userId()));
+	}
+
+	@Override
 	public List<Rating> findBySubjectId(String subjectId) {
 		return ratings.stream().filter(rating -> rating.subjectId().equals(subjectId)).toList();
 	}

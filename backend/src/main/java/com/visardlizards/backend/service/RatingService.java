@@ -12,6 +12,7 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
 import com.visardlizards.backend.exception.ConflictException;
+import com.visardlizards.backend.exception.NotFoundException;
 import com.visardlizards.backend.model.domain.Rating;
 import com.visardlizards.backend.repository.RatingRepository;
 
@@ -67,6 +68,17 @@ public class RatingService {
 		Rating rating = new Rating(subjectId, stars, List.copyOf(tags), clock.instant(), userId, source);
 		ratingRepository.save(rating);
 		return rating;
+	}
+
+	/**
+	 * Takes back a user's rating, e.g. "undo" right after rating a meal.
+	 *
+	 * @throws NotFoundException if this user has no rating of this subject
+	 */
+	public void removeUserRating(String subjectId, String userId) {
+		if (!ratingRepository.deleteBySubjectIdAndUserId(subjectId, userId)) {
+			throw new NotFoundException("You have not rated this.");
+		}
 	}
 
 	/**

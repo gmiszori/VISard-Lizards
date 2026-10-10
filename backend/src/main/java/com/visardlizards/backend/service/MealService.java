@@ -87,6 +87,11 @@ public class MealService {
 		return ratingService.addUserRating(getMeal(id).id(), userId, stars, Set.copyOf(tags), source);
 	}
 
+	/** Takes back a user's rating of a meal (404 if the meal or the rating does not exist). */
+	public void unrateMeal(String id, String userId) {
+		ratingService.removeUserRating(getMeal(id).id(), userId);
+	}
+
 	public @Nullable BigDecimal getAverageRating(String mealId) {
 		return ratingService.getAverage(mealId);
 	}

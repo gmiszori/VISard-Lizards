@@ -59,7 +59,7 @@ public class ScrapedMenuRefreshService {
         if(!enabled || !ai.configured() || running.get()) return;
         var day=java.time.LocalDate.now(java.time.ZoneId.of("Europe/Zurich"));
         boolean missing=false;
-        for(JsonNode venue:locations) if(!fresh(store.get(venue.path("id").asText()),day)) { missing=true; break; }
+        for(JsonNode venue:locations) if(!fresh(store.get(venue.path("id").asText()),day,venue)) { missing=true; break; }
         if(!missing) return;
         if(enabled && ai.configured() && running.compareAndSet(false,true)) worker.submit(() -> {
             try {
@@ -67,7 +67,7 @@ public class ScrapedMenuRefreshService {
                 var today=java.time.LocalDate.now(java.time.ZoneId.of("Europe/Zurich"));
                 for(JsonNode venue:locations) {
                     String id=venue.path("id").asText();
-                    if(!fresh(store.get(id),today)) ensureMeals(id,today,today.plusDays(14));
+                    if(!fresh(store.get(id),today,venue)) ensureMeals(id,today,today.plusDays(14));
                 }
                 lastCompleted=Instant.now().toString(); persist();
             } finally { running.set(false); }
@@ -109,14 +109,14 @@ public class ScrapedMenuRefreshService {
         for(JsonNode venue:locations) if(venue.path("id").asText().equals(id)) {
             synchronized(locks.computeIfAbsent(id,ignored -> new Object())) {
                 JsonNode cached=store.get(id);
-                if(!fresh(cached,today) && enabled && ai.configured()) refreshVenue(venue);
+                if(!fresh(cached,today,venue) && enabled && ai.configured()) refreshVenue(venue);
                 store.projectCached(id,start,end);
             }
             return;
         }
     }
-    private static boolean fresh(JsonNode cached, java.time.LocalDate today) {
-        if(cached==null) return false;
+    private static boolean fresh(JsonNode cached, java.time.LocalDate today, JsonNode venue) {
+        if(cached==null || !cached.path("url").equals(venue.path("url"))) return false;
         try {
             Instant attempted=Instant.parse(cached.path("lastAttempt").asText());
             return cached.path("stale").asBoolean() ? attempted.isAfter(Instant.now().minusSeconds(900)) :
