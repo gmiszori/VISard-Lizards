@@ -5,6 +5,7 @@ import { pickTodaysDish } from './pickTodaysDish';
 import { steps, skipStep, type Context, type OnboardingData } from './steps';
 import { t, translate } from './i18n';
 import { ONBOARDING_AUTO_START } from './config';
+import { appNow, zurichParts } from '../time/clock';
 
 const root = document.querySelector<HTMLElement>('#onboarding');
 if (root) initialise(root);
@@ -42,6 +43,12 @@ function initialise(root: HTMLElement) {
 
     function renderPayoff() {
       const p = store.state.profile;
+      // "Today's pick" only when the menu is today's; the date line below the title names the day otherwise.
+      const title = root.querySelector<HTMLElement>('[data-payoff] h1');
+      if (title) {
+        title.dataset.obI18n = data.menuDate === zurichParts(appNow()).date ? 'payoffTitle' : 'payoffTitleOtherDay';
+        title.textContent = t(title.dataset.obI18n as 'payoffTitle' | 'payoffTitleOtherDay');
+      }
       const pick = pickTodaysDish(p, data.mensas, data.meals);
       root.querySelector<HTMLElement>('[data-pick]')!.hidden = !pick;
       root.querySelector<HTMLElement>('[data-pick-empty]')!.hidden = !!pick;

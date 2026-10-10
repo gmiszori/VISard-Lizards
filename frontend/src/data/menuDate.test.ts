@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { addDays, isIsoDate, isWeekend, menuDateCandidates, pickSampleMenuDate, weekdayIndex, wantedMenuDate } from './menuDate.ts';
+import { addDays, isIsoDate, isWeekend, latestToday, menuDateCandidates, pickSampleMenuDate, weekdayIndex, wantedMenuDate } from './menuDate.ts';
 
 // 2026-10-10 is a Saturday.
 test('weekday numbers and weekend detection', () => {
@@ -97,4 +97,14 @@ test('selectableMenuDays: weekdays from the wanted day up to the data, plus the 
   // a shown day before the range (backend fallback) is included
   assert.deepEqual(selectableMenuDays('2026-10-10', '2026-10-09', '2026-10-09'), ['2026-10-09']);
   assert.equal(selectableMenuDays('2026-10-12', '2026-10-12', '2026-12-31', 3).length, 3);
+});
+
+test('latestToday never goes back to an older backend date', () => {
+  assert.equal(latestToday('2026-10-07', '2026-10-10'), '2026-10-10'); // backend lags: the real date wins
+  assert.equal(latestToday('2026-10-12', '2026-10-10'), '2026-10-12'); // backend ahead (e.g. its next service day): kept
+  assert.equal(latestToday('2026-10-10', '2026-10-10'), '2026-10-10');
+  assert.equal(latestToday('garbage', '2026-10-10'), '2026-10-10');
+  assert.equal(latestToday('2026-10-07', 'garbage'), '2026-10-07');
+  // a Saturday with a lagging backend now asks for Monday's menu, not Wednesday's
+  assert.equal(wantedMenuDate(latestToday('2026-10-07', '2026-10-10')), '2026-10-12');
 });
