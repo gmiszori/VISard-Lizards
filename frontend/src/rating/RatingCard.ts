@@ -15,7 +15,10 @@ export function mountRatingCard(): void {
   const root = document.querySelector<HTMLElement>('[data-rating-card]');
   const source = document.querySelector('[data-rating-data]');
   if (!root || !source) return;
-  const data = JSON.parse(source.textContent ?? '{}') as CardData;
+  let data: CardData;
+  try { data = JSON.parse(source.textContent ?? '{}') as CardData; } catch { return; }
+  if (!Array.isArray(data.mensas)) data.mensas = [];
+  if (!Array.isArray(data.meals)) data.meals = [];
   const query = <T extends HTMLElement = HTMLElement>(selector: string) => root.querySelector<T>(selector)!;
   const status = query('[data-rating-status]');
   // The override and isolated simulator storage are removed from production bundles.
@@ -116,6 +119,11 @@ export function mountRatingCard(): void {
       query('[data-rating-date]').textContent = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Zurich', dateStyle: 'full' }).format(new Date(`${next.date}T12:00:00Z`));
       const list = query('[data-rating-mensas]');
       list.replaceChildren();
+      if (!next.mensaChoices.length) {
+        const hint = document.createElement('p');
+        hint.textContent = 'No suggestions yet. Choose a mensa below.';
+        list.append(hint);
+      }
       next.mensaChoices.forEach(choice => {
         const button = document.createElement('button');
         button.type = 'button'; button.textContent = choice.name;
