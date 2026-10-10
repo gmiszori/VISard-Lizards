@@ -352,6 +352,20 @@ export function mountDevTools(): void {
     try { localStorage.removeItem(VISITS_KEY); } catch { /* ignore */ }
     renderAll();
   });
+  document.querySelector<HTMLButtonElement>('[data-dev-reset-user]')?.addEventListener('click', async event => {
+    if (!window.confirm('Reset all UniEats data on this device and reload as a new user? Browser permissions remain unchanged.')) return;
+    const button = event.currentTarget as HTMLButtonElement;
+    button.disabled = true;
+    button.textContent = 'Resetting…';
+    try {
+      const { resetAsNewUser } = await import('../welcome/resetUser');
+      await resetAsNewUser();
+    } catch {
+      button.disabled = false;
+      button.textContent = 'Reset as new user';
+      window.alert('Reset failed. Your device data was not fully cleared.');
+    }
+  });
   document.addEventListener('campuseats:preferences-applied', renderAll);
   document.addEventListener('campuseats:canteen-favourites-changed', renderAll);
   document.addEventListener('campuseats:user-located', event => {

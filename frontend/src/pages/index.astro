@@ -9,11 +9,13 @@ import { loadAppData } from '../data/app-data';
 import MenuDate from '../components/MenuDate.astro';
 import DevTools from '../dev/DevTools.astro';
 import DayPicker from '../components/DayPicker.astro';
+import WelcomeTour from '../welcome/WelcomeTour.astro';
 // Also rendered by /day/[date] (pages/day/[date].astro) with the picked day in Astro.params.date.
 const { canteens, menuDate, today, source, sampleReason, days, chosenDay } = await loadAppData(Astro.params.date);
 const openCount = canteens.filter((canteen) => canteen.isOpen).length;
 ---
 <BaseLayout title="Campus canteens">
+  <WelcomeTour />
   <div class="section-head" style="margin-top:0"><div><h1 data-i18n="campus">Campus canteens</h1></div><span class="count" hidden={openCount === 0}><span data-live="open-count">{openCount}</span> <span data-i18n="openCount">open right now</span></span></div>
   <FilterBar />
   <DevTools canteens={canteens} source={source} sampleReason={sampleReason} menuDate={menuDate} today={today} />

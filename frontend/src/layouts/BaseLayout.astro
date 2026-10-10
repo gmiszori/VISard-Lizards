@@ -17,10 +17,6 @@ const { title } = Astro.props;
       // Apply the saved theme and language before the page is painted, so dark-theme users do not see a white flash
       // while the rest of the page loads. The full handling stays in the script at the end of the body.
       try {
-        // First visit: start with onboarding, once per browser session (leaving it must not bounce the visitor straight back).
-        let seenOnboarding = false;
-        try { seenOnboarding = sessionStorage.getItem('campuseats-onboarding-seen') === '1'; } catch (error) { /* treat as not seen */ }
-        if (location.pathname === '/' && localStorage.getItem('campuseats-profile') === null && !seenOnboarding) location.replace('/onboarding');
         const theme = localStorage.getItem('campuseats-theme');
         if (theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.dataset.theme = 'dark';
         if (localStorage.getItem('campuseats-language') === 'de') document.documentElement.lang = 'de';
@@ -48,7 +44,7 @@ const { title } = Astro.props;
     <div class="app-shell">
       <header class="site-header">
         <a class="brand" href="/" aria-label="UniEats home"><span class="brand-mark" aria-hidden="true">U</span><span>UniEats</span></a>
-        <div class="header-controls"><a class="settings-link" href="/settings" data-i18n="settings">Settings</a></div>
+        <div class="header-controls"><a class="settings-link" href="/settings" data-tour-settings-target data-i18n="settings">Settings</a></div>
       </header>
       <main class="main" id="main" tabindex="-1"><slot /></main>
       <SimulatedClockBanner />
