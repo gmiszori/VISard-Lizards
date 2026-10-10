@@ -152,6 +152,20 @@
 :root[data-density="list"] .canteen-card .meal-price strong { font-size: 12px; }
 :root[data-density="list"] .canteen-card .meal-price .price-unit { font-size: 9px; }
 
+@media (min-width: 701px) {
+  :root[data-density="list"] :is(#canteen-grid, #favourites-grid) .canteen-card .dish-preview,
+  :root[data-density="list"] :is(#canteen-grid, #favourites-grid) .canteen-card .dish-preview:not([hidden]) ~ .dish-preview:not([hidden]) {
+    grid-template-columns: minmax(0, 270px) 120px 44px;
+    justify-content: start;
+    column-gap: 10px;
+  }
+  :root[data-density="list"] .canteen-card .meal-preview-heading { display: contents; }
+  :root[data-density="list"] .canteen-card .meal-preview-heading .dish { grid-column: 1; }
+  :root[data-density="list"] .canteen-card .meal-price { grid-column: 2; grid-row: 1; }
+  :root[data-density="list"] .canteen-card .meal-preview-heading .meal-star { grid-column: 3; grid-row: 1; }
+  :root[data-density="list"] .canteen-card .favorite-toggle { right: 26px; }
+}
+
 @media (max-width: 700px) {
   :root[data-density="list"] :is(#canteen-grid, #favourites-grid) .canteen-card .card-body { padding: 0 0 4px; }
   :root[data-density="list"] .canteen-card .dish { font-size: 12px; }
