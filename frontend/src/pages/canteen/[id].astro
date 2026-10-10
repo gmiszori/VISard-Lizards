@@ -5,12 +5,16 @@ import PredictedCrowd from '../../components/PredictedCrowd.astro';
 import LocationLink from '../../components/LocationLink.astro';
 import { CROWD, LIVE_DATA } from '../../data/canteens';
 import { loadAppData } from '../../data/app-data';
+import { formatSwissDate } from '../../data/menuDate';
 import { WEEKDAYS, type CrowdPrediction } from '../../crowd/prediction';
 export async function getStaticPaths() {
   const { canteens } = await loadAppData();
   return canteens.map((canteen) => ({ params: { id: canteen.id }, props: { canteen } }));
 }
 const { canteen } = Astro.props;
+const { menuDate, today } = await loadAppData();
+// Weekends show Monday's menu, so say which day it is instead of "today".
+const menuIsToday = menuDate === today;
 const crowd = CROWD[canteen.id];
 const live = LIVE_DATA[canteen.id];
 const prediction: CrowdPrediction = {
@@ -28,7 +32,7 @@ const prediction: CrowdPrediction = {
   <section class="detail-hero"><img src={canteen.imageUrl} alt={`Dining area at ${canteen.name}`} /><div class="detail-overlay"><div><div class="detail-hero-title"><h1>{canteen.name}</h1><LocationLink mensaId={canteen.id} /></div><p>{canteen.campus} · {canteen.location} · ★ {canteen.rating !== null ? canteen.rating.toFixed(1) : <span title="No ratings yet">–</span>}</p></div><span data-live="status" data-live-id={canteen.id} class={`status ${canteen.isOpen ? 'open' : 'closed'}`}>● <span data-i18n={canteen.isOpen ? 'open' : 'closed'}>{canteen.isOpen ? 'Open now' : 'Closed'}</span></span></div></section>
   <div class="detail-info"><div class="info-box"><small data-i18n="hours">Opening hours</small><strong data-live="hours" data-live-id={canteen.id}>{canteen.hours}</strong></div><div class="info-box"><small data-i18n="crowd">Current crowd</small><strong data-live="crowd" data-live-id={canteen.id} data-i18n={canteen.isOpen ? canteen.occupancy : 'closed'}>{canteen.isOpen ? canteen.occupancy[0].toUpperCase() + canteen.occupancy.slice(1) : 'Closed'}</strong></div></div>
   <PredictedCrowd prediction={prediction} />
-  <section><h2 class="menu-section-title"><span data-i18n="todayMenu">Today’s menu</span> <span class="count">· {canteen.menu.length} <span data-i18n="dishes">dishes</span></span></h2>
+  <section><h2 class="menu-section-title">{menuIsToday ? <span data-i18n="todayMenu">Today’s menu</span> : <><span data-i18n="menuFor">Menu for</span> <span>{formatSwissDate(menuDate)}</span></>} <span class="count">· {canteen.menu.length} <span data-i18n="dishes">dishes</span></span></h2>
     {canteen.menu.length ? <><div class="menu-list" data-preference-list data-meal-list>{canteen.menu.map((item) => <MenuItem item={item} />)}</div><div class="empty-state preference-empty" data-no-preference-meals hidden data-i18n="noPreferenceMeals">No dishes match your food preferences.</div></> : <div class="empty-state" style="display:block" data-i18n="menuEmpty">No menu available today.</div>}
   </section>
 </BaseLayout>

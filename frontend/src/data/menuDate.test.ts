@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { addDays, isWeekend, menuDateCandidates, pickSampleMenuDate, weekdayIndex, wantedMenuDate } from './menuDate.ts';
+import { addDays, formatSwissDate, isWeekend, menuDateCandidates, pickSampleMenuDate, weekdayIndex, wantedMenuDate, zurichDate } from './menuDate.ts';
 
 // 2026-10-10 is a Saturday.
 test('weekday numbers and weekend detection', () => {
@@ -78,4 +78,18 @@ test('sample data: empty or invalid lists return today', () => {
   assert.equal(pickSampleMenuDate([], '2026-10-10'), '2026-10-10');
   assert.equal(pickSampleMenuDate(['x', '2026-99-99'], '2026-10-10'), '2026-10-10');
   assert.equal(pickSampleMenuDate(['2026-10-05', '2026-10-05', 'bad'], '2026-10-10'), '2026-10-05');
+});
+
+test('formatSwissDate formats valid dates and leaves anything else alone', () => {
+  assert.equal(formatSwissDate('2026-10-12'), '12.10.2026');
+  assert.equal(formatSwissDate('2028-02-29'), '29.02.2028');
+  for (const value of ['', 'garbage', '2026-02-30', '12.10.2026']) assert.equal(formatSwissDate(value), value);
+});
+
+test('zurichDate uses Zurich, not the host timezone', () => {
+  assert.equal(zurichDate(new Date('2026-10-10T21:59:00Z')), '2026-10-10'); // 23:59 in Zurich (CEST)
+  assert.equal(zurichDate(new Date('2026-10-10T22:00:00Z')), '2026-10-11'); // 00:00 in Zurich
+  assert.equal(zurichDate(new Date('2026-10-25T23:30:00Z')), '2026-10-26'); // after the DST change
+  assert.equal(zurichDate(new Date('2026-12-31T23:30:00Z')), '2027-01-01');
+  assert.equal(zurichDate(new Date('not a date')), '');
 });

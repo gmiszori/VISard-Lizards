@@ -10,7 +10,7 @@
  */
 import { CANTEENS, MENU_DATE, type Canteen, type MenuItem } from './canteens';
 import { API_URL, apiGet, type BackendMealDetail, type BackendMensa, type BackendMeta } from './api';
-import { menuDateCandidates } from './menuDate';
+import { menuDateCandidates, zurichDate } from './menuDate';
 
 /** A canteen as the pages show it. rating is null when nobody has rated it yet. */
 export type AppCanteen = Omit<Canteen, 'rating'> & { rating: number | null };
@@ -18,6 +18,8 @@ export type AppCanteen = Omit<Canteen, 'rating'> & { rating: number | null };
 export interface AppData {
   /** Where menus and ratings come from. */
   source: 'backend' | 'sample';
+  /** Today in Zurich (`YYYY-MM-DD`). Differs from `menuDate` on weekends. */
+  today: string;
   /** The day whose menu is shown: today (the coming Monday on weekends), or the latest earlier day with menus. */
   menuDate: string;
   canteens: AppCanteen[];
@@ -38,7 +40,7 @@ export function loadAppData(): Promise<AppData> {
 }
 
 function sampleData(): AppData {
-  return { source: 'sample', menuDate: MENU_DATE, canteens: CANTEENS };
+  return { source: 'sample', today: zurichDate(), menuDate: MENU_DATE, canteens: CANTEENS };
 }
 
 async function fetchAppData(): Promise<AppData> {
@@ -60,6 +62,7 @@ async function fetchAppData(): Promise<AppData> {
     for (const meal of meals) menus.set(meal.mensaId, [...(menus.get(meal.mensaId) ?? []), meal]);
     return {
       source: 'backend',
+      today: meta.today,
       menuDate,
       canteens: CANTEENS.map((canteen) => ({
         ...canteen,
