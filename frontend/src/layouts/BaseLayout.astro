@@ -13,13 +13,16 @@ const { title } = Astro.props;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#f5f6f1" />
+    <meta name="theme-color" content="#f5f6f1" data-theme-color />
     <script is:inline>
       // Apply the saved theme and language before the page is painted, so dark-theme users do not see a white flash
       // while the rest of the page loads. The full handling stays in the script at the end of the body.
       try {
-        const theme = localStorage.getItem('campuseats-theme');
-        if (theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.dataset.theme = 'dark';
+        const theme = localStorage.getItem('campuseats-theme') ?? 'system';
+        const dark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (dark) document.documentElement.dataset.theme = 'dark';
+        const themeColor = document.querySelector('meta[data-theme-color]');
+        if (themeColor) themeColor.setAttribute('content', dark ? '#151c17' : '#f5f6f1');
         if (localStorage.getItem('campuseats-language') === 'de') document.documentElement.lang = 'de';
         const savedPreferences = JSON.parse(localStorage.getItem('campuseats-preferences') || '{}');
         document.documentElement.dataset.density = ['standard', 'compact', 'list'].includes(savedPreferences?.viewMode)
@@ -126,10 +129,13 @@ const { title } = Astro.props;
       };
       const themeSelect = document.querySelector('#theme-select');
       const colorScheme = window.matchMedia('(prefers-color-scheme: dark)');
-      let themePreference = 'light';
+      const themeColor = document.querySelector('meta[data-theme-color]');
+      let themePreference = 'system';
       const setTheme = (requested) => {
-        themePreference = requested === 'dark' || requested === 'system' ? requested : 'light';
-        document.documentElement.dataset.theme = themePreference === 'dark' || (themePreference === 'system' && colorScheme.matches) ? 'dark' : 'light';
+        themePreference = requested === 'dark' || requested === 'light' || requested === 'system' ? requested : 'system';
+        const dark = themePreference === 'dark' || (themePreference === 'system' && colorScheme.matches);
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+        themeColor?.setAttribute('content', dark ? '#151c17' : '#f5f6f1');
         campusStorage.set('campuseats-theme', themePreference);
         if (themeSelect) themeSelect.value = themePreference;
       };
