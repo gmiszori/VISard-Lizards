@@ -12,6 +12,7 @@ public class ScrapedMenuController {
     private final ScrapedMenuRefreshService refresh;
     public ScrapedMenuController(ScrapedMenuRefreshService refresh) { this.refresh=refresh; }
     @GetMapping public ResponseEntity<JsonNode> all() {
+        refresh.enqueueMissing(); // Database hits and today's empty/closed results do not call OpenAI again.
         return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(refresh.snapshot());
     }
 }
