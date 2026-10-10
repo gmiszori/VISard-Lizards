@@ -36,6 +36,10 @@ and the "Current crowd" box shows that real level instead of the illustrative va
 (`live-status.ts` skips boxes marked `data-crowd-reported`). With at least 10 reports the backend's
 prediction replaces the preview chart.
 
+Live summaries expire after 30 minutes in the browser, including while the page stays open without a
+new response. Empty or failed refreshes and closing time release the current-crowd display back to
+the normal opening/status renderer; a failed refresh says that current reports are unavailable.
+
 A device can report a mensa once every 5 minutes, like the backend's per-IP limit; a `429` from the
 backend is treated as "already reported". Logic lives in `survey-logic.ts` (tested in `survey.test.ts`).
 In development, `?crowdNow=2026-10-12T12:00:00%2B02:00` shows the survey as if it were that time.

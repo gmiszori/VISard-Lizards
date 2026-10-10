@@ -13,6 +13,7 @@ const copy = {
     level1: 'Empty', level2: 'Quiet', level3: 'Some queue', level4: 'Busy', level5: 'Packed',
     now: 'Right now:', reports: (n: number) => `${n} report${n === 1 ? '' : 's'} in the last 30 min`,
     none: 'No reports in the last 30 minutes yet.',
+    unavailable: 'Current reports are unavailable. Please try again shortly.',
     sending: 'Sending…', thanks: 'Thanks! Your report is in.',
     cooldown: (m: number) => `Thanks for reporting! You can report again in ${m} min.`,
     error: 'Could not send your report. Please try again.',
@@ -22,6 +23,7 @@ const copy = {
     level1: 'Leer', level2: 'Ruhig', level3: 'Etwas Schlange', level4: 'Viel los', level5: 'Sehr voll',
     now: 'Gerade:', reports: (n: number) => `${n} ${n === 1 ? 'Meldung' : 'Meldungen'} in den letzten 30 Min.`,
     none: 'In den letzten 30 Minuten noch keine Meldung.',
+    unavailable: 'Aktuelle Meldungen sind gerade nicht verfügbar. Bitte versuche es gleich noch einmal.',
     sending: 'Wird gesendet…', thanks: 'Danke! Deine Meldung ist angekommen.',
     cooldown: (m: number) => `Danke fürs Melden! Neue Meldung in ${m} Min. möglich.`,
     error: 'Meldung konnte nicht gesendet werden. Bitte versuche es erneut.',
@@ -53,13 +55,16 @@ export function mountCrowdSurvey(): void {
   const buttons = [...root.querySelectorAll<HTMLButtonElement>('[data-survey-level]')];
   const summaryEl = root.querySelector<HTMLElement>('[data-survey-summary]')!;
   const statusEl = root.querySelector<HTMLElement>('[data-survey-status]')!;
-  let summary: CrowdSummary | null = null;
+  let reports: LiveReport[] = [];
   let summaryLoaded = false;
+  let summaryFailed = false;
+  let loading = false;
   let status: { kind: 'sending' | 'thanks' | 'error' } | null = null;
   let busy = false;
 
   function renderTexts() {
     const c = t();
+    const summary = summarize(reports);
     root!.querySelectorAll<HTMLElement>('[data-survey-text]').forEach(el => {
       const value = c[el.dataset.surveyText as keyof Copy];
       if (typeof value === 'string') el.textContent = value;
@@ -72,6 +77,8 @@ export function mountCrowdSurvey(): void {
       summaryEl.append(`${c.now} `, label, ` · ${c.reports(summary.count)}`);
     } else if (summaryLoaded) {
       summaryEl.textContent = c.none;
+    } else if (summaryFailed) {
+      summaryEl.textContent = c.unavailable;
     }
     const wait = cooldownLeft(readLastReports()[mensaId!] ?? null, Date.now());
     buttons.forEach(b => { b.disabled = busy || wait > 0; });
@@ -79,13 +86,23 @@ export function mountCrowdSurvey(): void {
     else if (status?.kind === 'error') statusEl.textContent = c.error;
     else if (wait > 0) statusEl.textContent = status?.kind === 'thanks' && wait > 4 * 60_000 ? c.thanks : c.cooldown(Math.ceil(wait / 60_000));
     else statusEl.textContent = '';
-    updateCurrentCrowdBox();
+    updateCurrentCrowdBox(summary);
   }
 
   /** Real reports replace the illustrative value of the "Current crowd" box (src/scripts/live-status.ts skips it then). */
-  function updateCurrentCrowdBox() {
+  function updateCurrentCrowdBox(summary: CrowdSummary | null) {
     const box = document.querySelector<HTMLElement>(`[data-live="crowd"][data-live-id="${CSS.escape(mensaId!)}"]`);
-    if (!box || !summary || root!.hidden) return;
+    if (!box) return;
+    if (!summary || root!.hidden) {
+      if (box.dataset.crowdReported) {
+        delete box.dataset.crowdReported;
+        delete box.dataset.occupancy;
+        box.removeAttribute('title');
+        // Give the normal status renderer ownership again, including its translated closed state.
+        document.dispatchEvent(new Event('campuseats:crowd-reset'));
+      }
+      return;
+    }
     box.dataset.crowdReported = 'true';
     box.dataset.occupancy = occupancyOf(summary.level);
     // The survey translates this label itself; without data-i18n the layout's translation leaves it alone.
@@ -95,11 +112,19 @@ export function mountCrowdSurvey(): void {
   }
 
   async function loadSummary() {
+    if (loading) return;
+    loading = true;
     try {
-      const { live: reports } = await apiGet<CrowdResponse>(`/api/mensas/${encodeURIComponent(mensaId!)}/crowd`);
-      summary = summarize(reports);
+      const response = await apiGet<CrowdResponse>(`/api/mensas/${encodeURIComponent(mensaId!)}/crowd`);
+      if (!Array.isArray(response.live)) throw new Error('Invalid crowd response');
+      reports = response.live;
       summaryLoaded = true;
-    } catch { summaryLoaded = false; }
+      summaryFailed = false;
+    } catch {
+      reports = [];
+      summaryLoaded = false;
+      summaryFailed = true;
+    } finally { loading = false; }
     renderTexts();
   }
 
@@ -135,8 +160,13 @@ export function mountCrowdSurvey(): void {
     const open = isOpenAt(live!.windows, live!.temporarilyClosed, now());
     const wasHidden = root!.hidden;
     root!.hidden = !open;
+    if (!open) {
+      reports = [];
+      summaryLoaded = false;
+      summaryFailed = false;
+    }
+    renderTexts();
     if (open && wasHidden) void loadSummary();
-    else renderTexts();
   }
 
   buttons.forEach(button => button.addEventListener('click', () => report(Number(button.dataset.surveyLevel) as CrowdLevel, button)));
