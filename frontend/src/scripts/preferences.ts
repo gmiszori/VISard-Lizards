@@ -44,6 +44,8 @@ function applyPreferences() {
     const amount = price.querySelector<HTMLElement>('[data-price-amount]');
     const label = price.querySelector<HTMLElement>('[data-price-label]');
     const value = price.getAttribute(`data-price-${preferences.priceTier}`) ?? '–';
+    const row = price.closest<HTMLElement>('[data-meal-row]');
+    if (row) row.dataset.mealPriceMissing = String(value === '–');
     if (amount) amount.textContent = `CHF ${value}`;
     if (label) {
       label.dataset.i18n = preferences.priceTier;
@@ -54,6 +56,14 @@ function applyPreferences() {
     }
   });
   document.querySelectorAll<HTMLSelectElement>('[data-price-tier]').forEach(select => select.value = preferences.priceTier);
+
+  // Sort before clipping overview previews, so their first dishes have published prices.
+  document.querySelectorAll<HTMLElement>('[data-meal-list], [data-meal-group]').forEach(list => {
+    const rows = [...list.children].filter((el): el is HTMLElement => el instanceof HTMLElement && el.matches('[data-meal-row]'));
+    const after = rows.length ? rows[rows.length - 1]!.nextElementSibling : null;
+    rows.sort((a, b) => Number(a.dataset.mealPriceMissing === 'true') - Number(b.dataset.mealPriceMissing === 'true'))
+      .forEach(row => list.insertBefore(row, after));
+  });
 
   const query = document.querySelector<HTMLInputElement>('#search-input')?.value ?? '';
   const search = createSearch(query);
