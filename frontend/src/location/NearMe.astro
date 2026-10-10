@@ -1,0 +1,29 @@
+---
+import { CAMPUSES, MENSAS } from '../data/canteens';
+import type { MensaPlace } from './locate';
+import type { MensaHours } from './visits';
+
+// Coordinates and hours are bundled (the same data GET /api/mensas serves), so sorting needs no request.
+const places: MensaPlace[] = MENSAS.flatMap((m) => m.coordinates
+  ? [{ id: m.id, name: m.name, campus: m.campusId, lat: m.coordinates.lat, lng: m.coordinates.lng }] : []);
+const hours: MensaHours[] = MENSAS.map(({ id, temporarilyClosed, openingHours, closures }) => ({ id, temporarilyClosed, openingHours, closures }));
+const campusNames = Object.fromEntries(CAMPUSES.map((c) => [c.id, c.name]));
+---
+<div class="near-me" data-near-me>
+  <button class="filter-btn near-me-toggle" type="button" data-near-me-toggle aria-pressed="false">
+    <span aria-hidden="true">📍</span> <span data-near-me-label>Sort by distance</span>
+  </button>
+  <p class="near-me-status" data-near-me-status role="status" aria-live="polite" hidden></p>
+</div>
+<script type="application/json" data-near-me-data is:inline set:html={JSON.stringify({ places, hours, campusNames }).replace(/</g, '\\u003c')} />
+<script>
+  import { mountNearMe } from './near-me.ts';
+  mountNearMe();
+</script>
+<style>
+  .near-me{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 14px}
+  .near-me-toggle[aria-pressed=true]{background:var(--green);border-color:var(--green);color:#fff}
+  .near-me-toggle:disabled{opacity:.6;cursor:progress}
+  .near-me-status{margin:0;color:var(--muted);font-size:13px;flex:1 1 220px}
+  :global(.distance-chip){border-radius:100px;padding:4px 8px;background:#ffffff2e;color:inherit;font-size:10px;font-weight:700;white-space:nowrap;backdrop-filter:blur(4px)}
+</style>

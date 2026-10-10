@@ -18,6 +18,7 @@ import com.visardlizards.backend.model.domain.Meal;
 import com.visardlizards.backend.model.domain.Mensa;
 import com.visardlizards.backend.model.domain.PriceCategory;
 import com.visardlizards.backend.model.domain.ServiceHours;
+import com.visardlizards.backend.model.dto.CoordinatesDTO;
 import com.visardlizards.backend.model.dto.MealDTO;
 import com.visardlizards.backend.model.dto.MealPlanDTO;
 import com.visardlizards.backend.model.dto.MealPlanEntryDTO;
@@ -42,6 +43,8 @@ public class MensaDtoMapper {
 				toOpeningHoursDTO(mensa, openingHoursFrom),
 				campusName,
 				formatAddress(mensa.address()),
+				mensa.coordinates() == null ? null
+						: new CoordinatesDTO(mensa.coordinates().lat(), mensa.coordinates().lng()),
 				avgRating,
 				mealPlan);
 	}

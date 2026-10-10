@@ -28,6 +28,8 @@ class MensaControllerTests {
 				.andExpect(jsonPath("$[0].title").value("Alumni quattro Lounge"))
 				.andExpect(jsonPath("$[?(@.id == 'archimedes')].title").value("Archimedes"))
 				.andExpect(jsonPath("$[?(@.id == 'archimedes')].location").value("Gloriastrasse 37/39, 8092 Zürich"))
+				.andExpect(jsonPath("$[?(@.id == 'archimedes')].coordinates.lat").value(47.3746941))
+				.andExpect(jsonPath("$[?(@.id == 'archimedes')].coordinates.lng").value(8.5497582))
 				.andExpect(jsonPath("$[0].mealPlan").doesNotExist());
 	}
 

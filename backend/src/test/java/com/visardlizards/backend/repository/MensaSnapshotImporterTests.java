@@ -50,6 +50,27 @@ class MensaSnapshotImporterTests {
 	}
 
 	@Test
+	void everyMensaHasCoordinates() {
+		assertThat(mensaRepository.findAllMensas()).allSatisfy(m -> assertThat(m.coordinates()).isNotNull());
+		var polyterrasse = mensaRepository.findMensaById("polyterrasse").orElseThrow().coordinates();
+		assertThat(polyterrasse.lat()).isEqualTo(47.3762048);
+		assertThat(polyterrasse.lng()).isEqualTo(8.5467367);
+	}
+
+	@Test
+	void fillsCoordinatesOfOlderDatabases() {
+		var polyterrasse = mensas.findById("polyterrasse").orElseThrow();
+		polyterrasse.setCoordinates(null, null, null);
+		mensas.saveAndFlush(polyterrasse);
+
+		importer.run(new DefaultApplicationArguments());
+
+		var coordinates = mensaRepository.findMensaById("polyterrasse").orElseThrow().coordinates();
+		assertThat(coordinates).isNotNull();
+		assertThat(coordinates.lat()).isEqualTo(47.3762048);
+	}
+
+	@Test
 	void roundTripKeepsMealDetails() {
 		var meal = mensaRepository.findMealById("alumni-quattro-lounge.2026-09-28.dinner.0").orElseThrow();
 		assertThat(meal.components()).containsExactly("Ground beef", "Elbow macaroni", "Applesauce", "Extra-hard cheese");

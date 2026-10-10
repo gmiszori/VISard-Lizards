@@ -21,6 +21,7 @@ import com.visardlizards.backend.model.db.ServiceHoursEmbeddable;
 import com.visardlizards.backend.model.domain.Address;
 import com.visardlizards.backend.model.domain.Campus;
 import com.visardlizards.backend.model.domain.Closure;
+import com.visardlizards.backend.model.domain.Coordinates;
 import com.visardlizards.backend.model.domain.Meal;
 import com.visardlizards.backend.model.domain.Mensa;
 import com.visardlizards.backend.model.domain.MensaSource;
@@ -118,6 +119,8 @@ public class JpaMensaRepository implements MensaRepository {
 				.toList();
 		return new Mensa(e.getId(), e.getName(), e.getInstitution(), e.getCampusId(),
 				new Address(e.getStreet(), e.getPostalCode(), e.getCity(), e.getBuilding()),
+				e.getLatitude() == null || e.getLongitude() == null ? null
+						: new Coordinates(e.getLatitude(), e.getLongitude(), e.getCoordinatesSource()),
 				e.isHasMenu(), e.isTemporarilyClosed(), openingHours, closures, new MensaSource(e.getEthFacilityId()));
 	}
 

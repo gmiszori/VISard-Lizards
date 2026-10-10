@@ -39,6 +39,14 @@ public class MensaEntity {
 
 	private String building;
 
+	/** WGS84, null when unknown. */
+	private Double latitude;
+
+	private Double longitude;
+
+	/** Where latitude/longitude come from, e.g. "zfv.ch page". */
+	private String coordinatesSource;
+
 	private boolean hasMenu;
 
 	private boolean temporarilyClosed;
@@ -61,7 +69,8 @@ public class MensaEntity {
 	}
 
 	public MensaEntity(String id, String name, String institution, String campusId, String street, String postalCode,
-			String city, String building, boolean hasMenu, boolean temporarilyClosed, Integer ethFacilityId,
+			String city, String building, Double latitude, Double longitude, String coordinatesSource, boolean hasMenu,
+			boolean temporarilyClosed, Integer ethFacilityId,
 			List<ServiceHoursEmbeddable> serviceHours, List<ClosureEmbeddable> closures) {
 		this.id = id;
 		this.name = name;
@@ -71,6 +80,9 @@ public class MensaEntity {
 		this.postalCode = postalCode;
 		this.city = city;
 		this.building = building;
+		this.latitude = latitude;
+		this.longitude = longitude;
+		this.coordinatesSource = coordinatesSource;
 		this.hasMenu = hasMenu;
 		this.temporarilyClosed = temporarilyClosed;
 		this.ethFacilityId = ethFacilityId;
@@ -108,6 +120,25 @@ public class MensaEntity {
 
 	public String getBuilding() {
 		return building;
+	}
+
+	public Double getLatitude() {
+		return latitude;
+	}
+
+	public Double getLongitude() {
+		return longitude;
+	}
+
+	public String getCoordinatesSource() {
+		return coordinatesSource;
+	}
+
+	/** Fills the coordinates for databases created before the columns existed. */
+	public void setCoordinates(Double latitude, Double longitude, String coordinatesSource) {
+		this.latitude = latitude;
+		this.longitude = longitude;
+		this.coordinatesSource = coordinatesSource;
 	}
 
 	public boolean isHasMenu() {

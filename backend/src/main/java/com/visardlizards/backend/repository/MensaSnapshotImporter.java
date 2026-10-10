@@ -21,6 +21,7 @@ import com.visardlizards.backend.model.db.ClosureEmbeddable;
 import com.visardlizards.backend.model.db.MealEntity;
 import com.visardlizards.backend.model.db.MensaEntity;
 import com.visardlizards.backend.model.db.ServiceHoursEmbeddable;
+import com.visardlizards.backend.model.domain.Coordinates;
 import com.visardlizards.backend.model.domain.Meal;
 import com.visardlizards.backend.model.domain.Mensa;
 import com.visardlizards.backend.model.domain.MensaDb;
@@ -58,6 +59,7 @@ public class MensaSnapshotImporter implements ApplicationRunner {
 		if (mensas.count() > 0) {
 			log.info("Mensa data already present, skipping snapshot import");
 			backfillFacilityIds();
+			backfillCoordinates();
 			return;
 		}
 		MensaDb db = readSnapshot();
@@ -86,6 +88,29 @@ public class MensaSnapshotImporter implements ApplicationRunner {
 		log.info("Filled ETH facility ids of {} mensas from {}", missing.size(), SNAPSHOT);
 	}
 
+	/** Databases created before the coordinate columns existed get the coordinates from the snapshot. */
+	private void backfillCoordinates() {
+		List<MensaEntity> missing = mensas.findAll().stream().filter(m -> m.getLatitude() == null).toList();
+		if (missing.isEmpty()) {
+			return;
+		}
+		Map<String, Coordinates> coordinates = new HashMap<>();
+		for (Mensa m : readSnapshot().mensas()) {
+			if (m.coordinates() != null) {
+				coordinates.put(m.id(), m.coordinates());
+			}
+		}
+		int filled = 0;
+		for (MensaEntity m : missing) {
+			Coordinates c = coordinates.get(m.getId());
+			if (c != null) {
+				m.setCoordinates(c.lat(), c.lng(), c.source());
+				filled++;
+			}
+		}
+		log.info("Filled coordinates of {} mensas from {}", filled, SNAPSHOT);
+	}
+
 	private MensaDb readSnapshot() {
 		try (InputStream in = new ClassPathResource(SNAPSHOT).getInputStream()) {
 			return jsonMapper.readValue(in, MensaDb.class);
@@ -105,7 +130,10 @@ public class MensaSnapshotImporter implements ApplicationRunner {
 				.map(c -> new ClosureEmbeddable(c.from(), c.to(), c.note()))
 				.toList();
 		return new MensaEntity(m.id(), m.name(), m.institution(), m.campusId(), m.address().street(),
-				m.address().postalCode(), m.address().city(), m.address().building(), m.hasMenu(),
+				m.address().postalCode(), m.address().city(), m.address().building(),
+				m.coordinates() == null ? null : m.coordinates().lat(),
+				m.coordinates() == null ? null : m.coordinates().lng(),
+				m.coordinates() == null ? null : m.coordinates().source(), m.hasMenu(),
 				m.temporarilyClosed(), m.source() == null ? null : m.source().facilityId(), serviceHours, closures);
 	}
 

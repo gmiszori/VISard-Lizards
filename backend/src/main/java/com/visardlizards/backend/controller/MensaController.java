@@ -56,6 +56,7 @@ public class MensaController {
 			  day has an empty list: weekends, company holidays and mensas that are temporarily closed.
 			- `avgRating` is the average of all user ratings, rounded to one decimal, or `null` if nobody has
 			  rated the mensa yet.
+			- `coordinates` is the WGS84 position (`lat`, `lng`) accurate to the building, or `null` if unknown.
 			""")
 	@ApiResponse(responseCode = "200", description = "The mensas (without meal plan)")
 	public List<MensaDTO> getMensas(
