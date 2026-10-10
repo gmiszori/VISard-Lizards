@@ -102,3 +102,6 @@ export function mountProfileMealSettings() {
     }
   });
 }
+
+// The component imports this file for its side effect, so it mounts itself (no-op on pages without the form).
+mountProfileMealSettings();
