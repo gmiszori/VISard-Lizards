@@ -52,6 +52,8 @@ const showServiceHeadings = menuGroups.some(group => group.service === 'lunch') 
   .detail-hero-title{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
   .menu-service-group{display:contents}
   .menu-service-group[hidden]{display:none}
+  /* .empty-state is display:none by default; the script only toggles `hidden`, so show it once it is not hidden. */
+  .empty-state.preference-empty:not([hidden]){display:block;font-size:14px;margin:0}
   .menu-service-heading{grid-column:1/-1;margin:10px 0 0;color:var(--muted);font-size:14px;text-transform:uppercase}
 </style>
 <script>
