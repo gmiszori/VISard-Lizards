@@ -31,7 +31,7 @@ export function occupancyOf(level: CrowdLevel): 'low' | 'medium' | 'high' {
 
 /** Milliseconds until this device may report again; 0 when it may report now. */
 export function cooldownLeft(lastReportedAt: number | null, now: number): number {
-  if (lastReportedAt === null || !Number.isFinite(lastReportedAt)) return 0;
+  if (lastReportedAt === null || !Number.isFinite(lastReportedAt) || lastReportedAt > now) return 0;
   return Math.max(0, lastReportedAt + REPORT_COOLDOWN_MS - now);
 }
 

@@ -39,6 +39,9 @@ test('cooldownLeft mirrors the backend 5-minute window', () => {
   assert.equal(cooldownLeft(null, t), 0);
   assert.equal(cooldownLeft(t, t + 60_000), REPORT_COOLDOWN_MS - 60_000);
   assert.equal(cooldownLeft(t, t + REPORT_COOLDOWN_MS), 0);
+  assert.equal(cooldownLeft(NaN, t), 0);
+  assert.equal(cooldownLeft(Infinity, t), 0);
+  assert.equal(cooldownLeft(t + 24 * 60 * 60_000, t), 0, 'a corrupt future timestamp does not freeze reporting');
 });
 
 test('isOpenAt uses Zurich time and the opening windows', () => {

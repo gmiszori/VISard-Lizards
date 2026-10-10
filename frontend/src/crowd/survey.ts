@@ -1,5 +1,5 @@
 import { API_URL, ApiError, apiGet, apiPost } from '../data/api';
-import { cooldownLeft, isOpenAt, occupancyOf, summarize, type CrowdLevel, type CrowdSummary, type LiveReport, type OpeningWindows } from './survey-logic';
+import { cooldownLeft, isOpenAt, occupancyOf, REPORT_COOLDOWN_MS, summarize, type CrowdLevel, type CrowdSummary, type LiveReport, type OpeningWindows } from './survey-logic';
 
 /**
  * "How busy is it right now?" on the canteen page. Shown only while the mensa is open and a backend is
@@ -15,7 +15,9 @@ const copy = {
     none: 'No reports in the last 30 minutes yet.',
     unavailable: 'Current reports are unavailable. Please try again shortly.',
     sending: 'Sending…', thanks: 'Thanks! Your report is in.',
-    cooldown: (m: number) => `Thanks for reporting! You can report again in ${m} min.`,
+    cooldown: (m: number) => `You can report again in ${m} min.`,
+    rateLimited: (m: number) => `Your report was not sent. Please wait ${m} min before reporting again.`,
+    retryNow: 'Your report was not sent. Please try again.',
     error: 'Could not send your report. Please try again.',
   },
   de: {
@@ -25,25 +27,29 @@ const copy = {
     none: 'In den letzten 30 Minuten noch keine Meldung.',
     unavailable: 'Aktuelle Meldungen sind gerade nicht verfügbar. Bitte versuche es gleich noch einmal.',
     sending: 'Wird gesendet…', thanks: 'Danke! Deine Meldung ist angekommen.',
-    cooldown: (m: number) => `Danke fürs Melden! Neue Meldung in ${m} Min. möglich.`,
+    cooldown: (m: number) => `Neue Meldung in ${m} Min. möglich.`,
+    rateLimited: (m: number) => `Deine Meldung wurde nicht gesendet. Bitte warte ${m} Min. vor der nächsten Meldung.`,
+    retryNow: 'Deine Meldung wurde nicht gesendet. Bitte versuche es erneut.',
     error: 'Meldung konnte nicht gesendet werden. Bitte versuche es erneut.',
   },
 };
 type Copy = typeof copy.en;
 const t = (): Copy => (document.documentElement.lang === 'de' ? copy.de : copy.en);
 const LAST_REPORT_KEY = 'campuseats-crowd-last-report';
+const RETRY_UNTIL_KEY = 'campuseats-crowd-retry-until';
 
 interface LiveInfo { temporarilyClosed: boolean; windows: OpeningWindows }
 interface CrowdResponse { live: LiveReport[] }
 
-function readLastReports(): Record<string, number> {
+function readSavedTimes(key: string): Record<string, number> {
   try {
-    const raw: unknown = JSON.parse(localStorage.getItem(LAST_REPORT_KEY) ?? '{}');
-    return raw && typeof raw === 'object' && !Array.isArray(raw) ? raw as Record<string, number> : {};
+    const raw: unknown = JSON.parse(localStorage.getItem(key) ?? '{}');
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
+    return Object.fromEntries(Object.entries(raw).filter(([, value]) => typeof value === 'number' && Number.isFinite(value)));
   } catch { return {}; }
 }
-function rememberReport(mensaId: string, at: number) {
-  try { localStorage.setItem(LAST_REPORT_KEY, JSON.stringify({ ...readLastReports(), [mensaId]: at })); } catch { /* storage blocked */ }
+function rememberTime(key: string, mensaId: string, at: number) {
+  try { localStorage.setItem(key, JSON.stringify({ ...readSavedTimes(key), [mensaId]: at })); } catch { /* the session keeps the cooldown in memory */ }
 }
 
 export function mountCrowdSurvey(): void {
@@ -59,8 +65,17 @@ export function mountCrowdSurvey(): void {
   let summaryLoaded = false;
   let summaryFailed = false;
   let loading = false;
-  let status: { kind: 'sending' | 'thanks' | 'error' } | null = null;
+  let status: { kind: 'sending' | 'thanks' | 'error' | 'rateLimited' } | null = null;
   let busy = false;
+  let lastReportedAt = readSavedTimes(LAST_REPORT_KEY)[mensaId] ?? null;
+  let retryUntil = readSavedTimes(RETRY_UNTIL_KEY)[mensaId] ?? 0;
+
+  function waitLeft(): number {
+    const savedLastReport = readSavedTimes(LAST_REPORT_KEY)[mensaId!];
+    if (savedLastReport !== undefined) lastReportedAt = Math.max(lastReportedAt ?? 0, savedLastReport);
+    retryUntil = Math.max(retryUntil, readSavedTimes(RETRY_UNTIL_KEY)[mensaId!] ?? 0);
+    return Math.max(cooldownLeft(lastReportedAt, Date.now()), retryUntil - Date.now(), 0);
+  }
 
   function renderTexts() {
     const c = t();
@@ -80,10 +95,11 @@ export function mountCrowdSurvey(): void {
     } else if (summaryFailed) {
       summaryEl.textContent = c.unavailable;
     }
-    const wait = cooldownLeft(readLastReports()[mensaId!] ?? null, Date.now());
+    const wait = waitLeft();
     buttons.forEach(b => { b.disabled = busy || wait > 0; });
     if (status?.kind === 'sending') statusEl.textContent = c.sending;
     else if (status?.kind === 'error') statusEl.textContent = c.error;
+    else if (status?.kind === 'rateLimited') statusEl.textContent = wait > 0 ? c.rateLimited(Math.ceil(wait / 60_000)) : c.retryNow;
     else if (wait > 0) statusEl.textContent = status?.kind === 'thanks' && wait > 4 * 60_000 ? c.thanks : c.cooldown(Math.ceil(wait / 60_000));
     else statusEl.textContent = '';
     updateCurrentCrowdBox(summary);
@@ -129,20 +145,26 @@ export function mountCrowdSurvey(): void {
   }
 
   async function report(level: CrowdLevel, button: HTMLButtonElement) {
-    if (busy) return;
+    if (busy || waitLeft() > 0) return;
+    if (root!.hidden || !isOpenAt(live!.windows, live!.temporarilyClosed, now())) {
+      refreshVisibility();
+      return;
+    }
     busy = true;
     status = { kind: 'sending' };
     buttons.forEach(b => b.setAttribute('aria-pressed', String(b === button)));
     renderTexts();
     try {
       await apiPost(`/api/mensas/${encodeURIComponent(mensaId!)}/crowd-reports`, { level });
-      rememberReport(mensaId!, Date.now());
+      lastReportedAt = Date.now();
+      rememberTime(LAST_REPORT_KEY, mensaId!, lastReportedAt);
       status = { kind: 'thanks' };
     } catch (error) {
+      buttons.forEach(b => b.setAttribute('aria-pressed', 'false'));
       if (error instanceof ApiError && error.status === 429) {
-        // Reported recently from this network or device: treat it like a successful report.
-        rememberReport(mensaId!, Date.now());
-        status = { kind: 'thanks' };
+        retryUntil = Date.now() + (error.retryAfterMs ?? REPORT_COOLDOWN_MS);
+        rememberTime(RETRY_UNTIL_KEY, mensaId!, retryUntil);
+        status = { kind: 'rateLimited' };
       } else {
         status = { kind: 'error' };
       }
@@ -171,6 +193,9 @@ export function mountCrowdSurvey(): void {
 
   buttons.forEach(button => button.addEventListener('click', () => report(Number(button.dataset.surveyLevel) as CrowdLevel, button)));
   document.addEventListener('languagechange', renderTexts);
+  window.addEventListener('storage', event => {
+    if (event.key === LAST_REPORT_KEY || event.key === RETRY_UNTIL_KEY) renderTexts();
+  });
   refreshVisibility();
   setInterval(refreshVisibility, 60_000);
   setInterval(() => { if (!root.hidden) void loadSummary(); }, 2 * 60_000);

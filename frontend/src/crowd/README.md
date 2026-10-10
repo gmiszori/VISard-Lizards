@@ -40,6 +40,9 @@ Live summaries expire after 30 minutes in the browser, including while the page 
 new response. Empty or failed refreshes and closing time release the current-crowd display back to
 the normal opening/status renderer; a failed refresh says that current reports are unavailable.
 
-A device can report a mensa once every 5 minutes, like the backend's per-IP limit; a `429` from the
-backend is treated as "already reported". Logic lives in `survey-logic.ts` (tested in `survey.test.ts`).
+A device can report a mensa once every 5 minutes, like the backend's per-IP limit. A `429` says that
+the report was not sent and disables the buttons for the server's `Retry-After` interval (5 minutes
+when that header is absent or invalid). Retry deadlines are stored separately from accepted reports,
+and the cooldown also works in memory when browser storage is unavailable. Logic lives in
+`survey-logic.ts` (tested in `survey.test.ts`).
 In development, `?crowdNow=2026-10-12T12:00:00%2B02:00` shows the survey as if it were that time.

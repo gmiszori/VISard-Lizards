@@ -24,10 +24,25 @@ export const API_URL: string = (() => {
 /** An HTTP error from the backend, with its problem-detail message (backend/API.md, "Errors"). */
 export class ApiError extends Error {
   readonly status: number;
-  constructor(status: number, detail: string) {
+  readonly retryAfterMs?: number;
+  constructor(status: number, detail: string, retryAfterMs?: number) {
     super(detail);
     this.status = status;
+    this.retryAfterMs = retryAfterMs;
   }
+}
+
+/** Retry-After is a non-negative number of seconds or an HTTP date (RFC 9110, section 10.2.3). */
+export function retryAfterMs(header: string | null, now = Date.now()): number | undefined {
+  const value = header?.trim();
+  if (!value) return undefined;
+  if (/^\d+$/.test(value)) {
+    const delay = Number(value) * 1000;
+    return Number.isSafeInteger(delay) ? delay : undefined;
+  }
+  if (!/^[A-Za-z]/.test(value) || !/GMT$/.test(value)) return undefined;
+  const timestamp = Date.parse(value);
+  return Number.isFinite(timestamp) ? Math.max(0, timestamp - now) : undefined;
 }
 
 async function request<T>(method: 'GET' | 'POST', path: string, body: unknown, baseUrl: string, timeoutMs: number): Promise<T> {
@@ -41,7 +56,7 @@ async function request<T>(method: 'GET' | 'POST', path: string, body: unknown, b
   if (!response.ok) {
     let detail = `${response.status} ${response.statusText}`;
     try { detail = ((await response.json()) as { detail?: string }).detail ?? detail; } catch { /* not a problem detail */ }
-    throw new ApiError(response.status, detail);
+    throw new ApiError(response.status, detail, retryAfterMs(response.headers.get('Retry-After')));
   }
   return response.json() as Promise<T>;
 }

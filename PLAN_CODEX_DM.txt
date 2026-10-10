@@ -30,3 +30,20 @@ QA fixture is deliberately excluded from commits and will be removed.
 without dropping its card/filter/open-count changes. The sole merge conflict
 is astro.config.mjs: retaining the collaborator's version-compatible ts-ignore
 instead of the unused expect-error. Lifecycle fix remains intact.
+
+05:47: Lifecycle changes pushed to main c46815d. Next: separate rejected
+reports from accepted ones, respect Retry-After via additive ApiError metadata
+(frontend data/api.ts + its tests), and retain cooldowns if storage is blocked.
+The backend contract and server are unchanged.
+
+05:50: Submission browser QA passed: 429 is visibly rejected (0 accepted),
+75-second Retry-After survives reload and unlocks after 2 simulated minutes.
+Accepted and rejected cooldowns both work with blocked storage; 503 remains
+retryable; German labels/errors update correctly. Unit suite: 163 passed.
+
+05:51: Production build passed (26 pages); Astro check 0 errors/warnings/hints.
+Reviewed 373155a on feature/crowd-survey-mock (not yet on main). Integration
+note: this session's submit-time opening check must honor the mock forceOpen
+flag when that feature is merged. Its "Reset report lock" should also reset
+campuseats-crowd-retry-until and any in-session cooldown. Kept that unmerged
+feature and origin/backend's UZH importer separate from these reliability fixes.
