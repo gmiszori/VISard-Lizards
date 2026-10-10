@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#17664f" />
+  <title>Offline | CampusEats</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px; box-sizing: border-box; font-family: system-ui, sans-serif; background: #f5f6f1; color: #1b2a20; }
+    main { max-width: 360px; text-align: center; }
+    .mark { width: 64px; height: 64px; border-radius: 18px; background: #17664f; color: #fff; display: grid; place-items: center; font-size: 34px; margin: 0 auto 18px; }
+    h1 { font-size: 22px; margin: 0 0 8px; }
+    p { margin: 0 0 18px; line-height: 1.5; color: #55645a; }
+    button { font: inherit; font-weight: 700; padding: 12px 20px; min-height: 44px; border: 0; border-radius: 14px; background: #17664f; color: #fff; }
+    @media (prefers-color-scheme: dark) { body { background: #0e1511; color: #e8efe9; } p { color: #a9b6ac; } }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="mark" aria-hidden="true">✳</div>
+    <h1>You are offline</h1>
+    <p>Menus you opened before are still available. This page has not been saved yet. Reconnect and try again.</p>
+    <button type="button" onclick="location.reload()">Try again</button>
+  </main>
+</body>
+</html>

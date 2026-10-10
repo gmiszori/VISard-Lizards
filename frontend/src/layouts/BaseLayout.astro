@@ -14,6 +14,9 @@ const { title } = Astro.props;
     <meta name="theme-color" content="#f5f6f1" />
     <meta name="description" content="Find what's cooking at ETH and UZH campus canteens." />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="CampusEats" />
     <title>{title} | CampusEats</title>
   </head>
   <body>
@@ -81,6 +84,7 @@ const { title } = Astro.props;
       import '../scripts/live-status';
       import '../scripts/preferences';
       import '../scripts/meal-stars';
+      import '../scripts/register-sw';
     </script>
   </body>
 </html>
