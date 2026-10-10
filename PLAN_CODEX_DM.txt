@@ -64,3 +64,5 @@ Running backend tests with a checksum-verified portable Temurin JDK 25 in
 this session's scratch directory; no global Java settings changed.
 
 06:05: Integrated main 6694a4b crowd mock/recency work, preserving 429 rejection, Retry-After and blocked-storage cooldown. Mock forceOpen is honored on submit; Reset report lock clears retry storage and in-session state. Retained backend-only menu provenance and incremental importer documentation. All 170 frontend tests pass; production build has 43 pages. Backend full suite: 111 tests, 0 failures/errors, 2 skipped. UZH startup now honors app.live-import.enabled=false; import unit test stubs Food2050 HTTP. Final type/browser checks in progress.
+
+06:08: Integrated 46ed256 crowd icons and preserved nested label/reset rendering. Final 43-page build succeeded; type check clean before icon merge, rerunning for icon changes. Earlier browser fixture verified freshness/closing/429/retry behavior. Final browser repeat was blocked by an in-app preview connection failure (host HTTP still returned 200), so this final mock/icon combination has automated coverage/build checks but no new browser proof.
