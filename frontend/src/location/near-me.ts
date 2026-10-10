@@ -16,7 +16,6 @@ interface NearMeData { places: MensaPlace[]; hours: MensaHours[] }
 const TEXT = {
   en: {
     label: 'Sort by distance',
-    locating: 'Finding your location…',
     errors: {
       denied: 'Location access is blocked. Allow it in your browser’s site settings to sort by distance.',
       unsupported: 'This browser cannot share your location.',
@@ -26,7 +25,6 @@ const TEXT = {
   },
   de: {
     label: 'Nach Entfernung sortieren',
-    locating: 'Standort wird ermittelt…',
     errors: {
       denied: 'Der Standortzugriff ist blockiert. Erlaube ihn in den Website-Einstellungen des Browsers.',
       unsupported: 'Dieser Browser kann deinen Standort nicht teilen.',
@@ -102,7 +100,7 @@ export function mountNearMe(): void {
   async function locate() {
     const id = ++requestId;
     button.disabled = true;
-    show(() => text().locating);
+    show(null);
     try {
       const found = await locateUserNow(data.places);
       if (id !== requestId) return;
