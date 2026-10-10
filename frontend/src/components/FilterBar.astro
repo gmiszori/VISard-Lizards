@@ -11,6 +11,7 @@ import { CAMPUSES } from '../data/canteens';
   </select>
 </div>
 <p id="search-status" class="search-status" role="status" aria-live="polite" hidden></p>
+<p id="voice-agent-caption" class="voice-agent-caption" aria-live="polite" hidden></p>
 <section id="ai-results" class="ai-results" aria-labelledby="ai-results-title" hidden>
   <div class="ai-results-heading"><h2 id="ai-results-title" data-i18n="aiMatches">AI-ranked dish matches</h2><span id="ai-results-count"></span></div>
   <p id="ai-results-intent" class="ai-results-intent"></p>
@@ -19,6 +20,7 @@ import { CAMPUSES } from '../data/canteens';
 </section>
 <style>
   .search-status{margin:-8px 0 14px;color:var(--muted);font-size:12px}
+  .voice-agent-caption{margin:-8px 0 14px;padding:10px 12px;border-radius:12px;background:var(--paper);color:var(--ink);font-size:13px;line-height:1.5;white-space:pre-wrap}
   .ai-results{margin:0 0 18px;padding:16px;border:1px solid var(--line);border-radius:16px;background:var(--paper)}
   .ai-results-heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
   .ai-results-heading h2{margin:0;font-size:17px}

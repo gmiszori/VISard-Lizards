@@ -47,7 +47,7 @@ export function addSpeechPhraseHints(
   try {
     const Phrase = browser.SpeechRecognitionPhrase as SpeechRecognitionPhraseConstructor;
     const unique = [...new Set(phrases.map(phrase => phrase.trim()).filter(Boolean))].slice(0, 100);
-    recognition.phrases = unique.map(phrase => new Phrase(phrase, 4));
+    recognition.phrases = unique.map(phrase => new Phrase(phrase, 10));
     return true;
   } catch {
     // Browser support is experimental and varies by recognition service.

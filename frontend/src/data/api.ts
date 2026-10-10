@@ -203,6 +203,10 @@ export interface HybridSearchCriteria {
   semanticQuery: string | null;
   isLocationScoped: boolean;
   hardFilters: {
+    id: string | null;
+    date: string | null;
+    mensaId: string | null;
+    campusId: string | null;
     dietTag: string | null;
     kind: string | null;
     service: string | null;
@@ -227,6 +231,19 @@ export interface HybridMealSearchResponse {
   }>;
 }
 
+export interface RealtimeVoiceSession {
+  clientSecret: string;
+  expiresAt: number;
+  instructions: string;
+}
+
+export const createRealtimeVoiceSession = (params: {
+  activeMensaId: string | null;
+  activeCampusId: string | null;
+  priceCategory: 'STUDENT' | 'STAFF' | 'EXTERNAL';
+}, baseUrl = API_URL): Promise<RealtimeVoiceSession> =>
+  apiPost<RealtimeVoiceSession>('/api/voice/realtime-session', params, baseUrl, 15000);
+
 export const searchHybridMeals = (
   params: {
     query: string;
@@ -238,6 +255,7 @@ export const searchHybridMeals = (
     userLat?: number | null;
     userLng?: number | null;
     limit?: number;
+    criteria?: HybridSearchCriteria;
   },
   baseUrl = API_URL,
   timeoutMs = 20000

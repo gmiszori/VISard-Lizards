@@ -60,6 +60,8 @@ public class HybridIntentParser {
     private final String model;
     private final Clock clock;
 
+    public record RealtimePrompt(String instructions, Map<String, Object> criteriaSchema) { }
+
     public HybridIntentParser(JsonMapper mapper, HybridMealRepository repository, Clock clock,
             @Value("${openai.api-key:}") String apiKey,
             @Value("${openai.model:gpt-4.1-mini}") String model) {
@@ -78,22 +80,11 @@ public class HybridIntentParser {
         if (query == null || query.isBlank()) return new SearchCriteria(null, false, null, null);
         if (apiKey == null || apiKey.isBlank())
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "OpenAI intent parser is not configured");
-        List<String> diets = repository.values("dietTag");
-        List<String> kinds = repository.values("kind");
-        List<String> services = repository.values("service");
-        List<String> mensas = repository.mensaIds();
-        List<String> campuses = repository.campusIds();
-        List<String> allergens = repository.allergenValues();
-        Map<String, String> venueNames = repository.mensaNames();
-        String instructions = SYSTEM_PROMPT.formatted(diets, kinds, services, mensas, campuses,
-                venueNames, allergens,
-                LocalDate.now(clock),
-                priceColumn, activeMensaId == null ? "none" : activeMensaId,
-                activeCampusId == null ? "none" : activeCampusId);
+        RealtimePrompt prompt = realtimePrompt(activeMensaId, activeCampusId, priceColumn);
         Map<String, Object> body = Map.of("model", model, "store", false,
-                "instructions", instructions, "input", query,
+                "instructions", prompt.instructions(), "input", query,
                 "text", Map.of("format", Map.of("type", "json_schema", "name", "meal_search_criteria",
-                        "strict", true, "schema", schema(diets, kinds, services, mensas, campuses, allergens))));
+                        "strict", true, "schema", prompt.criteriaSchema())));
         String response = client.post().uri("https://api.openai.com/v1/responses")
                 .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer " + apiKey)
@@ -108,10 +99,31 @@ public class HybridIntentParser {
                 // Fall back to the available campus context (already applied by the repository), or to
                 // the normal search scope when the user has not supplied a location.
                 return normalizeLocationScope(criteria, activeMensaId, query,
-                        activeMensaId == null ? null : venueNames.get(activeMensaId));
+                        activeMensaId == null ? null : repository.mensaNames().get(activeMensaId));
             }
         }
         throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Intent parser returned no structured output");
+    }
+
+    /** Builds the same exact dynamic domain prompt and SearchCriteria schema for Realtime function calls. */
+    public RealtimePrompt realtimePrompt(String activeMensaId, String activeCampusId, String priceColumn) {
+        List<String> diets = repository.values("dietTag");
+        List<String> kinds = repository.values("kind");
+        List<String> services = repository.values("service");
+        List<String> mensas = repository.mensaIds();
+        List<String> campuses = repository.campusIds();
+        List<String> allergens = repository.allergenValues();
+        Map<String, String> venueNames = repository.mensaNames();
+        String instructions = SYSTEM_PROMPT.formatted(diets, kinds, services, mensas, campuses,
+                venueNames, allergens, LocalDate.now(clock), priceColumn,
+                activeMensaId == null ? "none" : activeMensaId,
+                activeCampusId == null ? "none" : activeCampusId);
+        return new RealtimePrompt(instructions, schema(diets, kinds, services, mensas, campuses, allergens));
+    }
+
+    /** Enforces the location context invariant for criteria parsed by the Realtime function tool. */
+    public SearchCriteria normalizeRealtimeCriteria(SearchCriteria criteria, String activeMensaId) {
+        return normalizeLocationScope(criteria, activeMensaId);
     }
 
     static SearchCriteria normalizeLocationScope(SearchCriteria criteria, String activeMensaId) {

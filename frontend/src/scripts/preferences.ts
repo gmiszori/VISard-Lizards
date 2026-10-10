@@ -1,10 +1,12 @@
 import { matchesQuery } from '../search/fold';
 import { addSpeechPhraseHints, chooseFoodAwareTranscript, speechRecognitionConstructor, type SpeechRecognitionLike } from '../search/speech';
 import { ALL_CAMPUS_IDS, isPriceTier, isViewMode, readPreferences, PREFERENCES_KEY, type Preferences } from '../preferences/state';
-import { API_URL, ApiError, searchHybridMeals, type HybridMealSearchResponse } from '../data/api';
+import { API_URL, ApiError, createRealtimeVoiceSession, searchHybridMeals, type HybridMealSearchResponse } from '../data/api';
+import { RealtimeVoiceConnection, type RealtimeVoiceStatus } from '../search/realtime';
 let aiMatchedIds: Set<string> | null = null;
 let aiMatchedMealIds: Set<string> | null = null;
 let aiQuery = '';
+let realtimeResultsActive = false;
 let latestHybridResponse: HybridMealSearchResponse | null = null;
 let searchPending = false;
 let searchVersion = 0;
@@ -104,6 +106,49 @@ function visibleHybridResults(response: HybridMealSearchResponse) {
     : response.results;
 }
 
+function displayHybridResponse(response: HybridMealSearchResponse, query: string, fromRealtime = false) {
+  latestHybridResponse = response;
+  aiQuery = query;
+  realtimeResultsActive = fromRealtime;
+  const visibleResults = visibleHybridResults(response);
+  aiMatchedIds = new Set(visibleResults.map(result => result.mensaId));
+  aiMatchedMealIds = new Set(visibleResults.map(result => result.meal.id));
+  applyPreferences();
+  const grid = document.querySelector<HTMLElement>('#canteen-grid');
+  if (grid) {
+    const ranks = new Map<string, number>();
+    visibleResults.forEach((result, index) => { if (!ranks.has(result.mensaId)) ranks.set(result.mensaId, index); });
+    [...grid.querySelectorAll<HTMLElement>(':scope > [data-canteen-card]')]
+      .sort((a, b) => (ranks.get(a.dataset.canteenId ?? '') ?? 9999) - (ranks.get(b.dataset.canteenId ?? '') ?? 9999))
+      .forEach(card => grid.append(card));
+  }
+}
+
+function activeCampusScope() {
+  const choice = document.querySelector<HTMLSelectElement>('#campus-select')?.value;
+  return choice === 'all' ? null
+    : choice && choice !== 'preset' ? [choice] : preferences.locations;
+}
+
+function activeCampusFilter() {
+  const choice = document.querySelector<HTMLSelectElement>('#campus-select')?.value;
+  return choice && choice !== 'all' && choice !== 'preset' ? choice : null;
+}
+
+function priceCategory() {
+  return preferences.priceTier === 'worker' ? 'STAFF' as const
+    : preferences.priceTier === 'external' ? 'EXTERNAL' as const : 'STUDENT' as const;
+}
+
+function statusText(status: RealtimeVoiceStatus, detail?: string) {
+  if (status === 'error') return detail ?? 'Voice connection failed. Try again.';
+  const de = document.documentElement.lang === 'de';
+  return status === 'connecting' ? (de ? 'Verbinde Sprachassistent …' : 'Connecting voice assistant…')
+    : status === 'thinking' ? (de ? 'Suche nach passenden Gerichten …' : 'Searching for dishes…')
+    : status === 'speaking' ? (de ? 'Antwort wird gesprochen …' : 'Speaking…')
+    : (de ? 'Ich höre zu …' : 'Listening… speak naturally.');
+}
+
 let preferences: Preferences;
 try {
   preferences = readPreferences();
@@ -130,14 +175,15 @@ function applyPreferences() {
   document.querySelectorAll<HTMLSelectElement>('[data-price-tier]').forEach(select => select.value = preferences.priceTier);
 
   const query = document.querySelector<HTMLInputElement>('#search-input')?.value ?? '';
-  if (latestHybridResponse && aiQuery === query) {
+  if (latestHybridResponse && (realtimeResultsActive || aiQuery === query)) {
     const visibleResults = visibleHybridResults(latestHybridResponse);
     aiMatchedIds = new Set(visibleResults.map(result => result.mensaId));
     aiMatchedMealIds = new Set(visibleResults.map(result => result.meal.id));
     showHybridResults(latestHybridResponse);
   }
-  const useTextQuery = !searchPending && !(aiMatchedIds && aiQuery === query);
-  const aiResultsActive = aiMatchedMealIds !== null && aiQuery === query;
+  const hybridResultsActive = realtimeResultsActive || aiQuery === query;
+  const useTextQuery = !searchPending && !(aiMatchedIds && hybridResultsActive);
+  const aiResultsActive = aiMatchedMealIds !== null && hybridResultsActive;
   const aiMenuHint = document.querySelector<HTMLElement>('#ai-menu-hint');
   if (aiMenuHint) aiMenuHint.hidden = !aiResultsActive;
   // Lunch / dinner choice of the day picker (components/DayPicker.astro); unset shows both.
@@ -189,7 +235,7 @@ function applyPreferences() {
         : card.dataset.campusId === campusChoice;
     const matchesOpen = !preferences.openOnly || card.dataset.isOpen === 'true';
     const fallbackSearch = matchesQuery(card.dataset.name ?? '', query) || card.querySelector('[data-meal-row]:not([hidden])') !== null;
-    const matchesSearch = aiMatchedIds && aiQuery === query
+    const matchesSearch = aiMatchedIds && hybridResultsActive
       ? aiMatchedIds.has(card.dataset.canteenId ?? '') : searchPending || fallbackSearch;
     // With lunch or dinner picked, a canteen without that service counts as having no menu.
     const servesChoice = !service || card.querySelector(`[data-meal-group][data-service="${service}"], [data-meal-group]:not([data-service])`) !== null;
@@ -277,6 +323,7 @@ document.querySelector<HTMLInputElement>('#search-input')?.addEventListener('inp
     aiMatchedMealIds = null;
     aiQuery = '';
     latestHybridResponse = null;
+    realtimeResultsActive = false;
   }
   searchPending = fromVoice && query.length >= 2 && !!API_URL && preferences.useAiVoiceSearch;
   searchStatus('');
@@ -322,22 +369,7 @@ document.querySelector<HTMLInputElement>('#search-input')?.addEventListener('inp
 
       if (version !== searchVersion) return;
       searchPending = false;
-      latestHybridResponse = hybridRes;
-      aiQuery = query;
-      const visibleResults = visibleHybridResults(hybridRes);
-      aiMatchedIds = new Set(visibleResults.map(result => result.mensaId));
-      aiMatchedMealIds = new Set(visibleResults.map(result => result.meal.id));
-      applyPreferences();
-      const grid = document.querySelector<HTMLElement>('#canteen-grid');
-      if (grid) {
-        const ranks = new Map<string, number>();
-        visibleResults.forEach((result, index) => {
-          if (!ranks.has(result.mensaId)) ranks.set(result.mensaId, index);
-        });
-        [...grid.querySelectorAll<HTMLElement>(':scope > [data-canteen-card]')]
-          .sort((a, b) => (ranks.get(a.dataset.canteenId ?? '') ?? 9999) - (ranks.get(b.dataset.canteenId ?? '') ?? 9999))
-          .forEach(card => grid.append(card));
-      }
+      displayHybridResponse(hybridRes, query);
       searchStatus('');
       return;
     } catch (error) {
@@ -362,12 +394,115 @@ const voiceSearchButton = document.querySelector<HTMLButtonElement>('#voice-sear
 const searchInput = document.querySelector<HTMLInputElement>('#search-input');
 const SpeechRecognition = speechRecognitionConstructor(window);
 let speechRecognition: SpeechRecognitionLike | null = null;
+let realtimeVoice: RealtimeVoiceConnection | null = null;
+const voiceCaption = document.querySelector<HTMLElement>('#voice-agent-caption');
 if (voiceSearchButton && !SpeechRecognition) {
-  voiceSearchButton.disabled = true;
+  voiceSearchButton.disabled = !preferences.useAiVoiceSearch;
   voiceSearchButton.title = document.documentElement.lang === 'de'
     ? 'Dieser Browser unterstützt keine Sprachsuche.' : 'Voice search is not supported in this browser.';
 }
 voiceSearchButton?.addEventListener('click', () => {
+  if (preferences.useAiVoiceSearch) {
+    if (realtimeVoice) {
+      realtimeVoice.close();
+      realtimeVoice = null;
+      voiceSearchButton.setAttribute('aria-pressed', 'false');
+      voiceSearchButton.disabled = false;
+      searchStatus('');
+      return;
+    }
+    if (!API_URL) {
+      searchStatus(document.documentElement.lang === 'de' ? 'Backend für Sprachsuche nicht erreichbar.' : 'Voice search backend is unavailable.');
+      return;
+    }
+    if (!navigator.mediaDevices?.getUserMedia || !window.RTCPeerConnection) {
+      searchStatus(document.documentElement.lang === 'de' ? 'Dieser Browser unterstützt keine Echtzeit-Sprachsuche.' : 'This browser does not support realtime voice search.');
+      return;
+    }
+    aiMatchedIds = null;
+    aiMatchedMealIds = null;
+    aiQuery = '';
+    latestHybridResponse = null;
+    realtimeResultsActive = false;
+    if (voiceCaption) { voiceCaption.textContent = ''; voiceCaption.hidden = true; }
+    showHybridResults(null);
+    applyPreferences();
+    voiceSearchButton.disabled = true;
+    voiceSearchButton.setAttribute('aria-pressed', 'true');
+    searchStatus(statusText('connecting'));
+    let assistantCaptionOpen = false;
+    const captionDelta = (text: string) => {
+      if (!voiceCaption) return;
+      if (!text) { assistantCaptionOpen = false; return; }
+      if (!assistantCaptionOpen) {
+        voiceCaption.textContent += `${voiceCaption.textContent ? '\n' : ''}UniEats: `;
+        assistantCaptionOpen = true;
+      }
+      voiceCaption.textContent += text;
+      if (voiceCaption.textContent.length > 1600) voiceCaption.textContent = voiceCaption.textContent.slice(-1600);
+      voiceCaption.hidden = !voiceCaption.textContent;
+    };
+    const userCaption = (text: string) => {
+      if (!voiceCaption || !text.trim()) return;
+      assistantCaptionOpen = false;
+      voiceCaption.textContent += `${voiceCaption.textContent ? '\n' : ''}You: ${text.trim()}`;
+      if (voiceCaption.textContent.length > 1600) voiceCaption.textContent = voiceCaption.textContent.slice(-1600);
+      voiceCaption.hidden = !voiceCaption.textContent;
+    };
+    const callbacks = {
+      onStatus: (status: RealtimeVoiceStatus, detail?: string) => {
+        searchStatus(statusText(status, detail));
+        if (status === 'listening' || status === 'speaking' || status === 'thinking') voiceSearchButton.disabled = false;
+        if (status === 'error') {
+          realtimeVoice?.close();
+          realtimeVoice = null;
+          voiceSearchButton.disabled = false;
+          voiceSearchButton.setAttribute('aria-pressed', 'false');
+        }
+      },
+      onUserText: userCaption,
+      onAssistantText: captionDelta,
+      onSearch: async (query: string) => {
+        searchStatus(document.documentElement.lang === 'de' ? 'Suche nach passenden Gerichten …' : 'Finding matching dishes…');
+        const explicitDate = /\b(today|tonight|tomorrow|yesterday|monday|tuesday|wednesday|thursday|friday|saturday|sunday|heute|heute abend|morgen|gestern|montag|dienstag|mittwoch|donnerstag|freitag|samstag|sonntag)\b|\b\d{1,2}[./-]\d{1,2}(?:[./-]\d{2,4})?\b/iu.test(query);
+        try {
+          const response = await searchHybridMeals({
+            query,
+            mensaId: currentSearchMensaId(),
+            campusId: activeCampusFilter(),
+            campusIds: activeCampusScope(),
+            date: explicitDate ? null : document.querySelector<HTMLElement>('[data-day-picker]')?.dataset.pickerDate ?? null,
+            userLat: userCoords?.lat ?? null,
+            userLng: userCoords?.lng ?? null,
+            priceCategory: priceCategory(),
+            limit: 10,
+          }, API_URL, 20000);
+          displayHybridResponse(response, '', true);
+          return response;
+        } finally {
+          searchStatus('');
+        }
+      },
+    };
+    void (async () => {
+      try {
+        const session = await createRealtimeVoiceSession({
+          activeMensaId: currentSearchMensaId(),
+          activeCampusId,
+          priceCategory: priceCategory(),
+        }, API_URL);
+        const connection = await RealtimeVoiceConnection.connect(session.clientSecret, session.instructions, callbacks);
+        realtimeVoice = connection;
+        voiceSearchButton.disabled = false;
+      } catch (error) {
+        voiceSearchButton.disabled = false;
+        voiceSearchButton.setAttribute('aria-pressed', 'false');
+        const detail = error instanceof ApiError ? error.message : (error instanceof Error ? error.message : 'Connection failed.');
+        searchStatus(document.documentElement.lang === 'de' ? `Sprachsuche fehlgeschlagen: ${detail}` : `Voice search failed: ${detail}`);
+      }
+    })();
+    return;
+  }
   if (!SpeechRecognition || !searchInput) {
     searchStatus(document.documentElement.lang === 'de'
       ? 'Dieser Browser unterstützt keine Sprachsuche.' : 'Voice search is not supported in this browser.');
@@ -457,6 +592,16 @@ voiceSearchButton?.addEventListener('click', () => {
     }
   };
   startRecognition(true);
+});
+document.addEventListener('campuseats:preferences-applied', () => {
+  if (!preferences.useAiVoiceSearch && realtimeVoice) {
+    realtimeVoice.close();
+    realtimeVoice = null;
+    voiceSearchButton?.setAttribute('aria-pressed', 'false');
+    searchStatus('');
+  }
+  if (voiceSearchButton && !realtimeVoice && !speechRecognition)
+    voiceSearchButton.disabled = !preferences.useAiVoiceSearch && !SpeechRecognition;
 });
 document.querySelector<HTMLSelectElement>('#campus-select')?.addEventListener('change', applyPreferences);
 document.querySelector<HTMLButtonElement>('#no-menu-toggle')?.addEventListener('click', () => {

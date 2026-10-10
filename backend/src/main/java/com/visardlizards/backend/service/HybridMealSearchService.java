@@ -58,8 +58,28 @@ public class HybridMealSearchService {
             case STAFF -> "priceStaff";
             case EXTERNAL -> "priceExternal";
         };
-        SearchCriteria criteria = parser.parse(request.query(), request.mensaId(), request.campusId(), priceColumn);
+        SearchCriteria criteria = request.criteria() == null
+                ? parser.parse(request.query(), request.mensaId(), request.campusId(), priceColumn)
+                : parser.normalizeRealtimeCriteria(request.criteria(), request.mensaId());
+        if (request.criteria() != null) validateRealtimeCriteria(criteria);
         return searchWithCriteria(request, criteria);
+    }
+
+    private void validateRealtimeCriteria(SearchCriteria criteria) {
+        SearchCriteria.HardFilters filters = criteria.hardFilters();
+        requireAllowed(filters.mensaId(), repository.mensaIds(), "mensaId");
+        requireAllowed(filters.campusId(), repository.campusIds(), "campusId");
+        requireAllowed(filters.dietTag(), repository.values("dietTag"), "dietTag");
+        requireAllowed(filters.kind(), repository.values("kind"), "kind");
+        requireAllowed(filters.service(), repository.values("service"), "service");
+        List<String> allergens = repository.allergenValues();
+        if (filters.excludeAllergens().stream().anyMatch(allergen -> !allergens.contains(allergen)))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown allergen filter");
+    }
+
+    private static void requireAllowed(String value, List<String> allowed, String field) {
+        if (value != null && !allowed.contains(value))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown " + field + " filter");
     }
 
     /** Package-visible execution seam for deterministic tests of the repository and ranking. */

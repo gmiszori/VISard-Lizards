@@ -24,7 +24,7 @@ test('contextual food and price phrases are added when the browser supports phra
   const added = addSpeechPhraseHints({ SpeechRecognitionPhrase: MockPhrase }, recognition, [' chicken ', 'chicken', '10 francs']);
   assert.equal(added, true);
   assert.deepEqual(recognition.phrases.map(phrase => phrase.phrase), ['chicken', '10 francs']);
-  assert.ok(recognition.phrases.every(phrase => phrase.boost === 4));
+  assert.ok(recognition.phrases.every(phrase => phrase.boost === 10));
 });
 
 test('contextual phrase hints safely fall back on browsers without support', () => {
