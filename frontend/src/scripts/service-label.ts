@@ -1,10 +1,12 @@
+import { appNow, CLOCK_EVENT } from '../time/clock';
+
 type ServiceWindow = { service: 'lunch' | 'dinner'; open: string; close: string };
 
 function zurichNow() {
   const parts = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'Europe/Zurich', year: 'numeric', month: '2-digit', day: '2-digit',
     hour: '2-digit', minute: '2-digit', hour12: false,
-  }).formatToParts(new Date());
+  }).formatToParts(appNow());
   const get = (type: string) => parts.find(part => part.type === type)?.value ?? '';
   return { date: `${get('year')}-${get('month')}-${get('day')}`, minute: (Number(get('hour')) % 24) * 60 + Number(get('minute')) };
 }
@@ -62,3 +64,5 @@ window.setTimeout(() => document.dispatchEvent(new Event('campuseats:service-fil
 window.setInterval(refresh, 30_000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
 document.addEventListener('languagechange', refresh);
+// Dev mode can simulate the time; the service line follows it like the open/closed status does.
+document.addEventListener(CLOCK_EVENT, refresh);
