@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import '../styles/touch-targets.css';
+import '../styles/list-view.css';
 import SimulatedClockBanner from '../time/SimulatedClockBanner.astro';
 import HeaderAccount from '../onboarding/components/HeaderAccount.astro';
 import { LIVE_DATA } from '../data/canteens';
@@ -20,6 +21,9 @@ const { title } = Astro.props;
         if (location.pathname === '/' && localStorage.getItem('campuseats-profile') === null) location.replace('/onboarding');
         if (localStorage.getItem('campuseats-theme') === 'dark') document.documentElement.dataset.theme = 'dark';
         if (localStorage.getItem('campuseats-language') === 'de') document.documentElement.lang = 'de';
+        const savedPreferences = JSON.parse(localStorage.getItem('campuseats-preferences') || '{}');
+        document.documentElement.dataset.density = ['standard', 'compact', 'list'].includes(savedPreferences?.viewMode)
+          ? savedPreferences.viewMode : savedPreferences?.compact === true ? 'compact' : 'standard';
       } catch (error) { /* storage blocked: the defaults apply */ }
     </script>
     <meta name="description" content="Find what's cooking at ETH and UZH campus canteens." />
@@ -72,6 +76,8 @@ const { title } = Astro.props;
       Object.assign(translations.de, { menuFor: 'Menü für', menusFor: 'Menüs für' });
       Object.assign(translations.en, { devMode: 'Dev mode', devModeDescription: 'Show diagnostics for live data, location, storage and backend connectivity.', devTools: 'Developer tools' });
       Object.assign(translations.de, { devMode: 'Entwicklermodus', devModeDescription: 'Zeigt Diagnosen für Live-Daten, Standort, Speicher und Backend-Verbindung.', devTools: 'Entwicklerwerkzeuge' });
+      Object.assign(translations.en, { viewMode: 'Overview layout', viewStandard: 'Standard', viewList: 'List' });
+      Object.assign(translations.de, { viewMode: 'Übersichtsansicht', viewStandard: 'Standard', viewList: 'Liste' });
       translations.en.filtersHint = 'Choose one or more campus locations to include.';
       translations.de.filtersHint = 'Wähle einen oder mehrere Campus-Standorte aus.';
       // Storage can be unavailable (private mode, blocked cookies) or hold unexpected values: never let that stop this script.

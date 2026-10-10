@@ -1,5 +1,5 @@
 export interface Preferences {
-  vegan: boolean; vegetarian: boolean; meat: boolean; compact: boolean;
+  vegan: boolean; vegetarian: boolean; meat: boolean; viewMode: 'standard' | 'compact' | 'list';
   locations: string[]; openOnly: boolean; priceTier: 'student' | 'worker' | 'external';
   devMode: boolean;
 }
@@ -8,6 +8,7 @@ export const FAVOURITES_KEY = 'campuseats-favourites';
 const campuses = ['zentrum', 'hoenggerberg', 'irchel'];
 const legacy: Record<string, string> = { 'ETH Zentrum': 'zentrum', 'UZH Zentrum': 'zentrum', 'ETH Hönggerberg': 'hoenggerberg', 'UZH Irchel': 'irchel' };
 export const isPriceTier = (value: unknown): value is Preferences['priceTier'] => value === 'student' || value === 'worker' || value === 'external';
+export const isViewMode = (value: unknown): value is Preferences['viewMode'] => value === 'standard' || value === 'compact' || value === 'list';
 
 /** Treat persisted JSON as untrusted input. An intentional empty campus list stays empty. */
 export function normalizePreferences(value: unknown, profileTier: unknown = 'student'): Preferences {
@@ -16,7 +17,8 @@ export function normalizePreferences(value: unknown, profileTier: unknown = 'stu
   const valid = raw.filter((v): v is string => typeof v === 'string').map(v => legacy[v] ?? v).filter(v => campuses.includes(v));
   const locations = raw.length && !valid.length ? campuses : [...new Set(valid)];
   const bool = (key: string, fallback: boolean) => typeof saved[key] === 'boolean' ? saved[key] as boolean : fallback;
-  return { vegan: bool('vegan', true), vegetarian: bool('vegetarian', true), meat: bool('meat', true), compact: bool('compact', false),
+  return { vegan: bool('vegan', true), vegetarian: bool('vegetarian', true), meat: bool('meat', true),
+    viewMode: isViewMode(saved.viewMode) ? saved.viewMode : bool('compact', false) ? 'compact' : 'standard',
     openOnly: bool('openOnly', false), priceTier: isPriceTier(saved.priceTier) ? saved.priceTier : isPriceTier(profileTier) ? profileTier : 'student',
     locations, devMode: bool('devMode', false) };
 }

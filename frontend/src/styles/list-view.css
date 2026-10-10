@@ -1,0 +1,158 @@
+:root[data-density="list"] #canteen-grid,
+:root[data-density="list"] #favourites-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  max-width: 480px;
+}
+
+:root[data-density="list"] .canteen-card,
+:root[data-density="list"] .canteen-card:hover {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  transform: none;
+}
+
+:root[data-density="list"] :is(#canteen-grid, #favourites-grid) .canteen-card .card-image {
+  display: block;
+  height: auto;
+  min-height: 0;
+  padding: 8px 44px 2px 0;
+  background: transparent;
+}
+
+:root[data-density="list"] .canteen-card .canteen-image-link,
+:root[data-density="list"] .canteen-card .campus,
+:root[data-density="list"] .canteen-card .status,
+:root[data-density="list"] .canteen-card .crowd-indicator,
+:root[data-density="list"] .canteen-card .mensa-location-link,
+:root[data-density="list"] .canteen-card .rating,
+:root[data-density="list"] .canteen-card .meal-service-time,
+:root[data-density="list"] .canteen-card .full-menu-link,
+:root[data-density="list"] .canteen-card .meal-price [data-price-label] {
+  display: none;
+}
+
+:root[data-density="list"] :is(#canteen-grid, #favourites-grid) .canteen-card .canteen-photo-caption {
+  display: block;
+  position: static;
+  width: auto;
+  padding: 0;
+  background: none;
+  color: var(--ink);
+}
+
+:root[data-density="list"] :is(#canteen-grid, #favourites-grid) .canteen-card .canteen-photo-caption .card-title {
+  font-size: 12px;
+  line-height: 1.35;
+  font-weight: 700;
+}
+
+:root[data-density="list"] :is(#canteen-grid, #favourites-grid) .canteen-card .card-title a {
+  display: inline-block;
+  padding: 4px 7px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--paper);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+:root[data-density="list"] .canteen-card .favorite-toggle {
+  top: 4px;
+  right: 0;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  box-shadow: none;
+  font-size: 18px;
+}
+
+:root[data-density="list"] .canteen-card .distance-chip {
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--paper);
+  color: var(--muted);
+  backdrop-filter: none;
+}
+
+:root[data-density="list"] :is(#canteen-grid, #favourites-grid) .canteen-card .card-body {
+  display: block;
+  padding: 0 0 4px;
+}
+
+:root[data-density="list"] :is(#canteen-grid, #favourites-grid) .canteen-card .menu-preview {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+:root[data-density="list"] .canteen-card .meal-service-group:not([hidden]) ~ .meal-service-group:not([hidden]) {
+  margin: 2px 0 0;
+  padding-top: 3px;
+  border-top: 1px solid var(--line);
+}
+
+:root[data-density="list"] .canteen-card .meal-service-heading {
+  margin: 2px 0;
+  font-size: 10px;
+}
+
+:root[data-density="list"] :is(#canteen-grid, #favourites-grid) .canteen-card .dish-preview,
+:root[data-density="list"] :is(#canteen-grid, #favourites-grid) .canteen-card .dish-preview:not([hidden]) ~ .dish-preview:not([hidden]) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 10px;
+  min-height: 40px;
+  margin: 0;
+  padding: 3px 0;
+  border-top: 0;
+}
+
+:root[data-density="list"] :is(#canteen-grid, #favourites-grid) .canteen-card .dish-preview:not([hidden]) ~ .dish-preview:not([hidden]) {
+  border-top: 1px solid var(--line);
+}
+
+:root[data-density="list"] .canteen-card .meal-preview-heading {
+  min-width: 0;
+  gap: 4px;
+}
+
+:root[data-density="list"] .canteen-card .dish {
+  min-width: 0;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.3;
+  font-weight: 600;
+}
+
+:root[data-density="list"] .canteen-card .dish a { overflow-wrap: anywhere; }
+:root[data-density="list"] :is(#canteen-grid, #favourites-grid) .canteen-card .dish-preview .dish a {
+  padding-block: 7px;
+  margin-block: -7px;
+}
+
+:root[data-density="list"] .canteen-card .meal-price {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+:root[data-density="list"] .canteen-card .meal-price strong { font-size: 12px; }
+:root[data-density="list"] .canteen-card .meal-price .price-unit { font-size: 9px; }
+
+@media (max-width: 700px) {
+  :root[data-density="list"] :is(#canteen-grid, #favourites-grid) .canteen-card .card-body { padding: 0 0 4px; }
+  :root[data-density="list"] .canteen-card .dish { font-size: 12px; }
+}
