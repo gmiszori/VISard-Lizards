@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mensa · Scraper lab</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <header><a class="brand" href="/">mensa<span> / scraper lab</span></a><span class="badge" id="health">Connector not checked</span></header>
+  <main>
+    <div class="intro"><p class="eyebrow">A SMALL PLACE TO TEST YOUR PIPELINE</p><h1>From menu to meal JSON.</h1><p>Connect OpenAI, watch it call the scraper, and inspect exactly what comes back.</p></div>
+    <div class="layout">
+      <section class="panel setup" aria-labelledby="setup-heading">
+        <h2 id="setup-heading">Set up your test</h2>
+        <form id="test-form">
+          <label for="api-key">OpenAI API key</label>
+          <div class="key-field"><input id="api-key" type="password" autocomplete="off" spellcheck="false" placeholder="sk-…"><button id="clear-key" type="button" class="subtle">Clear</button></div>
+          <p class="hint">Used only for calls to OpenAI. Not saved or sent to the scraper backend.</p>
+          <label for="model">Model</label><input id="model" value="gpt-5.4-mini" autocomplete="off" spellcheck="false" required>
+          <label for="location">Zürich location</label><select id="location"><option value="https://bqm-bar.ch/de">BQM</option><option value="">Custom URL</option></select>
+          <p class="hint">Official pages may link to external menus. Missing or unsupported menus appear in the tool warnings.</p>
+          <label for="url">Restaurant or menu URL</label><input id="url" type="url" value="https://bqm-bar.ch/de" required>
+          <label for="prompt">What should the AI retrieve?</label><textarea id="prompt" rows="3" maxlength="4000">Retrieve meals available today or next, including prices and source references. Prioritize today, exclude past dishes, and explain missing data. First search the restaurant website for a more suitable menu URL (such as a current PDF or weekly menu), then scrape that source.</textarea>
+          <details class="advanced"><summary>Connector authentication</summary><label for="relay-token">Connector token (optional)</label><input id="relay-token" type="password" autocomplete="off" placeholder="Only if MEAL_CONNECTOR_TOKEN is set"><p class="hint">A separate backend token, not your OpenAI key.</p></details>
+          <button type="submit" id="ai-run" class="primary">Run with OpenAI <span aria-hidden="true">↗</span></button>
+          <p class="hint">Uses your OpenAI account and may incur API charges. Maximum 6 model turns and 8 tool calls.</p>
+          <div class="divider"></div>
+          <label for="direct-tool">Or test a scraper tool directly</label>
+          <select id="direct-tool"><option value="scrape_meals">Scrape meals</option><option value="discover_menu_sources">Discover menu sources</option><option value="read_menu_source">Read one menu source</option></select>
+          <button type="button" id="direct-run" class="secondary">Run tool without AI</button>
+          <div class="small-actions"><button type="button" id="check-health" class="subtle">Check connector</button><button type="button" id="stop" class="subtle" disabled>Stop test</button></div>
+        </form>
+      </section>
+      <div class="results">
+        <section class="panel status-panel"><div><p class="eyebrow">CURRENT RUN</p><h2 id="run-title">Ready when you are</h2></div><span id="meal-count" class="metric">0 meals</span><p id="status" role="status" aria-live="polite">Start with BQM or enter another public HTTPS menu URL.</p><p id="error" role="alert" hidden></p></section>
+        <section class="panel" aria-labelledby="tools-heading"><div class="section-head"><h2 id="tools-heading">Tool calls & raw results</h2><span id="tool-count" class="hint">0 calls</span></div><p id="empty-tools" class="empty">Each call shows its arguments and the complete JSON returned by MCP.</p><div id="tool-results"></div></section>
+        <section class="panel" aria-labelledby="meals-heading"><div class="section-head"><h2 id="meals-heading">Retrieved meals</h2><button id="download" type="button" class="subtle" disabled>Download JSON ↓</button></div><p id="empty-meals" class="empty">Meal entries will appear here. Dates and serving times stay unknown unless the source provides them.</p><div id="meals" class="meal-grid"></div><ul id="warnings" class="warnings"></ul></section>
+        <section class="panel" aria-labelledby="answer-heading"><h2 id="answer-heading">AI explanation</h2><p id="answer" class="answer">The AI's explanation is shown separately from the scraper's meal data.</p></section>
+      </div>
+    </div>
+    <footer>HTML & PDF menus · Read-only tools · Source-backed results</footer>
+  </main>
+</body>
+</html>
