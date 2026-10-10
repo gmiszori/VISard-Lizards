@@ -28,3 +28,10 @@ test('malformed JSON, null profiles and unavailable storage have safe defaults',
   const invalid = { getItem: () => '[null,"polyterrasse",2,"polyterrasse",""]' };
   assert.deepEqual(readFavourites(invalid), ['polyterrasse']);
 });
+
+test('all three food categories off is read as all on (nothing would be left to show)', () => {
+  const read = normalizePreferences({ vegan: false, vegetarian: false, meat: false });
+  assert.deepEqual([read.vegan, read.vegetarian, read.meat], [true, true, true]);
+  const some = normalizePreferences({ vegan: false, vegetarian: false, meat: true });
+  assert.deepEqual([some.vegan, some.vegetarian, some.meat], [false, false, true]);
+});

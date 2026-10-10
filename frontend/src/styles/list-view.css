@@ -1,9 +1,11 @@
 :root[data-density="list"] #canteen-grid,
 :root[data-density="list"] #favourites-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 0;
-  max-width: 480px;
+  /* One column on phones, as many ~480px columns as fit on wider screens (a single narrow column left most of the page empty). */
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 480px));
+  gap: 0 32px;
+  justify-content: start;
+  align-items: start;
 }
 
 :root[data-density="list"] .canteen-card,
@@ -22,7 +24,8 @@
 :root[data-density="list"] :is(#canteen-grid, #favourites-grid) .canteen-card .card-image {
   display: block;
   height: auto;
-  min-height: 0;
+  /* The canteen's star button is 44px tall and sits top-right: the first dish row must start below it. */
+  min-height: 50px;
   padding: 8px 44px 2px 0;
   background: transparent;
 }

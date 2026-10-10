@@ -13,8 +13,6 @@ import MenuDate from '../components/MenuDate.astro';
 import { t, type Key } from '../onboarding/i18n';
 import '../onboarding/onboarding.css';
 
-const campusOptions = CAMPUSES.map(campus => ({ value: campus.id, label: campus.name,
-  count: MENSAS.filter(m => m.campusId === campus.id && m.hasMenu && !m.temporarilyClosed).length }));
 const keys = (values: string[]) => values.map(value => ({ value, key: value as Key }));
 // The pick uses the same menus as the home page (backend). Only when the backend is not available, the bundled snapshot is used.
 const app = await loadAppData();
@@ -27,15 +25,19 @@ const bundledMeals = MEALS.filter(meal => meal.date === MENU_DATE && meal.kind =
   originDetail: meal.originDetail, components: meal.components, price: meal.price, nutrition: meal.nutrition,
 }));
 const menuWeekday = WEEKDAYS[(new Date(`${menuDate}T12:00:00Z`).getUTCDay() + 6) % 7]!;
+const payloadMensas = MENSAS.map(({ id, name, campusId, hasMenu, temporarilyClosed }) => {
+  const windows = LIVE_DATA[id]?.windows[menuWeekday];
+  return { id, name, campusId, temporarilyClosed,
+    // No service on the menu's weekday (or closed for good): the pick must not send anyone there.
+    closedOnMenuDay: temporarilyClosed || (windows !== undefined && windows.length === 0),
+    hasMenu: live ? liveMeals.some(meal => meal.mensaId === id) : hasMenu };
+});
+// The same count the overview page shows for a campus: mensas with a menu on the menu day (live when the backend is reachable).
+const campusOptions = CAMPUSES.map(campus => ({ value: campus.id, label: campus.name,
+  count: payloadMensas.filter(m => m.campusId === campus.id && m.hasMenu && !m.temporarilyClosed).length }));
 const payload = {
   campuses: CAMPUSES.map(({ id, name }) => ({ id, name })), menuDate,
-  mensas: MENSAS.map(({ id, name, campusId, hasMenu, temporarilyClosed }) => {
-    const windows = LIVE_DATA[id]?.windows[menuWeekday];
-    return { id, name, campusId, temporarilyClosed,
-      // No service on the menu's weekday (or closed for good): the pick must not send anyone there.
-      closedOnMenuDay: temporarilyClosed || (windows !== undefined && windows.length === 0),
-      hasMenu: live ? liveMeals.some(meal => meal.mensaId === id) : hasMenu };
-  }),
+  mensas: payloadMensas,
   // TODO(backend): real rating counts. Current database ratings are synthetic.
   ratingCounts: Object.fromEntries(MENSAS.map(m => [m.id, m.rating.count])),
   ranges: Object.fromEntries(TIERS.map(tier => [tier, priceRange(live && liveMeals.length ? liveMeals : MEALS, tier)])),
@@ -73,8 +75,7 @@ const payload = {
           <p class="ob-lead" data-ob-i18n="dietHint">{t('dietHint')}</p>
           <ChipSelect name="diet" labelKey="diet" mode="single" options={keys(DIETS)} />
           <div class="ob-constraints">
-            <ChipSelect name="hard" labelKey="never" options={HARD.map(value => ({ value, key: value,
-              notice: value === 'halal' || value === 'kosher' }))} />
+            <ChipSelect name="hard" labelKey="never" options={HARD.map(value => ({ value, key: value }))} />
             <p class="ob-note" data-ob-i18n="hardHint">{t('hardHint')}</p>
           </div>
         </section>

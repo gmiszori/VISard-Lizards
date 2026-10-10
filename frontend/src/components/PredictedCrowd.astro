@@ -15,13 +15,14 @@ const { prediction } = Astro.props;
   </div>
   <div data-crowd-content hidden>
     <div class="crowd-plot">
-      <svg class="crowd-bars" viewBox="0 0 600 60" preserveAspectRatio="none" role="img" data-crowd-svg aria-label="Predicted occupancy by time">
+      <svg class="crowd-bars" viewBox="0 0 600 60" preserveAspectRatio="none" role="img" tabindex="0" data-crowd-svg aria-label="Predicted occupancy by time">
         <g class="crowd-grid" aria-hidden="true"><line x1="0" x2="600" y1="59" y2="59"/></g>
         <g data-crowd-bars></g>
         <line class="crowd-now-line" data-crowd-now y1="0" y2="60" style="display:none" />
       </svg>
       <div class="crowd-x-axis" data-crowd-ticks aria-hidden="true"></div>
     </div>
+    <p class="crowd-readout" data-crowd-readout aria-live="polite"></p>
     <div class="crowd-legend"><span><i class="crowd-quiet"></i><span data-crowd-text="quiet">Quiet</span></span><span><i class="crowd-moderate"></i><span data-crowd-text="moderate">Moderate</span></span><span><i class="crowd-busy"></i><span data-crowd-text="busy">Busy</span></span><span data-crowd-now-legend hidden><i class="crowd-now-key"></i><span data-crowd-text="now">Now</span></span></div>
   </div>
   <p class="crowd-empty" data-crowd-empty hidden data-crowd-text="empty">No prediction available for this day.</p>

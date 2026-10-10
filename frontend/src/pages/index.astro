@@ -31,15 +31,15 @@ const openCount = canteens.filter((canteen) => canteen.isOpen).length;
   <div class="section-head all-canteens-heading"><div><h2 data-i18n="canteensTitle">Canteens</h2></div></div>
   <MenuDate date={menuDate} today={today} variant="note" />
   <DayPicker days={days} menuDate={menuDate} today={today} chosenDay={chosenDay} />
-  <div class="menu-list-controls"><div id="visible-count" class="count">{canteens.length} canteens</div><button id="no-menu-toggle" type="button" aria-pressed="false" hidden></button></div>
+  <div class="menu-list-controls"><div id="visible-count" class="count" role="status" aria-live="polite">{canteens.length} canteens</div><button id="no-menu-toggle" type="button" aria-pressed="false" hidden></button></div>
   <p id="favourites-status" role="status" hidden></p>
   <div id="canteen-grid" class="canteen-grid">{canteens.map((canteen) => <CanteenCard canteen={canteen} day={chosenDay ? menuDate : undefined} />)}</div>
   <div id="empty-state" class="empty-state">
-    <p data-i18n="empty">No canteens match your search. Try another dish or campus.</p>
+    <p id="empty-message">No canteens match your search. Try another dish or campus.</p>
     <div class="empty-actions"><button type="button" data-reset-filters data-i18n="resetFilters">Show all canteens</button><a href="/settings" data-i18n="checkSettings">Check my settings</a></div>
   </div>
   <ScrapedMenus />
-  <button class="back-to-top" type="button" data-back-to-top data-i18n-aria="backToTop" aria-label="Back to top"><span aria-hidden="true">↑</span></button>
+  <button class="back-to-top" type="button" data-back-to-top data-i18n-aria="backToTop" aria-label="Back to top" hidden><span aria-hidden="true">↑</span></button>
   <script>
     import { readFavourites, FAVOURITES_KEY } from '../preferences/state';
     const allCards = [...document.querySelectorAll<HTMLElement>('[data-canteen-card]')];
@@ -84,7 +84,12 @@ const openCount = canteens.filter((canteen) => canteen.isOpen).length;
     });
     document.addEventListener('languagechange', renderFavourites);
     document.addEventListener('campuseats:preferences-applied', renderFavourites);
-    document.querySelector<HTMLButtonElement>('[data-back-to-top]')?.addEventListener('click', () => {
+    // Only useful once the page has been scrolled; at the top it just covers content.
+    const backToTop = document.querySelector<HTMLButtonElement>('[data-back-to-top]');
+    const toggleBackToTop = () => { if (backToTop) backToTop.hidden = window.scrollY < 400; };
+    window.addEventListener('scroll', toggleBackToTop, { passive: true });
+    toggleBackToTop();
+    backToTop?.addEventListener('click', () => {
       const behavior: ScrollBehavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
       window.scrollTo({ top: 0, behavior });
     });
@@ -102,6 +107,7 @@ const openCount = canteens.filter((canteen) => canteen.isOpen).length;
   #no-menu-toggle{min-height:44px;padding:5px 0;border:0;background:none;color:var(--green);font-size:12px;font-weight:700;text-decoration:underline;text-underline-offset:3px}
   #no-menu-toggle[hidden]{display:none}
   .back-to-top{position:fixed;right:max(16px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom));z-index:30;display:grid;place-items:center;width:44px;height:44px;padding:0;border:1px solid var(--line);border-radius:50%;background:var(--paper);color:var(--green);box-shadow:var(--shadow);font:700 22px/1 'DM Sans',sans-serif;cursor:pointer;transition:transform .18s,background .18s}
+  .back-to-top[hidden]{display:none}
   .back-to-top:hover{transform:translateY(-2px)}
   .back-to-top:focus-visible{outline:3px solid var(--green);outline-offset:3px}
 </style>

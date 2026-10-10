@@ -18,6 +18,24 @@ try {
   preferences = readPreferences();
 } catch { preferences = { vegan: true, vegetarian: true, meat: true, viewMode: 'standard', openOnly: false, locations: [...ALL_CAMPUS_IDS], priceTier: 'student', devMode: false }; }
 let showWithoutMenu = false;
+/** "Show all canteens" in the empty state also looks past "Only show open canteens" for this visit (Settings stay as they are). */
+let ignoreOpenOnly = false;
+
+/** Why the list is empty, so the message names the real cause instead of always blaming the search. */
+const EMPTY_MESSAGES = {
+  en: {
+    search: 'No canteens match your search. Try another dish or campus.',
+    closed: 'No canteen is open right now, and “Only show open canteens” is on in Settings.',
+    campus: 'No campus is selected in Settings.',
+    other: 'No canteens to show here. Try another campus.',
+  },
+  de: {
+    search: 'Keine Mensen gefunden. Suche ein anderes Gericht oder einen anderen Campus.',
+    closed: 'Gerade ist keine Mensa geöffnet, und in den Einstellungen ist «Nur geöffnete Mensen anzeigen» aktiv.',
+    campus: 'In den Einstellungen ist kein Campus ausgewählt.',
+    other: 'Hier gibt es keine Mensen zu zeigen. Probiere einen anderen Campus.',
+  },
+} as const;
 
 function applyPreferences() {
   document.documentElement.dataset.density = preferences.viewMode;
@@ -31,7 +49,7 @@ function applyPreferences() {
       label.dataset.i18n = preferences.priceTier;
       const labels = document.documentElement.lang === 'de'
         ? { student: 'Studierende', worker: 'Mitarbeitende', external: 'Externe' }
-        : { student: 'Student', worker: 'Worker', external: 'External' };
+        : { student: 'Student', worker: 'Staff', external: 'External' };
       label.textContent = labels[preferences.priceTier];
     }
   });
@@ -92,7 +110,7 @@ function applyPreferences() {
     const matchesCampus = campusChoice === 'all' ? true
       : campusChoice === 'preset' ? preferences.locations.includes(card.dataset.campusId ?? '')
         : card.dataset.campusId === campusChoice;
-    const matchesOpen = !preferences.openOnly || card.dataset.isOpen === 'true';
+    const matchesOpen = !preferences.openOnly || ignoreOpenOnly || card.dataset.isOpen === 'true';
     const fallbackSearch = matchesQuery(card.dataset.name ?? '', query) || card.querySelector('[data-meal-row]:not([hidden])') !== null;
     const matchesSearch = aiMatchedIds && aiQuery === query
       ? aiMatchedIds.has(card.dataset.canteenId ?? '') : fallbackSearch;
@@ -126,6 +144,13 @@ function applyPreferences() {
   if (favouritesSection) favouritesSection.hidden = visibleFavourites === 0;
   const emptyState = document.querySelector<HTMLElement>('#empty-state');
   if (emptyState) emptyState.style.display = visibleCanteens === 0 ? 'block' : 'none';
+  const emptyMessage = document.querySelector<HTMLElement>('#empty-message');
+  if (emptyMessage && visibleCanteens === 0) {
+    const reason = query.trim() ? 'search'
+      : preferences.openOnly && !ignoreOpenOnly && candidates.some(c => c.card.dataset.isOpen !== 'true') ? 'closed'
+        : campusChoice === 'preset' && preferences.locations.length === 0 ? 'campus' : 'other';
+    emptyMessage.textContent = EMPTY_MESSAGES[document.documentElement.lang === 'de' ? 'de' : 'en'][reason];
+  }
   const visibleCount = document.querySelector<HTMLElement>('#visible-count');
   if (visibleCount) {
     const lang = document.documentElement.lang;
@@ -133,9 +158,12 @@ function applyPreferences() {
     const visibleDishes = candidates.filter(({ card }) => !card.hidden)
       .reduce((count, { card }) => count + card.querySelectorAll('[data-meal-row]:not([hidden])').length, 0);
     const dishLabel = lang === 'de' ? (visibleDishes === 1 ? 'Gericht' : 'Gerichte') : (visibleDishes === 1 ? 'dish' : 'dishes');
-    visibleCount.textContent = preferences.viewMode === 'list'
+    // No canteen of this selection has a menu: they are all listed (instead of an empty page), and the count says why.
+    const noMenusNote = preferences.viewMode !== 'list' && !showWithoutMenu && !query.trim() && withMenuCount === 0 && withoutMenuCount > 0
+      ? (lang === 'de' ? ' · keine Menüs für diesen Tag' : ' · no menus for this day') : '';
+    visibleCount.textContent = (preferences.viewMode === 'list'
       ? `${visibleDishes} ${dishLabel} · ${visibleCanteens} ${canteenLabel}`
-      : `${visibleCanteens} ${canteenLabel}`;
+      : `${visibleCanteens} ${canteenLabel}`) + noMenusNote;
   }
 
   document.querySelectorAll<HTMLInputElement>('#preferences-form input[type="checkbox"]').forEach((input) => {
@@ -162,6 +190,13 @@ document.querySelector<HTMLFormElement>('#preferences-form')?.addEventListener('
       else locations.delete(input.value);
       preferences = { ...preferences, locations: [...locations] };
     } else {
+      // Keep at least one food category on: with none, every canteen would only say "No dishes match".
+      const diets = ['vegan', 'vegetarian', 'meat'] as const;
+      if (!input.checked && (diets as readonly string[]).includes(input.name) && diets.every(key => key === input.name || !preferences[key])) {
+        input.checked = true;
+        showSettingsNote('Keep at least one food category on, otherwise there would be nothing to show.', 'Mindestens eine Essensart muss aktiv bleiben, sonst gäbe es nichts anzuzeigen.');
+        return;
+      }
       preferences = { ...preferences, [input.name]: input.checked };
     }
   } else return;
@@ -210,17 +245,29 @@ document.querySelector<HTMLButtonElement>('#no-menu-toggle')?.addEventListener('
   showWithoutMenu = !showWithoutMenu;
   applyPreferences();
 });
-// "Show all canteens" in the empty state: clears the search and looks at every campus for this visit. Settings stay as they are.
+// "Show all canteens" in the empty state: clears the search, looks at every campus and past "Only show open canteens"
+// for this visit. Settings stay as they are.
 document.querySelector<HTMLElement>('[data-reset-filters]')?.addEventListener('click', () => {
   const search = document.querySelector<HTMLInputElement>('#search-input');
   const campus = document.querySelector<HTMLSelectElement>('#campus-select');
   if (search) search.value = '';
   if (campus) campus.value = 'all';
+  ignoreOpenOnly = true;
   applyPreferences();
-  search?.focus();
+  // The button disappears with the empty state: move focus to the result count (right above the list), not to the far-away search box.
+  const count = document.querySelector<HTMLElement>('#visible-count');
+  if (count) { count.tabIndex = -1; count.focus(); }
 });
 document.addEventListener('languagechange', applyPreferences);
 document.addEventListener('campuseats:service-filter-changed', applyPreferences);
+
+function showSettingsNote(en: string, de: string) {
+  const note = document.querySelector<HTMLElement>('#settings-saved');
+  if (!note) return;
+  note.hidden = false;
+  delete note.dataset.i18n; // a language switch must not turn this note back into "Saved"
+  note.textContent = document.documentElement.lang === 'de' ? de : en;
+}
 
 function showSavedState(success = true) {
   const saved = document.querySelector<HTMLElement>('#settings-saved');

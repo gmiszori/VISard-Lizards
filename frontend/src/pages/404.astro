@@ -1,10 +1,22 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { loadAppData } from '../data/app-data';
+// The days that have menu pages: a link to another day (a weekend, a day past the data) is sent to the nearest one.
+const { days } = await loadAppData();
 ---
 <BaseLayout title="Page not found">
   <a href="/" class="detail-back" data-i18n="back">← All canteens</a>
-  <section class="empty-state" style="display:block" role="alert">
+  <section class="empty-state" style="display:block" role="alert" data-menu-days={JSON.stringify(days)}>
     <h1 data-i18n="notFoundTitle">This page does not exist</h1>
     <p data-i18n="notFoundText">The link may be old or mistyped. Go back to the canteens to find today’s menus.</p>
   </section>
 </BaseLayout>
+<script>
+  import { nearestMenuDay } from '../data/menuDate';
+  const days = JSON.parse(document.querySelector<HTMLElement>('[data-menu-days]')?.dataset.menuDays ?? '[]') as string[];
+  const match = /^\/(day|canteen\/[^/]+)\/(\d{4}-\d{2}-\d{2})\/?$/.exec(window.location.pathname);
+  if (match && !days.includes(match[2]!)) {
+    const target = nearestMenuDay(match[2]!, days);
+    if (target) window.location.replace(`/${match[1]}/${target}`);
+  }
+</script>

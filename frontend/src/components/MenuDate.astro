@@ -2,11 +2,14 @@
 /**
  * Says which day a menu is for. On days without meals (weekends) the pages show the next day's menu,
  * so "today" would be wrong there; the date is formatted in the page language.
+ *
+ * The page knows "today" only as of when it was rendered or built (or as the backend reports it). In the browser
+ * the label is re-checked against the real Zurich date, so a menu that is not from today is never called "Today".
  */
 interface Props {
   /** The menu's day, YYYY-MM-DD. */
   date: string;
-  /** Today in Zurich, YYYY-MM-DD. */
+  /** Today in Zurich, YYYY-MM-DD, as known when the page was rendered. */
   today: string;
   /** heading: "Today's menu" / "Menu for …" (detail page); note: "Menus for …", hidden when today (home). */
   variant: 'heading' | 'note';
@@ -14,10 +17,29 @@ interface Props {
 const { date, today, variant } = Astro.props;
 const label = new Intl.DateTimeFormat('en-GB', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' })
   .format(new Date(`${date}T00:00:00Z`));
+const isToday = date === today;
 ---
-{date === today
-  ? variant === 'heading' && <span data-i18n="todayMenu">Today’s menu</span>
-  : <span class={variant === 'note' ? 'menu-date-note' : undefined}><span data-i18n={variant === 'note' ? 'menusFor' : 'menuFor'}>{variant === 'note' ? 'Menus for' : 'Menu for'}</span> <time datetime={date} data-menu-date={date}>{label}</time></span>}
+<span data-menu-date-root={date}>
+  {variant === 'heading' && <span data-menu-today-label hidden={!isToday} data-i18n="todayMenu">Today’s menu</span>}
+  <span data-menu-other-label hidden={isToday} class={variant === 'note' ? 'menu-date-note' : undefined}><span data-i18n={variant === 'note' ? 'menusFor' : 'menuFor'}>{variant === 'note' ? 'Menus for' : 'Menu for'}</span> <time datetime={date} data-menu-date={date}>{label}</time></span>
+</span>
+<script>
+  import { appNow, CLOCK_EVENT, zurichParts } from '../time/clock';
+  function reconcile() {
+    const realToday = zurichParts(appNow()).date;
+    document.querySelectorAll<HTMLElement>('[data-menu-date-root]').forEach(root => {
+      const isToday = root.dataset.menuDateRoot === realToday;
+      const todayLabel = root.querySelector<HTMLElement>('[data-menu-today-label]');
+      const otherLabel = root.querySelector<HTMLElement>('[data-menu-other-label]');
+      if (todayLabel) todayLabel.hidden = !isToday;
+      if (otherLabel) otherLabel.hidden = isToday;
+    });
+  }
+  reconcile();
+  document.addEventListener(CLOCK_EVENT, reconcile);
+</script>
 <style>
+  span[data-menu-date-root] { display: contents; }
   .menu-date-note { display: block; margin: 0 0 12px; font-weight: 600; }
+  [hidden] { display: none !important; }
 </style>

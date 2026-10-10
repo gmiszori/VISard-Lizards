@@ -43,7 +43,10 @@ export function mountRatingCard(): void {
   }
   // The override and isolated simulator storage are removed from production bundles.
   const override = import.meta.env.DEV ? new URL(location.href).searchParams.get('ratingNow') : null;
-  const simulated = Boolean(override && /(?:Z|[+-]\d{2}:\d{2})$/.test(override) && Number.isFinite(Date.parse(override)));
+  /** An ISO timestamp with Z or an offset, in a plausible range (a year like 9999 breaks the Zurich date maths). */
+  const validTimestamp = (value: string) => /(?:Z|[+-]\d{2}:\d{2})$/.test(value) && Number.isFinite(Date.parse(value))
+    && new Date(value).getUTCFullYear() >= 2000 && new Date(value).getUTCFullYear() <= 2100;
+  const simulated = Boolean(override && validTimestamp(override));
   const now = () => simulated ? new Date(override!) : appNow();
   const stateKey = `${STATE_KEY}${simulated ? ':dev' : ''}`;
   const ratingsKey = `${RATINGS_KEY}${simulated ? ':dev' : ''}`;
@@ -104,6 +107,16 @@ export function mountRatingCard(): void {
     try { store.resolve(prompt.date, dismissed); hide(); }
     catch { setStatus('choiceError'); }
   }
+  /** Whether a day has any published menu. A guess question ("Where did you eat today?") is only asked when it does. */
+  const menuChecks = new Map<string, 'pending' | 'yes' | 'no'>();
+  function menuAvailable(date: string): boolean {
+    const known = menuChecks.get(date);
+    if (known) return known === 'yes';
+    menuChecks.set(date, 'pending');
+    // If the menus cannot be loaded, ask anyway: choosing a mensa reports that problem itself.
+    void mealsOn(date).then(list => { menuChecks.set(date, list.length ? 'yes' : 'no'); }, () => { menuChecks.set(date, 'yes'); }).then(() => refresh());
+    return false;
+  }
   // Meals of the target day from the backend, so ids match what it stores; the bundled list is the fallback.
   const mealsByDate = new Map<string, Promise<MealOption[]>>();
   function mealsOn(date: string): Promise<MealOption[]> {
@@ -139,6 +152,8 @@ export function mountRatingCard(): void {
     clearStatus();
     if (prompt?.date !== target || mensa !== choice) return;
     if (!meals.length) {
+      // Other mensas do have menus that day: this one has none, so let the visitor pick another instead of closing the card.
+      if (loaded.length && !skipped) { step('mensa', false); setStatus('noMenuMensa'); mensa = undefined; return; }
       try { store.resolve(prompt.date); feedback('noMenu'); }
       catch { setStatus('choiceError'); }
       return;
@@ -165,6 +180,8 @@ export function mountRatingCard(): void {
     try {
       const next = store.current();
       if (!next) { hide(); prompt = null; return; }
+      // Weekends and holidays: nothing was served, so there is nothing to ask about (and the day is not used up).
+      if (next.kind === 'guess' && !menuAvailable(next.date)) { hide(); prompt = null; return; }
       store.shown(next.date);
       if (prompt?.date === next.date && !root!.hidden && (query('[data-rating-step="mensa"]').hidden ||
         JSON.stringify(prompt.mensaChoices) === JSON.stringify(next.mensaChoices))) return;
@@ -284,7 +301,7 @@ export function mountRatingCard(): void {
       } catch { devStatus.textContent = 'Device storage is unavailable.'; (dev as HTMLDetailsElement).open = true; }
     });
     dev.querySelector('[data-rating-clock]')!.addEventListener('click', () => {
-      if (!/(?:Z|[+-]\d{2}:\d{2})$/.test(input.value) || !Number.isFinite(Date.parse(input.value))) { devStatus.textContent = 'Enter an ISO timestamp including Z or an explicit offset, such as +02:00.'; return; }
+      if (!validTimestamp(input.value)) { devStatus.textContent = 'Enter an ISO timestamp (years 2000–2100) including Z or an explicit offset, such as +02:00.'; return; }
       const url = new URL(location.href); url.searchParams.set('ratingNow', input.value); location.assign(url);
     });
     dev.querySelector('[data-rating-reset]')!.addEventListener('click', () => {
