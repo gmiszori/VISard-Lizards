@@ -104,11 +104,14 @@ export function parseMeal(value: unknown): BackendMealDetail | null {
   const date = isIsoDate(value.date) ? value.date : null;
   const id = text(meal.id, 200);
   const name = text(meal.name, 300);
-  const classification = meal.classification;
-  if (!mensaId || !date || !id || !name || !Array.isArray(classification) || classification.length < 3) return null;
-  const [diet, kind, service] = classification as unknown[];
-  if (typeof diet !== 'string' || typeof kind !== 'string' || typeof service !== 'string') return null;
-  if (!DIETS.includes(diet) || !KINDS.includes(kind) || !SERVICES.includes(service)) return null;
+  if (!mensaId || !date || !id || !name) return null;
+  const rawClassification = Array.isArray(meal.classification) ? (meal.classification as unknown[]) : [];
+  const rawDiet = typeof rawClassification[0] === 'string' ? rawClassification[0].toLowerCase() : 'meat';
+  const rawKind = typeof rawClassification[1] === 'string' ? rawClassification[1].toLowerCase() : 'main';
+  const rawService = typeof rawClassification[2] === 'string' ? rawClassification[2].toLowerCase() : 'lunch';
+  const diet = DIETS.includes(rawDiet) ? rawDiet : (rawDiet.includes('veg') ? 'vegetarian' : 'meat');
+  const kind = KINDS.includes(rawKind) ? rawKind : 'main';
+  const service = SERVICES.includes(rawService) ? rawService : 'lunch';
   return {
     mensaId,
     date,

@@ -55,13 +55,18 @@ public class UzhLiveMealImporter {
             Map.entry("7d9d696f-3c4e-4a2e-9b66-469d5d47eeea", new LocationMeta("botanischer-garten", "lunch"))
     );
 
-    public static final Map<String, String> FOOD2050_WEEKLY_OUTLETS = Map.of(
-            "botanischer-garten", "https://app.food2050.ch/de/zfv/universitat-zurich,botanischer-garten/botanischer-garten/mittagsverpflegung/menu/weekly",
-            "mensa-binzmuhle", "https://app.food2050.ch/de/zfv/universitat-zurich,campus-oerlikon/mensa-binzmuhle/mittagsverpflegung/menu/weekly",
-            "cityport", "https://app.food2050.ch/de/zfv/universitat-zurich,cityport/cityport/mittagsverpflegung/menu/weekly",
-            "tierspital", "https://app.food2050.ch/de/zfv/universitat-zurich,tierspital-1/tierspital/mittagsverpflegung/menu/weekly",
-            "the-yard", "https://app.food2050.ch/de/zfv/universitat-zurich,campus-irchel,ks-oerlikon/the-yard/mittagsverpflegung/menu/weekly",
-            "bim11", "https://app.food2050.ch/de/zfv/universitat-zurich,campus-oerlikon/bim11/mittagsverpflegung/menu/weekly"
+    public static final Map<String, String> FOOD2050_WEEKLY_OUTLETS = Map.ofEntries(
+            Map.entry("untere-mensa", "https://app.food2050.ch/de/zfv/universitat-zurich,campus-zentrum/untere-mensa/mittagsverpflegung/menu/weekly"),
+            Map.entry("obere-mensa", "https://app.food2050.ch/de/zfv/universitat-zurich,campus-zentrum/obere-mensa/mittagsverpflegung/menu/weekly"),
+            Map.entry("rami-59", "https://app.food2050.ch/de/zfv/universitat-zurich,campus-zentrum/rami-59/mittagsverpflegung/menu/weekly"),
+            Map.entry("platte-14", "https://app.food2050.ch/de/zfv/universitat-zurich,campus-zentrum/platte-14/mittagsverpflegung/menu/weekly"),
+            Map.entry("botanischer-garten", "https://app.food2050.ch/de/zfv/universitat-zurich,botanischer-garten/botanischer-garten/mittagsverpflegung/menu/weekly"),
+            Map.entry("mensa-binzmuhle", "https://app.food2050.ch/de/zfv/universitat-zurich,campus-oerlikon/mensa-binzmuhle/mittagsverpflegung/menu/weekly"),
+            Map.entry("cityport", "https://app.food2050.ch/de/zfv/universitat-zurich,cityport/cityport/mittagsverpflegung/menu/weekly"),
+            Map.entry("tierspital", "https://app.food2050.ch/de/zfv/universitat-zurich,tierspital-1/tierspital/mittagsverpflegung/menu/weekly"),
+            Map.entry("the-yard", "https://app.food2050.ch/de/zfv/universitat-zurich,campus-irchel,ks-oerlikon/the-yard/mittagsverpflegung/menu/weekly"),
+            Map.entry("bim11", "https://app.food2050.ch/de/zfv/universitat-zurich,campus-oerlikon/bim11/mittagsverpflegung/menu/weekly"),
+            Map.entry("seerose", "https://app.food2050.ch/de/zfv/universitat-zurich,campus-irchel/seerose/mittagsverpflegung/menu/weekly")
     );
 
     private static final Pattern FLIGHT_PUSH_PATTERN = Pattern.compile("self\\.__next_f\\.push\\((\\[.*?\\])\\)</script>", Pattern.DOTALL);
@@ -260,7 +265,7 @@ public class UzhLiveMealImporter {
                                     targetDate,
                                     "lunch",
                                     "Daily Special",
-                                    "lunch",
+                                    "main",
                                     title,
                                     dietTag,
                                     priceStudent,
@@ -355,7 +360,7 @@ public class UzhLiveMealImporter {
                             date,
                             meta.service(),
                             line,
-                            meta.service(),
+                            "main",
                             title,
                             dietTag,
                             priceStudent,
