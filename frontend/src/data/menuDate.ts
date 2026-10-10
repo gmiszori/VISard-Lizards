@@ -37,6 +37,17 @@ export function addDays(iso: string, days: number): string | null {
   return date ? new Date(date.getTime() + days * DAY_MS).toISOString().slice(0, 10) : null;
 }
 
+/**
+ * "Today" for choosing the menu day: the later of the backend's date and the real date. A backend whose clock or
+ * data import lags behind (it reported Wednesday on a Saturday) must not make three-day-old menus "today's menu".
+ * Anything that is not a real date is ignored; if neither is valid the backend's value is returned unchanged.
+ */
+export function latestToday(backendToday: string, realToday: string): string {
+  if (!parse(realToday)) return backendToday;
+  if (!parse(backendToday)) return realToday;
+  return backendToday >= realToday ? backendToday : realToday;
+}
+
 /** Today on weekdays, the next Monday on Saturday and Sunday. Invalid input is returned unchanged. */
 export function wantedMenuDate(today: string): string {
   const day = weekdayIndex(today);

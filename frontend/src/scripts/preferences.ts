@@ -70,6 +70,16 @@ function applyPreferences() {
     group.hidden = group.querySelector('[data-meal-row]:not([hidden])') === null;
   });
 
+  // Canteen page: the dish count in the heading follows the filters ("1 of 3 dishes"), not just the full menu.
+  document.querySelectorAll<HTMLElement>('[data-dish-count]').forEach(count => {
+    const total = Number(count.dataset.total ?? 0);
+    const shown = (count.closest('section') ?? document).querySelectorAll('[data-meal-row]:not([hidden])').length;
+    const de = document.documentElement.lang === 'de';
+    count.textContent = shown === total
+      ? `· ${total} ${de ? 'Gerichte' : total === 1 ? 'dish' : 'dishes'}`
+      : de ? `· ${shown} von ${total} Gerichten` : `· ${shown} of ${total} ${total === 1 ? 'dish' : 'dishes'}`;
+  });
+
   document.querySelectorAll<HTMLElement>('[data-canteen-card]').forEach(card => {
     const dishSearch = query.trim() !== '' && !matchesQuery(card.dataset.name ?? '', query);
     const rows = [...card.querySelectorAll<HTMLElement>('[data-meal-row]:not([hidden])')];
@@ -276,3 +286,10 @@ window.addEventListener('storage', event => {
 });
 
 applyPreferences();
+// Browser Back/Forward: the browser puts the search text and the campus choice back into their fields (or brings the
+// whole page back from its cache) without firing any input event, so the list kept showing the unfiltered result.
+// pageshow comes after that restoring, on a fresh load, on Back and on a page restored from the cache.
+window.addEventListener('pageshow', () => {
+  try { preferences = readPreferences(); } catch { /* Keep the current working preferences. */ }
+  applyPreferences();
+});
