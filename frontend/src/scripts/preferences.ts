@@ -1,5 +1,5 @@
 import { matchesQuery } from '../search/fold';
-import { isPriceTier, readPreferences, PREFERENCES_KEY, type Preferences } from '../preferences/state';
+import { isPriceTier, isViewMode, readPreferences, PREFERENCES_KEY, type Preferences } from '../preferences/state';
 import { API_URL, apiPost } from '../data/api';
 let aiMatchedIds: Set<string> | null = null;
 let aiQuery = '';
@@ -23,11 +23,11 @@ try {
       preferences.locations.push(c);
     }
   }
-} catch { preferences = { vegan: true, vegetarian: true, meat: true, compact: false, openOnly: false, locations: ['zentrum', 'hoenggerberg', 'irchel', 'oerlikon', 'basel', 'toni-areal', 'europaallee'], priceTier: 'student', devMode: false }; }
+} catch { preferences = { vegan: true, vegetarian: true, meat: true, viewMode: 'standard', openOnly: false, locations: ['zentrum', 'hoenggerberg', 'irchel', 'oerlikon', 'basel', 'toni-areal', 'europaallee'], priceTier: 'student', devMode: false }; }
 let showWithoutMenu = false;
 
 function applyPreferences() {
-  document.documentElement.dataset.density = preferences.compact ? 'compact' : 'standard';
+  document.documentElement.dataset.density = preferences.viewMode;
   document.documentElement.dataset.devMode = String(preferences.devMode);
   document.querySelectorAll<HTMLElement>('[data-meal-price]').forEach(price => {
     const amount = price.querySelector<HTMLElement>('[data-price-amount]');
@@ -62,13 +62,13 @@ function applyPreferences() {
   document.querySelectorAll<HTMLElement>('[data-canteen-card]').forEach(card => {
     const dishSearch = query.trim() !== '' && !matchesQuery(card.dataset.name ?? '', query);
     const rows = [...card.querySelectorAll<HTMLElement>('[data-meal-row]:not([hidden])')];
-    rows.forEach((row, index) => row.classList.toggle('preview-clipped', !dishSearch && index >= 2));
+    rows.forEach((row, index) => row.classList.toggle('preview-clipped', preferences.viewMode !== 'list' && !dishSearch && index >= 2));
     card.querySelectorAll<HTMLElement>('[data-meal-group]').forEach(group => {
       group.classList.toggle('preview-empty', !group.querySelector('[data-meal-row]:not([hidden]):not(.preview-clipped)'));
     });
     const fullMenu = card.querySelector<HTMLAnchorElement>('[data-preview-link]');
     if (fullMenu) {
-      fullMenu.hidden = dishSearch || rows.length <= 2;
+      fullMenu.hidden = preferences.viewMode === 'list' || dishSearch || rows.length <= 2;
       const lang = document.documentElement.lang;
       fullMenu.textContent = lang === 'de' ? `Alle ${rows.length} Gerichte ansehen` : `View all ${rows.length} dishes`;
     }
@@ -95,11 +95,14 @@ function applyPreferences() {
       ? aiMatchedIds.has(card.dataset.canteenId ?? '') : fallbackSearch;
     // With lunch or dinner picked, a canteen without that service counts as having no menu.
     const servesChoice = !service || card.querySelector(`[data-meal-group][data-service="${service}"], [data-meal-group]:not([data-service])`) !== null;
-    return { card, matches: matchesCampus && matchesOpen && matchesSearch, hasMenu: card.dataset.hasMenu === 'true' && servesChoice };
+    const hasMenu = preferences.viewMode === 'list'
+      ? card.querySelector('[data-meal-row]:not([hidden])') !== null
+      : card.dataset.hasMenu === 'true' && servesChoice;
+    return { card, matches: matchesCampus && matchesOpen && matchesSearch, hasMenu };
   });
   const withMenuCount = candidates.filter(candidate => candidate.matches && candidate.hasMenu).length;
   const withoutMenuCount = candidates.filter(candidate => candidate.matches && !candidate.hasMenu).length;
-  const collapseWithoutMenu = !showWithoutMenu && !query.trim() && withMenuCount > 0;
+  const collapseWithoutMenu = preferences.viewMode === 'list' || (!showWithoutMenu && !query.trim() && withMenuCount > 0);
   let visibleCanteens = 0;
   candidates.forEach(({ card, matches, hasMenu }) => {
     card.hidden = !matches || (!hasMenu && collapseWithoutMenu);
@@ -107,7 +110,7 @@ function applyPreferences() {
   });
   const noMenuToggle = document.querySelector<HTMLButtonElement>('#no-menu-toggle');
   if (noMenuToggle) {
-    noMenuToggle.hidden = withoutMenuCount === 0 || withMenuCount === 0 || !!query.trim();
+    noMenuToggle.hidden = preferences.viewMode === 'list' || withoutMenuCount === 0 || withMenuCount === 0 || !!query.trim();
     noMenuToggle.setAttribute('aria-pressed', String(showWithoutMenu));
     const lang = document.documentElement.lang;
     noMenuToggle.textContent = lang === 'de'
@@ -123,13 +126,22 @@ function applyPreferences() {
   const visibleCount = document.querySelector<HTMLElement>('#visible-count');
   if (visibleCount) {
     const lang = document.documentElement.lang;
-    visibleCount.textContent = `${visibleCanteens} ${lang === 'de' ? (visibleCanteens === 1 ? 'Mensa' : 'Mensen') : (visibleCanteens === 1 ? 'canteen' : 'canteens')}`;
+    const canteenLabel = lang === 'de' ? (visibleCanteens === 1 ? 'Mensa' : 'Mensen') : (visibleCanteens === 1 ? 'canteen' : 'canteens');
+    const visibleDishes = candidates.filter(({ card }) => !card.hidden)
+      .reduce((count, { card }) => count + card.querySelectorAll('[data-meal-row]:not([hidden])').length, 0);
+    const dishLabel = lang === 'de' ? (visibleDishes === 1 ? 'Gericht' : 'Gerichte') : (visibleDishes === 1 ? 'dish' : 'dishes');
+    visibleCount.textContent = preferences.viewMode === 'list'
+      ? `${visibleDishes} ${dishLabel} · ${visibleCanteens} ${canteenLabel}`
+      : `${visibleCanteens} ${canteenLabel}`;
   }
 
   document.querySelectorAll<HTMLInputElement>('#preferences-form input[type="checkbox"]').forEach((input) => {
     input.checked = input.name === 'locations'
       ? preferences.locations.includes(input.value)
       : preferences[input.name as keyof Omit<Preferences, 'locations'>] as boolean;
+  });
+  document.querySelectorAll<HTMLInputElement>('#preferences-form input[name="viewMode"]').forEach((input) => {
+    input.checked = input.value === preferences.viewMode;
   });
   document.dispatchEvent(new Event('campuseats:preferences-applied'));
 }
@@ -138,6 +150,8 @@ document.querySelector<HTMLFormElement>('#preferences-form')?.addEventListener('
   const input = event.target as HTMLInputElement | HTMLSelectElement;
   if (input instanceof HTMLSelectElement && input.name === 'priceTier' && isPriceTier(input.value)) {
     preferences = { ...preferences, priceTier: input.value };
+  } else if (input instanceof HTMLInputElement && input.type === 'radio' && input.name === 'viewMode' && isViewMode(input.value)) {
+    preferences = { ...preferences, viewMode: input.value };
   } else if (input instanceof HTMLInputElement && input.type === 'checkbox' && input.name in preferences) {
     if (input.name === 'locations') {
       const locations = new Set(preferences.locations);

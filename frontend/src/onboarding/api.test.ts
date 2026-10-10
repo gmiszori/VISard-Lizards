@@ -24,7 +24,7 @@ test('F29: a successful save writes profile, merged preferences and language', (
   assert.equal(saved.diet, 'vegetarian');
   assert.deepEqual(saved.starredMeals, ['Schnitzel']);
   const prefs = JSON.parse(s.data.get('campuseats-preferences')!);
-  assert.equal(prefs.compact, true, 'unrelated preferences survive');
+  assert.equal(prefs.compact, true, 'legacy preferences survive until normalized on read');
   assert.equal(prefs.openOnly, true);
   assert.equal(prefs.priceTier, 'worker');
   assert.deepEqual(prefs.locations, ['zentrum', 'irchel']);

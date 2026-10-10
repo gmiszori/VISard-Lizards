@@ -14,34 +14,40 @@ import org.springframework.stereotype.Service;
 import jakarta.annotation.PreDestroy;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
+import com.visardlizards.backend.repository.ScrapedMenuStore;
 
-/** One daily batch per backend instance. Requests only read snapshots, never trigger AI charges. */
+/** Daily refresh and database-first cache-miss retrieval, serialized per cafeteria. */
 @Service
 public class ScrapedMenuRefreshService {
     private final ScraperAiClient ai;
     private final JsonMapper mapper;
+    private final ScrapedMenuStore store;
     private final boolean enabled;
     private final Path file;
     private final JsonNode locations;
-    private final ConcurrentHashMap<String,JsonNode> saved=new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String,Object> locks=new ConcurrentHashMap<>();
     private final AtomicBoolean running=new AtomicBoolean();
     private final ExecutorService worker=Executors.newSingleThreadExecutor();
     private volatile String lastAttempt, lastCompleted;
-    public ScrapedMenuRefreshService(ScraperAiClient ai, JsonMapper mapper,
+    public ScrapedMenuRefreshService(ScraperAiClient ai, JsonMapper mapper, ScrapedMenuStore store,
             @Value("${app.scraper.enabled:true}") boolean enabled,
             @Value("${app.scraper.snapshot-file:./data/scraped-menus.json}") String file) throws java.io.IOException {
-        this.ai=ai; this.mapper=mapper; this.enabled=enabled; this.file=Path.of(file).toAbsolutePath();
+        this.ai=ai; this.mapper=mapper; this.store=store; this.enabled=enabled; this.file=Path.of(file).toAbsolutePath();
         this.locations=mapper.readTree(new ClassPathResource("mensa/scraper-locations.json").getContentAsString(StandardCharsets.UTF_8));
-        if(Files.isRegularFile(this.file)) {
+        var storedEntries=store.all();
+        JsonNode metadata=store.get("__meta");
+        if(metadata!=null) { lastCompleted=metadata.path("lastCompleted").asText(null); lastAttempt=metadata.path("lastAttempt").asText(null); }
+        if(storedEntries.stream().noneMatch(entry -> !entry.path("id").asText().equals("__meta")) && Files.isRegularFile(this.file)) {
             try {
                 JsonNode stored=mapper.readTree(Files.readString(this.file));
-                for(JsonNode entry:stored.path("cafeterias")) saved.put(entry.path("id").asText(),entry);
+                for(JsonNode entry:stored.path("cafeterias")) store.save(entry);
                 lastCompleted=stored.path("lastCompleted").asText(null);
+                persist();
             } catch(RuntimeException | java.io.IOException ex) { System.err.println("Scraped menu snapshot unreadable; waiting for next refresh."); }
         }
     }
     @EventListener(ApplicationReadyEvent.class)
-    public void onStartup() { enqueue(); }
+    public void onStartup() { enqueueMissing(); }
     @Scheduled(cron="${app.scraper.cron:0 0 6 * * *}",zone="Europe/Zurich")
     public void onSchedule() { enqueue(); }
     public void enqueue() {
@@ -49,9 +55,32 @@ public class ScrapedMenuRefreshService {
             try { refresh(); } finally { running.set(false); }
         });
     }
+    public void enqueueMissing() {
+        if(!enabled || !ai.configured() || running.get()) return;
+        var day=java.time.LocalDate.now(java.time.ZoneId.of("Europe/Zurich"));
+        boolean missing=false;
+        for(JsonNode venue:locations) if(!fresh(store.get(venue.path("id").asText()),day)) { missing=true; break; }
+        if(!missing) return;
+        if(enabled && ai.configured() && running.compareAndSet(false,true)) worker.submit(() -> {
+            try {
+                lastAttempt=Instant.now().toString();
+                var today=java.time.LocalDate.now(java.time.ZoneId.of("Europe/Zurich"));
+                for(JsonNode venue:locations) {
+                    String id=venue.path("id").asText();
+                    if(!fresh(store.get(id),today)) ensureMeals(id,today,today.plusDays(14));
+                }
+                lastCompleted=Instant.now().toString(); persist();
+            } finally { running.set(false); }
+        });
+    }
     void refresh() {
         lastAttempt=Instant.now().toString();
         for(JsonNode venue:locations) {
+            synchronized(locks.computeIfAbsent(venue.path("id").asText(), ignored -> new Object())) { refreshVenue(venue); }
+        }
+        lastCompleted=Instant.now().toString(); persist();
+    }
+    private void refreshVenue(JsonNode venue) {
             String id=venue.path("id").asText();
             var entry=mapper.createObjectNode();
             for(String field:java.util.List.of("id","name","url")) entry.set(field,venue.get(field));
@@ -65,36 +94,48 @@ public class ScrapedMenuRefreshService {
                 }
             } catch(RuntimeException ex) {
                 // Provider/connector errors can contain credentials: expose and log only a fixed message.
-                JsonNode previous=saved.get(id);
+                JsonNode previous=store.get(id);
                 if(previous!=null && previous.has("result")) { entry.set("result",previous.get("result")); entry.set("updatedAt",previous.get("updatedAt")); }
                 entry.put("stale",true).put("error","Refresh failed; check backend key, model and scraper connection.");
             }
-            saved.put(id,entry);
-            persist(); // Partial progress survives interruption and individual failures.
+            store.save(entry); // Raw evidence and meal projection commit together.
+    }
+    /** Database-first fallback. Cache empty/closed responses for today, failures for 15 minutes. */
+    public void ensureMeals(String id, java.time.LocalDate start, java.time.LocalDate end) {
+        var today=java.time.LocalDate.now(java.time.ZoneId.of("Europe/Zurich"));
+        if(end.isBefore(today) || start.isAfter(today.plusDays(30))) return;
+        start=start.isBefore(today) ? today : start;
+        end=end.isAfter(today.plusDays(30)) ? today.plusDays(30) : end;
+        for(JsonNode venue:locations) if(venue.path("id").asText().equals(id)) {
+            synchronized(locks.computeIfAbsent(id,ignored -> new Object())) {
+                JsonNode cached=store.get(id);
+                if(!fresh(cached,today) && enabled && ai.configured()) refreshVenue(venue);
+                store.projectCached(id,start,end);
+            }
+            return;
         }
-        lastCompleted=Instant.now().toString(); persist();
+    }
+    private static boolean fresh(JsonNode cached, java.time.LocalDate today) {
+        if(cached==null) return false;
+        try {
+            Instant attempted=Instant.parse(cached.path("lastAttempt").asText());
+            return cached.path("stale").asBoolean() ? attempted.isAfter(Instant.now().minusSeconds(900)) :
+                attempted.atZone(java.time.ZoneId.of("Europe/Zurich")).toLocalDate().equals(today);
+        } catch(RuntimeException ignored) { return false; }
     }
     public JsonNode snapshot() {
         var root=mapper.createObjectNode().put("enabled",enabled).put("configured",ai.configured()).put("running",running.get())
             .put("timeZone","Europe/Zurich").put("lastAttempt",lastAttempt).put("lastCompleted",lastCompleted);
         var cafeterias=mapper.createArrayNode();
         for(JsonNode venue:locations) {
-            JsonNode entry=saved.get(venue.path("id").asText());
+            JsonNode entry=store.get(venue.path("id").asText());
             if(entry==null) { var pending=mapper.createObjectNode(); pending.setAll((tools.jackson.databind.node.ObjectNode)venue); pending.put("status","pending"); cafeterias.add(pending); }
             else cafeterias.add(entry);
         }
         root.set("cafeterias",cafeterias); return root;
     }
     private void persist() {
-        try {
-            Files.createDirectories(file.getParent());
-            Path temp=Files.createTempFile(file.getParent(),"scraped-menus-",".tmp");
-            try {
-                Files.writeString(temp,snapshot().toString());
-                try { Files.move(temp,file,StandardCopyOption.REPLACE_EXISTING,StandardCopyOption.ATOMIC_MOVE); }
-                catch(AtomicMoveNotSupportedException ex) { Files.move(temp,file,StandardCopyOption.REPLACE_EXISTING); }
-            } finally { Files.deleteIfExists(temp); }
-        } catch(java.io.IOException ex) { System.err.println("Could not persist scraped menus; in-memory results remain available."); }
+        store.save(mapper.createObjectNode().put("id","__meta").put("lastCompleted",lastCompleted).put("lastAttempt",lastAttempt));
     }
     @PreDestroy public void close() { worker.shutdownNow(); }
 }

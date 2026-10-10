@@ -72,7 +72,7 @@ public class JpaMensaRepository implements MensaRepository {
 
 	@Override
 	public List<Meal> findMealsOn(LocalDate date) {
-		return meals.findByDateOrderByMensaIdAscIdAsc(date).stream().map(JpaMensaRepository::toDomain).toList();
+		return preferUpstream(meals.findByDateOrderByMensaIdAscIdAsc(date)).stream().map(JpaMensaRepository::toDomain).toList();
 	}
 
 	@Override
@@ -82,7 +82,7 @@ public class JpaMensaRepository implements MensaRepository {
 
 	@Override
 	public List<Meal> findMeals(String mensaId, LocalDate dateStart, LocalDate dateEnd) {
-		return meals.findByMensaIdAndDateBetweenOrderByDateAsc(mensaId, dateStart, dateEnd).stream()
+		return preferUpstream(meals.findByMensaIdAndDateBetweenOrderByDateAsc(mensaId, dateStart, dateEnd)).stream()
 				.map(JpaMensaRepository::toDomain)
 				.toList();
 	}
@@ -101,6 +101,13 @@ public class JpaMensaRepository implements MensaRepository {
 				m.price() == null ? null : m.price().staff(),
 				m.price() == null ? null : m.price().external(),
 				m.ecoScore(), m.climateImpact(), m.components(), m.allergens());
+	}
+	/** An upstream import may arrive after a scraper fallback: display only one source per venue/day. */
+	private static List<MealEntity> preferUpstream(List<MealEntity> rows) {
+		var nativeDays=new java.util.HashSet<String>();
+		for(var row:rows) if(!row.getId().startsWith("mcp.") && !row.getTitle().isBlank() && !row.getTitle().equalsIgnoreCase("novalue"))
+			nativeDays.add(row.getMensaId()+"|"+row.getDate());
+		return rows.stream().filter(row -> !row.getId().startsWith("mcp.") || !nativeDays.contains(row.getMensaId()+"|"+row.getDate())).toList();
 	}
 
 	private static Campus toDomain(CampusEntity e) {
