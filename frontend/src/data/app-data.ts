@@ -11,7 +11,7 @@
 import { CANTEENS, MENSAS, MENU_DATE, type Canteen, type MenuItem } from './canteens';
 import { prepareMenu, type DisplayMenuItem } from './menu-display';
 import { API_URL, apiGet, type BackendMealDetail } from './api';
-import { DataError, parseMealList, parseMensas, parseMeta } from './validate';
+import { DataError, hasOnlyOnePriceCategory, mergePrices, parseMealList, parseMensas, parseMeta } from './validate';
 import { menuDateCandidates } from './menuDate';
 
 /** A canteen as the pages show it. rating is null when nobody has rated it yet. */
@@ -70,6 +70,16 @@ async function fetchAppData(): Promise<AppData> {
       if (parsed.rejected) console.warn(`[campuseats] ${parsed.rejected} meal(s) for ${day} were skipped because the backend sent them in a form this page cannot read.`);
       meals = parsed.meals;
       if (meals.length) break;
+    }
+    // An older backend returns one price category per request (student by default). Ask for the other two so
+    // staff and external prices are not shown as missing. A failure here only leaves those prices unknown.
+    if (hasOnlyOnePriceCategory(meals)) {
+      for (const category of ['STAFF', 'EXTERNAL']) {
+        try {
+          const other = parseMealList(await apiGet<unknown>(`/api/meals?date=${encodeURIComponent(menuDate)}&priceCategory=${category}`));
+          meals = mergePrices(meals, other.meals);
+        } catch { /* keep what we have */ }
+      }
     }
     const ratings = new Map(mensas.map((mensa) => [mensa.id, mensa.avgRating]));
     const menus = new Map<string, BackendMealDetail[]>();

@@ -30,6 +30,39 @@ export function price(value: unknown): number | null {
   return typeof value === 'number' && Number.isFinite(value) && value > 0 && value <= 1000 ? value : null;
 }
 
+/**
+ * All three prices of a meal. Current backends send `prices: {student, staff, external}`. Older ones only
+ * send `price: {price, cat}` (the one category that was asked for, student by default); ignoring that field
+ * made every meal look unpriced, so it is used for the category it names.
+ */
+export function parsePrices(meal: Record<string, unknown>): { student: number | null; staff: number | null; external: number | null } {
+  const all = isObject(meal.prices) ? meal.prices : {};
+  const prices = { student: price(all.student), staff: price(all.staff), external: price(all.external) };
+  const single = isObject(meal.price) ? meal.price : null;
+  const category = typeof single?.cat === 'string' ? single.cat.toLowerCase() : 'student';
+  if (single && (category === 'student' || category === 'staff' || category === 'external') && prices[category] === null) {
+    prices[category] = price(single.price);
+  }
+  return prices;
+}
+
+/** True when the meals carry only one price category each (an older backend): a price exists but staff and external never do. */
+export function hasOnlyOnePriceCategory(meals: BackendMealDetail[]): boolean {
+  const priced = meals.filter(m => m.meal.prices.student !== null || m.meal.prices.staff !== null || m.meal.prices.external !== null);
+  return priced.length > 0 && priced.every(m => m.meal.prices.staff === null && m.meal.prices.external === null);
+}
+
+/** Copies the prices that `from` knows into `into` (matched by meal id) where `into` has none. Returns new meals. */
+export function mergePrices(into: BackendMealDetail[], from: BackendMealDetail[]): BackendMealDetail[] {
+  const known = new Map(from.map(m => [m.meal.id, m.meal.prices]));
+  return into.map(m => {
+    const other = known.get(m.meal.id);
+    if (!other) return m;
+    const p = m.meal.prices;
+    return { ...m, meal: { ...m.meal, prices: { student: p.student ?? other.student, staff: p.staff ?? other.staff, external: p.external ?? other.external } } };
+  });
+}
+
 /** An average rating from 0 to 5, or null. */
 export function average(value: unknown): number | null {
   return typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 5 ? value : null;
@@ -65,7 +98,6 @@ export function parseMeal(value: unknown): BackendMealDetail | null {
   const [diet, kind, service] = classification as unknown[];
   if (typeof diet !== 'string' || typeof kind !== 'string' || typeof service !== 'string') return null;
   if (!DIETS.includes(diet) || !KINDS.includes(kind) || !SERVICES.includes(service)) return null;
-  const prices = isObject(meal.prices) ? meal.prices : {};
   return {
     mensaId,
     date,
@@ -74,7 +106,7 @@ export function parseMeal(value: unknown): BackendMealDetail | null {
       id,
       name,
       description: typeof meal.description === 'string' ? meal.description.slice(0, 2000) : null,
-      prices: { student: price(prices.student), staff: price(prices.staff), external: price(prices.external) },
+      prices: parsePrices(meal),
       allergens: Array.isArray(meal.allergens) ? meal.allergens.filter((a): a is string => typeof a === 'string' && a.length > 0 && a.length <= 40).slice(0, 30) : [],
       classification: [diet, kind, service],
     },

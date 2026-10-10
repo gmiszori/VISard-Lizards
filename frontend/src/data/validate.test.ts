@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { average, DataError, parseMeal, parseMealList, parseMensas, parseMeta, price } from './validate.ts';
+import { average, DataError, hasOnlyOnePriceCategory, mergePrices, parseMeal, parseMealList, parseMensas, parseMeta, price } from './validate.ts';
 
 const good = () => ({
   mensaId: 'polyterrasse', date: '2026-10-12', avgRating: 4.2,
@@ -29,6 +29,44 @@ test('F08: a missing or broken prices object only makes the prices unknown', () 
     (meal.meal as Record<string, unknown>).prices = prices;
     assert.deepEqual(parseMeal(meal)?.meal.prices, { student: null, staff: null, external: null });
   }
+});
+
+const legacy = (cat: unknown, amount: unknown, id = 'polyterrasse.2026-10-12.lunch.0') => {
+  const meal = good();
+  const raw = meal.meal as Record<string, unknown>;
+  delete raw.prices; raw.id = id; raw.price = { price: amount, cat };
+  return meal;
+};
+
+test('F63: an older backend that only sends price {price, cat} still shows that price', () => {
+  assert.deepEqual(parseMeal(legacy('student', 8.5))?.meal.prices, { student: 8.5, staff: null, external: null });
+  assert.deepEqual(parseMeal(legacy('staff', 11.5))?.meal.prices, { student: null, staff: 11.5, external: null });
+  assert.deepEqual(parseMeal(legacy('EXTERNAL', 15.5))?.meal.prices, { student: null, staff: null, external: 15.5 });
+  assert.equal(parseMeal(legacy('unknown-group', 9))?.meal.prices.student, null, 'an unknown category is not guessed');
+  assert.equal(parseMeal(legacy('student', 0))?.meal.prices.student, null, '0.00 is still "not published"');
+});
+
+test('F63: the new prices object wins over the single price', () => {
+  const meal = good();
+  (meal.meal as Record<string, unknown>).price = { price: 1, cat: 'student' };
+  assert.equal(parseMeal(meal)?.meal.prices.student, 8.5);
+});
+
+test('F63: other price categories are merged in by meal id, existing prices are kept', () => {
+  const student = [parseMeal(legacy('student', 8.5, 'a'))!, parseMeal(legacy('student', 6, 'b'))!];
+  const staff = [parseMeal(legacy('staff', 11.5, 'a'))!];
+  assert.equal(hasOnlyOnePriceCategory(student), true);
+  const merged = mergePrices(student, staff);
+  assert.deepEqual(merged[0]!.meal.prices, { student: 8.5, staff: 11.5, external: null });
+  assert.deepEqual(merged[1]!.meal.prices, { student: 6, staff: null, external: null }, 'a meal missing from the other list is unchanged');
+  assert.equal(hasOnlyOnePriceCategory(merged), false);
+  assert.equal(student[0]!.meal.prices.staff, null, 'inputs are not mutated');
+});
+
+test('F63: a backend with all prices, or with no prices at all, does not ask again', () => {
+  assert.equal(hasOnlyOnePriceCategory([parseMeal(good())!]), false);
+  assert.equal(hasOnlyOnePriceCategory([]), false);
+  assert.equal(hasOnlyOnePriceCategory([parseMeal(legacy('student', null))!]), false);
 });
 
 test('F08: ratings outside 0-5 or not numbers become null', () => {
