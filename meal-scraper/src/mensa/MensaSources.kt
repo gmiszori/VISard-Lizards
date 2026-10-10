@@ -36,13 +36,11 @@ object MensaSources {
             listOf("https://www.mensa.uzh.ch/de/Standorte-und-Verpflegung/Brunnenhof.html")),
         MensaLocation("cityport", "Cityport Mensa", "https://www.zfv.ch/de/essen-gehen/cafeteria-uzh-cityport"),
         MensaLocation("bim11", "BIM11", "https://www.zfv.ch/de/essen-gehen/mensa-bim11"),
-        // The former HPI restaurant page is gone. This official plan only confirms opening hours.
-        MensaLocation("bistro-hpi", "Bistro HPI", "https://ethz.ch/content/dam/ethz/common/images/arealplaene/sonderkarten/ETH_Hoenggerberg_SK_GRO_de_lyt.pdf"),
         MensaLocation("science-lounge", "Science Lounge", "https://www.zfv.ch/de/essen-gehen/eth-zuerich-science-lounge"),
         MensaLocation("zwei-grad", "Zwei Grad Bistro", "https://ethz.ch/de/campus/erleben/gastronomie-und-einkaufen/gastronomie/restaurants-und-cafeterias/zentrum/zwei-grad-bistro.html"),
         MensaLocation("bellavista", "Restaurant Bellavista", "https://www.zfv.ch/de/essen-gehen/restaurant-bellavista"),
     )
     val toolHint: String get() = " Known cafeteria sources: " + locations.joinToString("; ") {
         "${it.name}: ${(listOf(it.url) + it.additionalUrls).joinToString(", ")}"
-    } + ". Bistro HPI's campus plan provides opening hours only, not a meal menu. Science Lounge is in Basel."
+    } + ". Science Lounge is in Basel."
 }

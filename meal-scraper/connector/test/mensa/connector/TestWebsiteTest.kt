@@ -20,7 +20,7 @@ class TestWebsiteTest {
             val catalog = client.send(HttpRequest.newBuilder(URI("$origin/api/mensas")).build(), HttpResponse.BodyHandlers.ofString())
             assertEquals(200, catalog.statusCode())
             val locations = Json.parseToJsonElement(catalog.body()).jsonObject["locations"]!!.jsonArray
-            assertEquals(24, locations.size)
+            assertEquals(23, locations.size)
             assertTrue(locations.any { it.jsonObject["name"]!!.jsonPrimitive.content == "Irchel Bar" })
             for ((path, contentType) in listOf("/" to "text/html", "/app.js" to "text/javascript", "/client.mjs" to "text/javascript", "/styles.css" to "text/css")) {
                 val response = client.send(HttpRequest.newBuilder(URI("$origin$path")).build(), HttpResponse.BodyHandlers.ofString())

@@ -17,7 +17,7 @@ class ScrapedMenuRefreshServiceTests {
         var store=memoryStore();
         try(var service=new TestClose(new ScrapedMenuRefreshService(ai,mapper,store,false,file.toString()))) {
             service.value.refresh(); var first=service.value.snapshot();
-            assertEquals(39,first.path("cafeterias").size());
+            assertEquals(38,first.path("cafeterias").size());
             for(var venue:first.path("cafeterias")) assertFalse(venue.path("stale").asBoolean());
             when(ai.retrieve(anyString())).thenThrow(new IllegalStateException("secret-test-key"));
             service.value.refresh(); var failed=service.value.snapshot();

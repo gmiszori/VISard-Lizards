@@ -54,3 +54,5 @@ for opening hours only; backend URL deliberately remains null until a menu is ve
 Science Lounge is in Basel. ZHAW Lagerstrasse currently offers vending machines.
 No frontend code changed. Kotlin scraper/connector: 45 tests pass. Backend refresh: 5 pass.
 Rebuild backend and meal-scraper containers to activate the catalog; no live batch run here.
+
+User correction: Bistro HPI removed from MensaSources and backend scraper-locations.json. Catalog now has 23 options; backend schedules 38 cafeterias. No frontend code changed. Kotlin and backend refresh tests pass.
