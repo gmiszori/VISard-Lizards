@@ -72,3 +72,35 @@ test('invalid clock -> null; inputs remain unchanged', () => {
   getRatingPrompt(at('14:00'), [visit(), guess('a')], s);
   assert.equal(JSON.stringify(s), snapshot);
 });
+
+// No lunch today (Saturday 2026-10-10): ask about the latest earlier day with a menu instead.
+const saturday = (time: string) => at(time, '2026-10-10');
+test('no lunch today: the guess question is about the earlier day, at any time before 23:00', () => {
+  for (const time of ['08:00', '10:59', '11:00', '13:00', '14:00', '22:59']) {
+    const prompt = getRatingPrompt(saturday(time), [guess('a')], state(), { fallbackDate: '2026-10-09' });
+    assert.equal(prompt?.date, '2026-10-09', time);
+    assert.equal(prompt?.kind, 'guess', time);
+    assert.equal(prompt?.mensaChoices[0]?.source, 'guess', time);
+  }
+  assert.equal(getRatingPrompt(saturday('23:00'), [guess('a')], state(), { fallbackDate: '2026-10-09' }), null);
+});
+test('without a fallback date nothing changes (no guess about an earlier day, none before 14:00)', () => {
+  assert.equal(getRatingPrompt(saturday('10:00'), [guess('a')], state()), null);
+  assert.equal(getRatingPrompt(saturday('14:00'), [guess('a')], state())?.date, '2026-10-10');
+});
+test('a fallback date that is not an earlier real date is ignored', () => {
+  for (const fallbackDate of ['2026-10-10', '2026-10-11', 'garbage', '', '2026-02-31x'])
+    assert.equal(getRatingPrompt(saturday('10:00'), [guess('a')], state(), { fallbackDate }), null, fallbackDate);
+});
+test('the earlier day is answered once; "nowhere" quiet days and dismissals still hold', () => {
+  const options = { fallbackDate: '2026-10-09' };
+  assert.equal(getRatingPrompt(saturday('15:00'), [guess('a')], { ...state(), resolvedDates: ['2026-10-09'] }, options), null);
+  assert.equal(getRatingPrompt(saturday('15:00'), [guess('a')], { ...state(), dismissedDates: ['2026-10-09'] }, options), null);
+  assert.equal(getRatingPrompt(saturday('15:00'), [guess('a')], { ...state(), quietUntil: '2026-10-12' }, options), null);
+  assert.equal(getRatingPrompt(saturday('15:00'), [guess('a')], { ...state(), promptedDays: { '2026-10-10': '2026-10-09' } }, options)?.date, '2026-10-09');
+});
+test('a visit of that earlier day still wins over guesses', () => {
+  const prompt = getRatingPrompt(saturday('15:00'), [guess('a'), visit()], state(), { fallbackDate: '2026-10-09' });
+  assert.equal(prompt?.kind, 'visit');
+  assert.equal(prompt?.date, '2026-10-09');
+});

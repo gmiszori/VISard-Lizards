@@ -51,17 +51,24 @@ function unique(choices: readonly MensaChoice[]): MensaChoice[] {
  *   23:00; before 11:00 the visits of yesterday are asked about.
  * - Without any visit today, undated guesses give "Where did you eat today?" from 14:00, unless the user
  *   answered "nowhere" recently (quietUntil).
+ * - options.fallbackDate: there was no lunch today (weekend, holiday), so ask about that earlier day instead (the latest
+ *   day before today that had a menu). Then the guess question is allowed at any time before 23:00.
  */
-export function getRatingPrompt(now: Date, candidates: readonly MensaChoice[], state: RatingPromptState): RatingPrompt | null {
+export interface RatingPromptOptions { fallbackDate?: string }
+export function getRatingPrompt(now: Date, candidates: readonly MensaChoice[], state: RatingPromptState, options: RatingPromptOptions = {}): RatingPrompt | null {
   if (!Number.isFinite(now.getTime())) return null;
   const { date: today, minutes } = zurichTime(now);
   if (minutes >= EVENING_END_MIN) return null;
-  const date = minutes < MORNING_END_MIN ? previousDate(today) : today;
+  // Only an earlier real date counts; anything else is ignored.
+  const earlier = typeof options.fallbackDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(options.fallbackDate) && options.fallbackDate < today
+    ? options.fallbackDate : undefined;
+  const date = earlier ?? (minutes < MORNING_END_MIN ? previousDate(today) : today);
   if (state.resolvedDates.includes(date) || state.dismissedDates.includes(date)) return null;
   if (state.promptedDays[today] && state.promptedDays[today] !== date) return null;
   const visited = unique(candidates.filter(m => m.date === date && (date !== today || (m.readyAt ?? 0) <= now.getTime())));
   if (visited.length) return { date, mensaChoices: visited.slice(0, MAX_VISITED), kind: 'visit' };
-  if (date !== today || minutes < GUESS_FROM_MIN || (state.quietUntil && today <= state.quietUntil)) return null;
+  if (!earlier && (date !== today || minutes < GUESS_FROM_MIN)) return null;
+  if (state.quietUntil && today <= state.quietUntil) return null;
   // A visit today whose meal is not eaten yet: wait for it instead of guessing.
   if (candidates.some(m => m.date === today)) return null;
   const guesses = unique(candidates.filter(m => !m.date)).slice(0, MAX_GUESSES);
