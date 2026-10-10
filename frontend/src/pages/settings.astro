@@ -82,7 +82,7 @@ import ProfileMealSettings from '../components/ProfileMealSettings.astro';
     <fieldset class="settings-group">
       <legend data-i18n="devMode">Dev mode</legend>
       <p data-i18n="devModeDescription">Show diagnostics for live data, location, storage and backend connectivity.</p>
-      <label class="setting-option compact-option"><span class="compact-icon" aria-hidden="true">⌁</span><span class="setting-copy"><strong data-i18n="devTools">Developer tools</strong></span><input type="checkbox" name="devMode" value="true" /></label>
+      <label class="setting-option compact-option"><span class="compact-icon dev-tools-icon" aria-hidden="true">&lt;/&gt;</span><span class="setting-copy"><strong data-i18n="devTools">Developer tools</strong></span><input type="checkbox" name="devMode" value="true" /></label>
     </fieldset>
     <p class="settings-saved" id="settings-saved" aria-live="polite" data-i18n="settingsSaved" hidden>Saved</p>
   </form>
@@ -118,7 +118,7 @@ import ProfileMealSettings from '../components/ProfileMealSettings.astro';
 <style>
   .settings-intro,.settings-sections,.settings-form{width:100%;max-width:none}
   .settings-sections{display:grid;gap:14px;margin:0 0 14px}
-  .settings-sections :global(.starred-meals-settings){width:100%;max-width:none}
+  .settings-sections :global(.starred-meals-settings){width:100%;max-width:none;margin-bottom:0}
   .settings-sections :global(.onboarding-restart){justify-self:start;margin:0;min-height:44px;padding:10px 15px;border-color:var(--line);background:var(--paper);color:var(--green);font-size:13px;transition:background .18s,border-color .18s,transform .18s}
   .settings-sections :global(.onboarding-restart:hover){background:#edf4ed;border-color:#b9d0bf;transform:translateY(-1px)}
   .appearance-settings{padding-bottom:17px}
@@ -131,6 +131,7 @@ import ProfileMealSettings from '../components/ProfileMealSettings.astro';
   :global(:root[data-theme="dark"] .settings-sections .onboarding-restart:hover){background:#141b16;border-color:#3e5c46}
   .price-category .select-option{margin:0;padding:0;border:0;min-height:44px;font-size:13px;font-weight:700}
   .price-category select{min-height:44px;min-width:140px}
+  .dev-tools-icon{font:700 14px ui-monospace,SFMono-Regular,Consolas,monospace}
   .view-mode-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;max-width:450px;border:1px solid var(--line);border-radius:8px;overflow:hidden}
   .view-mode-option{position:relative;min-width:0;cursor:pointer}
   .view-mode-option+ .view-mode-option{border-left:1px solid var(--line)}
