@@ -27,6 +27,48 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 class MensaClientsTests {
 
     @Test
+    void ethSelectsPolysnackWeekAcrossPagesAndPreservesMealData() {
+        RestClient.Builder builder = RestClient.builder();
+        MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
+        EthMensaClient client = new EthMensaClient(builder.build());
+        String first = "{\"weekly-rota-array\":[" + IntStream.range(0, 50)
+                .mapToObj(i -> "{\"facility-id\":99,\"valid-from\":\"2026-10-05\"}")
+                .collect(Collectors.joining(",")) + "]}";
+        String matching = "{\"facility-id\":10,\"valid-from\":\"2026-10-05\","
+                + "\"day-of-week-array\":[{\"day-of-week-code\":5,\"future-meal-field\":{\"price\":9.9}}]}";
+        String second = "{\"weekly-rota-array\":[" + matching
+                + ",{\"facility-id\":10,\"valid-from\":\"2026-10-12\"}]}";
+        String prefix = "https://idapps.ethz.ch/cookpit-pub-services/v1/weeklyrotas"
+                + "?client-id=ethz-wcms&lang=en&rs-first=";
+        server.expect(requestTo(prefix + "0&rs-size=50&valid-after=2026-10-05"))
+                .andRespond(withSuccess(first, MediaType.APPLICATION_JSON));
+        server.expect(requestTo(prefix + "50&rs-size=50&valid-after=2026-10-05"))
+                .andRespond(withSuccess(second, MediaType.APPLICATION_JSON));
+
+        JsonMapper mapper = JsonMapper.builder().build();
+        var selected = mapper.readTree(client.fetchFacilityWeeklyRotas(10, LocalDate.of(2026, 10, 9), "en"))
+                .path("weekly-rota-array");
+        assertEquals(1, selected.size());
+        assertEquals(mapper.readTree(matching), selected.get(0));
+        server.verify();
+    }
+
+    @Test
+    void ethDoesNotSubstituteAnotherWeekWhenFacilityHasNoData() {
+        RestClient.Builder builder = RestClient.builder();
+        MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
+        EthMensaClient client = new EthMensaClient(builder.build());
+        server.expect(requestTo("https://idapps.ethz.ch/cookpit-pub-services/v1/weeklyrotas"
+                        + "?client-id=ethz-wcms&lang=en&rs-first=0&rs-size=50&valid-after=2026-10-12"))
+                .andRespond(withSuccess("{\"weekly-rota-array\":[{\"facility-id\":10,"
+                        + "\"valid-from\":\"2026-10-05\"}]}", MediaType.APPLICATION_JSON));
+
+        assertEquals("{\"weekly-rota-array\":[]}",
+                client.fetchFacilityWeeklyRotas(10, LocalDate.of(2026, 10, 12), "en"));
+        server.verify();
+    }
+
+    @Test
     void ethStopsWhenUpstreamIgnoresPaginationOffset() {
         RestClient.Builder builder = RestClient.builder();
         MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();

@@ -34,6 +34,12 @@ responses, repeated pages and more than 100 pages rather than silently losing
 data. For manual pagination use `fetchWeeklyRotas(date, language, offset, pageSize)`.
 The page size must be between 1 and 50.
 
+For a single facility and requested week, use
+`fetchFacilityWeeklyRotas(facilityId, date, language)`. It returns raw JSON with
+the matching `weekly-rota-array` and retains all nested fields. Polysnack uses
+facility ID `10`. See [missing menu investigation](MISSING_MENUS.md) for verified
+availability, closure notices and the reproducible source-check script.
+
 Restaurant metadata and facility IDs:
 https://github.com/famoser/Mensa/blob/main/app/src/main/assets/eth/locations.json
 Also bundled in `src/main/resources/mensa/eth-locations.json`; inject
@@ -126,6 +132,7 @@ cd backend
 ```
 
 - `GET /api/upstream/eth/weekly-rotas?date=2026-10-09&language=en&offset=0&pageSize=50`
+- `GET /api/upstream/eth/facilities/10/weekly-rotas?date=2026-10-09&language=en` (Polysnack, requested week)
 - `GET /api/upstream/uzh/week` (current week)
 - `GET /api/upstream/uzh/week?next=true`
 - `GET /api/upstream/uzh/day?date=2026-10-12`

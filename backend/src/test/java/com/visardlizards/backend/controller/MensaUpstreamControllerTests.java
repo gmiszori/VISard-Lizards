@@ -49,6 +49,17 @@ class MensaUpstreamControllerTests {
     }
 
     @Test
+    void polysnackFacilityResponseKeepsRawMealFields() throws Exception {
+        String raw = "{\"weekly-rota-array\":[{\"facility-id\":10,\"custom-meal-field\":42}]}";
+        when(ethClient.fetchFacilityWeeklyRotas(10, LocalDate.of(2026, 10, 9), "en")).thenReturn(raw);
+
+        mvc.perform(get("/api/upstream/eth/facilities/10/weekly-rotas").param("date", "2026-10-09"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().string(raw));
+    }
+
+    @Test
     void upstreamExceptionIsReportedWithoutLeakingItsResponse() throws Exception {
         when(zfvClient.fetchThisWeek()).thenThrow(new RestClientException("private upstream diagnostics"));
 
