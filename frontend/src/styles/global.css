@@ -73,3 +73,8 @@ body{background:transparent;color:var(--ink)}.app-shell{max-width:1160px}.site-h
 .avoid-option{display:flex;align-items:center;gap:10px;min-height:44px;padding:8px 12px;border:1px solid var(--line);border-radius:12px;background:var(--paper);cursor:pointer;font-size:14px}
 .avoid-option input{width:20px;height:20px;accent-color:var(--green)}
 .avoid-disclaimer{font-size:12px;color:var(--muted);line-height:1.5;margin:0}
+.meal-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.meal-share{min-width:44px;min-height:44px;display:inline-grid;place-items:center;border:1px solid var(--line);border-radius:12px;background:var(--paper);color:var(--green);cursor:pointer}
+.meal-share:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+.menu-item.is-linked{box-shadow:0 0 0 2px var(--green);border-radius:16px}
+.share-status{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);z-index:60;max-width:min(92vw,420px);margin:0;padding:12px 16px;border-radius:14px;background:var(--ink);color:var(--paper);font-size:14px;box-shadow:var(--shadow)}

@@ -40,6 +40,9 @@ const prediction: CrowdPrediction = {
 </BaseLayout>
 <style>.detail-hero-title{display:flex;align-items:center;gap:12px;flex-wrap:wrap}</style>
 <script>
+  import '../../scripts/share-meal';
+</script>
+<script>
   // Replace the preview chart with the backend's prediction once enough crowd reports exist (src/crowd/README.md).
   import { apiGet, type BackendCrowd } from '../../data/api';
   const chart = document.querySelector<HTMLElement>('[data-crowd-chart]');

@@ -8,9 +8,9 @@ interface Props { item: DisplayMenuItem }
 const { item } = Astro.props;
 const ids = allergenIds(item.allergens ?? []);
 ---
-<article class="menu-item" data-diet={item.dietary} data-allergens={ids.join(' ')} data-meal-row data-meal-id={item.id}>
+<article class="menu-item" id={item.id} data-diet={item.dietary} data-allergens={ids.join(' ')} data-meal-row data-meal-id={item.id}>
   <span class="eyebrow" data-i18n={`category_${item.category.toLowerCase().replace(' ', '_')}`}>{item.category}</span>
-  <div class="meal-detail-heading"><h3>{item.name}</h3><MealStar item={item} /></div>
+  <div class="meal-detail-heading"><h3>{item.name}</h3><div class="meal-actions"><button type="button" class="meal-share" data-share-meal data-share-label="shareMeal" aria-label="Share this dish"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v13"/></svg></button><MealStar item={item} /></div></div>
   <MealServingTime item={item} />
   <p>{item.description}</p>
   <p style="margin-top:9px" data-allergen-line><span data-i18n={ids.length ? 'contains' : 'noAllergens'}>{ids.length ? 'Contains' : 'No listed allergens'}</span>{ids.length > 0 && <>: <span class="allergen-names" lang="en">{ids.map((id) => allergenLabel(id, 'en')).join(', ')}</span><span class="allergen-names" lang="de">{ids.map((id) => allergenLabel(id, 'de')).join(', ')}</span></>}{ids.length === 0 && <span class="allergen-unknown" data-allergen-unknown hidden data-i18n="allergenUnknown"> · check with the staff</span>}</p>
