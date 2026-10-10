@@ -38,3 +38,16 @@
 .empty-actions button { background: var(--green); color: var(--paper); }
 .empty-actions a { background: transparent; color: var(--green); }
 .empty-state > p { margin: 0; }
+
+/* Dish names on the home cards are 23px-high links. The tap area grows to 45px without making the rows taller
+   (negative margin); all links in a card go to the same canteen page, so overlapping areas are harmless. */
+.dish-preview .dish a { display: inline-block; padding-block: 11px; margin-block: -11px; }
+
+/* "per 100 g" next to a price that is not for a plate. */
+.price-unit { font-weight: 700; color: var(--ink); white-space: nowrap; }
+
+/* iPhones zoom the whole page when a field with text smaller than 16px gets focus (and do not zoom back).
+   Only there the selects and fields get 16px; other browsers keep the compact sizes. */
+@supports (-webkit-touch-callout: none) {
+  select, textarea, input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]) { font-size: 16px !important; }
+}

@@ -23,14 +23,21 @@ function applyPreferences() {
   });
   document.querySelectorAll<HTMLSelectElement>('[data-price-tier]').forEach(select => select.value = preferences.priceTier);
 
+  const query = document.querySelector<HTMLInputElement>('#search-input')?.value ?? '';
   document.querySelectorAll<HTMLElement>('[data-diet]').forEach((meal) => {
     const diet = meal.dataset.diet as keyof Pick<Preferences, 'vegan' | 'vegetarian' | 'meat'>;
+    const card = meal.closest<HTMLElement>('[data-canteen-card]');
+    const matchesName = card && matchesQuery(card.dataset.name ?? '', query);
     const allergens = (meal.dataset.allergens ?? '').split(' ').filter(Boolean);
     const avoided = conflicts(allergens as AllergenId[], preferences.avoid);
     meal.dataset.avoidedAllergens = avoided.join(' ');
-    meal.hidden = !preferences[diet] || avoided.length > 0;
+    meal.hidden = !preferences[diet] || avoided.length > 0 || !!(card && !matchesName && !matchesQuery(meal.dataset.mealName ?? '', query));
     // A dish with no listed allergens is not known to be safe: with a filter on, say so.
     meal.querySelectorAll<HTMLElement>('[data-allergen-unknown]').forEach(note => { note.hidden = preferences.avoid.length === 0; });
+  });
+
+  document.querySelectorAll<HTMLElement>('[data-meal-group]').forEach(group => {
+    group.hidden = group.querySelector('[data-meal-row]:not([hidden])') === null;
   });
 
   document.querySelectorAll<HTMLElement>('[data-preference-list]').forEach((list) => {
@@ -50,7 +57,6 @@ function applyPreferences() {
     if (emptyMessage) emptyMessage.hidden = hasVisibleMeals;
   });
 
-  const query = document.querySelector<HTMLInputElement>('#search-input')?.value ?? '';
   const campusChoice = document.querySelector<HTMLSelectElement>('#campus-select')?.value ?? 'preset';
   let visibleCanteens = 0;
   document.querySelectorAll<HTMLElement>('[data-canteen-card]').forEach((card) => {
@@ -60,7 +66,7 @@ function applyPreferences() {
       : card.dataset.campusId === campusChoice;
     const matchesOpen = !preferences.openOnly || card.dataset.isOpen === 'true';
     // Umlauts are optional: "zurich", "zuerich" and "Zürich" all find the same dishes.
-    const matchesSearch = matchesQuery(`${card.dataset.name ?? ''} ${card.dataset.menu ?? ''}`, query);
+    const matchesSearch = matchesQuery(card.dataset.name ?? '', query) || card.querySelector('[data-meal-row]:not([hidden])') !== null;
     card.hidden = !(matchesCampus && matchesOpen && matchesSearch);
     if (!card.hidden) visibleCanteens++;
   });
