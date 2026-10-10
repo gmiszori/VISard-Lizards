@@ -10,9 +10,12 @@ permission prompt by itself. After each fix it dispatches `campuseats:user-locat
 `UserLocation` as `detail`.
 
 **Visits** (`visits.ts`): a fix at a mensa during one of its meal services (15 min grace) is saved in
-`campuseats-visits` as `{mensaId, date, service}`, newest first, for 30 days. When location permission
+`campuseats-visits` as `{mensaId, date, service, at, waitMin, source}`, newest first, for 30 days. `at` is
+the arrival, `waitMin` the queue wait expected from the crowd indicator; a crowd report (canteen page) adds
+a visit with `source: 'crowd'` and the wait for the reported level. One visit per mensa, day and service
+keeps the first arrival. When location permission
 is already granted, the home page records a visit without turning on distance sorting. The rating
-card offers only visits for the meal date and stays hidden when there is no matching visit.
+card asks about a visit once its meal is probably eaten (arrival + wait + 20 min, see `rating/README.md`).
 
 ```ts
 import { locateUserNow, LocationUnavailableError } from '../location/geolocation.ts';

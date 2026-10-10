@@ -3,28 +3,37 @@
 Astro components and a vanilla TypeScript controller follow the app's existing
 framework. No React runtime, TSX renderer, or production dependency was added.
 
-`getRatingPrompt(now, lastEatenCandidates, state)` is pure. All clock decisions use
-Europe/Zurich, even on devices in another timezone. Its today window is
-[13:30, 21:00); before 11:00 it targets yesterday. Candidate dates are optional:
-Production candidates come from location-confirmed mensa visits and must match the target.
-With no matching visit, the card stays hidden. The development simulator can still use
-profile recommendations to preview the flow.
+`getRatingPrompt(now, candidates, state)` is pure. All clock decisions use Europe/Zurich, even on
+devices in another timezone. When the question comes (decided 2026-10-10):
+
+- **Visits** (`location/visits.ts`): being located at a mensa during a service, or reporting its crowd
+  ("How busy is it right now?"), records the arrival and the expected queue wait (crowd indicator or the
+  reported level). The question about today comes once the meal is probably eaten:
+  arrival + queue wait + 20 minutes (`readyAt`), on the next page load or 30-second check, until 23:00
+  (lunch and dinner). Before 11:00 it asks about yesterday's visits.
+- With **one** visited mensa the card opens straight on its meals, with a flat "I ate somewhere else" link.
+- **Without location** (no near-me preference and no location visit stored): from 14:00, once a day,
+  "Where did you eat today?" with up to three suggestions (favourites, profile ratings, else defaults) and
+  "Nowhere today", which also pauses this question for three more days (`quietUntil`). No guess while a
+  visit of today is still waiting for its `readyAt`.
 
 `useRatingPrompt()` owns localStorage state at `campuseats-meal-rating-state`:
-`resolvedDates`, `dismissedDates`, and `promptedDays` (Zurich day -> target date).
+`resolvedDates`, `dismissedDates`, `promptedDays` (Zurich day -> target date) and `quietUntil`.
 The extra day map prevents a yesterday prompt in the morning followed by another
 prompt that afternoon. An unresolved target can resume after a reload. All
 terminal choices are retained, not pruned. Missing menus resolve the target too.
 Storage failures leave the choice unresolved and show retry feedback.
 
-The production question offers up to four mensas visited on the target date. Saved
-favourites and profile `mensaRatings` are used only by the development simulator;
-those preference scores are not evidence of a visit.
+The visit question offers up to four mensas visited on the target date. Saved favourites and profile
+`mensaRatings` are only suggestions for the guess question (and the development simulator); they are
+not evidence of a visit.
 
 ## Persistence and backend
 
 `saveMealRating()` is the only rating save boundary. With a backend (`PUBLIC_API_URL`, see
-`src/data/api.ts`) it sends `{userId, stars}` to `POST /api/meals/{id}/ratings`. The backend stores
+`src/data/api.ts`) it sends `{userId, stars, source}` to `POST /api/meals/{id}/ratings`. `source` is `location`
+(located there), `crowd` (reported its crowd) or `guess` (picked from suggestions or "Other mensa");
+the backend counts `crowd` and `guess` ratings half in the average. The backend stores
 1–5 stars, enforces one rating per `(userId, mealId)` with a unique constraint (`409` →
 `DuplicateMealRatingError`) and returns the meal's mensa and date plus the server's `ratedAt`.
 Every saved rating is also kept in `campuseats-meal-ratings` on the device. The persistent anonymous
@@ -45,15 +54,15 @@ ids belong to the same person.
 
 ## Development simulator
 
-The small **rate** button above the card opens a fresh, isolated development
-prompt immediately. It uses the latest date with fixture menus and an afternoon
+The developer tools (Dev mode) have a **Meal-rating prompt** section. "Open rating prompt" opens a
+fresh, isolated development prompt immediately. It uses the latest date with fixture menus and an afternoon
 Zurich time. Only simulated prompt state is reset; simulated saved ratings remain,
 so duplicate rejection can also be tried. The button is absent from production.
 
 Run the existing `pnpm dev` script (background server: `pnpm exec astro dev --background`).
-Open `http://localhost:4321/?ratingNow=2026-10-09T13%3A30%3A00%2B02%3A00`, or expand
-"Meal-rating simulator · development only" and apply an ISO timestamp with an
-explicit offset or Z. Invalid input shows a validation message.
+Open `http://localhost:4321/?ratingNow=2026-10-09T14%3A00%3A00%2B02%3A00`, or apply an ISO timestamp
+with an explicit offset or Z in that section. The section's simulated time is separate from the developer
+tools' "Simulated time", which drives the normal (non-isolated) prompt. Invalid input shows a validation message.
 
 When an override is active, prompt state and ratings use separate `:dev` storage
 keys. "Reset simulated ratings" clears only those two simulation keys. Normal
@@ -63,10 +72,10 @@ the production clock.
 
 Useful cases (sample menus cover 2026-09-28 through 2026-10-09):
 
-- `2026-10-09T12:00:00+02:00`: no prompt.
-- `2026-10-09T13:30:00+02:00`: today's prompt, menus available.
-- `2026-10-09T20:59:00+02:00`: today's prompt.
-- `2026-10-09T21:00:00+02:00`: no prompt.
+- `2026-10-09T13:59:00+02:00`: no prompt (suggestions only, before 14:00).
+- `2026-10-09T14:00:00+02:00`: "Where did you eat today?", menus available.
+- `2026-10-09T22:59:00+02:00`: today's prompt.
+- `2026-10-09T23:00:00+02:00`: no prompt.
 - `2026-10-10T10:59:00+02:00`: yesterday, unless resolved/dismissed already.
 - `2026-10-10T11:00:00+02:00`: no prompt.
 - Select Other mensa -> food&lab: no menu feedback, then closes.

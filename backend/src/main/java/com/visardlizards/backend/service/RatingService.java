@@ -47,24 +47,39 @@ public class RatingService {
 	 * @throws ConflictException if this user already rated this subject
 	 */
 	public Rating addUserRating(String subjectId, String userId, int stars, Collection<String> tags) {
+		return addUserRating(subjectId, userId, stars, tags, null);
+	}
+
+	/**
+	 * A user's rating with its source ({@link Rating#SOURCE_LOCATION}, {@link Rating#SOURCE_CROWD},
+	 * {@link Rating#SOURCE_GUESS} or null), which sets its weight in the average.
+	 *
+	 * @throws ConflictException if this user already rated this subject
+	 */
+	public Rating addUserRating(String subjectId, String userId, int stars, Collection<String> tags,
+			@Nullable String source) {
 		if (stars < 1 || stars > 5) {
 			throw new IllegalArgumentException("stars must be between 1 and 5, was " + stars);
 		}
 		if (ratingRepository.existsBySubjectIdAndUserId(subjectId, userId)) {
 			throw new ConflictException("You already rated this.");
 		}
-		Rating rating = new Rating(subjectId, stars, List.copyOf(tags), clock.instant(), userId);
+		Rating rating = new Rating(subjectId, stars, List.copyOf(tags), clock.instant(), userId, source);
 		ratingRepository.save(rating);
 		return rating;
 	}
 
-	/** Average rounded to one decimal, or null if there are no ratings yet. */
+	/**
+	 * Weighted average rounded to one decimal, or null if there are no ratings yet. Ratings without a
+	 * location proof count half (see {@link Rating#weight()}).
+	 */
 	public @Nullable BigDecimal getAverage(String subjectId) {
 		List<Rating> ratings = ratingRepository.findBySubjectId(subjectId);
 		if (ratings.isEmpty()) {
 			return null;
 		}
-		double average = ratings.stream().mapToInt(Rating::stars).average().orElseThrow();
+		double weights = ratings.stream().mapToDouble(Rating::weight).sum();
+		double average = ratings.stream().mapToDouble(r -> r.stars() * r.weight()).sum() / weights;
 		return BigDecimal.valueOf(average).setScale(1, RoundingMode.HALF_UP);
 	}
 

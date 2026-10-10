@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { MENSAS } from '../data/canteens.ts';
 import { formatDistance } from './distance.ts';
-import { mergeVisits, readVisits, recordVisits, visitsAt, VISITS_KEY, zurichNow, type Visit } from './visits.ts';
+import { crowdVisit, mergeVisits, readVisits, readyAt, recordVisits, visitsAt, VISITS_KEY, waitForCrowdLevel, zurichNow, type Visit } from './visits.ts';
 
 // Monday 2026-10-12, times in Zurich (UTC+2 in October).
 const at = (hhmm: string) => new Date(`2026-10-12T${hhmm}:00+02:00`);
@@ -16,7 +16,9 @@ test('a visit needs a serving mensa, with 15 minutes grace', () => {
   const lunch = polyterrasse.openingHours.mon.find(w => w.service === 'lunch')!;
   const open = Number(lunch.open.slice(0, 2)) * 60 + Number(lunch.open.slice(3));
   const hhmm = (min: number) => `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
-  assert.deepEqual(visitsAt(['polyterrasse'], MENSAS, at(hhmm(open + 30))), [{ mensaId: 'polyterrasse', date: '2026-10-12', service: 'lunch' }]);
+  const when = at(hhmm(open + 30));
+  assert.deepEqual(visitsAt(['polyterrasse'], MENSAS, when, () => 7),
+    [{ mensaId: 'polyterrasse', date: '2026-10-12', service: 'lunch', at: when.getTime(), waitMin: 7, source: 'location' }]);
   assert.equal(visitsAt(['polyterrasse'], MENSAS, at(hhmm(open - 15))).length, 1);
   assert.deepEqual(visitsAt(['polyterrasse'], MENSAS, at(hhmm(open - 16))), []);
   assert.deepEqual(visitsAt(['polyterrasse'], MENSAS, at('03:00')), []);
@@ -35,8 +37,8 @@ test('mensas sharing a building each get a visit when both serve', () => {
   assert.deepEqual(visitsAt(['uzh-obere-mensa', 'uzh-untere-mensa'], MENSAS, at('12:15')).map(v => v.mensaId),
     ['uzh-obere-mensa', 'uzh-untere-mensa']);
   // Only Untere Mensa serves dinner.
-  assert.deepEqual(visitsAt(['uzh-obere-mensa', 'uzh-untere-mensa'], MENSAS, at('18:00')),
-    [{ mensaId: 'uzh-untere-mensa', date: '2026-10-12', service: 'dinner' }]);
+  assert.deepEqual(visitsAt(['uzh-obere-mensa', 'uzh-untere-mensa'], MENSAS, at('18:00')).map(v => [v.mensaId, v.service]),
+    [['uzh-untere-mensa', 'dinner']]);
 });
 
 test('mergeVisits dedupes, keeps 30 days, newest first', () => {
@@ -45,6 +47,24 @@ test('mergeVisits dedupes, keeps 30 days, newest first', () => {
   const kept: Visit = { mensaId: 'b', date: '2026-10-01', service: 'lunch' };
   const today: Visit = { mensaId: 'c', date: '2026-10-12', service: 'lunch' };
   assert.deepEqual(mergeVisits([kept, old, today], [today], now), [today, kept]);
+});
+
+test('mergeVisits keeps the first arrival; a location visit stays one', () => {
+  const now = at('13:00');
+  const crowd = crowdVisit('polyterrasse', 4, at('12:05'));
+  const located: Visit = { mensaId: 'polyterrasse', date: '2026-10-12', service: 'lunch', at: at('12:20').getTime(), waitMin: 2, source: 'location' };
+  assert.deepEqual(mergeVisits([crowd], [located], now), [{ ...crowd, source: 'location' }]);
+  assert.deepEqual(mergeVisits([], [crowd, crowdVisit('polyterrasse', 1, at('12:30'))], now), [crowd]);
+});
+
+test('readyAt: arrival + queue wait + 20 minutes eating', () => {
+  assert.equal(waitForCrowdLevel(1), 0);
+  assert.equal(waitForCrowdLevel(5), 15);
+  const visit = crowdVisit('polyterrasse', 4, at('12:10'));
+  assert.deepEqual([visit.service, visit.source, visit.waitMin], ['lunch', 'crowd', 10]);
+  assert.equal(readyAt(visit), at('12:40').getTime());
+  assert.equal(readyAt({ mensaId: 'x', date: '2026-10-12', service: 'lunch' }), null);
+  assert.equal(crowdVisit('polyterrasse', 2, at('18:30')).service, 'dinner');
 });
 
 function memoryStorage(initial: Record<string, string> = {}): Storage {

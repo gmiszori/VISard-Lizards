@@ -68,13 +68,18 @@ public class MealService {
 
 	/** Saves a user's rating of a meal; each user can rate each meal once (ConflictException otherwise). */
 	public Rating rateMeal(String id, String userId, int stars, List<String> tags) {
+		return rateMeal(id, userId, stars, tags, null);
+	}
+
+	/** source: location, crowd, guess or null (see {@link Rating#weight()}). */
+	public Rating rateMeal(String id, String userId, int stars, List<String> tags, @Nullable String source) {
 		for (String tag : tags) {
 			// Set.of(...).contains(null) throws, so check null first
 			if (tag == null || !MEAL_TAGS.contains(tag)) {
 				throw new IllegalArgumentException("Unknown tag: " + tag + ", allowed: " + MEAL_TAGS);
 			}
 		}
-		return ratingService.addUserRating(getMeal(id).id(), userId, stars, Set.copyOf(tags));
+		return ratingService.addUserRating(getMeal(id).id(), userId, stars, Set.copyOf(tags), source);
 	}
 
 	public @Nullable BigDecimal getAverageRating(String mealId) {

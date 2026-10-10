@@ -126,4 +126,6 @@ export interface BackendMealRating {
   userId: string;
   stars: number;
   ratedAt: string;
+  /** location, crowd or guess; null if the request had none. */
+  source?: string | null;
 }

@@ -78,6 +78,31 @@ class MealControllerTests {
 	}
 
 	@Test
+	void ratingsWithoutLocationProofCountHalf() throws Exception {
+		String mealId = "polyterrasse.2026-10-08.lunch.0";
+		mockMvc.perform(post("/api/meals/" + mealId + "/ratings")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(rating(USER_A, "\"stars\": 5, \"source\": \"location\"")))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.source").value("location"));
+		mockMvc.perform(post("/api/meals/" + mealId + "/ratings")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(rating(USER_B, "\"stars\": 2, \"source\": \"guess\"")))
+				.andExpect(status().isCreated());
+		// (5 * 1 + 2 * 0.5) / 1.5 = 4.0
+		mockMvc.perform(get("/api/meals/" + mealId))
+				.andExpect(jsonPath("$.avgRating").value(4.0));
+	}
+
+	@Test
+	void rejectsUnknownSource() throws Exception {
+		mockMvc.perform(post("/api/meals/" + MEAL_ID + "/ratings")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(rating(USER_A, "\"stars\": 4, \"source\": \"gps\"")))
+				.andExpect(status().isBadRequest());
+	}
+
+	@Test
 	void eachUserCanRateAMealOnce() throws Exception {
 		String mealId = "polyterrasse.2026-10-07.lunch.0";
 		mockMvc.perform(post("/api/meals/" + mealId + "/ratings")

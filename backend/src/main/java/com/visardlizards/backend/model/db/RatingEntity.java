@@ -42,11 +42,17 @@ public class RatingEntity {
 	@Column(length = 80)
 	private String userId;
 
+	/** How the frontend knows the user ate there: location, crowd or guess; null if unknown. */
+	@Column(length = 16)
+	private String source;
+
 	protected RatingEntity() {
 	}
 
-	public RatingEntity(String subjectId, int stars, List<String> tags, Instant createdAt, String userId) {
+	public RatingEntity(String subjectId, int stars, List<String> tags, Instant createdAt, String userId,
+			String source) {
 		this.subjectId = subjectId;
+		this.source = source;
 		this.stars = stars;
 		this.tags = new ArrayList<>(tags);
 		this.createdAt = createdAt;
@@ -71,6 +77,10 @@ public class RatingEntity {
 
 	public String getUserId() {
 		return userId;
+	}
+
+	public String getSource() {
+		return source;
 	}
 
 }

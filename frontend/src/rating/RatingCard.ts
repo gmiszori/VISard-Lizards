@@ -7,6 +7,7 @@ import { API_URL, apiGet, type BackendMealDetail } from '../data/api.ts';
 import type { Profile } from '../onboarding/profile';
 import { ratingText, translateRating, type RatingText } from './i18n';
 import { readVisits } from '../location/visits.ts';
+import { NEAR_ME_KEY } from '../location/near-me.ts';
 import { visitCandidates } from './visitCandidates.ts';
 
 interface MealOption { id: string; mensaId: string; date: string; name: string }
@@ -46,9 +47,13 @@ export function mountRatingCard(): void {
   const now = () => simulated ? new Date(override!) : appNow();
   const stateKey = `${STATE_KEY}${simulated ? ':dev' : ''}`;
   const ratingsKey = `${RATINGS_KEY}${simulated ? ':dev' : ''}`;
+  /** Users who never share their location get "Where did you eat today?" with suggestions instead. */
+  const usesLocation = (visits: ReturnType<typeof readVisits>) =>
+    storage.getItem(NEAR_ME_KEY) === '1' || visits.some(visit => (visit.source ?? 'location') === 'location');
   const candidates = () => {
-    const visited = visitCandidates(data.mensas, readVisits(storage));
-    if (!simulated) return visited;
+    const visits = readVisits(storage);
+    const visited = visitCandidates(data.mensas, visits);
+    if (!simulated && usesLocation(visits)) return visited;
     const profile = readOptional<Partial<Profile>>('campuseats-profile');
     const rawFavourites = readOptional<unknown>('campuseats-favourites');
     const favourites = Array.isArray(rawFavourites) ? rawFavourites.filter((id): id is string => typeof id === 'string') : [];
@@ -113,7 +118,8 @@ export function mountRatingCard(): void {
     }
     return mealsByDate.get(date)!;
   }
-  async function chooseMensa(choice: MensaChoice) {
+  /** skipped: the card opened straight on this (only visited) mensa's meals, with "I ate somewhere else". */
+  async function chooseMensa(choice: MensaChoice, skipped = false) {
     if (!prompt) return;
     mensa = choice;
     meal = undefined;
@@ -135,6 +141,8 @@ export function mountRatingCard(): void {
       return;
     }
     query('[data-rating-mensa-name]').textContent = choice.name;
+    query('[data-rating-back="mensa"]').hidden = skipped;
+    query('[data-rating-elsewhere]').hidden = !skipped;
     const list = query('[data-rating-meals]');
     list.replaceChildren();
     meals.forEach(option => {
@@ -147,7 +155,7 @@ export function mountRatingCard(): void {
       });
       list.append(button);
     });
-    step('meal');
+    step('meal', !skipped);
   }
   function refresh() {
     if (busy || closing) return;
@@ -174,8 +182,15 @@ export function mountRatingCard(): void {
         list.append(button);
       });
       query('[data-rating-other-picker]').hidden = true;
+      const question = query('[data-rating-step="mensa"] [data-rating-text^="question"]');
+      question.dataset.ratingText = next.kind === 'guess' ? 'questionGuess' : 'question';
+      const skip = query('[data-rating-skip]');
+      skip.dataset.ratingText = next.kind === 'guess' ? 'nowhere' : 'skip';
+      translateRating(root!);
       root!.hidden = false;
       step('mensa', false);
+      // One visited mensa (located there or reported its crowd): straight to its meals.
+      if (next.kind === 'visit' && next.mensaChoices.length === 1) void chooseMensa(next.mensaChoices[0]!, true);
     } catch {
       // Do not reset corrupt/unavailable storage and accidentally prompt twice.
       root!.hidden = false;
@@ -190,7 +205,18 @@ export function mountRatingCard(): void {
     const choice = data.mensas.find(m => m.mensaId === select.value);
     if (choice) chooseMensa(choice); else { setStatus('chooseError'); select.focus(); }
   });
-  query('[data-rating-skip]').addEventListener('click', () => resolve(true));
+  // "Nowhere today" on a guess question also pauses guess questions for three days.
+  query('[data-rating-skip]').addEventListener('click', () => {
+    if (!prompt) return;
+    try { store.resolve(prompt.date, true, prompt.kind === 'guess' ? 3 : 0); hide(); }
+    catch { setStatus('choiceError'); }
+  });
+  query('[data-rating-elsewhere]').addEventListener('click', () => {
+    mensa = undefined;
+    step('mensa');
+    query('[data-rating-other-picker]').hidden = false;
+    select.focus();
+  });
   query('[data-rating-dismiss]').addEventListener('click', () => { if (busy) return; if (prompt) resolve(true); else hide(); });
   root.querySelectorAll<HTMLElement>('[data-rating-back]').forEach(button => button.addEventListener('click', () => step(button.dataset.ratingBack as 'mensa' | 'meal')));
   root.querySelectorAll<HTMLButtonElement>('[data-rating-score]').forEach(button => button.addEventListener('click', async () => {
@@ -203,7 +229,9 @@ export function mountRatingCard(): void {
       let duplicate = false;
       try {
         await saveMealRating({ userId: anonymousUserId(), mealId: meal.id, mensaId: mensa.mensaId,
-          rating: Number(button.dataset.ratingScore) as Stars, ratedAt: now().toISOString(), mealDate: prompt.date }, localStorage, ratingsKey,
+          rating: Number(button.dataset.ratingScore) as Stars, ratedAt: now().toISOString(), mealDate: prompt.date,
+          // A mensa picked from the list or "Other mensa" without a visit is a guess.
+          source: mensa.source ?? 'guess' }, localStorage, ratingsKey,
           simulated ? '' : API_URL);
       } catch (error) { if (error instanceof DuplicateMealRatingError) duplicate = true; else throw error; }
       store.resolve(prompt.date);

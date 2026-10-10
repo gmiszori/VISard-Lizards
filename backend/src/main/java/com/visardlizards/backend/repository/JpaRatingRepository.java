@@ -19,7 +19,7 @@ public class JpaRatingRepository implements RatingRepository {
 	@Override
 	public void save(Rating rating) {
 		entities.saveAndFlush(new RatingEntity(rating.subjectId(), rating.stars(), rating.tags(), rating.createdAt(),
-				rating.userId()));
+				rating.userId(), rating.source()));
 	}
 
 	@Override
@@ -31,7 +31,7 @@ public class JpaRatingRepository implements RatingRepository {
 	public List<Rating> findBySubjectId(String subjectId) {
 		return entities.findBySubjectId(subjectId).stream()
 				.map(e -> new Rating(e.getSubjectId(), e.getStars(), List.copyOf(e.getTags()), e.getCreatedAt(),
-						e.getUserId()))
+						e.getUserId(), e.getSource()))
 				.toList();
 	}
 

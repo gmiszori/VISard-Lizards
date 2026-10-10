@@ -6,7 +6,7 @@
 import { formatDistance } from './distance.ts';
 import { locateUserNow, LocationUnavailableError, type LocationError } from './geolocation.ts';
 import type { MensaPlace, UserLocation } from './locate.ts';
-import { recordVisits, visitsAt, type MensaHours } from './visits.ts';
+import { recordVisits, visitsAt, waitForOccupancy, type MensaHours } from './visits.ts';
 import { appNow } from '../time/clock.ts';
 
 export const NEAR_ME_KEY = 'campuseats-near-me';
@@ -108,7 +108,9 @@ export function mountNearMe(): void {
   }
   function captureVisit(found: UserLocation) {
     const now = appNow();
-    recordVisits(visitsAt(found.atMensaIds, data.hours, now), now);
+    // The crowd indicator on the page says how long the queue probably is.
+    const wait = (id: string) => waitForOccupancy(document.querySelector<HTMLElement>(`[data-live="crowd"][data-live-id="${CSS.escape(id)}"]`)?.dataset.occupancy);
+    recordVisits(visitsAt(found.atMensaIds, data.hours, now, wait), now);
     document.dispatchEvent(new CustomEvent('campuseats:user-located', { detail: found }));
   }
   async function locate() {

@@ -26,6 +26,15 @@ class RatingServiceTests {
 	}
 
 	@Test
+	void crowdAndGuessRatingsCountHalf() {
+		ratingService.addUserRating("meal", "anon:a", 5, java.util.List.of(), "location");
+		ratingService.addUserRating("meal", "anon:b", 1, java.util.List.of(), "crowd");
+		ratingService.addUserRating("meal", "anon:c", 1, java.util.List.of(), "guess");
+		// (5 + 0.5 + 0.5) / 2 = 3.0
+		assertThat(ratingService.getAverage("meal")).isEqualByComparingTo(new BigDecimal("3.0"));
+	}
+
+	@Test
 	void rejectsStarsOutsideOneToFive() {
 		assertThatThrownBy(() -> ratingService.addRating("polyterrasse", 0)).isInstanceOf(IllegalArgumentException.class);
 		assertThatThrownBy(() -> ratingService.addRating("polyterrasse", 6)).isInstanceOf(IllegalArgumentException.class);

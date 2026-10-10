@@ -337,17 +337,20 @@ Saves a user's rating of a meal: 1–5 stars plus optional tags that say why. Us
 the anonymous id the frontend keeps per device. Each user can rate each meal once. The result shows up
 in [`GET /api/meals/{id}`](#get-apimealsid).
 
-Body: `{"userId": "anon:3f1c2b7e-9a4d-4e8b-8c1f-2d5e6a7b8c9d", "stars": 5, "tags": ["tasty", "worth-it"]}`
+Body: `{"userId": "anon:3f1c2b7e-9a4d-4e8b-8c1f-2d5e6a7b8c9d", "stars": 5, "tags": ["tasty", "worth-it"], "source": "location"}`
 
 - `userId`: `anon:` followed by a UUID (required).
 - `stars`: 1 to 5.
 - `tags` (optional): any of `tasty`, `big-portion`, `small-portion`, `cold`, `too-salty`,
   `worth-it`. A tag listed twice in one rating counts once.
+- `source` (optional): how the app knows the user ate there. `location` (located at the mensa),
+  `crowd` (reported its crowd) or `guess` (picked it when asked where they ate). Ratings with `crowd`
+  or `guess` count half in `avgRating`; all others count fully.
 
 Response `201` with the saved rating:
-`{"mealId": "...", "mensaId": "polyterrasse", "mealDate": "2026-10-06", "userId": "anon:...", "stars": 5, "tags": [], "ratedAt": "..."}`.
+`{"mealId": "...", "mensaId": "polyterrasse", "mealDate": "2026-10-06", "userId": "anon:...", "stars": 5, "tags": [], "ratedAt": "...", "source": "location"}`.
 Errors: `404` unknown meal, `400` missing or invalid `userId`, stars outside 1–5, unknown tag or
-invalid body, `409` this user already rated this meal.
+source, or invalid body, `409` this user already rated this meal.
 
 ## Raw upstream endpoints (optional)
 

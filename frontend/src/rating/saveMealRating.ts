@@ -1,5 +1,6 @@
 import { API_URL, ApiError, apiPost, type BackendMealRating } from '../data/api.ts';
 import { isIsoDate } from '../data/menuDate.ts';
+import type { RatingSource } from './getRatingPrompt.ts';
 
 export type Stars = 1 | 2 | 3 | 4 | 5;
 export interface MealRating {
@@ -9,6 +10,8 @@ export interface MealRating {
   rating: Stars;
   ratedAt: string;
   mealDate: string;
+  /** How the app knows the user ate there; crowd and guess ratings count half in the backend's average. */
+  source?: RatingSource;
 }
 export const RATINGS_KEY = 'campuseats-meal-ratings';
 export class DuplicateMealRatingError extends Error {
@@ -48,7 +51,7 @@ export async function saveMealRating(value: MealRating, storage: Storage = local
   if (apiUrl) {
     try {
       const response = await apiPost<BackendMealRating>(`/api/meals/${encodeURIComponent(value.mealId)}/ratings`,
-        { userId: value.userId, stars: value.rating }, apiUrl);
+        { userId: value.userId, stars: value.rating, ...(value.source ? { source: value.source } : {}) }, apiUrl);
       saved = { ...value, mensaId: response.mensaId, mealDate: response.mealDate, ratedAt: response.ratedAt };
     } catch (error) {
       if (error instanceof ApiError && error.status === 409) throw new DuplicateMealRatingError();

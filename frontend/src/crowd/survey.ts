@@ -2,6 +2,7 @@ import { API_URL, ApiError, apiGet, apiPost } from '../data/api';
 import { cooldownLeft, isOpenAt, LAST_REPORT_KEY, RETRY_UNTIL_KEY, occupancyOf, REPORT_COOLDOWN_MS, summarize, type CrowdLevel, type CrowdSummary, type LiveReport, type OpeningWindows } from './survey-logic';
 import { appNow, CLOCK_EVENT } from '../time/clock';
 import { addMockReports, CROWD_MOCK_KEY, liveMockReports, readCrowdMock, writeCrowdMock } from './survey-mock';
+import { crowdVisit, recordVisits } from '../location/visits';
 
 /**
  * "How busy is it right now?" on the canteen page. Shown only while the mensa is open and a backend is
@@ -169,6 +170,8 @@ export function mountCrowdSurvey(): void {
       else await apiPost(`/api/mensas/${encodeURIComponent(mensaId!)}/crowd-reports`, { level });
       lastReportedAt = Date.now();
       rememberTime(LAST_REPORT_KEY, mensaId!, lastReportedAt);
+      // Reporting from the queue: ask for a meal rating once it is probably eaten (rating/getRatingPrompt.ts).
+      recordVisits([crowdVisit(mensaId!, level, now())], now());
       status = { kind: 'thanks' };
     } catch (error) {
       buttons.forEach(b => b.setAttribute('aria-pressed', 'false'));

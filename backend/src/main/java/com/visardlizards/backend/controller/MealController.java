@@ -131,9 +131,13 @@ public class MealController {
 
 			Tags: `tasty`, `big-portion`, `small-portion`, `cold`, `too-salty`, `worth-it`.
 			A tag listed twice in one rating counts once.
+
+			`source` (optional) says how the app knows the user ate there: `location` (located at the mensa),
+			`crowd` (reported its crowd) or `guess` (picked it when asked where they ate). Ratings with `crowd`
+			or `guess` count half in `avgRating`; all others count fully.
 			""")
 	@ApiResponse(responseCode = "201", description = "The saved rating, with the meal's mensa and date")
-	@ApiResponse(responseCode = "400", description = "Missing or invalid userId, stars outside 1-5, unknown tag or invalid body")
+	@ApiResponse(responseCode = "400", description = "Missing or invalid userId, stars outside 1-5, unknown tag or source, or invalid body")
 	@ApiResponse(responseCode = "404", description = "Unknown meal")
 	@ApiResponse(responseCode = "409", description = "This user already rated this meal")
 	public MealRatingDTO rateMeal(
@@ -141,9 +145,9 @@ public class MealController {
 			@Valid @RequestBody MealRatingRequestDTO rating) {
 		Meal meal = mealService.getMeal(id);
 		Rating saved = mealService.rateMeal(id, rating.userId(), rating.stars(),
-				rating.tags() == null ? List.of() : rating.tags());
+				rating.tags() == null ? List.of() : rating.tags(), rating.source());
 		return new MealRatingDTO(meal.id(), meal.mensaId(), meal.date(), rating.userId(), saved.stars(), saved.tags(),
-				saved.createdAt());
+				saved.createdAt(), saved.source());
 	}
 
 	private MealDetailDTO toDetail(Meal meal, PriceCategory priceCategory) {

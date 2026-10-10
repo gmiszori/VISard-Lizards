@@ -34,7 +34,8 @@ export function useRatingPrompt(now: () => Date, candidates: MensaChoice[] | (()
     if (value === null) return empty();
     const s = value as RatingPromptState;
     if (!s || !dates(s.resolvedDates) || !dates(s.dismissedDates) || !s.promptedDays || Array.isArray(s.promptedDays) || typeof s.promptedDays !== 'object' ||
-        !Object.entries(s.promptedDays).every(([d, target]) => /^\d{4}-\d{2}-\d{2}$/.test(d) && typeof target === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(target))) {
+        !Object.entries(s.promptedDays).every(([d, target]) => /^\d{4}-\d{2}-\d{2}$/.test(d) && typeof target === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(target)) ||
+        (s.quietUntil !== undefined && !dates([s.quietUntil]))) {
       throw new Error('Stored rating prompt state could not be read.');
     }
     return s;
@@ -48,10 +49,16 @@ export function useRatingPrompt(now: () => Date, candidates: MensaChoice[] | (()
       state.promptedDays[today] = date;
       storage.setItem(key, JSON.stringify(state));
     },
-    resolve(date: string, dismissed = false) {
+    /** quietDays: "nowhere" on a guess question also pauses guess questions for that many more days. */
+    resolve(date: string, dismissed = false, quietDays = 0) {
       const state = read();
       const field = dismissed ? 'dismissedDates' : 'resolvedDates';
       state[field] = [...new Set([...state[field], date])];
+      if (quietDays > 0) {
+        const until = new Date(`${date}T12:00:00Z`);
+        until.setUTCDate(until.getUTCDate() + quietDays);
+        state.quietUntil = until.toISOString().slice(0, 10);
+      }
       storage.setItem(key, JSON.stringify(state));
     },
   };
