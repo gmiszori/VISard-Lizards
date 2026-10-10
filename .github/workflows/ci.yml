@@ -31,7 +31,13 @@ jobs:
       - run: docker compose up --build -d backend meal-scraper
       - name: Verify real MCP tools and private backend connection
         run: |
-          docker compose exec -T meal-scraper sh -c 'curl -fsS -H "Authorization: Bearer $MEAL_CONNECTOR_TOKEN" http://127.0.0.1:8091/api/ai/tools' > /tmp/mcp-tools.json
+          # The scraper needs a few seconds to start listening after "up -d"; retry like the backend check below.
+          for attempt in $(seq 1 60); do
+            if docker compose exec -T meal-scraper sh -c 'curl -fsS -H "Authorization: Bearer $MEAL_CONNECTOR_TOKEN" http://127.0.0.1:8091/api/ai/tools' > /tmp/mcp-tools.json; then
+              break
+            fi
+            sleep 2
+          done
           python3 -c 'import json; assert {t["name"] for t in json.load(open("/tmp/mcp-tools.json"))["tools"]} == {"scrape_meals", "discover_menu_sources", "read_menu_source"}'
           for attempt in $(seq 1 60); do
             if docker compose exec -T meal-scraper curl -fsS http://backend:8080/api/health; then
