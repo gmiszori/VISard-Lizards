@@ -32,7 +32,10 @@ node backend/scripts/export-mensa-db.mjs
 startup and every 6 hours (`app.live-import.cron`, Zurich time). For each ETH mensa with live meals in a
 week, that week's meals are replaced; mensas without live meals keep what they had, and a failed download
 keeps the existing meals. `EthMenuMapper` maps Cookpit's classes, allergens and customer groups to the
-app's values (diet, canonical allergen ids, student/staff/external prices). Turn it off with
+app's values (diet, canonical allergen ids, student/staff/external prices). English texts are used; where
+Cookpit's English translation is missing ("novalue") or a placeholder (one English name for meals with
+different German names, e.g. Tannenbar's "Chicken Katsu" in October 2026), the German name and
+description are used instead. Turn it off with
 `app.live-import.enabled=false`. UZH menus are not imported yet: the maintained ZFV API needs
 `MENSA_ZFV_API_KEY` (see [MENSA_API.md](MENSA_API.md)), so UZH mensas only have the snapshot.
 

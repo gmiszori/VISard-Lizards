@@ -159,3 +159,7 @@ HANDOFF SESSION 2 (01:46) - open points:
          week from Cookpit into the meal tables on startup and every 6h; mensa.eth_facility_id maps facilities.
          Verified: live week 5-9 Oct == snapshot for all 12 ETH mensas (count + titles); next week 295 meals of
          11 ETH mensas via /api. UZH still snapshot only (needs MENSA_ZFV_API_KEY). 78 tests green.
+  02:20  FIX (user report): Tannenbar showed "Chicken Katsu" for every meal. Cause: ETH's English translation;
+         the German Cookpit data has the real meals. A scan found the same in Clausiusbar ("novalue"), food market,
+         Archimedes, Polysnack, food&lab. EthMenuMapper now also reads lang=de and uses German name/description
+         where the English one is missing or a placeholder (matched by line-id). Snapshot week: 12/12 identical. 83 tests.
