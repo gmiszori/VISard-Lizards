@@ -61,9 +61,9 @@ Services only see domain models through `MensaRepository` (implemented by `JpaMe
 
 - Dates: `YYYY-MM-DD`. Times: `HH:mm`.
 - **Today** is today in Zurich, independent of the server's time zone.
-- **Menu date**: today if there are meals for it, otherwise the latest earlier day with meals
-  (e.g. Friday on weekends), or the first day with meals if today is before all data. Same rule as
-  `MENU_DATE` in `canteens.ts`.
+- **Menu date**: today if there are meals for it, otherwise the next day with meals within a week
+  (e.g. Monday on weekends, as the live import loads the next week), otherwise the latest earlier day
+  with meals, or the first day with meals. Clients should show the date when it is not today.
 - `priceCategory`: `STUDENT` (default), `STAFF`, `EXTERNAL`.
 - Mensa ids are the ids from `canteens.ts`, e.g. `polyterrasse`, `archimedes`.
   Meal ids look like `polyterrasse.2026-10-06.lunch.2`.

@@ -17,8 +17,10 @@ export type AppCanteen = Omit<Canteen, 'rating'> & { rating: number | null };
 export interface AppData {
   /** Where menus and ratings come from. */
   source: 'backend' | 'sample';
-  /** The day whose menu is shown: today, or the latest earlier day with menus. */
+  /** The day whose menu is shown: today, else the next day with menus (e.g. Monday on weekends). */
   menuDate: string;
+  /** Today in Zurich, to tell whether menuDate is today. */
+  today: string;
   canteens: AppCanteen[];
 }
 
@@ -36,8 +38,13 @@ export function loadAppData(): Promise<AppData> {
   return cache.data;
 }
 
+/** Today's date (YYYY-MM-DD) in Zurich. */
+function zurichToday(): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Zurich', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+}
+
 function sampleData(): AppData {
-  return { source: 'sample', menuDate: MENU_DATE, canteens: CANTEENS };
+  return { source: 'sample', menuDate: MENU_DATE, today: zurichToday(), canteens: CANTEENS };
 }
 
 async function fetchAppData(): Promise<AppData> {
@@ -54,6 +61,7 @@ async function fetchAppData(): Promise<AppData> {
     return {
       source: 'backend',
       menuDate: meta.menuDate,
+      today: meta.today,
       canteens: CANTEENS.map((canteen) => ({
         ...canteen,
         menu: toMenu(menus.get(canteen.id) ?? []),

@@ -36,6 +36,8 @@ const { title } = Astro.props;
       translations.de.footerMade = 'Von Studierenden mit <3 für Studierende';
       translations.en.sampleMenus = 'Showing sample menus: the CampusEats backend is not reachable.';
       translations.de.sampleMenus = 'Beispielmenüs: Das CampusEats-Backend ist nicht erreichbar.';
+      Object.assign(translations.en, { menuFor: 'Menu for', menusFor: 'Menus for' });
+      Object.assign(translations.de, { menuFor: 'Menü für', menusFor: 'Menüs für' });
       translations.en.filtersHint = 'Choose one or more campus locations to include.';
       translations.de.filtersHint = 'Wähle einen oder mehrere Campus-Standorte aus.';
       const applyLanguage = (lang) => {

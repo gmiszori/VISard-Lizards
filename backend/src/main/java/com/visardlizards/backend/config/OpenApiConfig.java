@@ -26,8 +26,8 @@ public class OpenApiConfig {
 						**Conventions**
 						- Dates: `YYYY-MM-DD`. Times: `HH:mm`.
 						- **Today** is today in Zurich, independent of the server's time zone.
-						- **Menu date**: today if there are meals for it, otherwise the latest earlier day with meals
-						  (e.g. Friday on weekends), or the first day with meals if today is before all data.
+						- **Menu date**: today if there are meals for it, otherwise the next day with meals within a week
+						  (e.g. Monday on weekends), otherwise the latest earlier day with meals.
 						- `priceCategory`: `STUDENT` (default), `STAFF`, `EXTERNAL`.
 						- Mensa ids look like `polyterrasse`, meal ids like `polyterrasse.2026-10-06.lunch.2`.
 						- Errors are RFC 9457 problem details, e.g.
