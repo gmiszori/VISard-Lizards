@@ -96,6 +96,20 @@ docker compose exec -T meal-scraper sh -c 'curl -fsS -X POST -H "Authorization: 
 The command uses the container's configured token; no key needs to be pasted into your shell.
 You can also attach to the backend terminal (PowerShell or Bash):
 
+For **r directly at the IntelliJ PowerShell terminal prompt**, load the helper once per
+terminal session from the repository root:
+
+```powershell
+. .\scraper-console.ps1 -Install
+r
+```
+
+`r` now starts or joins the refresh and prints the start time, per-cafeteria saved/failed
+results, running elapsed time, and final completion time and duration. `s` shows status.
+These aliases apply only to this terminal session. Ctrl+C stops watching; the backend
+continues refreshing. The single-command equivalent with progress is
+`powershell -ExecutionPolicy Bypass -File .\scraper-console.ps1 -Refresh -Wait`.
+
 On Windows, the simplest terminal console is `powershell -ExecutionPolicy Bypass -File .\scraper-console.ps1`
 from the repository root. Type **r + Enter** in that console; it forwards the authenticated
 refresh request to the running backend even when Docker is detached. Type **s** for progress,

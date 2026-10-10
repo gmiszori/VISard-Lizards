@@ -89,3 +89,9 @@ Codex MCP tool improvements (2026-10-10):
 - Backend persists manual batch start immediately and logs start, each completed venue, completion and aborted batch.
 - Frontend unchanged; its existing poll updates once per minute. lastCompleted correctly remains the previous completion while a batch runs.
 - Console refresh tests and PowerShell syntax checks pass. Rebuilding backend and validating a real refresh.
+2026-10-10 - Codex: IntelliJ PowerShell r command with full progress.
+- Load once per terminal session: . .\scraper-console.ps1 -Install
+- r now triggers/joins the existing batch, watches each venue save/failure, prints elapsed time, and reports completion time plus total duration.
+- s reports status. Ctrl+C only stops the monitor; it does not cancel backend scraping.
+- Preserved PowerShell built-in alias AllScope behavior. Added offline Windows PowerShell regression script under backend/scripts/test-scraper-console.ps1 covering alias dispatch, progress, final duration and aborted completion.
+- No frontend or IDE configuration edits. Existing background refresh continues.
