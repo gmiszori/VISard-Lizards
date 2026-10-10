@@ -1,8 +1,7 @@
 import { saveProfile } from './api';
-import { defaults } from './profile';
-import { createOnboardingStore, savedLanguage, savedTheme } from './onboardingStore';
+import { createOnboardingStore } from './onboardingStore';
 import { pickTodaysDishOpenFirst } from './pickTodaysDish';
-import { steps, skipStep, type Context, type OnboardingData } from './steps';
+import { steps, type Context, type OnboardingData } from './steps';
 import { t, translate } from './i18n';
 import { ONBOARDING_AUTO_START } from './config';
 import { appNow, zurichParts } from '../time/clock';
@@ -43,7 +42,6 @@ function initialise(root: HTMLElement) {
       url.searchParams.delete('edit');
       window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
     }
-    const initial = defaults(data.campuses[0]!.id, savedLanguage(), savedTheme());
     const sections = flowSteps.map(step => root.querySelector<HTMLElement>(`[data-step="${step.id}"]`)!);
     const flow = root.querySelector<HTMLElement>('[data-flow]')!;
     const payoff = root.querySelector<HTMLElement>('[data-payoff]')!;
@@ -131,10 +129,7 @@ function initialise(root: HTMLElement) {
     }));
     skip.addEventListener('click', () => guard(() => {
       if (!settled()) return;
-      const stepId = flowSteps[store.state.step]!.id;
-      if (stepId === 'campus') store.setPicks([]);
-      store.update(skipStep(stepId, { ...initial,
-        lang: savedLanguage() })); advance();
+      finish();
     }));
     root.querySelector('[data-edit]')!.addEventListener('click', () => guard(() => { completed = false; move(0); }));
     root.addEventListener('keydown', event => {

@@ -5,7 +5,15 @@
     appearance: base-select;
   }
 
-  select:not([multiple]) {
+  .app-shell select:not([multiple]) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding-block: 0;
+    padding-inline: 12px;
+    line-height: 1.2;
+    white-space: nowrap;
     cursor: pointer;
     transition: border-color .16s, box-shadow .16s;
   }
@@ -21,6 +29,9 @@
   }
 
   select:not([multiple])::picker-icon {
+    flex: none;
+    align-self: center;
+    margin-inline-start: auto;
     color: var(--green);
     transition: rotate .16s;
   }
@@ -44,8 +55,11 @@
   }
 
   select:not([multiple]) option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     min-height: 40px;
-    padding: 10px 12px;
+    padding: 8px 11px;
     border-radius: 5px;
     background: transparent;
     color: var(--ink);
@@ -64,6 +78,8 @@
   }
 
   select:not([multiple]) option::checkmark {
+    order: 1;
+    margin-inline-start: auto;
     color: var(--green);
   }
 
