@@ -17,7 +17,7 @@
  * New features should read DB / MENSAS / MEALS / CROWD directly.
  */
 
-import { pickSampleMenuDate } from './menuDate';
+import { pickSampleMenuDate } from './menuDate.ts';
 
 // ───────── types of the database ─────────
 

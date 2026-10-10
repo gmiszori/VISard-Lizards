@@ -10,17 +10,6 @@
 const DAY_MS = 86_400_000;
 const ISO = /^\d{4}-\d{2}-\d{2}$/;
 
-/** Today's date in Zurich as `YYYY-MM-DD`, whatever timezone the server or device is in. */
-export function zurichDate(now: Date = new Date()): string {
-  if (!Number.isFinite(now.getTime())) return '';
-  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Zurich', year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
-}
-
-/** `2026-10-12` -> `12.10.2026` (Swiss format, the same in English and German). Invalid input is returned unchanged. */
-export function formatSwissDate(iso: string): string {
-  return parse(iso) ? `${iso.slice(8, 10)}.${iso.slice(5, 7)}.${iso.slice(0, 4)}` : iso;
-}
-
 /** Parses `YYYY-MM-DD` at noon UTC (immune to DST); returns null for anything else. */
 function parse(iso: string): Date | null {
   if (typeof iso !== 'string' || !ISO.test(iso)) return null;

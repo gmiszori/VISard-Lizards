@@ -5,7 +5,8 @@ import FilterBar from '../components/FilterBar.astro';
 import RatingCard from '../rating/RatingCard.astro';
 import StarredMealsToday from '../components/StarredMealsToday.astro';
 import { loadAppData } from '../data/app-data';
-const { canteens, menuDate, source } = await loadAppData();
+import MenuDate from '../components/MenuDate.astro';
+const { canteens, menuDate, today, source } = await loadAppData();
 const openCount = canteens.filter((canteen) => canteen.isOpen).length;
 ---
 <BaseLayout title="Campus canteens">
@@ -19,6 +20,7 @@ const openCount = canteens.filter((canteen) => canteen.isOpen).length;
     <div id="favourites-grid" class="canteen-grid"></div>
   </section>
   <div class="section-head all-canteens-heading"><div><h2 data-i18n="allCanteens">All canteens</h2></div></div>
+  <MenuDate date={menuDate} today={today} variant="note" />
   <div id="visible-count" class="count" style="margin:0 0 12px">{canteens.length} canteens</div>
   <div id="canteen-grid" class="canteen-grid">{canteens.map((canteen) => <CanteenCard canteen={canteen} />)}</div>
   <div id="empty-state" class="empty-state" data-i18n="empty">No canteens match your search. Try another dish or campus.</div>

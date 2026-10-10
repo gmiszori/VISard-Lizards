@@ -21,11 +21,17 @@ class MensaServiceTests {
 	}
 
 	@Test
-	void menuDateFallsBackToLatestEarlierDay() {
-		// Saturday after the last day with data
+	void menuDateIsTheNextDayWithMeals() {
+		// Sunday inside the range: Monday's menu, not last Friday's
+		assertThat(mensaService.getMenuDate(LocalDate.of(2026, 10, 4))).isEqualTo(LocalDate.of(2026, 10, 5));
+		// Saturday inside the range
+		assertThat(mensaService.getMenuDate(LocalDate.of(2026, 10, 3))).isEqualTo(LocalDate.of(2026, 10, 5));
+	}
+
+	@Test
+	void menuDateFallsBackToLatestEarlierDayWithoutUpcomingMeals() {
+		// Saturday after the last day with data (the test database has no live menus)
 		assertThat(mensaService.getMenuDate(LocalDate.of(2026, 10, 10))).isEqualTo(LocalDate.of(2026, 10, 9));
-		// Sunday inside the range
-		assertThat(mensaService.getMenuDate(LocalDate.of(2026, 10, 4))).isEqualTo(LocalDate.of(2026, 10, 2));
 	}
 
 	@Test

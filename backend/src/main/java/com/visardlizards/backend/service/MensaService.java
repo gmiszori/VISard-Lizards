@@ -45,15 +45,22 @@ public class MensaService {
 		return mensaRepository.findMeals(getMensa(mensaId).id(), dateStart, dateEnd);
 	}
 
+	/** How far ahead getMenuDate looks for the next menu, e.g. from Saturday to Monday. */
+	static final int NEXT_MENU_DAYS = 7;
+
 	/**
-	 * The day whose menu to show by default: the given day if there is data for it, otherwise the
-	 * latest earlier day with data (e.g. Friday on weekends), or the first day with data.
-	 * Same rule as MENU_DATE in frontend/src/data/canteens.ts.
+	 * The day whose menu to show by default: the given day if there are meals for it, otherwise the next
+	 * day with meals within a week (on weekends: Monday, once the live import has it), otherwise the latest
+	 * earlier day with meals, or the first day with meals.
 	 */
 	public LocalDate getMenuDate(LocalDate today) {
 		SortedSet<LocalDate> dates = mensaRepository.findMealDates();
 		if (dates.isEmpty() || dates.contains(today)) {
 			return today;
+		}
+		SortedSet<LocalDate> upcoming = dates.subSet(today, today.plusDays(NEXT_MENU_DAYS + 1));
+		if (!upcoming.isEmpty()) {
+			return upcoming.first();
 		}
 		SortedSet<LocalDate> earlier = dates.headSet(today);
 		return earlier.isEmpty() ? dates.first() : earlier.last();

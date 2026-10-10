@@ -31,8 +31,9 @@ public class MetaController {
 	@GetMapping("/api/meta")
 	@Operation(summary = "Which days have data, which day to show", description = """
 			Tells the frontend which days the backend has meals for and which day it should show by default.
-			This matters because the data is a snapshot: after its last day, "today" has no meals, and the
-			frontend should show the menu date instead of an empty page.
+			On days without meals (weekends, holidays) the menu date is the next day with meals within a week,
+			e.g. Monday's menu on a Saturday; without upcoming meals it is the latest earlier day. When
+			`menuDate` is not `today`, the frontend should say which day the menu is for.
 
 			`dataFrom`/`dataTo` are the first and last day with meals (`null` if there are none).
 			""")

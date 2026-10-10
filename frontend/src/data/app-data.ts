@@ -8,20 +8,21 @@
  * Pages call loadAppData() in their frontmatter: in `astro dev` that runs per request, so menus stay
  * current; a static build takes the data of build time.
  */
-import { CANTEENS, MENU_DATE, type Canteen, type MenuItem } from './canteens';
+import { CANTEENS, MENSAS, MENU_DATE, type Canteen, type MenuItem } from './canteens';
+import { prepareMenu, type DisplayMenuItem } from './menu-display';
 import { API_URL, apiGet, type BackendMealDetail, type BackendMensa, type BackendMeta } from './api';
-import { menuDateCandidates, zurichDate } from './menuDate';
+import { menuDateCandidates } from './menuDate';
 
 /** A canteen as the pages show it. rating is null when nobody has rated it yet. */
-export type AppCanteen = Omit<Canteen, 'rating'> & { rating: number | null };
+export type AppCanteen = Omit<Canteen, 'rating' | 'menu'> & { rating: number | null; menu: DisplayMenuItem[] };
 
 export interface AppData {
   /** Where menus and ratings come from. */
   source: 'backend' | 'sample';
-  /** Today in Zurich (`YYYY-MM-DD`). Differs from `menuDate` on weekends. */
-  today: string;
-  /** The day whose menu is shown: today (the coming Monday on weekends), or the latest earlier day with menus. */
+  /** The day whose menu is shown: today, else the next day with menus (e.g. Monday on weekends). */
   menuDate: string;
+  /** Today in Zurich, to tell whether menuDate is today. */
+  today: string;
   canteens: AppCanteen[];
 }
 
@@ -39,8 +40,15 @@ export function loadAppData(): Promise<AppData> {
   return cache.data;
 }
 
+/** Today's date (YYYY-MM-DD) in Zurich. */
+function zurichToday(): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Zurich', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+}
+
 function sampleData(): AppData {
-  return { source: 'sample', today: zurichDate(), menuDate: MENU_DATE, canteens: CANTEENS };
+  return { source: 'sample', menuDate: MENU_DATE, today: zurichToday(), canteens: CANTEENS.map(canteen => ({
+    ...canteen, menu: prepareMenu(canteen.menu, MENSAS.find(m => m.id === canteen.id), MENU_DATE),
+  })) };
 }
 
 async function fetchAppData(): Promise<AppData> {
@@ -48,8 +56,8 @@ async function fetchAppData(): Promise<AppData> {
   try {
     const meta = await apiGet<BackendMeta>('/api/meta');
     const mensas = await apiGet<BackendMensa[]>('/api/mensas');
-    // Weekdays: today. Saturday/Sunday: the coming Monday. If the backend has no meals for that day,
-    // fall back to the day it suggests (today, or the latest earlier day with menus).
+    // Weekdays: today. Saturday/Sunday: the coming Monday (the backend's menuDate says the same; this also
+    // covers an older backend that suggests Friday). If there are no meals for that day, use the backend's suggestion.
     let menuDate = meta.menuDate;
     let meals: BackendMealDetail[] = [];
     for (const day of menuDateCandidates(meta.today, meta.menuDate)) {
@@ -62,11 +70,11 @@ async function fetchAppData(): Promise<AppData> {
     for (const meal of meals) menus.set(meal.mensaId, [...(menus.get(meal.mensaId) ?? []), meal]);
     return {
       source: 'backend',
-      today: meta.today,
       menuDate,
+      today: meta.today,
       canteens: CANTEENS.map((canteen) => ({
         ...canteen,
-        menu: toMenu(menus.get(canteen.id) ?? []),
+        menu: prepareMenu(toMenu(menus.get(canteen.id) ?? []), MENSAS.find(m => m.id === canteen.id), menuDate),
         rating: ratings.get(canteen.id) ?? null,
       })),
     };
