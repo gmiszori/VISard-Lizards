@@ -1,6 +1,16 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {openingWindows,encodePolyline,decodePolyline,transitLeg,cached,point} from './provider.mjs';
+import {openingWindows,encodePolyline,decodePolyline,transitLeg,cached,point,walkingLeg} from './provider.mjs';
+
+test('walking alternatives retain provider path and rounded duration; malformed evidence is rejected', () => {
+  const start=Date.parse('2026-10-12T09:00:00Z');
+  const route={duration:60.4,distance:81.9,geometry:encodePolyline([[47.37,8.54],[47.371,8.541]]),legs:[]};
+  const leg=walkingLeg(route,start);
+  assert.equal(leg.arrival,'2026-10-12T09:01:01.000Z');assert.equal(leg.distanceMetres,82);
+  assert.equal(leg.provider.polyline,route.geometry);assert.equal(leg.provider.mode,'WALK');
+  assert.throws(()=>walkingLeg({...route,geometry:''},start));
+  assert.throws(()=>walkingLeg({...route,duration:-1},start));
+});
 
 test('Zurich hours preserve split shifts, date closures, unknown state and DST', () => {
   const p=[47.37,8.54];

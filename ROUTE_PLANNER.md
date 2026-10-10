@@ -56,3 +56,23 @@ npm test
 node --experimental-strip-types --test src/route-planner/*.test.ts
 pnpm check
 ```
+
+## Self-hosted walking on Linux
+
+Following https://wiki.openstreetmap.org/wiki/Routing and the official OSRM MLD pipeline, `compose.osrm.yaml` adds a private pedestrian router. It builds the graph with `/opt/foot.lua`, not the car profile. Walking alternatives are returned by OSRM; transfer checks use its fastest foot route. Locations over 100 metres from the pedestrian network are rejected instead of snapping far away.
+
+Download a regional OSM PBF extract, for example from https://download.geofabrik.de/europe/switzerland.html, onto the Linux host as `region.osm.pbf`. This initial download and graph build can be substantial and is not started automatically in the preview.
+
+```sh
+docker volume create mensa-route-test_osrm-data
+docker run --rm -v "$PWD/region.osm.pbf:/input/region.osm.pbf:ro" -v mensa-route-test_osrm-data:/data alpine:3.22 cp /input/region.osm.pbf /data/region.osm.pbf
+docker compose -p mensa-route-test -f docker-compose.yml -f compose.route-planner.yaml -f compose.osrm.yaml --profile route-planner up --build -d
+```
+
+The build service runs extract, partition and customize once, and marks successful completion. OSRM starts only after a successful graph build, and publishes no host port. The adapter switches to `http://osrm-foot:5000` automatically. Omit `compose.osrm.yaml` to use the public foot service. For a map-data update, build a fresh volume before switching; the marker prevents repeated builds. Keep sufficient RAM and disk for the extract.
+
+Public transport continues to use Swiss timetables. A full self-hosted transit engine such as OpenTripPlanner (also in the wiki) additionally needs current GTFS data. OSM road data alone does not supply transit schedules.
+
+OpenAI key failures now return 401, model access failures 503 and rate/credit limits 429 with useful messages, instead of generic routing 502s.
+
+Validation: official OSRM v5.27.1 container successfully built and served a synthetic test graph, choosing a pedestrian detour over a forbidden motorway shortcut. The full Switzerland graph has not been downloaded/built on this machine; current preview uses FOSSGIS foot routing.

@@ -180,6 +180,8 @@ public class RoutePlannerService {
             if(ex.getStatusCode().value()==401) throw new ResponseStatusException(HttpStatus.BAD_GATEWAY,"OpenAI key or connector authentication was rejected.");
             if(ex.getStatusCode().value()==429) throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS,"The route connector or AI provider is busy or has reached its quota.");
             throw new ResponseStatusException(HttpStatus.BAD_GATEWAY,"Route provider request failed. Check OSM/Swiss transport availability, OpenAI model access and connector logs.");
+        } catch(ResponseStatusException ex) {
+            throw ex;
         } catch(RuntimeException ex) {
             throw new ResponseStatusException(HttpStatus.BAD_GATEWAY,"Route planning failed or timed out. Check the route MCP connector and API configuration.",ex);
         } finally { busy.release(); }
@@ -193,9 +195,17 @@ public class RoutePlannerService {
         result.set("parameters",schema); return result;
     }
     private JsonNode openai(JsonNode body, String key) {
+        try {
         var response=mapper.readTree(client.post().uri("https://api.openai.com/v1/responses").contentType(MediaType.APPLICATION_JSON)
             .header("Authorization","Bearer "+key).body(body.toString()).retrieve().body(String.class));
         if(!"completed".equals(response.path("status").asText()) || !response.path("output").isArray()) throw new IllegalStateException("Incomplete AI response.");
         return response;
+        } catch(RestClientResponseException ex) {
+            int status=ex.getStatusCode().value();
+            if(status==401) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"OpenAI rejected your API key. Enter a valid OpenAI API key.");
+            if(status==403 || status==404) throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,"Your OpenAI account cannot access the configured route model ("+model+"). Check model access or set ROUTE_PLANNER_MODEL to a supported model.");
+            if(status==429) throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS,"OpenAI rate limit or API credit limit reached. Check your OpenAI API billing and limits.");
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY,"OpenAI rejected the route-planner request (HTTP "+status+"). The OSM routing service was not the source of this error.");
+        }
     }
 }

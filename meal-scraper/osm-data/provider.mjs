@@ -68,13 +68,20 @@ export function decodePolyline(value) {
   while (i < value.length) { lat += delta(); lng += delta(); points.push(point([lat / 1e5, lng / 1e5])); }
   return points;
 }
-async function walk(a, b) {
+async function walkingRoutes(a, b) {
   return cached(`walk:${a}:${b}`, 86400000, async () => {
-    const data = await request(`${foot}/route/v1/foot/${a[1]},${a[0]};${b[1]},${b[0]}?overview=full&steps=true&geometries=polyline`);
-    const route = data.routes?.[0];
-    if (!route || !Number.isFinite(route.duration) || route.duration < 0 || !route.geometry) throw new Error('No walking route was returned.');
-    return route;
+    const data = await request(`${foot}/route/v1/foot/${a[1]},${a[0]};${b[1]},${b[0]}?overview=full&steps=true&geometries=polyline&alternatives=true&radiuses=100;100`);
+    if (data.code !== 'Ok' || !data.routes?.length) throw new Error('No walking route was returned.');
+    return data.routes.slice(0,3).sort((a,b) => a.duration-b.duration);
   });
+}
+async function walk(a,b) { return (await walkingRoutes(a,b))[0]; }
+export function walkingLeg(route,start) {
+  if (!Number.isFinite(route.duration) || route.duration < 0 || !Number.isFinite(route.distance) || route.distance < 0 || !decodePolyline(route.geometry || '').length)
+    throw new Error('Invalid walking route evidence.');
+  return {departure: iso(start),arrival: iso(start+Math.ceil(route.duration)*1000),distanceMetres:Math.round(route.distance),
+    directions:(route.legs || []).flatMap(leg => (leg.steps || []).map(step => `${step.maneuver.type}${step.maneuver.modifier ? ' '+step.maneuver.modifier : ''}${step.name ? ': '+step.name : ''} (${Math.round(step.distance)} m)`)),
+    provider:{mode:'WALK',polyline:route.geometry,geometryKind:'street_path',warnings:[]}};
 }
 const stamp = value => { const time = Date.parse(value); if (!Number.isFinite(time)) throw new Error('Invalid journey time.'); return time; };
 const stopPoint = stop => point([stop.station?.coordinate?.x, stop.station?.coordinate?.y]);
@@ -116,10 +123,7 @@ export async function options(input) {
   const a = await locate(input.origin), b = await locate(input.destination), start = stamp(input.departureTime);
   const results = [], warnings = [`Locations resolved as: ${a.label || a.join(',')} → ${b.label || b.join(',')}. Check these match your intended trip.`];
   try {
-    const route = await walk(a, b);
-    results.push({departure: iso(start), arrival: iso(start + Math.ceil(route.duration) * 1000), distanceMetres: Math.round(route.distance),
-      directions: route.legs.flatMap(leg => leg.steps.map(step => `${step.maneuver.type}${step.maneuver.modifier ? ' ' + step.maneuver.modifier : ''}${step.name ? ': ' + step.name : ''} (${Math.round(step.distance)} m)`)),
-      provider: {mode:'WALK', polyline: route.geometry, geometryKind:'street_path', warnings:[]}});
+    for (const route of await walkingRoutes(a,b)) results.push(walkingLeg(route,start));
   } catch { warnings.push('Walking routing is unavailable for this leg.'); }
   try {
     const [date, time] = local(start);

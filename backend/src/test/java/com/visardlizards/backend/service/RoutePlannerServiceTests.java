@@ -29,6 +29,18 @@ class RoutePlannerServiceTests {
         assertTrue(failure.getReason().contains("route data provider is busy"));
         assertFalse(failure.getReason().contains("private-provider-payload")); server.verify();
     }
+    @Test void openAiAuthenticationAndModelErrorsAreNotMisreportedAsRoutingFailures() {
+        for(int status:List.of(401,404,429)) {
+            var builder=RestClient.builder(); var server=MockRestServiceServer.bindTo(builder).build();
+            server.expect(requestTo("https://api.openai.com/v1/responses"))
+                .andRespond(withStatus(org.springframework.http.HttpStatus.valueOf(status)).contentType(MediaType.APPLICATION_JSON)
+                    .body("{\"error\":{\"message\":\"private-provider-message\"}}"));
+            var failure=assertThrows(ResponseStatusException.class,()->service(builder.build()).plan(trip(),"key"));
+            assertEquals(status==404 ? 503 : status,failure.getStatusCode().value());
+            assertTrue(failure.getReason().contains("OpenAI"));
+            assertFalse(failure.getReason().contains("private-provider-message"));server.verify();
+        }
+    }
     private final JsonMapper mapper=JsonMapper.builder().build();
     private final MensaRepository repository=mock(MensaRepository.class);
     private final Clock clock=Clock.fixed(Instant.parse("2026-10-10T20:00:00Z"),ZoneOffset.UTC);
