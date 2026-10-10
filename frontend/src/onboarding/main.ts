@@ -149,5 +149,6 @@ function initialise(root: HTMLElement) {
       languageSelect.dispatchEvent(new Event('change', { bubbles: true }));
     }
     refresh();
-  } catch { showError(); }
+    document.documentElement.setAttribute('data-ui-ready', '');
+  } catch { showError(); document.documentElement.setAttribute('data-ui-ready', ''); }
 }

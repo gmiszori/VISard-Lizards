@@ -282,6 +282,8 @@ window.addEventListener('storage', event => {
 });
 
 applyPreferences();
+// The settings are applied: show what was kept invisible meanwhile (see the style in layouts/BaseLayout.astro).
+document.documentElement.setAttribute('data-ui-ready', '');
 // Browser Back/Forward: the browser puts the search text and the campus choice back into their fields (or brings the
 // whole page back from its cache) without firing any input event, so the list kept showing the unfiltered result.
 // pageshow comes after that restoring, on a fresh load, on Back and on a page restored from the cache.

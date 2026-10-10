@@ -30,6 +30,12 @@ const { title } = Astro.props;
         document.documentElement.dataset.devMode = String(savedPreferences?.devMode === true);
       } catch (error) { /* storage blocked: the defaults apply */ }
     </script>
+    <!-- Until the saved settings are applied (scripts/preferences.ts, onboarding/main.ts), what depends on them stays
+         invisible (visibility, so nothing moves): no flash of default prices, of all canteens, of unchecked switches or of
+         buttons of an empty onboarding step. The timer is the safety net if a script fails. -->
+    <style is:inline>html:not([data-ui-ready]) :is(#canteen-grid,#favourites-grid,.menu-list,.settings-form,.ob-actions){visibility:hidden}</style>
+    <noscript><style>html:not([data-ui-ready]) :is(#canteen-grid,#favourites-grid,.menu-list,.settings-form,.ob-actions){visibility:visible}</style></noscript>
+    <script is:inline>setTimeout(function () { document.documentElement.setAttribute('data-ui-ready', ''); }, 2500);</script>
     <meta name="description" content="Find what's cooking at ETH and UZH campus canteens." />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <!-- Installable app (home screen); on iPhone and iPad, push notifications need it. -->
