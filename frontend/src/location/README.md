@@ -10,8 +10,9 @@ permission prompt by itself. After each fix it dispatches `campuseats:user-locat
 `UserLocation` as `detail`.
 
 **Visits** (`visits.ts`): a fix at a mensa during one of its meal services (15 min grace) is saved in
-`campuseats-visits` as `{mensaId, date, service}`, newest first, for 30 days. These are the dated
-visit candidates `getRatingPrompt()` already accepts; the rating card does not read them yet.
+`campuseats-visits` as `{mensaId, date, service}`, newest first, for 30 days. When location permission
+is already granted, the home page records a visit without turning on distance sorting. The rating
+card offers only visits for the meal date and stays hidden when there is no matching visit.
 
 ```ts
 import { locateUserNow, LocationUnavailableError } from '../location/geolocation.ts';

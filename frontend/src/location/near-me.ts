@@ -105,6 +105,11 @@ export function mountNearMe(): void {
     if (found.campus && nearest) return () => text().campus(campusName(found.campus!), nearest.name, formatDistance(nearest.distanceM, lang()));
     return () => (nearest ? text().away(nearest.name, formatDistance(nearest.distanceM, lang())) : '');
   }
+  function captureVisit(found: UserLocation) {
+    const now = new Date();
+    recordVisits(visitsAt(found.atMensaIds, data.hours, now), now);
+    document.dispatchEvent(new CustomEvent('campuseats:user-located', { detail: found }));
+  }
   async function locate() {
     const id = ++requestId;
     button.disabled = true;
@@ -114,9 +119,8 @@ export function mountNearMe(): void {
       if (id !== requestId) return;
       location = found;
       writePreference(true);
-      recordVisits(visitsAt(found.atMensaIds, data.hours, new Date()), new Date());
+      captureVisit(found);
       show(describe(found));
-      document.dispatchEvent(new CustomEvent('campuseats:user-located', { detail: found }));
     } catch (error) {
       if (id !== requestId) return;
       location = null;
@@ -145,10 +149,17 @@ export function mountNearMe(): void {
   document.addEventListener('languagechange', () => { if (message) status.textContent = message(); render(); resortLater(); });
 
   render();
-  // Sort again on later visits, but never trigger the permission prompt without a click.
-  if (readPreference() && navigator.permissions) {
+  // A granted permission can capture a meal visit without enabling distance sorting.
+  if (navigator.permissions) {
     navigator.permissions.query({ name: 'geolocation' })
-      .then(permission => { if (permission.state === 'granted') void locate(); })
+      .then(permission => {
+        if (permission.state !== 'granted') return;
+        if (readPreference()) { void locate(); return; }
+        const id = requestId;
+        void locateUserNow(data.places)
+          .then(found => { if (id === requestId) captureVisit(found); })
+          .catch(() => { /* A passive location check never interrupts the page. */ });
+      })
       .catch(() => { /* Permissions API not available for geolocation */ });
   }
 }

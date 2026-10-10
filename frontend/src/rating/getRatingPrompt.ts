@@ -35,7 +35,7 @@ export function getRatingPrompt(now: Date, lastEatenCandidates: readonly MensaCh
     seen.add(m.mensaId);
     return true;
   }).slice(0, 4);
-  // Dated visit history must never drag an older meal into the prompt.
-  if (lastEatenCandidates.length && !mensaChoices.length) return null;
+  // A location-based prompt needs a visit for the target meal date.
+  if (!mensaChoices.length) return null;
   return { date, mensaChoices };
 }
