@@ -64,6 +64,11 @@ const shownDays = days.includes(menuDate) ? days : [...days, menuDate].sort();
 
   const SERVICE_KEY = 'campuseats-service-filter';
   const root = document.querySelector<HTMLElement>('[data-day-picker]');
+  const daysNav = root?.querySelector<HTMLElement>('[data-day-picker-nav]');
+  const updateScrollHint = () => daysNav?.classList.toggle('has-more-days',
+    daysNav.scrollWidth - daysNav.clientWidth - daysNav.scrollLeft > 2);
+  daysNav?.addEventListener('scroll', updateScrollHint, { passive: true });
+  window.addEventListener('resize', updateScrollHint);
 
   // Lunch / dinner filter: an attribute on <html>; scripts/preferences.ts hides the other service's meals.
   function applyService(service: string) {
@@ -96,6 +101,7 @@ const shownDays = days.includes(menuDate) ? days : [...days, menuDate].sort();
     });
     root.querySelector('[data-day-picker-nav]')?.setAttribute('aria-label', de ? 'Menütag' : 'Menu day');
     root.querySelector('[data-service-filter-group]')?.setAttribute('aria-label', de ? 'Mahlzeit' : 'Meal service');
+    updateScrollHint();
   }
 
   // Simulated time (developer tools): the default pages follow its menu day.
@@ -138,5 +144,5 @@ const shownDays = days.includes(menuDate) ? days : [...days, menuDate].sort();
   .day-picker a:focus-visible,.day-picker button:focus-visible{outline:3px solid color-mix(in srgb,var(--green) 45%,transparent);outline-offset:2px}
   /* Page changes (day, canteen) cross-fade instead of flashing white, where the browser supports it. */
   @media (prefers-reduced-motion: no-preference) { @view-transition { navigation: auto; } }
-  @media(max-width:520px){.day-picker{gap:8px}.day-picker-days{flex-wrap:nowrap;overflow-x:auto;max-width:100%;padding-bottom:2px}}
+  @media(max-width:520px){.day-picker{gap:8px}.day-picker-days{flex-wrap:nowrap;overflow-x:auto;width:100%;min-width:0;padding-bottom:2px}.day-picker-days.has-more-days{mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent);-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent)}}
 </style>
