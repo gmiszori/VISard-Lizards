@@ -3,10 +3,15 @@ import { mountBudgetSlider } from '../onboarding/budgetSlider';
 import { readProfileSettings, writeProfileSettings, type EditableProfileSettings } from '../onboarding/profileSettings';
 import { readPreferences, isPriceTier } from '../preferences/state';
 
-const form = document.querySelector<HTMLFormElement>('#preferences-form');
-const budget = form?.querySelector<HTMLInputElement>('[data-profile-budget]');
-const priceTier = form?.querySelector<HTMLSelectElement>('[data-price-tier]');
-if (form && budget) {
+/** Called by components/ProfileMealSettings.astro on the Settings page. */
+export function mountProfileMealSettings() {
+  const formElement = document.querySelector<HTMLFormElement>('#preferences-form');
+  const budgetElement = formElement?.querySelector<HTMLInputElement>('[data-profile-budget]');
+  const priceTier = formElement?.querySelector<HTMLSelectElement>('[data-price-tier]');
+  if (!formElement || !budgetElement) return;
+  // Non-null aliases: the helper functions below are hoisted, so TypeScript would not keep the narrowing above.
+  const form = formElement;
+  const budget = budgetElement;
   let settings = readProfileSettings();
   let tier = readPreferences().priceTier;
   if (priceTier) priceTier.value = tier;
