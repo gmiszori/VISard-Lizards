@@ -3,8 +3,8 @@ import { defaultCrowdDay } from './defaultDay';
 import { appNow, CLOCK_EVENT } from '../time/clock';
 
 const copy = {
-  en: { eyebrow: 'PLAN YOUR LUNCH', title: 'Predicted crowd', minutes: 'min', subtitle: 'Typical occupancy, every 15 minutes.', day: 'Day', quiet: 'Quiet', moderate: 'Moderate', busy: 'Busy', now: 'Now', empty: 'No prediction available for this day.', missing: 'No prediction for this interval', preview: 'Preview data · Illustrative occupancy, not a live forecast.', backend: 'Estimated occupancy · 15-minute intervals · Zürich time.', chart: 'Predicted occupancy by time', occupancy: 'predicted occupancy' },
-  de: { eyebrow: 'PLANE DEIN MITTAGESSEN', title: 'Erwartete Auslastung', minutes: 'Min.', subtitle: 'Typische Auslastung im 15-Minuten-Takt.', day: 'Tag', quiet: 'Ruhig', moderate: 'Mäßig besucht', busy: 'Voll', now: 'Jetzt', empty: 'Für diesen Tag ist keine Prognose verfügbar.', missing: 'Keine Prognose für dieses Intervall', preview: 'Vorschaudaten · Beispielhafte Auslastung, keine Live-Prognose.', backend: 'Geschätzte Auslastung · 15-Minuten-Takt · Zürcher Zeit.', chart: 'Erwartete Auslastung nach Uhrzeit', occupancy: 'erwartete Auslastung' },
+  en: { eyebrow: 'PLAN YOUR LUNCH', title: 'Predicted crowd', minutes: 'min', subtitle: 'Typical occupancy, every 15 minutes.', day: 'Day', quiet: 'Quiet', moderate: 'Moderate', busy: 'Busy', now: 'Now', empty: 'No prediction available for this day.', missing: 'No prediction for this interval', preview: 'Preview data · Illustrative occupancy, not a live forecast.', backend: 'Estimated occupancy · 15-minute intervals · Zürich time.', chart: 'Predicted occupancy by time', occupancy: 'predicted occupancy', hint: 'Tap a bar, or use the arrow keys, to see its time slot.' },
+  de: { eyebrow: 'PLANE DEIN MITTAGESSEN', title: 'Erwartete Auslastung', minutes: 'Min.', subtitle: 'Typische Auslastung im 15-Minuten-Takt.', day: 'Tag', quiet: 'Ruhig', moderate: 'Mäßig besucht', busy: 'Voll', now: 'Jetzt', empty: 'Für diesen Tag ist keine Prognose verfügbar.', missing: 'Keine Prognose für dieses Intervall', preview: 'Vorschaudaten · Beispielhafte Auslastung, keine Live-Prognose.', backend: 'Geschätzte Auslastung · 15-Minuten-Takt · Zürcher Zeit.', chart: 'Erwartete Auslastung nach Uhrzeit', occupancy: 'erwartete Auslastung', hint: 'Tippe auf einen Balken oder nutze die Pfeiltasten, um das Zeitfenster zu sehen.' },
 };
 type Key = keyof typeof copy.en;
 const language = () => document.documentElement.lang === 'de' ? 'de' : 'en';
@@ -29,6 +29,28 @@ function mountChart(root: HTMLElement) {
   // Today, or Monday on Saturday and Sunday; the first day with data if that day has none.
   let day: CrowdWeekday = defaultCrowdDay(nowInZurich().day, d => slotsForDay(prediction, d).some(slot => slot.occupancyPct !== null));
   let slots: CrowdSlot[] = [];
+  const readout = root.querySelector<HTMLElement>('[data-crowd-readout]');
+  let selected = -1;
+
+  /** One slot's time and value as text, so a tap or the keyboard can read what hovering shows as a tooltip. */
+  function selectSlot(index: number) {
+    if (!slots.length) return;
+    selected = Math.max(0, Math.min(slots.length - 1, index));
+    bars.querySelectorAll('rect').forEach((rect, i) => rect.classList.toggle('is-selected', i === selected));
+    const slot = slots[selected]!;
+    if (readout) readout.textContent = `${formatTime(slot.startMinute)}–${formatTime(slot.startMinute + 15)} · ${slot.occupancyPct === null ? t('missing') : `${slot.occupancyPct}% ${t('occupancy')}`}`;
+  }
+  svg.addEventListener('click', event => {
+    const box = svg.getBoundingClientRect();
+    if (box.width > 0 && slots.length) selectSlot(Math.floor((event.clientX - box.left) / box.width * slots.length));
+  });
+  svg.addEventListener('keydown', event => {
+    const target = event.key === 'ArrowRight' ? selected + 1 : event.key === 'ArrowLeft' ? selected - 1
+      : event.key === 'Home' ? 0 : event.key === 'End' ? slots.length - 1 : null;
+    if (target === null) return;
+    event.preventDefault();
+    selectSlot(selected < 0 && event.key === 'ArrowLeft' ? slots.length - 1 : target);
+  });
 
   function updateNow() {
     const now = nowInZurich();
@@ -53,6 +75,8 @@ function mountChart(root: HTMLElement) {
     daySelect.setAttribute('aria-label', t('day'));
     root.querySelector('[data-crowd-source]')!.textContent = t(prediction.source === 'preview' ? 'preview' : 'backend');
     slots = slotsForDay(prediction, day);
+    selected = -1;
+    if (readout) readout.textContent = t('hint');
     const available = slots.some(slot => slot.occupancyPct !== null);
     root.querySelector<HTMLElement>('[data-crowd-content]')!.hidden = !available;
     root.querySelector<HTMLElement>('[data-crowd-empty]')!.hidden = available;
