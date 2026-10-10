@@ -23,6 +23,7 @@ import com.visardlizards.backend.model.domain.Campus;
 import com.visardlizards.backend.model.domain.Closure;
 import com.visardlizards.backend.model.domain.Meal;
 import com.visardlizards.backend.model.domain.Mensa;
+import com.visardlizards.backend.model.domain.MensaSource;
 import com.visardlizards.backend.model.domain.Price;
 import com.visardlizards.backend.model.domain.ServiceHours;
 
@@ -85,6 +86,22 @@ public class JpaMensaRepository implements MensaRepository {
 				.toList();
 	}
 
+	@Override
+	@Transactional
+	public void replaceMeals(String mensaId, LocalDate dateStart, LocalDate dateEnd, List<Meal> newMeals) {
+		meals.deleteAll(meals.findByMensaIdAndDateBetweenOrderByDateAsc(mensaId, dateStart, dateEnd));
+		meals.flush();
+		meals.saveAll(newMeals.stream().map(JpaMensaRepository::toEntity).toList());
+	}
+
+	private static MealEntity toEntity(Meal m) {
+		return new MealEntity(m.id(), m.mensaId(), m.date(), m.service(), m.line(), m.kind(), m.title(), m.dietTag(),
+				m.price() == null ? null : m.price().student(),
+				m.price() == null ? null : m.price().staff(),
+				m.price() == null ? null : m.price().external(),
+				m.ecoScore(), m.climateImpact(), m.components(), m.allergens());
+	}
+
 	private static Campus toDomain(CampusEntity e) {
 		return new Campus(e.getId(), e.getName(), e.getCity());
 	}
@@ -101,7 +118,7 @@ public class JpaMensaRepository implements MensaRepository {
 				.toList();
 		return new Mensa(e.getId(), e.getName(), e.getInstitution(), e.getCampusId(),
 				new Address(e.getStreet(), e.getPostalCode(), e.getCity(), e.getBuilding()),
-				e.isHasMenu(), e.isTemporarilyClosed(), openingHours, closures);
+				e.isHasMenu(), e.isTemporarilyClosed(), openingHours, closures, new MensaSource(e.getEthFacilityId()));
 	}
 
 	private static Meal toDomain(MealEntity e) {

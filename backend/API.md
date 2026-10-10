@@ -15,22 +15,28 @@ on first start; set `DB_URL` to use another JDBC database).
 | Tables | Content | Written by |
 | --- | --- | --- |
 | `campus`, `mensa`, `mensa_service_hours`, `mensa_closure` | Campuses, mensas, weekly service hours, closures | `MensaSnapshotImporter` |
-| `meal`, `meal_component`, `meal_allergen` | Meals per mensa and day (indexed by mensa + date) | `MensaSnapshotImporter` |
+| `meal`, `meal_component`, `meal_allergen` | Meals per mensa and day (indexed by mensa + date) | `MensaSnapshotImporter`, `LiveMenuImportService` |
 | `rating`, `rating_tag`, `crowd_report` | User ratings and crowd reports | the API |
 
 **Mensa data import:** on a start with an empty `mensa` table, `MensaSnapshotImporter` loads the
 bundled seed `src/main/resources/seed/mensa-snapshot.json`, a snapshot of `frontend/src/data/canteens.ts`
 (22 ETH/UZH mensas, 901 meals, **2026-09-28 to 2026-10-09**). Existing data is never overwritten.
-Dates outside that range return an empty meal plan. To load a new snapshot, regenerate it and start
+Without live data, dates outside that range return an empty meal plan. To load a new snapshot, regenerate it and start
 with an empty database (delete `backend/data/`, which also deletes ratings and crowd reports):
 
 ```bash
 node backend/scripts/export-mensa-db.mjs
 ```
 
+**Live ETH menus:** `LiveMenuImportService` loads the current and the next week from ETH Cookpit on
+startup and every 6 hours (`app.live-import.cron`, Zurich time). For each ETH mensa with live meals in a
+week, that week's meals are replaced; mensas without live meals keep what they had, and a failed download
+keeps the existing meals. `EthMenuMapper` maps Cookpit's classes, allergens and customer groups to the
+app's values (diet, canonical allergen ids, student/staff/external prices). Turn it off with
+`app.live-import.enabled=false`. UZH menus are not imported yet: the maintained ZFV API needs
+`MENSA_ZFV_API_KEY` (see [MENSA_API.md](MENSA_API.md)), so UZH mensas only have the snapshot.
+
 Services only see domain models through `MensaRepository` (implemented by `JpaMensaRepository`).
-A live importer using the ETH/UZH clients can write to the same tables without changes to services
-or controllers.
 
 ## Overview
 

@@ -32,6 +32,12 @@ public interface MensaRepository {
 	/** All dates that have at least one meal, ascending. */
 	SortedSet<LocalDate> findMealDates();
 
+	/**
+	 * Replaces all meals of a mensa between both dates (inclusive) with the given ones, e.g. with a fresh
+	 * live menu. Meals outside the range are not touched.
+	 */
+	void replaceMeals(String mensaId, LocalDate dateStart, LocalDate dateEnd, List<Meal> meals);
+
 	/** Meals of a mensa between both dates (inclusive), ordered by date. */
 	List<Meal> findMeals(String mensaId, LocalDate dateStart, LocalDate dateEnd);
 

@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -19,7 +21,9 @@ public record Mensa(
 		boolean temporarilyClosed,
 		/** Keys: mon, tue, wed, thu, fri, sat, sun. */
 		Map<String, List<ServiceHours>> openingHours,
-		List<Closure> closures) {
+		List<Closure> closures,
+		/** Live menu source; null when unknown. */
+		@Nullable MensaSource source) {
 
 	/** Meal service windows on the given date (empty if closed that day, temporarily closed or in a closure). */
 	public List<ServiceHours> serviceHoursOn(LocalDate date) {

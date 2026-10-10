@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -56,6 +57,7 @@ public class MensaSnapshotImporter implements ApplicationRunner {
 	public void run(ApplicationArguments args) {
 		if (mensas.count() > 0) {
 			log.info("Mensa data already present, skipping snapshot import");
+			backfillFacilityIds();
 			return;
 		}
 		MensaDb db = readSnapshot();
@@ -64,6 +66,24 @@ public class MensaSnapshotImporter implements ApplicationRunner {
 		db.meals().forEach(m -> entityManager.persist(toEntity(m)));
 		log.info("Imported {} campuses, {} mensas and {} meals from {}", db.campuses().size(), db.mensas().size(),
 				db.meals().size(), SNAPSHOT);
+	}
+
+	/** Databases created before the eth_facility_id column existed get the ids from the snapshot. */
+	private void backfillFacilityIds() {
+		List<MensaEntity> missing = mensas.findAll().stream()
+				.filter(m -> m.getEthFacilityId() == null && "ETH".equals(m.getInstitution()))
+				.toList();
+		if (missing.isEmpty()) {
+			return;
+		}
+		Map<String, Integer> facilityIds = new HashMap<>();
+		for (Mensa m : readSnapshot().mensas()) {
+			if (m.source() != null && m.source().facilityId() != null) {
+				facilityIds.put(m.id(), m.source().facilityId());
+			}
+		}
+		missing.forEach(m -> m.setEthFacilityId(facilityIds.get(m.getId())));
+		log.info("Filled ETH facility ids of {} mensas from {}", missing.size(), SNAPSHOT);
 	}
 
 	private MensaDb readSnapshot() {
@@ -86,7 +106,7 @@ public class MensaSnapshotImporter implements ApplicationRunner {
 				.toList();
 		return new MensaEntity(m.id(), m.name(), m.institution(), m.campusId(), m.address().street(),
 				m.address().postalCode(), m.address().city(), m.address().building(), m.hasMenu(),
-				m.temporarilyClosed(), serviceHours, closures);
+				m.temporarilyClosed(), m.source() == null ? null : m.source().facilityId(), serviceHours, closures);
 	}
 
 	private static MealEntity toEntity(Meal m) {

@@ -43,6 +43,10 @@ public class MensaEntity {
 
 	private boolean temporarilyClosed;
 
+	/** ETH Cookpit facility id for the live menu import, null for UZH mensas. */
+	@Column(name = "eth_facility_id")
+	private Integer ethFacilityId;
+
 	@ElementCollection
 	@CollectionTable(name = "mensa_service_hours", joinColumns = @JoinColumn(name = "mensa_id"))
 	@OrderColumn(name = "position")
@@ -57,7 +61,7 @@ public class MensaEntity {
 	}
 
 	public MensaEntity(String id, String name, String institution, String campusId, String street, String postalCode,
-			String city, String building, boolean hasMenu, boolean temporarilyClosed,
+			String city, String building, boolean hasMenu, boolean temporarilyClosed, Integer ethFacilityId,
 			List<ServiceHoursEmbeddable> serviceHours, List<ClosureEmbeddable> closures) {
 		this.id = id;
 		this.name = name;
@@ -69,6 +73,7 @@ public class MensaEntity {
 		this.building = building;
 		this.hasMenu = hasMenu;
 		this.temporarilyClosed = temporarilyClosed;
+		this.ethFacilityId = ethFacilityId;
 		this.serviceHours = new ArrayList<>(serviceHours);
 		this.closures = new ArrayList<>(closures);
 	}
@@ -111,6 +116,15 @@ public class MensaEntity {
 
 	public boolean isTemporarilyClosed() {
 		return temporarilyClosed;
+	}
+
+	public Integer getEthFacilityId() {
+		return ethFacilityId;
+	}
+
+	/** Fills the facility id for databases created before the column existed. */
+	public void setEthFacilityId(Integer ethFacilityId) {
+		this.ethFacilityId = ethFacilityId;
 	}
 
 	public List<ServiceHoursEmbeddable> getServiceHours() {

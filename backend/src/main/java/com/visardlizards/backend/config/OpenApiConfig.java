@@ -19,8 +19,9 @@ public class OpenApiConfig {
 						Mensas, meal plans, ratings and crowd reports of the ETH and UZH mensas in Zurich.
 
 						**Data:** mensas, meals, ratings and crowd reports are stored in the backend's database. Mensas and
-						meals are imported from a snapshot of the frontend database (22 mensas, 901 meals,
-						2026-09-28 to 2026-10-09). Dates outside that range return an empty meal plan.
+						meals come from a snapshot of the frontend database (22 mensas, 901 meals, 2026-09-28 to 2026-10-09).
+						ETH menus of the current and next week are imported live every 6 hours; UZH menus are not imported
+						live yet (needs a ZFV API key).
 
 						**Conventions**
 						- Dates: `YYYY-MM-DD`. Times: `HH:mm`.

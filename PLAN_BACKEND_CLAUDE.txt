@@ -155,3 +155,7 @@ HANDOFF SESSION 2 (01:46) - open points:
   3. Rate limits are per IP and in memory; behind a reverse proxy set server.forward-headers-strategy.
   4. backend now contains main (merged by LikeScience at 01:27), so a merge backend -> main is a fast-forward
      for main's content; nothing on main is newer. MartinValachy works on branch feature/onboarding (frontend).
+  02:02  DONE: live ETH menu import (user request). LiveMenuImportService + EthMenuMapper load the current and next
+         week from Cookpit into the meal tables on startup and every 6h; mensa.eth_facility_id maps facilities.
+         Verified: live week 5-9 Oct == snapshot for all 12 ETH mensas (count + titles); next week 295 meals of
+         11 ETH mensas via /api. UZH still snapshot only (needs MENSA_ZFV_API_KEY). 78 tests green.
