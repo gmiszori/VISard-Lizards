@@ -20,6 +20,15 @@ machines rather than a staffed cafeteria. Bistro HPI is excluded from the source
 and automatic scraping at the user's request. Source registration does not guarantee that
 a venue publishes a dated menu.
 
+`scrape_meals` collects the current/requested FOOD2050 week plus the following two weeks,
+then filters past meals and deduplicates the combined result. Missing future weeks are
+reported as warnings without discarding existing meals. The shared detail enrichment limit
+applies across the combined menu. FOOD2050 PDFs use their matching digital weekly pages.
+Bellavista weekly PDFs support German main dishes and the separately priced dessert,
+with one entry per date in each printed range. English copies and overlapping PDF weeks
+are deduplicated. Dates require a printed year or the year in the PDF's upload path;
+serving times and customer-group prices remain unknown when absent from the source.
+
 ## Linux deployment
 
 Run the root `docker compose up --build -d`. Configure `MEAL_CONNECTOR_TOKEN` in root `.env`;

@@ -56,3 +56,15 @@ No frontend code changed. Kotlin scraper/connector: 45 tests pass. Backend refre
 Rebuild backend and meal-scraper containers to activate the catalog; no live batch run here.
 
 User correction: Bistro HPI removed from MensaSources and backend scraper-locations.json. Catalog now has 23 options; backend schedules 38 cafeterias. No frontend code changed. Kotlin and backend refresh tests pass.
+
+Codex MCP tool improvements (2026-10-10):
+- FOOD2050 now merges all three checked weeks even when today has meals; past dates are
+  filtered afterwards. Future-week errors retain the available meals and explicit warnings.
+  One detail enrichment budget applies to the full combined result.
+- Added Bellavista weekly PDF adapter: German main dishes and separately priced dessert,
+  printed date ranges with source/upload year, prices, vegetarian labels and page evidence.
+  Duplicate English pages and overlapping menu PDFs share stable date-aware IDs.
+- 48 Kotlin/connector tests pass; real MCP + authenticated connector smoke checks pass.
+  Live tools: Bellavista has 60 entries for Oct 12-30 (4/day); PHZH has 33 Oct 10-24.
+- No frontend code changed. Rebuilding the meal-scraper service; existing backend caches
+  still need r + Enter or the authenticated refresh endpoint to pick up new results.

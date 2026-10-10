@@ -118,6 +118,11 @@ class MenuExtractor {
                 }.apply { startPage = index + 1; endPage = index + 1; sortByPosition = true }
                 val text = stripper.getText(document)
                 if (evidence.length < 12000) evidence.append("Page ${index + 1}\n$text\n")
+                val weekly = BellavistaMenus.readPage(source.url, index + 1, text, positions, pageWidth = document.getPage(index).mediaBox.width)
+                if (weekly.isNotEmpty()) {
+                    meals += weekly
+                    continue
+                }
                 val compact = text.replace(Regex("\\s"), "").uppercase()
                 if (!compact.contains("FOOD") || !compact.contains("SNACKS") || !compact.contains("CHF")) continue
                 val page = document.getPage(index)
@@ -154,6 +159,8 @@ class MenuExtractor {
             }
         }
         if (meals.isEmpty()) warnings += "PDF text extracted but no supported food layout found. Scanned menus need OCR; other layouts need an adapter."
+        else if (meals.any { it.extractionMethod == "bellavista-weekly-pdf" })
+            warnings += "Bellavista main-course prices include the published starter and mineral water; dessert has its own price. Dates follow the printed range; serving times, customer-group prices and allergens remain unknown. English duplicate pages are omitted."
         else warnings += "Undated food/snack menu: dates, serving times, student/staff prices and allergens remain unknown. Dietary labels quote the source."
         if (evidence.length > 12000) warnings += "Source text truncated to 12000 characters."
         return ReadResult(source.url, source.fetchedAt, evidence.toString().take(12000), unique(meals), warnings)
