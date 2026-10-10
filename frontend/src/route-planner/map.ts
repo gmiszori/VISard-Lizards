@@ -1,7 +1,12 @@
 /// <reference types="google.maps" />
 import { decodeRoute, type Point } from './geometry.ts';
 export type MappableLeg = { provider?: { polyline?: string } };
-export type MappablePlan = { baseline: MappableLeg; options: { place: { name: string }; outbound: MappableLeg; onward: MappableLeg }[] };
+export type MappablePlan = { baseline: MappableLeg; directRoutes?: MappableLeg[]; selectedOptionIndex?: number; options: { place: { name: string }; outbound: MappableLeg; onward: MappableLeg }[] };
+export function selectedOption(plan: MappablePlan): number {
+  const index = plan.selectedOptionIndex;
+  return typeof index === 'number' && Number.isInteger(index) && index >= -1 && index < plan.options.length
+    ? index : plan.options.length ? 0 : -1;
+}
 declare global { interface Window { initMealRouteMap?: () => void; gm_authFailure?: () => void } }
 
 export class MealRouteMap {
@@ -53,7 +58,7 @@ export class MealRouteMap {
     document.querySelector('#route-map-selection')!.textContent = 'Routes will appear here after planning.';
   }
   setPlan(plan: MappablePlan) {
-    this.plan = plan; this.selected = plan.options.length ? 0 : -1;
+    this.plan = plan; this.selected = selectedOption(plan);
     this.controls.replaceChildren();
     const labels = ['All options', 'Direct route', ...plan.options.map((option, i) => `${i + 1}. ${option.place.name}`)];
     labels.forEach((label, offset) => {
@@ -99,6 +104,7 @@ export class MealRouteMap {
       line.addListener('click', () => { this.select(index); this.onSelect(index); }); this.lines.push({ line, index, leg: part }); return path;
     };
     const baseline = addLine(this.plan.baseline, -1, 0);
+    this.plan.directRoutes?.slice(1).forEach(leg => addLine(leg, -1, 0));
     if (baseline.length) {
       this.markers.push(this.marker(baseline[0], 'Starting point', 'A', '#334155'));
       this.markers.push(this.marker(baseline[baseline.length - 1], 'Destination', 'B', '#334155'));

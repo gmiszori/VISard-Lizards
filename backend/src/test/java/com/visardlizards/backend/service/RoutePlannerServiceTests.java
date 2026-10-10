@@ -20,8 +20,8 @@ class RoutePlannerServiceTests {
     @Test void reportsGoogleDailyQuotaInsteadOfGenericBadGateway() {
         var builder=RestClient.builder(); var server=MockRestServiceServer.bindTo(builder).build();
         server.expect(requestTo("https://api.openai.com/v1/responses"))
-            .andRespond(withSuccess("{\"status\":\"completed\",\"output\":[{\"type\":\"function_call\",\"name\":\"plan_meal_route\",\"call_id\":\"c1\"}]}",MediaType.APPLICATION_JSON));
-        server.expect(requestTo("http://router/api/tools/plan"))
+            .andRespond(withSuccess("{\"status\":\"completed\",\"output\":[{\"type\":\"function_call\",\"name\":\"get_route_options\",\"call_id\":\"c1\"}]}",MediaType.APPLICATION_JSON));
+        server.expect(requestTo("http://router/api/tools/routes"))
             .andRespond(withStatus(org.springframework.http.HttpStatus.UNPROCESSABLE_CONTENT)
                 .contentType(MediaType.APPLICATION_JSON).body("{\"code\":\"google_routes_daily_quota\",\"error\":\"private-provider-payload\"}"));
         var failure=assertThrows(ResponseStatusException.class,()->service(builder.build()).plan(trip(),"key"));
@@ -38,20 +38,36 @@ class RoutePlannerServiceTests {
         when(repository.findAllMensas()).thenReturn(List.of()); when(repository.findMealsOn(any())).thenReturn(List.of());
         var builder=RestClient.builder(); var server=MockRestServiceServer.bindTo(builder).build();
         server.expect(requestTo("https://api.openai.com/v1/responses")).andExpect(header("Authorization","Bearer user-openai-secret"))
-            .andExpect(jsonPath("$.store").value(false)).andExpect(jsonPath("$.tool_choice.name").value("plan_meal_route"))
+            .andExpect(jsonPath("$.store").value(false)).andExpect(jsonPath("$.tool_choice.name").value("get_route_options"))
             .andRespond(withSuccess(mapper.writeValueAsString(Map.of("status","completed","output",List.of(
                 Map.of("type","reasoning","id","r1","summary",List.of()),
-                Map.of("type","function_call","name","plan_meal_route","call_id","c1","arguments",mapper.writeValueAsString(Map.of("destination","malicious")))))),MediaType.APPLICATION_JSON));
-        server.expect(requestTo("http://router/api/tools/plan")).andExpect(header("Authorization","Bearer connector-secret-123"))
+                Map.of("type","function_call","name","get_route_options","call_id","c1","arguments",mapper.writeValueAsString(Map.of("destination","malicious")))))),MediaType.APPLICATION_JSON));
+        server.expect(requestTo("http://router/api/tools/routes")).andExpect(header("Authorization","Bearer connector-secret-123"))
             .andExpect(headerDoesNotExist("X-OpenAI-Key")).andExpect(jsonPath("$.destination").value("ETH Zentrum"))
             .andExpect(jsonPath("$.arrivalTime").value("2026-10-12T12:00:00Z"))
-            .andRespond(withSuccess("{\"options\":[],\"checkedStops\":0,\"warnings\":[\"No meal stop fits\"]}",MediaType.APPLICATION_JSON));
+            .andRespond(withSuccess("{\"sessionId\":\"trusted-session\"}",MediaType.APPLICATION_JSON));
+        server.expect(requestTo("https://api.openai.com/v1/responses")).andExpect(header("Authorization","Bearer user-openai-secret"))
+            .andExpect(jsonPath("$.tool_choice.name").value("find_meal_stops"))
+            .andRespond(withSuccess(call("find_meal_stops","c2","{\"maxStops\":2,\"sessionId\":\"malicious-session\"}"),MediaType.APPLICATION_JSON));
+        server.expect(requestTo("http://router/api/tools/stops")).andExpect(header("Authorization","Bearer connector-secret-123"))
+            .andExpect(jsonPath("$.sessionId").value("trusted-session")).andExpect(jsonPath("$.maxStops").value(2))
+            .andRespond(withSuccess("{\"options\":[{}]}",MediaType.APPLICATION_JSON));
+        server.expect(requestTo("https://api.openai.com/v1/responses")).andExpect(header("Authorization","Bearer user-openai-secret"))
+            .andExpect(jsonPath("$.tool_choice.name").value("show_route_on_map"))
+            .andRespond(withSuccess(call("show_route_on_map","c3","{\"optionIndex\":0}"),MediaType.APPLICATION_JSON));
+        server.expect(requestTo("http://router/api/tools/show")).andExpect(header("Authorization","Bearer connector-secret-123"))
+            .andExpect(jsonPath("$.sessionId").value("trusted-session")).andExpect(jsonPath("$.optionIndex").value(0))
+            .andRespond(withSuccess("{\"options\":[{}],\"selectedOptionIndex\":0}",MediaType.APPLICATION_JSON));
         server.expect(requestTo("https://api.openai.com/v1/responses")).andExpect(header("Authorization","Bearer user-openai-secret"))
             .andExpect(jsonPath("$.tool_choice").value("none")).andExpect(jsonPath("$.input[1].type").value("reasoning"))
             .andExpect(jsonPath("$.input[3].call_id").value("c1"))
             .andRespond(withSuccess("{\"status\":\"completed\",\"output\":[{\"type\":\"message\",\"content\":[{\"type\":\"output_text\",\"text\":\"Try leaving earlier.\"}]}]}",MediaType.APPLICATION_JSON));
         var result=service(builder.build()).plan(trip(),"user-openai-secret");
         assertEquals("Try leaving earlier.",result.path("explanation").asText()); assertFalse(result.toString().contains("secret")); server.verify();
+        assertEquals(0,result.path("plan").path("selectedOptionIndex").asInt()); assertEquals(3,result.path("toolCalls").size());
+    }
+    private String call(String name, String id, String args) {
+        return mapper.writeValueAsString(Map.of("status","completed","output",List.of(Map.of("type","function_call","name",name,"call_id",id,"arguments",args))));
     }
     @Test void rejectsMissingKeyPastAndCrossDateTripsBeforeAnyNetworkCall() {
         var builder=RestClient.builder(); var server=MockRestServiceServer.bindTo(builder).build(); var service=service(builder.build());

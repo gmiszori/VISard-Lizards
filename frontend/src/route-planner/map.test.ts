@@ -1,6 +1,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { MealRouteMap } from './map.ts';
+import { MealRouteMap, selectedOption } from './map.ts';
+
+test('only an existing verified option can be highlighted by AI selection', () => {
+  const leg = {}; const options = [{ place: {name: 'A'}, outbound: leg, onward: leg }, { place: {name: 'B'}, outbound: leg, onward: leg }];
+  assert.equal(selectedOption({baseline: leg, options, selectedOptionIndex: 1}), 1);
+  assert.equal(selectedOption({baseline: leg, options, selectedOptionIndex: -1}), -1);
+  assert.equal(selectedOption({baseline: leg, options, selectedOptionIndex: 99}), 0);
+  assert.equal(selectedOption({baseline: leg, options: [], selectedOptionIndex: 0}), -1);
+});
 
 test('route controls and meal markers select both legs; replanning removes old overlays', async () => {
   class Node {

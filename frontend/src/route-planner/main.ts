@@ -1,5 +1,5 @@
 import { getPositionFix } from '../location/geolocation';
-import { MealRouteMap } from './map';
+import { MealRouteMap, selectedOption } from './map';
 
 const form = document.querySelector<HTMLFormElement>('#route-form')!;
 const input = (id: string) => document.querySelector<HTMLInputElement>(`#${id}`)!;
@@ -39,7 +39,7 @@ type Leg = { departure: string; arrival: string; distanceMetres: number; directi
 type Meal = { id: string; title: string; components: string[]; price?: { student?: number; staff?: number; external?: number } };
 type Place = { id: string; name: string; kind: string; sourceUrl: string; websiteUrl?: string; menuNote: string; hoursNote?: string; meals: Meal[]; attributions?: { provider: string; providerUri: string }[] };
 type Option = { place: Place; mealStart: string; mealEnd: string; arrival: string; spareMinutes: number; extraMinutes: number; outbound: Leg; onward: Leg };
-type Plan = { baseline: Leg; options: Option[]; checkedStops: number; mealMinutes: number; warnings: string[] };
+type Plan = { baseline: Leg; directRoutes?: Leg[]; selectedOptionIndex?: number; options: Option[]; checkedStops: number; mealMinutes: number; warnings: string[] };
 const time = (value: string) => new Intl.DateTimeFormat(undefined, { timeZone: 'Europe/Zurich', hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' }).format(new Date(value));
 function element<K extends keyof HTMLElementTagNameMap>(tag: K, text = '') { const el = document.createElement(tag); el.textContent = text; return el; }
 function link(label: string, url: string) {
@@ -79,7 +79,7 @@ function render(plan: Plan, explanation: string) {
   const warnings = element('ul'); plan.warnings.forEach(warning => warnings.append(element('li', warning))); results.append(warnings);
   results.append(element('p', 'Route and restaurant information: Google Maps. Cafeteria menus: UniEats database.'));
   const raw = element('details'); raw.append(element('summary', 'View MCP tool result'), element('pre', JSON.stringify(plan, null, 2))); results.append(raw);
-  routeMap.setPlan(plan); selectCard(plan.options.length ? 0 : -1);
+  routeMap.setPlan(plan); selectCard(selectedOption(plan));
 }
 form.addEventListener('submit', async event => {
   event.preventDefault(); if (button.disabled) return;
@@ -95,6 +95,7 @@ form.addEventListener('submit', async event => {
       headers: { 'Content-Type': 'application/json', 'X-OpenAI-Key': key }, body: JSON.stringify({ origin: input('origin').value.trim(), destination: input('destination').value.trim(), departureTime: departure.toISOString(), arrivalTime: arrival.toISOString(), mealMinutes: Number(input('meal-minutes').value) }) });
     const data = await response.json(); if (!response.ok) throw new Error(data.detail ?? 'Route planning failed. Check backend configuration.');
     render(data.plan, data.explanation); status.textContent = `Finished in ${Math.round((Date.now() - started) / 1000)} seconds.`;
+    if(Array.isArray(data.toolCalls)) results.prepend(element('p', `AI tools used: ${data.toolCalls.map((call: {name: string}) => call.name).join(' → ')}`));
   } catch (error) { status.textContent = error instanceof Error ? error.message : 'Could not plan the journey.'; }
   finally { clearInterval(timer); button.disabled = false; section.setAttribute('aria-busy', 'false'); }
 });

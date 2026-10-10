@@ -7,7 +7,7 @@ import java.net.URLEncoder
 private data class Candidate(val stop: MealStop, val point: Point, val data: JsonObject, val cafeteria: Boolean)
 private fun coordinates(value: JsonObject) = Point(value["latitude"]!!.jsonPrimitive.double, value["longitude"]!!.jsonPrimitive.double)
 
-class RouteTool(private val maps: GoogleMaps) {
+class RouteTool(private val maps: MapProvider) {
     fun plan(request: JsonObject): JsonObject {
         val origin = request.text("origin"); val destination = request.text("destination")
         require(origin.isNotBlank() && origin.length <= 200 && destination.isNotBlank() && destination.length <= 200)
@@ -21,7 +21,9 @@ class RouteTool(private val maps: GoogleMaps) {
         val baseline = maps.route(origin, destination, departure) ?: error("No walking or public transport route was returned.")
         val path = decodePolyline(baseline.evidence?.text("polyline").orEmpty())
         require(path.isNotEmpty()) { "The route provider returned no route geometry." }
-        val warnings = mutableListOf("Best among up to eight checked stops within 1.5 km of the direct route, not a guarantee of a globally optimal route.",
+        val maxStops = request["maxStops"]?.jsonPrimitive?.int ?: 8
+        require(maxStops in 1..8)
+        val warnings = mutableListOf("Best among up to $maxStops checked stops within 1.5 km of the direct route, not a guarantee of a globally optimal route.",
             "Travel times are estimates. A five-minute arrival buffer is included; check live transport disruptions.")
         val cafeterias = request.array("cafeterias").mapNotNull { element ->
             val data = element.jsonObject
@@ -67,7 +69,8 @@ class RouteTool(private val maps: GoogleMaps) {
             }
         }
         val other = restaurants.distinctBy { it.stop.id }.sortedBy { corridorDistance(it.point, path) }
-        val shortlist = (cafeterias.take(4) + other.take(4) + cafeterias.drop(4) + other.drop(4)).distinctBy { it.stop.id }.take(8)
+        val half = (maxStops + 1) / 2
+        val shortlist = (cafeterias.take(half) + other.take(maxStops - half) + cafeterias.drop(half) + other.drop(maxStops - half)).distinctBy { it.stop.id }.take(maxStops)
         val planner = MealRoutePlanner(RouteProvider { a, b, time ->
             try { maps.route(a, b, time) } catch (ex: Exception) { warnings += "A candidate journey could not be verified and was omitted."; null }
         })

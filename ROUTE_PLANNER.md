@@ -10,7 +10,7 @@ Copy the variables in `.env.route-planner.example` into the ignored root `.env`.
 docker compose -p mensa-route-test -f docker-compose.yml -f compose.route-planner.yaml --profile route-planner up --build -d
 ```
 
-Open `http://localhost:8084/route-planner/`. Enter your OpenAI key in the form; it must have access to the model in `ROUTE_PLANNER_MODEL`. The key is cleared from the field after submission, forwarded only to OpenAI by the backend, and never written to storage. Planning uses Google API calls billed to the server project's account and two OpenAI requests billed to the entered key.
+Open `http://localhost:8084/route-planner/`. Enter your OpenAI key in the form; it must have access to the model in `ROUTE_PLANNER_MODEL`. The key is cleared from the field after submission, forwarded only to OpenAI by the backend, and never written to storage. Planning uses Google API calls billed to the server project's account and four OpenAI requests (three tool decisions and an explanation) billed to the entered key.
 
 For the embedded map, enable **Maps JavaScript API** and create a separate browser key. Restrict it to that API and website referrers `http://localhost:8084/*` and `http://127.0.0.1:8084/*` (use your actual HTTPS domain in production). Save it as `GOOGLE_MAPS_BROWSER_KEY` in root `.env`, then recreate the backend. This key is intentionally public; never reuse the private routing key. `GOOGLE_MAPS_MAP_ID` defaults to Google's development `DEMO_MAP_ID`; set your own map ID for deployment. Missing map configuration does not block planning or external Google Maps links.
 
@@ -29,27 +29,37 @@ For a Linux deployment, use the same Compose files and environment with a chosen
 
 ```text
 Webpage → POST /api/route-planner/plan → OpenAI function call
-        → private HTTP connector → Kotlin MCP plan_meal_route
+        → private HTTP connector → Kotlin MCP get_route_options → find_meal_stops → show_route_on_map
         → Google Routes + Places, combined with database cafeteria menus
         → raw verified options + OpenAI explanation → webpage
 ```
 
 `GET /api/route-planner/status` checks the MCP process. `GET /api/route-planner/map-config` returns only the public browser key and map ID. `POST /api/route-planner/plan` accepts `{origin,destination,departureTime,arrivalTime,mealMinutes}` and the request header `X-OpenAI-Key`. Timestamps are RFC3339 instants. These endpoints send `Cache-Control: no-store`. Only one plan can run at once, and the existing IP rate limiter allows one submission per minute.
 
-The Kotlin application has a native stdio MCP mode and a private HTTP bridge mode. The server JAR is packaged with `meal-scraper/kotlin.bat package -m route-server -p jvm -f executable-jar`. For a native MCP client, launch `java -jar <route-server-jvm-executable.jar>` with `GOOGLE_MAPS_API_KEY` in its environment. The tool schema documents its full trip and cafeteria inputs; the app's AI adapter exposes the same tool without arguments and injects trusted request/database inputs so the model cannot change the deadline or evidence.
+The Kotlin application has a native stdio MCP mode and a private HTTP bridge mode. The server JAR is packaged with `meal-scraper/kotlin.bat package -m route-server -p jvm -f executable-jar`. For a native MCP client, launch `java -jar <route-server-jvm-executable.jar>` with `GOOGLE_MAPS_API_KEY` in its environment. The tool schema documents its full trip and cafeteria inputs; the app's AI adapter exposes three tools in sequence and injects trusted request/database inputs and session IDs. The model chooses only maxStops (1–4, preferably 2) and optionIndex (-1 for direct, otherwise an existing verified option).
+
+The authenticated private bridge uses these POST endpoints:
+
+| Endpoint | MCP tool | Input / output |
+| --- | --- | --- |
+| `/api/tools/routes` | `get_route_options` | Trusted trip and menus → sessionId and Google direct route alternatives |
+| `/api/tools/stops` | `find_meal_stops` | sessionId, maxStops → verified meal itineraries |
+| `/api/tools/show` | `show_route_on_map` | sessionId, optionIndex → provider geometry and selectedOptionIndex |
+
+Sessions expire after three minutes, reuse direct-route geometry and stop results in memory, and are removed after selection. Selecting a route makes no new Google request. The webapp highlights the selected option and lets the user switch to other returned routes. The legacy `plan_meal_route` and `/api/tools/plan` remain available for existing native clients.
 
 ## Search and limits
 
 - Supports journeys on one date in the next seven days, up to 18 hours, with a five-minute arrival buffer.
 - Computes both transit and walking routes and uses scheduled transit stop times, including waiting and final walking.
 - Google Places routing does not support transit. Restaurant discovery therefore uses three nearby searches at points on the direct route, then checks both journey legs with Routes.
-- Checks at most eight route-near stops, balancing cafeterias and restaurants, within 1.5 km of the direct route. Options are ordered by earliest verified arrival; the result is the best among those checked, not a globally optimal search of every restaurant.
+- The AI checks at most four route-near stops, preferring two and balancing cafeterias and restaurants, within 1.5 km of the direct route. Options are ordered by earliest verified arrival; the result is the best among those checked, not a globally optimal search of every restaurant.
 - A cafeteria needs a cached menu and matching meal-service window. The complete break must fit inside that window, and only the matching service's dishes are shown.
 - Restaurant opening hours do not confirm kitchen service, specific dishes or prices. Suggestions explicitly label these unknowns and link to the restaurant's website. Google restaurant data is returned per request and is not saved in the app database.
 - Estimated routes do not guarantee arrival during disruptions. Google attribution and any returned third-party attributions are displayed. Each journey leg also opens in Google Maps.
 - Bistro HPI and Bellavista remain excluded.
 
-If planning reports a Google Routes daily quota error, check **Google Maps Platform → Quotas → Routes API → Compute Routes requests per day** in Google Cloud. A plan checks multiple legs and can make up to 40 Google requests, so a daily limit of 100 permits only a few full plans. Increase the quota within your intended budget or wait for its reset. The MCP returns a structured quota code and the backend reports HTTP 429 with an explanation; a healthy MCP status does not mean Google quota is available.
+If planning reports a Google Routes daily quota error, check **Google Maps Platform → Quotas → Routes API → Compute Routes requests per day** in Google Cloud. A plan checks multiple legs. The AI prefers two stops; four are allowed. The complete session has a 40-call Google budget, so a daily limit of 100 still permits only a few full plans. Increase the quota within your intended budget or wait for its reset. The MCP returns a structured quota code and the backend reports HTTP 429 with an explanation; a healthy MCP status does not mean Google quota is available.
 
 ## Validation
 

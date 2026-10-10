@@ -37,11 +37,15 @@ data class Point(val lat: Double, val lng: Double) {
 fun seconds(value: String): Duration = Duration.ofNanos((value.removeSuffix("s").toDouble() * 1e9).toLong())
 
 /** Fixed HTTPS destinations; credentials are headers, never URLs, logs or tool output. */
-class GoogleMaps(private val key: String) : RouteProvider {
+interface MapProvider : RouteProvider {
+    fun options(origin: String, destination: String, departure: Instant): List<RouteLeg>
+    fun nearby(point: Point): List<JsonObject>
+}
+class GoogleMaps(private val key: String) : MapProvider {
     private val http = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build()
     private val expires = System.nanoTime() + Duration.ofSeconds(140).toNanos()
     private var calls = 0
-    private val cache = mutableMapOf<Triple<String, String, Instant>, RouteLeg?>()
+    private val cache = mutableMapOf<Triple<String, String, Instant>, List<RouteLeg>>()
     fun post(endpoint: String, mask: String, body: JsonObject): JsonObject {
         val remaining = Duration.ofNanos(expires - System.nanoTime())
         check(!remaining.isNegative && remaining.seconds >= 1 && ++calls <= 40) { "Routing request budget reached." }
@@ -54,6 +58,8 @@ class GoogleMaps(private val key: String) : RouteProvider {
         return json.parseToJsonElement(response.body()).jsonObject
     }
     override fun route(origin: String, destination: String, departure: Instant): RouteLeg? =
+        options(origin, destination, departure).minByOrNull { it.arrival }
+    override fun options(origin: String, destination: String, departure: Instant): List<RouteLeg> =
         cache.getOrPut(Triple(origin, destination, departure)) {
             listOf("TRANSIT", "WALK").flatMap { mode ->
                 val response = post("https://routes.googleapis.com/directions/v2:computeRoutes",
@@ -64,7 +70,7 @@ class GoogleMaps(private val key: String) : RouteProvider {
                         if (mode == "TRANSIT") { put("departureTime", departure.toString()); put("computeAlternativeRoutes", true) }
                     })
                 response.array("routes").mapNotNull { scheduledLeg(it.jsonObject, departure, mode) }
-            }.minByOrNull { it.arrival }
+            }.sortedBy { it.arrival }
         }
     private fun waypoint(value: String): JsonObject {
         val pair = value.split(',').map { it.trim().toDoubleOrNull() }
@@ -75,7 +81,7 @@ class GoogleMaps(private val key: String) : RouteProvider {
             } else put("address", value)
         }
     }
-    fun nearby(point: Point): List<JsonObject> = post("https://places.googleapis.com/v1/places:searchNearby",
+    override fun nearby(point: Point): List<JsonObject> = post("https://places.googleapis.com/v1/places:searchNearby",
         "places.id,places.displayName,places.location,places.googleMapsUri,places.websiteUri,places.currentOpeningHours,places.regularOpeningHours,places.businessStatus,places.priceLevel,places.attributions",
         buildJsonObject {
             put("includedTypes", JsonArray(listOf(JsonPrimitive("restaurant"), JsonPrimitive("cafe"))))

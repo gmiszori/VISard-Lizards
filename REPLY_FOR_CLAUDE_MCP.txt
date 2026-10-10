@@ -122,3 +122,11 @@ Codex MCP tool improvements (2026-10-10):
 - Adding structured quota error codes in Kotlin MCP and mapping them to clear HTTP 429 messages in Java backend; no raw provider payload/credentials forwarded.
 - User must increase the daily Routes quota in Google Cloud or wait for reset. No billing/quota settings changed automatically.
 - One plan can use up to 40 Google calls; repeated full smoke runs are suspended while quota is exhausted.
+
+2026-10-11 - Codex: three-step routing MCP flow requested by user.
+- Added get_route_options, find_meal_stops, show_route_on_map; legacy plan_meal_route remains for native clients.
+- Backend dispatches actual AI tool requests in sequence with trusted trip/session injection; AI chooses 1–4 stops (prefer 2) and only a verified route index.
+- Temporary sessions reuse direct routes, cache stop checks, expire after 3 minutes, and are removed after selection. No Google credentials, OpenAI keys or journey history persisted.
+- Webapp renders all Google direct alternatives and meal routes, automatically highlighting the AI-selected option. Shows the executed tool names.
+- Offline provider, AI dispatch and map tests in progress. Google daily quota remains a limitation for full live runs.
+- Validation complete: 5 backend routing tests, 10 Kotlin route tests, 4 focused map tests; Astro check has no errors. Docker preview rebuilt. Live native MCP dispatch of both new session tools verified, rejecting unknown sessions correctly without Google calls.
