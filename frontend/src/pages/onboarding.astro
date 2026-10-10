@@ -73,8 +73,7 @@ const payload = {
           <p class="ob-lead" data-ob-i18n="dietHint">{t('dietHint')}</p>
           <ChipSelect name="diet" labelKey="diet" mode="single" options={keys(DIETS)} />
           <div class="ob-constraints">
-            <ChipSelect name="hard" labelKey="never" options={HARD.map(value => ({ value, key: value,
-              notice: value === 'halal' || value === 'kosher' }))} />
+            <ChipSelect name="hard" labelKey="never" options={HARD.map(value => ({ value, key: value }))} />
             <p class="ob-note" data-ob-i18n="hardHint">{t('hardHint')}</p>
           </div>
         </section>

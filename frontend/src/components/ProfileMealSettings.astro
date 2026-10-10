@@ -15,7 +15,6 @@ const ranges = {
     {HARD.map(value => <label class="settings-hard-option">
       <input type="checkbox" data-profile-hard value={value} />
       <span data-ob-i18n={value as Key}>{t(value as Key)}</span>
-      {(value === 'halal' || value === 'kosher') && <small data-ob-i18n="cannotCheck">{t('cannotCheck')}</small>}
     </label>)}
   </div>
   <p class="settings-profile-hint" data-ob-i18n="hardHint">{t('hardHint')}</p>

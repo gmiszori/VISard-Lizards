@@ -74,7 +74,7 @@ if (form && budget) {
     if (target.matches('[data-profile-hard]')) {
       const hard = [...form.querySelectorAll<HTMLInputElement>('[data-profile-hard]:checked')]
         .map(input => input.value).filter((value): value is NonNullable<EditableProfileSettings['hard']>[number] =>
-          ['no_pork', 'halal', 'kosher', 'lactose_free', 'gluten_free', 'nut_free'].includes(value));
+          ['no_pork', 'lactose_free', 'gluten_free', 'nut_free'].includes(value));
       save({ hard });
     } else if (target.name === 'profile-price-mode' && (target.value === 'soft' || target.value === 'hard')) {
       save({ priceMode: target.value });
