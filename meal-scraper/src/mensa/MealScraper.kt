@@ -6,12 +6,16 @@ import java.time.ZoneId
 
 class MealScraper(private val fetch: (String) -> SourceDocument, private val extractor: MenuExtractor = MenuExtractor(),
                   private val today: () -> LocalDate = { LocalDate.now(ZoneId.of("Europe/Zurich")) }) {
-    fun discover(url: String): DiscoveryResult {
+    private fun cutoff(date: LocalDate?) = maxOf(today(), date ?: today())
+    fun discover(url: String, date: LocalDate? = null): DiscoveryResult {
         val result = extractor.discover(fetch(url))
-        return result.copy(availability = VenueAvailability.upcoming(result.availability, today()))
+        return result.copy(availability = VenueAvailability.upcoming(result.availability, cutoff(date)))
     }
     private val details = Food2050Details(fetch)
-    fun read(url: String): ReadResult = readDocument(fetch(url))
+    fun read(url: String, date: LocalDate? = null): ReadResult {
+        val result = readDocument(fetch(url))
+        return if (date == null) result else UpcomingMenus.select(result, cutoff(date))
+    }
     private fun upcoming(document: SourceDocument, date: LocalDate): ReadResult {
         val uri = URI(document.url)
         if (uri.host == "app.food2050.ch" && (uri.path.endsWith("/menu/weekly") || uri.path.endsWith("/menu/weekly.pdf"))) {
@@ -53,10 +57,10 @@ class MealScraper(private val fetch: (String) -> SourceDocument, private val ext
         val result = extractor.read(document)
         return if (uri.host == "app.food2050.ch") details.enrich(result) else result
     }
-    fun scrape(url: String): ScrapeResult {
+    fun scrape(url: String, date: LocalDate? = null): ScrapeResult {
         val document = fetch(url)
-        val date = today()
-        val root = upcoming(document, date)
+        val from = cutoff(date)
+        val root = upcoming(document, from)
         val discovery = if (document.mediaType == "application/pdf" || URI(document.url).host == "app.food2050.ch") null else extractor.discover(document)
         val meals = root.meals.toMutableList()
         val availability = root.availability.toMutableList()
@@ -64,7 +68,7 @@ class MealScraper(private val fetch: (String) -> SourceDocument, private val ext
         val sources = mutableListOf(MenuSource(document.url, "Requested source", if (document.mediaType == "application/pdf") "pdf" else "html"))
         discovery?.sources?.filter { it.url != document.url }?.take(6)?.forEach { source ->
             try {
-                val result = upcoming(fetch(source.url), date)
+                val result = upcoming(fetch(source.url), from)
                 availability += result.availability
                 meals += result.meals; warnings += result.warnings.map { "${result.url}: $it" }
                 sources += source.copy(url = result.url)

@@ -75,3 +75,10 @@ Codex MCP tool improvements (2026-10-10):
 - Added regression coverage with old DB records: API 404, safe deletion and rejected reimports.
 - Backend: 146 passed, 2 optional live tests skipped. Kotlin scraper/connector: 48 passed.
 - Rebuilding all local services to apply the removal. Frontend behavior/UI unchanged.
+2026-10-10 - Codex: scraper date cutoff and stronger AI model.
+- Added optional date (YYYY-MM-DD/null) through MCP tools, dedicated Kotlin connector and backend AI client.
+- Scrape defaults to Zurich today, clamps past cutoffs, advances weekly lookup from the requested date and excludes earlier dated meals. Undated meals remain eligible.
+- Historical read_menu_source remains available only without a date. Tool descriptions and strict OpenAI schemas document the parameter.
+- Backend overwrites model-provided date with its trusted cutoff, including scheduled/manual refreshes.
+- Upgraded scraper model defaults and local .env to GPT-6 Astra (Responses, low reasoning, 8000 output tokens); key has model access.
+- 40 scraper tests, 11 connector tests and 14 targeted backend tests passed. No frontend code changes.

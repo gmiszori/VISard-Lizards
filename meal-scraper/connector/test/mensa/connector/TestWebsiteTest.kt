@@ -11,7 +11,7 @@ class TestWebsiteTest {
         val connection = object : ToolConnection {
             override fun isReady() = true
             override fun definitions() = listOf(ModelTool("scrape_meals", "Meals", buildJsonObject {}))
-            override suspend fun call(tool: String, url: String) = buildJsonObject { put("meals", JsonArray(emptyList())) }
+            override suspend fun call(tool: String, url: String, date: java.time.LocalDate?) = buildJsonObject { put("meals", JsonArray(emptyList())) }
         }
         HttpConnector(InetSocketAddress("127.0.0.1", 0), connection, "test-token").use { server ->
             server.start()

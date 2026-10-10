@@ -23,20 +23,23 @@ fun main() = runBlocking {
             "scrape_meals" to "Retrieve today's and upcoming meals in Europe/Zurich date order. Exclude past dishes and collect all published meals in the checked three-week FOOD2050 window, even when today has meals. ETH menus look ahead up to three weeks. Read Bellavista weekly lunch PDFs with dates and prices, omitting duplicate English pages. Old weekly URLs advance to current/upcoming menus; use read_menu_source to inspect an exact historical source. Undated menus retain unknown availability. Return full dish JSON and explicit upcoming closure notices in availability with inclusive dates, evidence and sourceUrl. An empty menu alone does not mean closed.",
         )
         descriptions.forEach { (name, description) ->
-            server.addTool(Tool(name = name, description = description + MensaSources.toolHint,
-                inputSchema = ToolSchema(properties = buildJsonObject { putJsonObject("url") { put("type", "string") } }, required = listOf("url")),
+            server.addTool(Tool(name = name, description = description + " Supply date (YYYY-MM-DD) as the earliest desired meal date. scrape_meals defaults to today in Europe/Zurich; past cutoffs are clamped to today. Dated meals before the cutoff are excluded and weekly lookahead starts from that date. Undated meals keep date=null. Discovery filters closures using the same cutoff. read_menu_source filters meals when date is supplied; omit/null date only for historical inspection." + MensaSources.toolHint,
+                inputSchema = ToolSchema(properties = buildJsonObject {
+                    putJsonObject("url") { put("type", "string") }
+                    putJsonObject("date") { put("type", JsonArray(listOf(JsonPrimitive("string"), JsonPrimitive("null")))); put("description", "Earliest meal date, YYYY-MM-DD; null uses Zurich today for scraping.") }
+                }, required = listOf("url")),
                 annotations = ToolAnnotations(readOnlyHint = true, destructiveHint = false, idempotentHint = true, openWorldHint = true))) { request ->
                 try {
                     val args = request.arguments ?: throw IllegalArgumentException("url is required.")
-                    require(args.keys == setOf("url")) { "Only url is accepted." }
+                    val date = menuDate(args)
                     val primitive = args["url"] as? JsonPrimitive
                     require(primitive?.isString == true) { "url must be a string." }
                     val url = PublicWebFetcher.validateUrl(primitive.content)
                     val result = withContext(Dispatchers.IO) {
                         when (name) {
-                            "discover_menu_sources" -> mealJson.encodeToJsonElement(scraper.discover(url))
-                            "read_menu_source" -> mealJson.encodeToJsonElement(scraper.read(url))
-                            else -> mealJson.encodeToJsonElement(scraper.scrape(url))
+                            "discover_menu_sources" -> mealJson.encodeToJsonElement(scraper.discover(url, date))
+                            "read_menu_source" -> mealJson.encodeToJsonElement(scraper.read(url, date))
+                            else -> mealJson.encodeToJsonElement(scraper.scrape(url, date))
                         }.jsonObject
                     }
                     CallToolResult(content = listOf(TextContent(result.toString())), structuredContent = result)

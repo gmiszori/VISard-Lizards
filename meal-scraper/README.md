@@ -11,6 +11,10 @@ The main backend sends AI function requests to the connector, which calls `disco
 backend owns the OpenAI key and persists results in the application's database. The connector
 does not need an OpenAI key.
 
+The backend scraper defaults to `MEAL_SCRAPER_MODEL=gpt-6-astra`, using the Responses API
+with low reasoning effort and an 8000-token output budget. Override the model in the root
+`.env` if needed. This model costs more per request than the previous GPT-5 Mini default.
+
 `src/mensa/MensaSources.kt` lists 22 known locations and supplies their official sources in
 the MCP tool descriptions. Combined locations include supplementary links for UniTurm,
 Brunnenhof and ZHAW Lagerstrasse. The backend's `mensa/scraper-locations.json` uses the primary
@@ -41,6 +45,14 @@ backend routes through the main website's address. The standalone connector test
 bundled for local development but is not publicly routed in this deployment.
 
 ## Development
+
+All MCP tools and corresponding connector POST routes accept `date` in `YYYY-MM-DD` format:
+`{"url":"https://www.zfv.ch/de/essen-gehen/mensa-paedagogische-hochschule-zuerich","date":"2026-10-19"}`.
+`scrape_meals` excludes earlier dishes and begins weekly lookahead from this date. Omitted/null
+dates use today in Europe/Zurich, and past cutoffs are clamped to today. Undated meals retain
+`date: null`. `read_menu_source` applies the cutoff when supplied; without it, exact historical
+inspection remains available. The backend supplies and enforces Zurich today's date for each
+automatic refresh, including AI tool calls. OpenAI strict tool definitions expose nullable `date`.
 
 Use Java 25. From this directory:
 

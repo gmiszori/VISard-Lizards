@@ -29,9 +29,9 @@ class AiToolRelay(private val connection: ToolConnection) {
             }
             else -> throw IllegalArgumentException("arguments are required.")
         }
-        require(arguments.keys == setOf("url")) { "Only url is accepted by the MCP tools." }
+        val date = mensa.menuDate(arguments)
         val url = PublicWebFetcher.validateUrl(string(arguments, "url"))
-        val result = try { connection.call(name, url) } catch (ex: ToolFailure) { ex.json }
+        val result = try { connection.call(name, url, date) } catch (ex: ToolFailure) { ex.json }
         return buildJsonObject {
             put("type", "function_call_output"); put("call_id", callId); put("output", result.toString())
         }
