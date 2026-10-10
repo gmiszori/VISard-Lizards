@@ -1,5 +1,6 @@
 import { type MensaChoice, type RatingPrompt } from './getRatingPrompt.ts';
 import { mensaCandidates, STATE_KEY, useRatingPrompt } from './useRatingPrompt.ts';
+import { loadMeals } from './mealSource.ts';
 import { anonymousUserId, DuplicateMealRatingError, RATINGS_KEY, saveMealRating, type Stars } from './saveMealRating.ts';
 import { API_URL, apiGet, type BackendMealDetail } from '../data/api.ts';
 import type { Profile } from '../onboarding/profile';
@@ -84,14 +85,16 @@ export function mountRatingCard(): void {
   const mealsByDate = new Map<string, Promise<MealOption[]>>();
   function mealsOn(date: string): Promise<MealOption[]> {
     if (!mealsByDate.has(date)) {
-      mealsByDate.set(date, API_URL
-        ? apiGet<BackendMealDetail[]>(`/api/meals?date=${encodeURIComponent(date)}`)
+      // With a backend the meal ids must come from it (see mealSource.ts); only the device-only simulator may fall back.
+      mealsByDate.set(date, loadMeals<MealOption>(API_URL
+        ? () => apiGet<BackendMealDetail[]>(`/api/meals?date=${encodeURIComponent(date)}`)
           // The API orders by id; show lunch before dinner like the menus.
           .then(list => [...list]
             .sort((a, b) => Number(a.meal.classification[2] === 'dinner') - Number(b.meal.classification[2] === 'dinner'))
             .map(m => ({ id: m.meal.id, mensaId: m.mensaId, date: m.date, name: m.meal.name })))
-          .catch(() => { mealsByDate.delete(date); return data.meals.filter(m => m.date === date); })
-        : Promise.resolve(data.meals.filter(m => m.date === date)));
+        : null, () => data.meals.filter(m => m.date === date), simulated)
+        // A failed request is not cached, so choosing the mensa again retries it.
+        .catch((error) => { mealsByDate.delete(date); throw error; }));
     }
     return mealsByDate.get(date)!;
   }
@@ -101,7 +104,14 @@ export function mountRatingCard(): void {
     meal = undefined;
     const target = prompt.date;
     setStatus('loading');
-    const meals = (await mealsOn(target)).filter(m => m.mensaId === choice.mensaId);
+    let loaded: MealOption[];
+    try { loaded = await mealsOn(target); }
+    catch {
+      // The backend could not be reached: say so and let the user choose again. Do not treat it as "no menu".
+      if (prompt?.date === target && mensa === choice) setStatus('mealsError');
+      return;
+    }
+    const meals = loaded.filter(m => m.mensaId === choice.mensaId);
     clearStatus();
     if (prompt?.date !== target || mensa !== choice) return;
     if (!meals.length) {
