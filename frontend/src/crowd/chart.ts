@@ -1,9 +1,9 @@
 import { formatTime, slotsForDay, WEEKDAYS, type CrowdPrediction, type CrowdSlot, type CrowdWeekday } from './prediction';
-import { mountBudgetSlider } from '../onboarding/budgetSlider';
+import { defaultCrowdDay } from './defaultDay';
 
 const copy = {
-  en: { eyebrow: 'PLAN YOUR LUNCH', title: 'Predicted crowd', minutes: 'min', subtitle: 'Typical occupancy, every 15 minutes.', day: 'Day', quiet: 'Quiet', moderate: 'Moderate', busy: 'Busy', now: 'Now', explore: 'Slide to explore the day', empty: 'No prediction available for this day.', missing: 'No prediction for this interval', preview: 'Preview data · Illustrative occupancy, not a live forecast.', backend: 'Estimated occupancy · 15-minute intervals · Zürich time.', chart: 'Predicted occupancy by time', occupancy: 'predicted occupancy' },
-  de: { eyebrow: 'PLANE DEIN MITTAGESSEN', title: 'Erwartete Auslastung', minutes: 'Min.', subtitle: 'Typische Auslastung im 15-Minuten-Takt.', day: 'Tag', quiet: 'Ruhig', moderate: 'Mäßig besucht', busy: 'Voll', now: 'Jetzt', explore: 'Schieben, um den Tag zu erkunden', empty: 'Für diesen Tag ist keine Prognose verfügbar.', missing: 'Keine Prognose für dieses Intervall', preview: 'Vorschaudaten · Beispielhafte Auslastung, keine Live-Prognose.', backend: 'Geschätzte Auslastung · 15-Minuten-Takt · Zürcher Zeit.', chart: 'Erwartete Auslastung nach Uhrzeit', occupancy: 'erwartete Auslastung' },
+  en: { eyebrow: 'PLAN YOUR LUNCH', title: 'Predicted crowd', minutes: 'min', subtitle: 'Typical occupancy, every 15 minutes.', day: 'Day', quiet: 'Quiet', moderate: 'Moderate', busy: 'Busy', now: 'Now', empty: 'No prediction available for this day.', missing: 'No prediction for this interval', preview: 'Preview data · Illustrative occupancy, not a live forecast.', backend: 'Estimated occupancy · 15-minute intervals · Zürich time.', chart: 'Predicted occupancy by time', occupancy: 'predicted occupancy' },
+  de: { eyebrow: 'PLANE DEIN MITTAGESSEN', title: 'Erwartete Auslastung', minutes: 'Min.', subtitle: 'Typische Auslastung im 15-Minuten-Takt.', day: 'Tag', quiet: 'Ruhig', moderate: 'Mäßig besucht', busy: 'Voll', now: 'Jetzt', empty: 'Für diesen Tag ist keine Prognose verfügbar.', missing: 'Keine Prognose für dieses Intervall', preview: 'Vorschaudaten · Beispielhafte Auslastung, keine Live-Prognose.', backend: 'Geschätzte Auslastung · 15-Minuten-Takt · Zürcher Zeit.', chart: 'Erwartete Auslastung nach Uhrzeit', occupancy: 'erwartete Auslastung' },
 };
 type Key = keyof typeof copy.en;
 const language = () => document.documentElement.lang === 'de' ? 'de' : 'en';
@@ -23,25 +23,11 @@ function mountChart(root: HTMLElement) {
   try { prediction = JSON.parse(root.querySelector('[data-crowd-data]')!.textContent!) as CrowdPrediction; }
   catch { return; }
   const daySelect = root.querySelector<HTMLSelectElement>('[data-crowd-day]')!;
-  const slider = root.querySelector<HTMLInputElement>('[data-crowd-slider]')!;
   const bars = root.querySelector<SVGGElement>('[data-crowd-bars]')!;
   const svg = root.querySelector<SVGSVGElement>('[data-crowd-svg]')!;
-  let day = nowInZurich().day;
-  if (!slotsForDay(prediction, day).length) day = WEEKDAYS.find(d => slotsForDay(prediction, d).length) ?? day;
+  // Today, or Monday on Saturday and Sunday; the first day with data if that day has none.
+  let day: CrowdWeekday = defaultCrowdDay(nowInZurich().day, d => slotsForDay(prediction, d).some(slot => slot.occupancyPct !== null));
   let slots: CrowdSlot[] = [];
-  let selected = 0;
-
-  function showSelected() {
-    const slot = slots[selected];
-    if (!slot) return;
-    const time = `${formatTime(slot.startMinute)}–${formatTime(slot.startMinute + 15)}`;
-    const level = slot.occupancyPct === null ? 'missing' : slot.occupancyPct < 40 ? 'quiet' : slot.occupancyPct < 70 ? 'moderate' : 'busy';
-    root.querySelector('[data-crowd-selected-time]')!.textContent = time;
-    root.querySelector('[data-crowd-selected-level]')!.textContent = t(level);
-    root.querySelector('[data-crowd-selected-value]')!.textContent = slot.occupancyPct === null ? '—' : `${slot.occupancyPct}%`;
-    slider.setAttribute('aria-valuetext', `${time}: ${slot.occupancyPct === null ? t('missing') : `${slot.occupancyPct}% ${t('occupancy')}`}`);
-    bars.querySelectorAll<SVGRectElement>('[data-slot]').forEach(bar => bar.dataset.selected = String(Number(bar.dataset.slot) === selected));
-  }
 
   function updateNow() {
     const now = nowInZurich();
@@ -64,29 +50,23 @@ function mountChart(root: HTMLElement) {
     daySelect.replaceChildren(...WEEKDAYS.map((d, i) => new Option(names[i], d)));
     daySelect.value = day;
     daySelect.setAttribute('aria-label', t('day'));
-    slider.setAttribute('aria-label', t('explore'));
     root.querySelector('[data-crowd-source]')!.textContent = t(prediction.source === 'preview' ? 'preview' : 'backend');
     slots = slotsForDay(prediction, day);
     const available = slots.some(slot => slot.occupancyPct !== null);
     root.querySelector<HTMLElement>('[data-crowd-content]')!.hidden = !available;
     root.querySelector<HTMLElement>('[data-crowd-empty]')!.hidden = available;
     if (!available) return;
-    selected = Math.min(selected, slots.length - 1);
-    slider.max = String(slots.length - 1);
-    slider.value = String(selected);
-    slider.disabled = slots.length < 2;
     svg.setAttribute('aria-label', `${t('chart')} · ${weekdayName(day)} · ${slots.map(slot => `${formatTime(slot.startMinute)}: ${slot.occupancyPct === null ? t('missing') : `${slot.occupancyPct}%`}`).join(', ')}`);
     const width = 600 / slots.length;
     bars.replaceChildren(...slots.map((slot, i) => {
       const rect = document.createElementNS(svgNS, 'rect');
       rect.setAttribute('x', String(i * width + Math.min(3, width * .15)));
       rect.setAttribute('width', String(width - Math.min(6, width * .3)));
-      rect.setAttribute('rx', '4');
-      const height = slot.occupancyPct === null ? 3 : Math.max(1, slot.occupancyPct * 1.8);
-      rect.setAttribute('y', String(180 - height)); rect.setAttribute('height', String(height));
+      rect.setAttribute('rx', '2');
+      const height = slot.occupancyPct === null ? 2 : Math.max(1, slot.occupancyPct * 0.6);
+      rect.setAttribute('y', String(60 - height)); rect.setAttribute('height', String(height));
       rect.setAttribute('class', slot.occupancyPct === null ? 'crowd-missing' : 'crowd-bar');
       if (slot.occupancyPct !== null) {
-        rect.dataset.slot = String(i);
         rect.dataset.level = slot.occupancyPct < 40 ? 'quiet' : slot.occupancyPct < 70 ? 'moderate' : 'busy';
       }
       const title = document.createElementNS(svgNS, 'title');
@@ -99,20 +79,13 @@ function mountChart(root: HTMLElement) {
     root.querySelector('[data-crowd-ticks]')!.replaceChildren(...[start, Math.round((start + end) / 2 / 15) * 15, end].map(minute => {
       const span = document.createElement('span'); span.textContent = formatTime(minute); return span;
     }));
-    showSelected();
     updateNow();
   }
 
   function selectDay(next: CrowdWeekday) {
     day = next;
-    const nextSlots = slotsForDay(prediction, day);
-    const now = nowInZurich();
-    const current = now.day === day ? nextSlots.findIndex(slot => now.minute >= slot.startMinute && now.minute < slot.startMinute + 15) : -1;
-    const noon = nextSlots.findIndex(slot => slot.startMinute >= 12 * 60);
-    selected = current >= 0 ? current : Math.max(0, noon);
     render();
   }
-  mountBudgetSlider(slider, value => { selected = value; showSelected(); });
   daySelect.addEventListener('change', () => selectDay(daySelect.value as CrowdWeekday));
   document.addEventListener('languagechange', render);
   // The backend adapter can replace preview data without remounting the chart.
