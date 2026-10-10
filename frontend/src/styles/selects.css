@@ -1,0 +1,74 @@
+/* Chromium's customizable picker keeps native form, keyboard and screen-reader behavior. */
+@supports (appearance: base-select) {
+  select:not([multiple]),
+  select:not([multiple])::picker(select) {
+    appearance: base-select;
+  }
+
+  select:not([multiple]) {
+    cursor: pointer;
+    transition: border-color .16s, box-shadow .16s;
+  }
+
+  select:not([multiple]):hover,
+  select:not([multiple]):open {
+    border-color: var(--green);
+  }
+
+  select:not([multiple]):focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--green) 50%, transparent);
+    outline-offset: 2px;
+  }
+
+  select:not([multiple])::picker-icon {
+    color: var(--green);
+    transition: rotate .16s;
+  }
+
+  select:not([multiple]):open::picker-icon {
+    rotate: 180deg;
+  }
+
+  select:not([multiple])::picker(select) {
+    min-width: anchor-size(width);
+    max-width: min(90vw, 360px);
+    max-height: min(50dvh, 360px);
+    margin-top: 5px;
+    padding: 5px;
+    overflow: auto;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--paper);
+    color: var(--ink);
+    box-shadow: 0 16px 36px #10251b2b;
+  }
+
+  select:not([multiple]) option {
+    min-height: 40px;
+    padding: 10px 12px;
+    border-radius: 5px;
+    background: transparent;
+    color: var(--ink);
+    font: 600 13px 'DM Sans', sans-serif;
+  }
+
+  select:not([multiple]) option:hover,
+  select:not([multiple]) option:focus-visible {
+    background: color-mix(in srgb, var(--green) 10%, var(--paper));
+  }
+
+  select:not([multiple]) option:checked {
+    background: color-mix(in srgb, var(--green) 15%, var(--paper));
+    color: var(--green);
+    font-weight: 700;
+  }
+
+  select:not([multiple]) option::checkmark {
+    color: var(--green);
+  }
+
+  select:not([multiple]) option:disabled {
+    color: var(--muted);
+    opacity: .55;
+  }
+}
