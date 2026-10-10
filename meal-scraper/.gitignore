@@ -1,0 +1,9 @@
+build/
+.kotlin/
+.amper/
+.idea/
+*.iml
+tmp/
+artifacts/
+*.log
+starbyte.mcp.json

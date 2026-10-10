@@ -1,0 +1,10 @@
+build/
+.kotlin/
+.amper/
+.idea/
+tmp/
+artifacts/
+*.log
+*.iml
+.env*
+.git/
