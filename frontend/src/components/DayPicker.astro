@@ -86,7 +86,8 @@ const shownDays = days.includes(menuDate) ? days : [...days, menuDate].sort();
   function renderDays() {
     if (!root) return;
     const de = document.documentElement.lang === 'de';
-    const today = root.dataset.today;
+    // The real date (not the date the page was built for), so a pill is only "Today" when it is.
+    const today = zurichParts(appNow()).date;
     root.querySelectorAll<HTMLAnchorElement>('[data-day]').forEach(link => {
       const day = link.dataset.day!;
       link.textContent = day === today ? (de ? 'Heute' : 'Today')
@@ -116,7 +117,7 @@ const shownDays = days.includes(menuDate) ? days : [...days, menuDate].sort();
   renderDays();
   followSimulatedDay();
   document.addEventListener('languagechange', renderDays);
-  document.addEventListener(CLOCK_EVENT, followSimulatedDay);
+  document.addEventListener(CLOCK_EVENT, () => { renderDays(); followSimulatedDay(); });
 </script>
 <style>
   .day-picker{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;margin:0 0 14px}
