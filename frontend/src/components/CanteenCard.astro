@@ -11,7 +11,7 @@ const { canteen } = Astro.props;
   <button class="favorite-toggle" type="button" data-favorite-toggle aria-pressed="false" aria-label="Add to favourites"><span aria-hidden="true">☆</span></button>
   <div class="canteen-card-link">
     <div class="card-image">
-      <a href={`/canteen/${canteen.id}`} class="canteen-image-link" aria-label={canteen.name}><img src={canteen.imageUrl} alt={`Food at ${canteen.name}`} loading="lazy" /></a>
+      <a href={`/canteen/${canteen.id}`} class="canteen-image-link" aria-label={canteen.name}><img src={canteen.imageUrl} alt="" loading="lazy" /></a>
       <div class="detail-overlay canteen-photo-caption">
         <div><div class="canteen-photo-title"><h3 class="card-title"><a href={`/canteen/${canteen.id}`}>{canteen.name}</a></h3><span data-live="status" data-live-id={canteen.id} class={`status ${canteen.isOpen ? 'open' : 'closed'}`}>● <span data-i18n={canteen.isOpen ? 'open' : 'closed'}>{canteen.isOpen ? 'Open now' : 'Closed'}</span></span><LocationLink mensaId={canteen.id} /></div><div class="campus">{canteen.campus} <span aria-hidden="true">·</span> {canteen.location}</div></div>
       </div>
