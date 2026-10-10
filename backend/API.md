@@ -423,6 +423,12 @@ Details, configuration (ZFV API key) and error codes: [MENSA_API.md](MENSA_API.m
 
 ## Scheduled website menus
 
+`POST /api/scraped-menus/refresh` forces the full AI/MCP background batch, bypassing today's cache.
+Requires `Authorization: Bearer <MEAL_CONNECTOR_TOKEN>`; a configured token shorter than 32 characters always denies
+access. Returns 202 `started`, 409 `already_running`, 503 `disabled`/`not_configured`, or 401
+`unauthorized`. This does not require enabling the generic internal CRUD API. Poll the GET endpoint
+for completion and per-venue errors. See [../DEPLOY.md](../DEPLOY.md) for the server terminal command.
+
 `GET /api/scraped-menus` returns all 39 cafeterias in the main app catalog from the database's `scraped_menu` table. Each entry includes raw MCP `toolResults`, a model explanation, `updatedAt`, `lastAttempt`, `stale` and a generic error on refresh failure. Root fields expose `enabled`, `configured`, `running`, `lastAttempt` and `lastCompleted`. No credentials are returned. Missing or outdated cache entries trigger a background retrieval when enabled and configured; this endpoint returns the currently saved data without waiting for the batch.
 
 Successful raw tool results and their meal projections commit in one database transaction. The normal `GET /api/meals` and `GET /api/mensas/{id}/meal-plan` APIs read the existing `meal` table first. For a missing cafeteria/day, the backend retrieves through OpenAI and the connector's MCP relay, saves the raw JSON, and re-reads the database. Existing upstream meals take precedence, including when an ETH/UZH import arrives after the fallback. Stable IDs prevent duplicate scraper rows. Empty menus and closures are cached for the Zurich day; failed attempts retry after 15 minutes and retain prior evidence. Concurrent requests for the same venue share a lock within one backend instance. Historical reads do not trigger scraping, and on-demand date ranges are bounded to 31 days. A first cache miss can take as long as the AI/MCP retrieval; subsequent reads use the database.
