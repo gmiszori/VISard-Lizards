@@ -200,19 +200,50 @@
   margin: 8px 8px 0;
 }
 :root[data-density="compact"] article.canteen-card[data-canteen-card] .card-image {
-  display: block;
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  align-items: start;
+  column-gap: 10px;
   height: auto;
   min-height: 0;
-  padding: 12px 54px 0 12px;
+  padding: 12px 54px 10px 12px;
   background: transparent;
 }
 :root[data-density="compact"] article.canteen-card[data-canteen-card] .canteen-image-link {
+  position: relative;
+  inset: auto;
+  display: block;
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  width: 58px;
+  height: 58px;
+  overflow: hidden;
+  border-radius: 9px;
+  background: var(--line);
+}
+:root[data-density="compact"] article.canteen-card[data-canteen-card] .canteen-image-link[hidden] {
   display: none;
+}
+:root[data-density="compact"] article.canteen-card[data-canteen-card][data-has-photo="false"] .card-image {
+  grid-template-columns: minmax(0, 1fr);
+}
+:root[data-density="compact"] article.canteen-card[data-canteen-card][data-has-photo="false"] .canteen-photo-caption,
+:root[data-density="compact"] article.canteen-card[data-canteen-card][data-has-photo="false"] .rating {
+  grid-column: 1;
+}
+:root[data-density="compact"] article.canteen-card[data-canteen-card] .canteen-image-link > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 :root[data-density="compact"] article.canteen-card[data-canteen-card] .canteen-photo-caption {
   position: static;
   inset: auto;
   display: block;
+  grid-column: 2;
+  grid-row: 1;
   width: auto;
   padding: 0;
   background: none;
@@ -238,6 +269,9 @@
 :root[data-density="compact"] article.canteen-card[data-canteen-card] .rating {
   position: static;
   display: block;
+  grid-column: 2;
+  grid-row: 2;
+  justify-self: start;
   width: max-content;
   margin: 6px 0 0;
   box-shadow: none;

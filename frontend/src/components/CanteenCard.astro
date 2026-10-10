@@ -16,11 +16,11 @@ const canteenHref = day ? `/canteen/${canteen.id}/${day}` : `/canteen/${canteen.
 const menuGroups = groupMenuByService(canteen.menu);
 const showServiceHeadings = menuGroups.some(group => group.service === 'lunch') && menuGroups.some(group => group.service === 'dinner');
 ---
-<article data-canteen-card data-canteen-id={canteen.id} data-campus={canteen.campus} data-campus-id={canteen.campusId} data-is-open={String(canteen.isOpen)} data-has-menu={String(canteen.menu.length > 0)} data-name={canteen.name} data-menu={canteen.menu.map((item) => item.name).join(' ')} data-diets={canteen.menu.map((item) => item.dietary).join(' ')} class="canteen-card">
+<article data-canteen-card data-canteen-id={canteen.id} data-campus={canteen.campus} data-campus-id={canteen.campusId} data-is-open={String(canteen.isOpen)} data-has-menu={String(canteen.menu.length > 0)} data-has-photo={String(Boolean(canteen.imageUrl))} data-name={canteen.name} data-menu={canteen.menu.map((item) => item.name).join(' ')} data-diets={canteen.menu.map((item) => item.dietary).join(' ')} class="canteen-card">
   <button class="favorite-toggle" type="button" data-favorite-toggle aria-pressed="false" aria-label="Add to favourites"><span aria-hidden="true">☆</span></button>
   <div class="canteen-card-link">
     <div class="card-image">
-      <a href={canteenHref} class="canteen-image-link" aria-label={canteen.name}><img src={canteen.imageUrl} alt="" loading="lazy" /></a>
+      <a href={canteenHref} class="canteen-image-link" aria-label={canteen.name} hidden={!canteen.imageUrl}><img src={canteen.imageUrl} alt="" loading="lazy" /></a>
       <div class="detail-overlay canteen-photo-caption">
         <div><div class="canteen-photo-title"><h3 class="card-title"><a href={canteenHref}>{canteen.name}</a></h3><span data-live="status" data-live-id={canteen.id} class={`status ${canteen.isOpen ? 'open' : 'closed'}`}>● <span data-i18n={canteen.isOpen ? 'open' : 'closed'}>{canteen.isOpen ? 'Open now' : 'Closed'}</span></span><CrowdIndicator mensaId={canteen.id} occupancy={canteen.isOpen ? canteen.occupancy : 'closed'} card /><LocationLink mensaId={canteen.id} /></div><div class="campus">{canteen.campus} <span aria-hidden="true">·</span> {canteen.location}</div></div>
       </div>
