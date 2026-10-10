@@ -1,13 +1,29 @@
 // UniEats service worker: push notifications for starred dishes (src/push/push.ts)
 // plus an offline cache for visited and prewarmed pages.
 
-const CACHE_NAME = 'unieats-shell-v2';
+// v3: earlier caches held redirected copies (see plainCopy) that could not be shown offline; the activate step drops them.
+const CACHE_NAME = 'unieats-shell-v3';
 const PRECACHE_URLS = ['/', '/settings', '/onboarding', '/offline.html', '/manifest.webmanifest', '/favicon.svg'];
+
+/**
+ * The server answers /settings with a redirect to /settings/, and fetch() follows it, so the response is marked
+ * "redirected". A redirected response must not be used to answer a page navigation: the browser rejects it and the
+ * offline visit showed the fallback (the home page) instead of the page. Cache a plain copy instead.
+ */
+async function plainCopy(response) {
+  if (!response.redirected) return response;
+  return new Response(await response.blob(), { status: response.status, statusText: response.statusText, headers: response.headers });
+}
 
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE_NAME);
-    await cache.addAll(PRECACHE_URLS);
+    // Like cache.addAll (one failure fails the install), but redirected answers are stored as plain copies.
+    await Promise.all(PRECACHE_URLS.map(async url => {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`Could not precache ${url}: ${response.status}`);
+      await cache.put(url, await plainCopy(response));
+    }));
     await self.skipWaiting();
   })());
 });
@@ -23,7 +39,7 @@ self.addEventListener('activate', event => {
 async function putInCache(request, response) {
   if (!response || !response.ok || response.type !== 'basic') return response;
   const cache = await caches.open(CACHE_NAME);
-  await cache.put(request, response.clone());
+  await cache.put(request, await plainCopy(response.clone()));
   return response;
 }
 
@@ -58,8 +74,11 @@ self.addEventListener('fetch', event => {
         return await putInCache(request, await fetch(request));
       } catch {
         const cache = await caches.open(CACHE_NAME);
+        // "/settings/" and "/settings" are the same page; pages are cached under either spelling.
+        const otherSpelling = url.pathname.length > 1 ? (url.pathname.endsWith('/') ? url.pathname.slice(0, -1) : `${url.pathname}/`) : null;
         return await cache.match(request)
           || await cache.match(url.pathname)
+          || (otherSpelling ? await cache.match(otherSpelling) : undefined)
           || await cache.match('/')
           || await cache.match('/offline.html')
           || Response.error();
