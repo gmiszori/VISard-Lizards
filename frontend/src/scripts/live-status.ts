@@ -91,4 +91,5 @@ function run() {
 
 run();
 document.addEventListener('languagechange', refresh);
+document.addEventListener('campuseats:crowd-reset', run);
 setInterval(run, 60_000);

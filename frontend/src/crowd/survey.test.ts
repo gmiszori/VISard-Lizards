@@ -1,12 +1,33 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { cooldownLeft, isOpenAt, occupancyOf, REPORT_COOLDOWN_MS, summarize, zurichClock } from './survey-logic.ts';
+import { cooldownLeft, isOpenAt, LIVE_REPORT_WINDOW_MS, occupancyOf, REPORT_COOLDOWN_MS, summarize, zurichClock } from './survey-logic.ts';
+
+const now = Date.parse('2026-10-12T10:00:00Z');
+const recent = (level: number) => ({ level, timestamp: new Date(now - 60_000).toISOString() });
 
 test('summarize: rounded mean of valid levels, null without reports', () => {
-  assert.equal(summarize([]), null);
-  assert.deepEqual(summarize([{ level: 4, timestamp: '' }, { level: 5, timestamp: '' }, { level: 3, timestamp: '' }]), { level: 4, count: 3 });
-  assert.deepEqual(summarize([{ level: 2, timestamp: '' }, { level: 3, timestamp: '' }]), { level: 3, count: 2 });
-  assert.deepEqual(summarize([{ level: 9, timestamp: '' }, { level: 1, timestamp: '' }]), { level: 1, count: 1 });
+  assert.equal(summarize([], now), null);
+  assert.deepEqual(summarize([recent(4), recent(5), recent(3)], now), { level: 4, count: 3 });
+  assert.deepEqual(summarize([recent(2), recent(3)], now), { level: 3, count: 2 });
+  assert.deepEqual(summarize([recent(9), recent(1)], now), { level: 1, count: 1 });
+});
+
+test('live summary expires at the backend cutoff, even without another request', () => {
+  const reports = [recent(5)];
+  assert.deepEqual(summarize(reports, now), { level: 5, count: 1 });
+  assert.equal(summarize(reports, now + LIVE_REPORT_WINDOW_MS - 60_000), null);
+  assert.equal(summarize(reports, now + LIVE_REPORT_WINDOW_MS), null);
+});
+
+test('live summary ignores invalid, future and expired timestamps', () => {
+  const reports = [
+    recent(2),
+    { level: 5, timestamp: 'invalid' },
+    { level: 5, timestamp: new Date(now + 1).toISOString() },
+    { level: 5, timestamp: new Date(now - LIVE_REPORT_WINDOW_MS).toISOString() },
+  ];
+  assert.deepEqual(summarize(reports, now), { level: 2, count: 1 });
+  assert.deepEqual(summarize([{ level: 3, timestamp: new Date(now).toISOString() }], now), { level: 3, count: 1 });
 });
 
 test('occupancyOf maps levels to the Current crowd labels', () => {

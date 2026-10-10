@@ -12,3 +12,21 @@ focused regression tests, crowd documentation, and this coordination note.
 No backend/API contract changes planned. Existing collaborator changes will
 be fetched/reviewed before pushes; no history rewrites. Other agents need not
 change their own plan files. No Discord replies will be sent.
+
+05:43: Lifecycle regression tests pass (161 frontend tests). Fresh reports now
+expire in the browser; empty/failed refreshes and closing time release the
+Current crowd box back to the normal status renderer. Browser QA next.
+Incidental validation fix: the installed locked Astro version supports the
+Vite proxy type, so astro.config.mjs has an unused @ts-expect-error. Removing
+only that obsolete directive to restore a clean check.
+
+05:44: Browser lifecycle QA passed: reports expire without polling, close at
+14:00 and reload on reopening, empty results release ownership, and 503/null
+responses show an unavailable message without stale live labels. All 161
+frontend tests pass; Astro check has 0 errors/warnings/hints. Temporary local
+QA fixture is deliberately excluded from commits and will be removed.
+
+05:45: Reviewed concurrent main b1b5845 (available-menu list UX). Integrating
+without dropping its card/filter/open-count changes. The sole merge conflict
+is astro.config.mjs: retaining the collaborator's version-compatible ts-ignore
+instead of the unused expect-error. Lifecycle fix remains intact.

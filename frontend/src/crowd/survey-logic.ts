@@ -8,13 +8,17 @@ export const CROWD_LEVELS: readonly CrowdLevel[] = [1, 2, 3, 4, 5];
 
 /** The backend accepts one report per mensa and client every 5 minutes (app.rate-limit.crowd-report-window). */
 export const REPORT_COOLDOWN_MS = 5 * 60_000;
+export const LIVE_REPORT_WINDOW_MS = 30 * 60_000;
 
 export interface LiveReport { level: number; timestamp: string }
 export interface CrowdSummary { level: CrowdLevel; count: number }
 
 /** The typical level of the reports of the last 30 minutes (rounded mean), or null without reports. */
-export function summarize(reports: readonly LiveReport[]): CrowdSummary | null {
-  const levels = reports.map(r => r.level).filter(level => Number.isInteger(level) && level >= 1 && level <= 5);
+export function summarize(reports: readonly LiveReport[], now = Date.now()): CrowdSummary | null {
+  const levels = reports.filter(report => {
+    const timestamp = Date.parse(report?.timestamp);
+    return Number.isFinite(timestamp) && timestamp > now - LIVE_REPORT_WINDOW_MS && timestamp <= now;
+  }).map(r => r.level).filter(level => Number.isInteger(level) && level >= 1 && level <= 5);
   if (!levels.length) return null;
   const mean = levels.reduce((sum, level) => sum + level, 0) / levels.length;
   return { level: Math.min(5, Math.max(1, Math.round(mean))) as CrowdLevel, count: levels.length };
