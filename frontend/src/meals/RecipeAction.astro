@@ -9,12 +9,9 @@ const { item } = Astro.props;
   aria-label={`More actions for ${item.name}`} aria-haspopup="menu" aria-expanded="false"
   title={`More actions for ${item.name}`}><span aria-hidden="true">⋯</span></button>
 <style is:global>
-  .recipe-action{position:relative;z-index:2;flex:0 0 40px;display:grid;place-items:center;width:40px;height:40px;padding:0;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);font:700 24px/1 'DM Sans',sans-serif;cursor:pointer}
+  .recipe-action{position:relative;z-index:2;flex:0 0 36px;display:grid;place-items:center;align-self:center;width:36px;height:36px;padding:0;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);font:700 21px/1 'DM Sans',sans-serif;cursor:pointer}
   .recipe-action:hover{border-color:var(--green);color:var(--green)}
   .recipe-action:focus-visible{outline:3px solid var(--green);outline-offset:2px}
-  .meal-detail-heading>.recipe-action{margin-top:2px}
-  .meal-preview-heading>.dish{display:flex;align-items:center;gap:7px}
-  .meal-preview-heading>.dish>a{min-width:0}
-  .meal-preview-heading .recipe-action{flex-basis:40px;width:40px;height:40px;font-size:21px}
-  :root[data-density="list"] .meal-preview-heading .recipe-action{flex-basis:40px;width:40px;height:40px;font-size:19px}
+  .recipe-action>span{transform:translateY(-2px)}
+  :root[data-density="list"] .meal-preview-heading>.recipe-action{flex-basis:32px;width:32px;height:32px;font-size:19px}
 </style>
