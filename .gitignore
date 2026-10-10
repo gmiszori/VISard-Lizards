@@ -7,3 +7,8 @@
 .recommenders/
 RemoteSystemsTempFiles/
 Servers/
+
+# Local Docker Compose credentials
+.env
+.env.*
+!.env.example

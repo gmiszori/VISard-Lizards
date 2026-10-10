@@ -13,5 +13,11 @@ public record MealDetailDTO(
 		MealDTO meal,
 		@Nullable BigDecimal avgRating,
 		/** e.g. {"tasty": 3, "worth-it": 1} */
-		Map<String, Integer> tagCounts) {
+		Map<String, Integer> tagCounts,
+		@Nullable Double score) {
+
+	public MealDetailDTO(String mensaId, LocalDate date, MealDTO meal,
+			@Nullable BigDecimal avgRating, Map<String, Integer> tagCounts) {
+		this(mensaId, date, meal, avgRating, tagCounts, null);
+	}
 }

@@ -1,7 +1,29 @@
 import { matchesQuery } from '../search/fold';
 import { isPriceTier, readPreferences, PREFERENCES_KEY, type Preferences } from '../preferences/state';
+import { API_URL, apiPost } from '../data/api';
+let aiMatchedIds: Set<string> | null = null;
+let aiQuery = '';
+let searchVersion = 0;
+let searchTimer: ReturnType<typeof setTimeout> | undefined;
+
+function searchStatus(message: string) {
+  const status = document.querySelector<HTMLElement>('#search-status');
+  if (status) {
+    status.textContent = message;
+    status.hidden = !message;
+  }
+}
 let preferences: Preferences;
-try { preferences = readPreferences(); } catch { preferences = { vegan: true, vegetarian: true, meat: true, compact: false, openOnly: false, locations: ['zentrum', 'hoenggerberg', 'irchel'], priceTier: 'student', devMode: false }; }
+try {
+  preferences = readPreferences();
+  const allCampuses = ['zentrum', 'hoenggerberg', 'irchel', 'oerlikon', 'basel', 'toni-areal', 'europaallee'];
+  // Ensure any newly added campus is included so users don't get stuck seeing only the 3 legacy campuses
+  for (const c of allCampuses) {
+    if (!preferences.locations.includes(c)) {
+      preferences.locations.push(c);
+    }
+  }
+} catch { preferences = { vegan: true, vegetarian: true, meat: true, compact: false, openOnly: false, locations: ['zentrum', 'hoenggerberg', 'irchel', 'oerlikon', 'basel', 'toni-areal', 'europaallee'], priceTier: 'student', devMode: false }; }
 let showWithoutMenu = false;
 
 function applyPreferences() {
@@ -63,10 +85,11 @@ function applyPreferences() {
     // "preset" = the campuses chosen in settings; the selector can override that for this visit only.
     const matchesCampus = campusChoice === 'all' ? true
       : campusChoice === 'preset' ? preferences.locations.includes(card.dataset.campusId ?? '')
-      : card.dataset.campusId === campusChoice;
+        : card.dataset.campusId === campusChoice;
     const matchesOpen = !preferences.openOnly || card.dataset.isOpen === 'true';
-    // Umlauts are optional: "zurich", "zuerich" and "Zürich" all find the same dishes.
-    const matchesSearch = matchesQuery(card.dataset.name ?? '', query) || card.querySelector('[data-meal-row]:not([hidden])') !== null;
+    const fallbackSearch = matchesQuery(card.dataset.name ?? '', query) || card.querySelector('[data-meal-row]:not([hidden])') !== null;
+    const matchesSearch = aiMatchedIds && aiQuery === query
+      ? aiMatchedIds.has(card.dataset.canteenId ?? '') : fallbackSearch;
     return { card, matches: matchesCampus && matchesOpen && matchesSearch, hasMenu: card.dataset.hasMenu === 'true' };
   });
   const withMenuCount = candidates.filter(candidate => candidate.matches && candidate.hasMenu).length;
@@ -125,7 +148,41 @@ document.querySelector<HTMLFormElement>('#preferences-form')?.addEventListener('
   catch { showSavedState(false); }
 });
 
-document.querySelector<HTMLInputElement>('#search-input')?.addEventListener('input', applyPreferences);
+document.querySelector<HTMLInputElement>('#search-input')?.addEventListener('input', (event) => {
+  const query = (event.target as HTMLInputElement).value.trim();
+  const version = ++searchVersion;
+  clearTimeout(searchTimer);
+  aiMatchedIds = null;
+  aiQuery = '';
+  searchStatus('');
+  applyPreferences();
+  if (query.length < 2 || !API_URL) return;
+
+  searchTimer = setTimeout(async () => {
+    const candidates = [...document.querySelectorAll<HTMLElement>('[data-canteen-card]')].map(card => ({
+      id: card.dataset.canteenId ?? '',
+      name: card.dataset.name ?? '',
+      campus: card.dataset.campus ?? '',
+      menu: card.dataset.menu ?? '',
+      diets: card.dataset.diets ?? '',
+    }));
+    if (!candidates.length) return;
+    searchStatus(document.documentElement.lang === 'de' ? 'Suche nach passenden Mensen …' : 'Finding matching canteens…');
+    try {
+      const result = await apiPost<{ ids: string[] }>('/api/search', { query, candidates }, API_URL, 15000);
+      if (version !== searchVersion) return;
+      aiMatchedIds = new Set(result.ids);
+      aiQuery = query.normalize('NFKC').toLocaleLowerCase();
+      applyPreferences();
+      searchStatus('');
+    } catch {
+      if (version !== searchVersion) return;
+      searchStatus(document.documentElement.lang === 'de'
+        ? 'KI-Suche nicht verfügbar. Textsuche wird angezeigt.'
+        : 'AI search unavailable. Showing text matches.');
+    }
+  }, 650);
+});
 document.querySelector<HTMLSelectElement>('#campus-select')?.addEventListener('change', applyPreferences);
 document.querySelector<HTMLButtonElement>('#no-menu-toggle')?.addEventListener('click', () => {
   showWithoutMenu = !showWithoutMenu;

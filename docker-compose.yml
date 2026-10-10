@@ -7,6 +7,8 @@ services:
       - "8080:8080"
     environment:
       - DB_URL=jdbc:h2:file:./data/visard
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4.1-mini}
     volumes:
       - backend-data:/app/data
 

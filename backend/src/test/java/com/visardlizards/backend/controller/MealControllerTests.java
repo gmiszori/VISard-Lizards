@@ -153,6 +153,37 @@ class MealControllerTests {
 	}
 
 	@Test
+	void searchQueryRanksMealsWithoutHardFiltering() throws Exception {
+		mockMvc.perform(get("/api/meals").param("date", "2026-10-06").param("query", "curry"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.length()").value(93))
+				.andExpect(jsonPath("$[0].score").isNumber())
+				.andExpect(jsonPath("$[0].meal.name").value(org.hamcrest.Matchers.containsStringIgnoringCase("curry")));
+	}
+
+	@Test
+	void searchSortsByPriceAscending() throws Exception {
+		mockMvc.perform(get("/api/meals").param("date", "2026-10-06").param("sortBy", "price_asc"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$").isArray())
+				.andExpect(jsonPath("$[0].meal.price.price").isNumber());
+	}
+
+	@Test
+	void searchSortsByScore() throws Exception {
+		mockMvc.perform(get("/api/meals").param("date", "2026-10-06").param("sortBy", "score").param("query", "curry"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$[0].score").isNumber());
+	}
+
+	@Test
+	void searchRejectsUnknownSortBy() throws Exception {
+		mockMvc.perform(get("/api/meals").param("sortBy", "unsupported_order"))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.detail").value(org.hamcrest.Matchers.containsString("Unknown sortBy")));
+	}
+
+	@Test
 	void returns404ForUnknownMeal() throws Exception {
 		mockMvc.perform(get("/api/meals/does-not-exist"))
 				.andExpect(status().isNotFound())
