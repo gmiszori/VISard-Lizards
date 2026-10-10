@@ -5,6 +5,8 @@ export type DisplayMenuItem = MenuItem & {
   /** Live menus only (the sample menus lack them): the exact diet class (fish stays fish) and the allergen ids. */
   dietTag?: 'vegan' | 'vegetarian' | 'meat' | 'fish';
   allergenIds?: string[];
+  /** Set when the price is not for a plate, e.g. '100 g' at by-weight buffets (priceUnits.ts). */
+  priceUnit?: string;
 };
 
 export function groupMenuByService<T extends Pick<MenuItem, 'service'>>(menu: T[]): Array<{ service: Service | undefined; items: T[] }> {
