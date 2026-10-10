@@ -30,10 +30,13 @@ class ExtractorTest {
     }
     @Test fun allRequestedLocationsHaveDistinctPublicUrls() {
         val locations = MensaSources.locations
-        assertEquals(11, locations.size)
-        assertEquals(11, locations.map { it.id }.toSet().size)
-        assertEquals(11, locations.map { it.url }.toSet().size)
-        locations.forEach { assertEquals(it.url, PublicWebFetcher.validateUrl(it.url)) }
+        assertEquals(24, locations.size)
+        assertEquals(24, locations.map { it.id }.toSet().size)
+        assertEquals(24, locations.map { it.url }.toSet().size)
+        locations.flatMap { listOf(it.url) + it.additionalUrls }.forEach {
+            assertEquals(it, PublicWebFetcher.validateUrl(it))
+            assertTrue(MensaSources.toolHint.contains(it))
+        }
     }
     private val extractor = MenuExtractor()
     private fun html(text: String) = SourceDocument("https://restaurant.example/de", "text/html", text.toByteArray())

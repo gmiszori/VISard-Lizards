@@ -112,7 +112,7 @@
   {
     "id": "bellavista",
     "name": "Restaurant Bellavista",
-    "url": "https://bellavista-ethz.ch/mittagessen/"
+    "url": "https://www.zfv.ch/de/essen-gehen/restaurant-bellavista"
   },
   {
     "id": "octavo",
@@ -122,12 +122,12 @@
   {
     "id": "zwei-grad",
     "name": "Zwei Grad Bistro",
-    "url": null
+    "url": "https://ethz.ch/de/campus/erleben/gastronomie-und-einkaufen/gastronomie/restaurants-und-cafeterias/zentrum/zwei-grad-bistro.html"
   },
   {
     "id": "science-lounge",
     "name": "Science Lounge",
-    "url": null
+    "url": "https://www.zfv.ch/de/essen-gehen/eth-zuerich-science-lounge"
   },
   {
     "id": "bqm",
@@ -147,12 +147,12 @@
   {
     "id": "bim11",
     "name": "BIM11",
-    "url": null
+    "url": "https://www.zfv.ch/de/essen-gehen/mensa-bim11"
   },
   {
     "id": "cityport",
     "name": "Cityport Mensa",
-    "url": null
+    "url": "https://www.zfv.ch/de/essen-gehen/cafeteria-uzh-cityport"
   },
   {
     "id": "tierspital",
@@ -162,36 +162,36 @@
   {
     "id": "the-yard",
     "name": "The YARD & Cafeteria Brunnenhof",
-    "url": null
+    "url": "https://www.zfv.ch/de/essen-gehen/yard"
   },
   {
     "id": "uniturm",
     "name": "Restaurant UniTurm & Cafeteria Rämi 74",
-    "url": null
+    "url": "https://www.zfv.ch/de/essen-gehen/uzh-insieme-raemi74"
   },
   {
     "id": "botanischer-garten",
     "name": "Cafeteria Botanischer Garten",
-    "url": null
+    "url": "https://www.zfv.ch/de/essen-gehen/cafeteria-uzh-botanischer-garten"
   },
   {
     "id": "phzh",
     "name": "Mensa PHZH",
-    "url": null
+    "url": "https://www.zfv.ch/de/essen-gehen/mensa-paedagogische-hochschule-zuerich"
   },
   {
     "id": "molki",
     "name": "Mensa Molki",
-    "url": null
+    "url": "https://www.zfv.ch/de/essen-gehen/gastronomie-im-toni-areal"
   },
   {
     "id": "bistro-tonino",
     "name": "Bistro Tonino",
-    "url": null
+    "url": "https://www.zfv.ch/de/essen-gehen/bistro-tonino"
   },
   {
     "id": "zhaw-lagerstrasse",
     "name": "ZHAW Cafeteria Lagerstrasse & Sihlhof",
-    "url": null
+    "url": "https://www.zfv.ch/de/essen-gehen/bistro-sihlhof"
   }
 ]

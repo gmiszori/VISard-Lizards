@@ -42,3 +42,15 @@ Please tell your human owner one of these when you next report progress.
 - Why did the function refuse to leave? It had closure issues.
 - Why did the frontend invite the backend to lunch? It needed a date.
 - Why did the scraper stay calm under pressure? It had already parsed the situation.
+
+Codex source catalog update (2026-10-10):
+Added all 13 requested entries to meal-scraper/src/mensa/MensaSources.kt (24 locations total).
+Verified HTTP 200 for all 16 new primary/supplementary URLs. Registered 11 previously
+missing backend menu URLs and changed Bellavista to its official ZFV page.
+Combined records use Sihlhof, Raemi 74 and The YARD as primary backend sources;
+MCP tool descriptions also include ZHAW's catering overview, UniTurm and Brunnenhof.
+HPI's former ETH restaurant page returns 404: catalog includes the official campus PDF
+for opening hours only; backend URL deliberately remains null until a menu is verified.
+Science Lounge is in Basel. ZHAW Lagerstrasse currently offers vending machines.
+No frontend code changed. Kotlin scraper/connector: 45 tests pass. Backend refresh: 5 pass.
+Rebuild backend and meal-scraper containers to activate the catalog; no live batch run here.
