@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import OnboardingEntry from '../onboarding/components/OnboardingEntry.astro';
 import StarredMealsSettings from '../components/StarredMealsSettings.astro';
+import { ALLERGENS } from '../allergens/allergens';
 ---
 <BaseLayout title="Settings">
   <a href="/" class="detail-back" data-i18n="back">← All canteens</a>
@@ -32,6 +33,14 @@ import StarredMealsSettings from '../components/StarredMealsSettings.astro';
         <label class="setting-option preference-option preference-vegetarian"><span class="preference-icon" aria-hidden="true">🥬</span><span class="setting-copy"><strong data-i18n="vegetarian">Vegetarian</strong><small data-i18n="meatFree">Meat-free</small></span><input type="checkbox" name="vegetarian" value="vegetarian" /></label>
         <label class="setting-option preference-option preference-meat"><span class="preference-icon" aria-hidden="true">🍗</span><span class="setting-copy"><strong data-i18n="meat">Meat</strong><small data-i18n="meatDishes">Including meat dishes</small></span><input type="checkbox" name="meat" value="meat" /></label>
       </div>
+    </fieldset>
+    <fieldset class="settings-group avoid-group">
+      <legend data-i18n="avoidTitle">Allergens I avoid</legend><span class="settings-group-mark" aria-hidden="true">!</span>
+      <p data-i18n="avoidHint">Dishes that list these allergens are hidden. You can see how many were hidden on each menu.</p>
+      <div class="avoid-options">
+        {ALLERGENS.map((allergen) => <label class="avoid-option"><input type="checkbox" name="avoid" value={allergen.id} /><span><span lang="en">{allergen.en}</span><span lang="de">{allergen.de}</span></span></label>)}
+      </div>
+      <p class="avoid-disclaimer" data-i18n="avoidDisclaimer">The canteens publish allergen information, and it can be incomplete or change. Dishes with no listed allergens are marked, not hidden. If an allergy is serious, always ask the staff.</p>
     </fieldset>
     <fieldset class="settings-group">
       <legend data-i18n="canteenFilters">Canteen filters</legend><span class="settings-group-mark" aria-hidden="true">⌖</span>

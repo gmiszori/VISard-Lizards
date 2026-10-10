@@ -62,3 +62,15 @@ body{background:transparent;color:var(--ink)}.app-shell{max-width:1160px}.site-h
 :root[data-density="compact"] .canteen-card .favorite-toggle{top:7px;right:7px}
 @media(max-width:700px){:root[data-density="compact"] .canteen-card .card-body{padding-top:42px}}
 .distance-badge{white-space:nowrap}
+.allergen-names[lang="de"],:root[lang="de"] .allergen-names[lang="en"]{display:none}
+:root[lang="de"] .allergen-names[lang="de"]{display:inline}
+.avoid-option span[lang="de"],:root[lang="de"] .avoid-option span[lang="en"]{display:none}
+:root[lang="de"] .avoid-option span[lang="de"]{display:inline}
+.allergen-notice{margin:0 0 10px;padding:9px 12px;border:1px solid #d9b46a;border-radius:12px;background:#fff7e3;color:#6d4b05;font-size:13px;line-height:1.4}
+:root[data-theme="dark"] .allergen-notice{background:#3a2f12;border-color:#7c6320;color:#f0d9a0}
+.allergen-unknown{color:#a15c00;font-weight:600}
+:root[data-theme="dark"] .allergen-unknown{color:#f0b35a}
+.avoid-options{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin:12px 0}
+.avoid-option{display:flex;align-items:center;gap:10px;min-height:44px;padding:8px 12px;border:1px solid var(--line);border-radius:12px;background:var(--paper);cursor:pointer;font-size:14px}
+.avoid-option input{width:20px;height:20px;accent-color:var(--green)}
+.avoid-disclaimer{font-size:12px;color:var(--muted);line-height:1.5;margin:0}

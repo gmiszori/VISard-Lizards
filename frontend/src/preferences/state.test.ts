@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { normalizePreferences, readPreferences, readFavourites } from './state.ts';
 test('invalid stored shapes and boolean strings cannot break or silently enable filters', () => {
   for (const raw of [null, [], 'wrong', 12, { vegan: 'false', vegetarian: null, meat: [], compact: {}, openOnly: 'yes', priceTier: 'admin', locations: [null, 123, {}, 'invalid'] }]) {
-    assert.deepEqual(normalizePreferences(raw), { vegan: true, vegetarian: true, meat: true, compact: false, openOnly: false, locations: ['zentrum', 'hoenggerberg', 'irchel'], priceTier: 'student' });
+    assert.deepEqual(normalizePreferences(raw), { vegan: true, vegetarian: true, meat: true, compact: false, openOnly: false, locations: ['zentrum', 'hoenggerberg', 'irchel'], priceTier: 'student', avoid: [] });
   }
 });
 test('normalizes legacy locations, deduplicates, and preserves intentional empty selection', () => {
@@ -22,4 +22,9 @@ test('malformed JSON, null profiles and unavailable storage have safe defaults',
   assert.deepEqual(readFavourites(blocked), []);
   const invalid = { getItem: () => '[null,"polyterrasse",2,"polyterrasse",""]' };
   assert.deepEqual(readFavourites(invalid), ['polyterrasse']);
+});
+test('the avoided allergens are cleaned and default to none', () => {
+  assert.deepEqual(normalizePreferences({}).avoid, []);
+  assert.deepEqual(normalizePreferences({ avoid: ['gluten', 'kiwi', 3, 'milk', 'gluten'] }).avoid, ['gluten', 'milk']);
+  assert.deepEqual(normalizePreferences({ avoid: 'gluten' }).avoid, []);
 });

@@ -5,6 +5,7 @@ import MealStar from './MealStar.astro';
 import MealServingTime from './MealServingTime.astro';
 import LocationLink from './LocationLink.astro';
 import { MENSAS } from '../data/canteens';
+import { allergenIds } from '../allergens/allergens';
 interface Props { canteen: AppCanteen }
 const { canteen } = Astro.props;
 const position = MENSAS.find((m) => m.id === canteen.id)?.coordinates ?? null;
@@ -21,7 +22,8 @@ const position = MENSAS.find((m) => m.id === canteen.id)?.coordinates ?? null;
     </div>
   <div class="card-body">
     <div class="menu-preview" data-preference-list data-meal-list>
-      {canteen.menu.map((item) => <div class="dish-preview" data-diet={item.dietary} data-meal-row data-meal-id={item.id}><div class="meal-preview-heading"><div class="dish"><a href={`/canteen/${canteen.id}`}>{item.name}<span class={`diet diet-${item.dietary}`} data-i18n={`diet_${item.dietary}`}>{item.dietary}</span></a></div><MealStar item={item} /></div><MealServingTime item={item} /><MealPrice item={item} compact /></div>)}
+      {canteen.menu.map((item) => <div class="dish-preview" data-diet={item.dietary} data-allergens={allergenIds(item.allergens ?? []).join(' ')} data-meal-row data-meal-id={item.id}><div class="meal-preview-heading"><div class="dish"><a href={`/canteen/${canteen.id}`}>{item.name}<span class={`diet diet-${item.dietary}`} data-i18n={`diet_${item.dietary}`}>{item.dietary}</span></a></div><MealStar item={item} /></div><MealServingTime item={item} /><MealPrice item={item} compact /></div>)}
+      <p class="allergen-notice" data-allergen-notice role="status" hidden></p>
       <p class="preference-empty" data-no-preference-meals hidden data-i18n={canteen.menu.length ? 'noPreferenceMeals' : 'menuEmpty'}>{canteen.menu.length ? 'No dishes match your food preferences.' : 'No menu available today.'}</p>
     </div>
   </div>

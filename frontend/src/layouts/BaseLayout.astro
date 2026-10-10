@@ -44,6 +44,8 @@ const { title } = Astro.props;
       translations.de.notFoundText = 'Der Link ist vielleicht veraltet oder falsch geschrieben. Zurück zu den Mensen, um die heutigen Menüs zu finden.';
       translations.en.sampleMenus = 'Showing sample menus: the CampusEats backend is not reachable.';
       translations.de.sampleMenus = 'Beispielmenüs: Das CampusEats-Backend ist nicht erreichbar.';
+      Object.assign(translations.en, { avoidTitle: 'Allergens I avoid', avoidHint: 'Dishes that list these allergens are hidden. You can see how many were hidden on each menu.', avoidDisclaimer: 'The canteens publish allergen information, and it can be incomplete or change. Dishes with no listed allergens are marked, not hidden. If an allergy is serious, always ask the staff.', allergenUnknown: ' · check with the staff' });
+      Object.assign(translations.de, { avoidTitle: 'Allergene, die ich meide', avoidHint: 'Gerichte mit diesen Allergenen werden ausgeblendet. Auf jedem Menü siehst du, wie viele ausgeblendet wurden.', avoidDisclaimer: 'Die Mensen veröffentlichen Allergeninformationen, die unvollständig sein oder sich ändern können. Gerichte ohne angegebene Allergene werden markiert, nicht ausgeblendet. Bei einer ernsten Allergie frage immer das Personal.', allergenUnknown: ' · frag das Personal' });
       Object.assign(translations.en, { campusSelect: 'Campus', campusPreset: 'My campuses', campusAll: 'All campuses' });
       Object.assign(translations.de, { campusSelect: 'Campus', campusPreset: 'Meine Auswahl', campusAll: 'Alle Standorte' });
       Object.assign(translations.en, { mapLink: 'Location' });

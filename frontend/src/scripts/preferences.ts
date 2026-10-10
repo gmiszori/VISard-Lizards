@@ -1,6 +1,8 @@
+import { allergenLabel, conflicts, type AllergenId } from '../allergens/allergens';
+import { allergenNotice } from '../allergens/notice';
 import { isPriceTier, readPreferences, PREFERENCES_KEY, type Preferences } from '../preferences/state';
 let preferences: Preferences;
-try { preferences = readPreferences(); } catch { preferences = { vegan: true, vegetarian: true, meat: true, compact: false, openOnly: false, locations: ['zentrum', 'hoenggerberg', 'irchel'], priceTier: 'student' }; }
+try { preferences = readPreferences(); } catch { preferences = { vegan: true, vegetarian: true, meat: true, compact: false, openOnly: false, locations: ['zentrum', 'hoenggerberg', 'irchel'], priceTier: 'student', avoid: [] }; }
 
 function applyPreferences() {
   document.documentElement.dataset.density = preferences.compact ? 'compact' : 'standard';
@@ -21,11 +23,24 @@ function applyPreferences() {
 
   document.querySelectorAll<HTMLElement>('[data-diet]').forEach((meal) => {
     const diet = meal.dataset.diet as keyof Pick<Preferences, 'vegan' | 'vegetarian' | 'meat'>;
-    meal.hidden = !preferences[diet];
+    const allergens = (meal.dataset.allergens ?? '').split(' ').filter(Boolean);
+    const avoided = conflicts(allergens as AllergenId[], preferences.avoid);
+    meal.dataset.avoidedAllergens = avoided.join(' ');
+    meal.hidden = !preferences[diet] || avoided.length > 0;
+    // A dish with no listed allergens is not known to be safe: with a filter on, say so.
+    meal.querySelectorAll<HTMLElement>('[data-allergen-unknown]').forEach(note => { note.hidden = preferences.avoid.length === 0; });
   });
 
   document.querySelectorAll<HTMLElement>('[data-preference-list]').forEach((list) => {
     const hasVisibleMeals = list.querySelectorAll<HTMLElement>('[data-diet]:not([hidden])').length > 0;
+    const notice = list.querySelector<HTMLElement>('[data-allergen-notice]') ?? (list.previousElementSibling?.matches('[data-allergen-notice]') ? list.previousElementSibling as HTMLElement : null);
+    if (notice) {
+      const lang = document.documentElement.lang === 'de' ? 'de' : 'en';
+      const hidden = [...list.querySelectorAll<HTMLElement>('[data-meal-row][data-avoided-allergens]:not([data-avoided-allergens=""])')];
+      const names = [...new Set(hidden.flatMap(meal => (meal.dataset.avoidedAllergens ?? '').split(' ')))].map(id => allergenLabel(id, lang));
+      notice.hidden = hidden.length === 0;
+      notice.textContent = hidden.length === 0 ? '' : allergenNotice(hidden.length, names, lang);
+    }
     let emptyMessage = list.querySelector<HTMLElement>('[data-no-preference-meals]');
     if (!emptyMessage && list.nextElementSibling?.matches('[data-no-preference-meals]')) {
       emptyMessage = list.nextElementSibling as HTMLElement;
@@ -62,7 +77,8 @@ function applyPreferences() {
   document.querySelectorAll<HTMLInputElement>('#preferences-form input[type="checkbox"]').forEach((input) => {
     input.checked = input.name === 'locations'
       ? preferences.locations.includes(input.value)
-      : preferences[input.name as keyof Omit<Preferences, 'locations'>] as boolean;
+      : input.name === 'avoid' ? preferences.avoid.includes(input.value as AllergenId)
+      : preferences[input.name as keyof Omit<Preferences, 'locations' | 'avoid'>] as boolean;
   });
   document.dispatchEvent(new Event('campuseats:preferences-applied'));
 }
@@ -77,6 +93,10 @@ document.querySelector<HTMLFormElement>('#preferences-form')?.addEventListener('
       if (input.checked) locations.add(input.value);
       else locations.delete(input.value);
       preferences = { ...preferences, locations: [...locations] };
+    } else if (input.name === 'avoid') {
+      const avoid = new Set(preferences.avoid);
+      if (input.checked) avoid.add(input.value as AllergenId); else avoid.delete(input.value as AllergenId);
+      preferences = { ...preferences, avoid: [...avoid] };
     } else {
       preferences = { ...preferences, [input.name]: input.checked };
     }
