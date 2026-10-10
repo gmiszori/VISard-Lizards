@@ -50,7 +50,9 @@ The existing app route also already serves the snapshot's three Friday meals:
 GET /api/mensas/polysnack/meal-plan?dateStart=2026-10-09&dateEnd=2026-10-09
 ```
 
-Adding raw retrieval does not replace the snapshot repository automatically.
+The app now persists the seeded meals in JPA and imports current/next-week ETH
+menus on startup and every six hours. Raw retrieval remains separate from this
+mapping. UZH locations still use the seed until a live UZH mapper is provided.
 
 ## Reproduce the source investigation
 

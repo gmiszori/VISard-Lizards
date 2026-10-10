@@ -14,11 +14,16 @@ Map these strings to your own DTOs after retrieval. An empty HTTP body can retur
 `null`. HTTP 4xx/5xx and transport failures throw Spring `RestClientException`
 subclasses. Connect timeout is 10 seconds; read timeout is 30 seconds.
 
-The application's `/api/mensas` and `/api/meals` routes currently read the bundled
-menu snapshot through `JsonMensaRepository`. Adding these clients does not make
-those routes fetch live menus. To use live menus in your app, retrieve the raw
-responses here and map them to your own DTOs or repository implementation. The
-optional `/api/upstream` routes below expose the raw responses for inspection.
+The application's `/api/mensas` and `/api/meals` routes read persisted domain
+meals through `JpaMensaRepository`, initially seeded from the bundled snapshot.
+`LiveMenuImportService` refreshes current/next-week ETH meals on startup and every
+six hours when `app.live-import.enabled=true` (the default). Missing English
+names/descriptions, including Cookpit's `novalue` marker, use matching German
+text by facility, date and line ID. Valid English text, prices and allergens stay
+unchanged. Meals with no usable name in either response are omitted. Restarting
+the backend runs this refresh and repairs previously imported placeholders.
+UZH remains snapshot-based until a live mapper is supplied. The raw clients and
+optional `/api/upstream` responses are unchanged and expose the original data.
 
 ## ETH
 
