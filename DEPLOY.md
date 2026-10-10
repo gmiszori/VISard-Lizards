@@ -71,6 +71,25 @@ curl -fsS https://your-server/api/scraped-menus
 docker compose logs --tail=100 backend meal-scraper
 ```
 
+To force a fresh AI/MCP batch before 06:00, run this from the repository directory on the server:
+
+After installing this update, rebuild once with `docker compose --profile scraper up --build -d`.
+Set `MEAL_SCRAPER_ENABLED=true`, `OPENAI_API_KEY`, and a random `MEAL_CONNECTOR_TOKEN` of at
+least 32 characters in `.env`. The short default development token cannot authorize manual refreshes.
+
+```sh
+docker compose exec -T meal-scraper sh -c 'curl -fsS -X POST -H "Authorization: Bearer $MEAL_CONNECTOR_TOKEN" http://backend:8080/api/scraped-menus/refresh'
+```
+
+The command uses the container's configured token; no key needs to be pasted into your shell.
+`{"status":"started"}` (HTTP 202) means the background batch was accepted. It refreshes all
+configured cafeterias even if today's cache is fresh, calls OpenAI using the backend key, and
+saves raw results and meal rows to the database. The 06:00 schedule stays unchanged. HTTP 409
+means a batch is already running; HTTP 503 means scraping is disabled or the backend key is missing.
+HTTP 401 means the shared token is missing or mismatched. Check progress with
+`curl -fsS https://your-server/api/scraped-menus` (`running`, `lastCompleted`, and each cafeteria's
+`stale`/`error` fields); acceptance does not guarantee every venue succeeds. Prior data survives failures.
+
 After updating source, run `docker compose up --build -d` again. If connector health reports
 MCP unavailable, inspect logs and run `docker compose restart meal-scraper`. Do not use
 `docker compose down -v` during an update: it removes the database volume. Linux CI builds

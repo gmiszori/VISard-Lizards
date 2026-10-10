@@ -7,7 +7,7 @@ export interface Profile {
   lang: 'de' | 'en';
   campus: CampusId;
   campusSecondary: CampusId[];
-  theme: 'light' | 'dark';
+  theme: 'light' | 'dark' | 'system';
   diet: 'omnivore' | 'flexitarian' | 'pescetarian' | 'vegetarian' | 'vegan' | 'carnivore';
   hard: ('no_pork' | 'lactose_free' | 'gluten_free' | 'nut_free')[];
   soft: string[];

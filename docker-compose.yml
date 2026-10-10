@@ -1,5 +1,13 @@
 services:
+  backend-data-init:
+    image: busybox:1.37
+    command: ["sh", "-c", "chown -R 10001:999 /data"]
+    volumes:
+      - backend-data:/data
+    restart: "no"
+
   meal-scraper:
+    profiles: [scraper]
     build:
       context: ./meal-scraper
       dockerfile: Dockerfile
@@ -8,7 +16,9 @@ services:
     environment:
       - MEAL_CONNECTOR_HOST=0.0.0.0
       - MEAL_CONNECTOR_PORT=8091
-      - MEAL_CONNECTOR_TOKEN=${MEAL_CONNECTOR_TOKEN:?Set MEAL_CONNECTOR_TOKEN in .env}
+      # The connector is private to this Compose network. A local default lets the
+      # frontend/backend stack start without configuring the optional scraper.
+      - MEAL_CONNECTOR_TOKEN=${MEAL_CONNECTOR_TOKEN:-local-compose-connector-token}
 
   backend:
     build:
@@ -25,10 +35,10 @@ services:
       - MEAL_SCRAPER_MODEL=${MEAL_SCRAPER_MODEL:-gpt-4.1-mini}
       - MEAL_SCRAPER_CRON=${MEAL_SCRAPER_CRON:-0 0 6 * * *}
       - MEAL_CONNECTOR_URL=http://meal-scraper:8091
-      - MEAL_CONNECTOR_TOKEN=${MEAL_CONNECTOR_TOKEN:?Set MEAL_CONNECTOR_TOKEN in .env}
+      - MEAL_CONNECTOR_TOKEN=${MEAL_CONNECTOR_TOKEN:-local-compose-connector-token}
     depends_on:
-      meal-scraper:
-        condition: service_healthy
+      backend-data-init:
+        condition: service_completed_successfully
     restart: unless-stopped
     volumes:
       - backend-data:/app/data
@@ -43,6 +53,9 @@ services:
       - "8080:8080"
     environment:
       - CADDY_TRUSTED_PROXY_RANGES=${CADDY_TRUSTED_PROXY_RANGES:-private_ranges}
+      # Used only while rendering static pages inside the frontend container.
+      # Browser requests stay same-origin and Caddy proxies them to backend:8080.
+      - SERVER_API_URL=http://backend:8080
     restart: unless-stopped
 
 volumes:

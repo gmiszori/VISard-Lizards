@@ -28,6 +28,11 @@ class ScrapedMenuDatabaseTests {
     @Autowired MensaRepository publicMeals;
     private final LocalDate today=LocalDate.now(ZoneId.of("Europe/Zurich"));
 
+    @Test void manualRefreshEndpointRejectsAnonymousRequests() throws Exception {
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/api/scraped-menus/refresh"))
+            .andExpect(status().isUnauthorized()).andExpect(jsonPath("$.status").value("unauthorized"));
+    }
+
     @Test void rawResultsAndPublicMealsPersistWithStableIdsAndRecurringDates() {
         var entry=mapper.readTree("""
             {"id":"scraper-test","stale":false,"result":{"toolResults":[{"name":"scrape_meals","data":{"meals":[

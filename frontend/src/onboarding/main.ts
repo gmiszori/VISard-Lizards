@@ -71,7 +71,7 @@ function initialise(root: HTMLElement) {
     }
     function refresh() {
       translate(root);
-      if (!completed) document.documentElement.dataset.theme = store.state.profile.theme;
+      if (!completed) document.dispatchEvent(new CustomEvent('themepreferencechange', { detail: store.state.profile.theme }));
       flow.hidden = completed; payoff.hidden = !completed;
       if (completed) { renderPayoff(); return; }
       const index = store.state.step;
