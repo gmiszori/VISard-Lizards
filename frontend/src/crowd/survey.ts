@@ -1,5 +1,6 @@
 import { API_URL, ApiError, apiGet, apiPost } from '../data/api';
 import { cooldownLeft, isOpenAt, LAST_REPORT_KEY, RETRY_UNTIL_KEY, occupancyOf, REPORT_COOLDOWN_MS, summarize, type CrowdLevel, type CrowdSummary, type LiveReport, type OpeningWindows } from './survey-logic';
+import { appNow, CLOCK_EVENT } from '../time/clock';
 import { addMockReports, CROWD_MOCK_KEY, liveMockReports, readCrowdMock, writeCrowdMock } from './survey-mock';
 
 /**
@@ -186,7 +187,7 @@ export function mountCrowdSurvey(): void {
 
   // Development only: ?crowdNow=2026-10-12T12:00:00%2B02:00 shows the survey as if it were that time (like ?ratingNow=).
   const override = import.meta.env.DEV ? new URL(location.href).searchParams.get('crowdNow') : null;
-  const now = () => (override && Number.isFinite(Date.parse(override)) ? new Date(override) : new Date());
+  const now = () => (override && Number.isFinite(Date.parse(override)) ? new Date(override) : appNow());
 
   function refreshVisibility() {
     const mock = readCrowdMock();
@@ -204,6 +205,7 @@ export function mountCrowdSurvey(): void {
 
   buttons.forEach(button => button.addEventListener('click', () => report(Number(button.dataset.surveyLevel) as CrowdLevel, button)));
   document.addEventListener('languagechange', renderTexts);
+  document.addEventListener(CLOCK_EVENT, refreshVisibility);
   window.addEventListener('storage', event => {
     if (event.key === LAST_REPORT_KEY || event.key === RETRY_UNTIL_KEY) renderTexts();
     if (event.key !== CROWD_MOCK_KEY) return;

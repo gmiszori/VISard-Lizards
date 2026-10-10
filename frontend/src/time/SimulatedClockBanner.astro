@@ -1,0 +1,37 @@
+---
+// Shown on every page while the developer tools simulate the time, so it is never forgotten.
+---
+<div class="sim-clock-banner" data-sim-clock-banner hidden role="status">
+  <span><strong data-sim-clock-label>Simulated time</strong> <span data-sim-clock-value></span></span>
+  <button type="button" data-sim-clock-reset>Use real time</button>
+</div>
+<script>
+  import { activeSimulatedClock, appNow, clearSimulatedClock, CLOCK_EVENT, CLOCK_KEY } from './clock';
+  const banner = document.querySelector<HTMLElement>('[data-sim-clock-banner]');
+  function render() {
+    if (!banner) return;
+    const clock = activeSimulatedClock();
+    banner.hidden = !clock;
+    if (!clock) return;
+    const de = document.documentElement.lang === 'de';
+    const value = new Intl.DateTimeFormat(de ? 'de-CH' : 'en-GB', {
+      timeZone: 'Europe/Zurich', weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
+    }).format(appNow());
+    banner.querySelector('[data-sim-clock-label]')!.textContent = de ? 'Simulierte Zeit' : 'Simulated time';
+    banner.querySelector('[data-sim-clock-value]')!.textContent = `${value}${clock.running ? '' : de ? ' (angehalten)' : ' (frozen)'}`;
+    banner.querySelector('[data-sim-clock-reset]')!.textContent = de ? 'Echte Zeit verwenden' : 'Use real time';
+  }
+  banner?.querySelector('[data-sim-clock-reset]')?.addEventListener('click', () => { clearSimulatedClock(); location.reload(); });
+  document.addEventListener(CLOCK_EVENT, render);
+  document.addEventListener('languagechange', render);
+  document.addEventListener('campuseats:preferences-applied', render);
+  window.addEventListener('storage', event => { if (event.key === CLOCK_KEY || event.key === null) render(); });
+  render();
+  setInterval(render, 30_000);
+</script>
+<style>
+  .sim-clock-banner{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom, 0px));transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:12px;max-width:calc(100% - 32px);padding:9px 10px 9px 16px;border-radius:999px;background:var(--ink);color:var(--paper);box-shadow:var(--shadow);font-size:13px}
+  .sim-clock-banner[hidden]{display:none}
+  .sim-clock-banner strong{font-weight:800}
+  .sim-clock-banner button{border:0;border-radius:999px;padding:6px 12px;background:var(--lime);color:var(--ink);font:700 12px 'DM Sans',sans-serif;cursor:pointer;white-space:nowrap}
+</style>

@@ -7,6 +7,8 @@
  * Elements opt in with data-live="status | hours | crowd | open-count" and
  * data-live-id="<canteen id>".
  */
+import { appNow, CLOCK_EVENT } from '../time/clock';
+
 type Weekday = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
 interface LiveInfo {
   temporarilyClosed: boolean;
@@ -19,7 +21,7 @@ const WEEKDAYS: Weekday[] = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 const hhmm = (min: number) => `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
 
 function zurichNow(): { weekday: Weekday; minutes: number } {
-  const parts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Zurich', weekday: 'short', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(new Date());
+  const parts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Zurich', weekday: 'short', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(appNow());
   const get = (type: string) => parts.find((part) => part.type === type)?.value ?? '';
   const weekday = WEEKDAYS.find((day) => day === get('weekday').toLowerCase().slice(0, 3)) ?? 'mon';
   return { weekday, minutes: (Number(get('hour')) % 24) * 60 + Number(get('minute')) };
@@ -95,5 +97,6 @@ function run() {
 
 run();
 document.addEventListener('languagechange', refresh);
+document.addEventListener(CLOCK_EVENT, run);
 document.addEventListener('campuseats:crowd-reset', run);
 setInterval(run, 60_000);

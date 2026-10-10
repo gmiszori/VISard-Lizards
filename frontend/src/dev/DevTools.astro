@@ -73,6 +73,27 @@ const devData = {
       </table>
     </div>
   </section>
+  <section class="dev-panel dev-clock" data-dev-clock aria-labelledby="dev-clock-title">
+    <h3 id="dev-clock-title">Simulated time</h3>
+    <p class="dev-hint">Set the app's date and time (Zurich) to test weekdays and service hours, e.g. on a weekend. Affects open/closed, opening hours, the crowd chart and survey and the rating prompt. Only while Dev mode is on; a banner shows it on every page.</p>
+    <p class="dev-clock-current" data-dev-clock-current></p>
+    <div class="dev-clock-form">
+      <label for="dev-clock-date">Date<input id="dev-clock-date" type="date" data-dev-clock-date /></label>
+      <label for="dev-clock-time">Time<input id="dev-clock-time" type="time" step="60" data-dev-clock-time /></label>
+      <label class="dev-clock-running"><input type="checkbox" data-dev-clock-running checked /> Keep running</label>
+    </div>
+    <div class="dev-actions dev-clock-actions">
+      <button type="button" data-dev-clock-apply>Set time</button>
+      <button type="button" data-dev-clock-preset="1 11:45">Mon 11:45</button>
+      <button type="button" data-dev-clock-preset="1 12:30">Mon 12:30</button>
+      <button type="button" data-dev-clock-preset="1 18:30">Mon 18:30</button>
+      <button type="button" data-dev-clock-preset="3 13:00">Wed 13:00</button>
+      <button type="button" data-dev-clock-preset="5 21:00">Fri 21:00</button>
+      <button type="button" data-dev-clock-plus-hour>+1 hour</button>
+      <button type="button" data-dev-clock-reset>Use real time</button>
+    </div>
+    <p class="dev-crowd-status" data-dev-clock-status role="status" aria-live="polite"></p>
+  </section>
   <section class="dev-panel dev-crowd-mock" data-dev-crowd-mock aria-labelledby="dev-crowd-title">
     <h3 id="dev-crowd-title">Crowd survey mock</h3>
     <p class="dev-hint">Test "How busy is it right now?" without the backend. While the mock is on, canteen pages on this device read and write these reports instead of the backend, and the survey card says "Mock data".</p>
@@ -131,7 +152,13 @@ const devData = {
   .dev-live-open{color:var(--green);font-weight:800}.dev-live-closed{color:var(--muted);font-weight:700}
   .dev-storage{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;font-size:12px}
   .dev-storage pre{margin:0;max-height:160px;overflow:auto;padding:10px;border:1px solid var(--line);border-radius:8px;background:color-mix(in srgb,var(--paper) 92%,var(--line));white-space:pre-wrap;overflow-wrap:anywhere}
-  .dev-crowd-mock{margin-bottom:12px}
+  .dev-crowd-mock,.dev-clock{margin-bottom:12px}
+  .dev-clock-current{margin:0 0 10px;font-size:13px;font-weight:800;color:var(--green)}
+  .dev-clock-form{display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px 12px;margin-bottom:10px}
+  .dev-clock-form label{display:grid;gap:4px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase}
+  .dev-clock-form input[type=date],.dev-clock-form input[type=time]{min-height:38px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);font:600 13px 'DM Sans',sans-serif;padding:6px 8px}
+  .dev-clock-form .dev-clock-running{display:inline-flex;align-items:center;gap:6px;min-height:38px;text-transform:none;font-size:12px;color:var(--ink)}
+  .dev-clock-actions{justify-content:flex-start}
   .dev-hint{margin:0 0 10px;color:var(--muted);font-size:12px;line-height:1.5;max-width:75ch}
   .dev-crowd-toggles{display:flex;flex-wrap:wrap;gap:8px 18px;margin-bottom:10px;font-size:12px;font-weight:700}
   .dev-crowd-toggles label{display:inline-flex;align-items:center;gap:6px;cursor:pointer}

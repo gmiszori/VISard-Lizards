@@ -7,6 +7,7 @@ import { formatDistance } from './distance.ts';
 import { locateUserNow, LocationUnavailableError, type LocationError } from './geolocation.ts';
 import type { MensaPlace, UserLocation } from './locate.ts';
 import { recordVisits, visitsAt, type MensaHours } from './visits.ts';
+import { appNow } from '../time/clock.ts';
 
 export const NEAR_ME_KEY = 'campuseats-near-me';
 
@@ -106,7 +107,7 @@ export function mountNearMe(): void {
     return () => (nearest ? text().away(nearest.name, formatDistance(nearest.distanceM, lang())) : '');
   }
   function captureVisit(found: UserLocation) {
-    const now = new Date();
+    const now = appNow();
     recordVisits(visitsAt(found.atMensaIds, data.hours, now), now);
     document.dispatchEvent(new CustomEvent('campuseats:user-located', { detail: found }));
   }

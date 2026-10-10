@@ -5,6 +5,8 @@ import { getPositionFix, LocationUnavailableError } from '../location/geolocatio
 import { locateUser, type MensaPlace, type PositionFix, type UserLocation } from '../location/locate.ts';
 import { readVisits, VISITS_KEY } from '../location/visits.ts';
 import { mountCrowdMockPanel, renderCrowdMockPanel } from './crowd-mock-panel.ts';
+import { appNow, CLOCK_EVENT } from '../time/clock.ts';
+import { mountClockPanel, renderClockPanel } from './clock-panel.ts';
 import { CROWD_MOCK_KEY } from '../crowd/survey-mock.ts';
 import { LAST_REPORT_KEY } from '../crowd/survey-logic.ts';
 
@@ -53,7 +55,7 @@ function dl(root: HTMLElement, rows: Array<[string, string]>) {
   }));
 }
 
-function zurichNow(now = new Date()): { date: string; weekday: Weekday; minutes: number; label: string } {
+function zurichNow(now = appNow()): { date: string; weekday: Weekday; minutes: number; label: string } {
   const parts = new Intl.DateTimeFormat('en-GB', {
     timeZone: 'Europe/Zurich', weekday: 'short', year: 'numeric', month: '2-digit', day: '2-digit',
     hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23',
@@ -270,6 +272,7 @@ function renderAll() {
   renderLiveTable(root.querySelector<HTMLElement>('[data-dev-live-table]')!, data);
   renderStorage(root.querySelector<HTMLElement>('[data-dev-storage]')!);
   renderCrowdMockPanel();
+  renderClockPanel();
 }
 
 async function readPosition() {
@@ -295,6 +298,8 @@ export function mountDevTools(): void {
   void checkPermission().then(renderAll);
   void pingBackend().then(renderAll);
   mountCrowdMockPanel(renderAll);
+  mountClockPanel(renderAll);
+  document.addEventListener(CLOCK_EVENT, renderAll);
   renderAll();
 
   document.querySelector('[data-dev-refresh]')?.addEventListener('click', () => {

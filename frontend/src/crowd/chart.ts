@@ -1,5 +1,6 @@
 import { formatTime, slotsForDay, WEEKDAYS, type CrowdPrediction, type CrowdSlot, type CrowdWeekday } from './prediction';
 import { defaultCrowdDay } from './defaultDay';
+import { appNow, CLOCK_EVENT } from '../time/clock';
 
 const copy = {
   en: { eyebrow: 'PLAN YOUR LUNCH', title: 'Predicted crowd', minutes: 'min', subtitle: 'Typical occupancy, every 15 minutes.', day: 'Day', quiet: 'Quiet', moderate: 'Moderate', busy: 'Busy', now: 'Now', empty: 'No prediction available for this day.', missing: 'No prediction for this interval', preview: 'Preview data · Illustrative occupancy, not a live forecast.', backend: 'Estimated occupancy · 15-minute intervals · Zürich time.', chart: 'Predicted occupancy by time', occupancy: 'predicted occupancy' },
@@ -10,7 +11,7 @@ const language = () => document.documentElement.lang === 'de' ? 'de' : 'en';
 const t = (key: Key) => copy[language()][key];
 const svgNS = 'http://www.w3.org/2000/svg';
 function nowInZurich() {
-  const parts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Zurich', weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(new Date());
+  const parts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Zurich', weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(appNow());
   const part = (type: string) => parts.find(p => p.type === type)?.value ?? '';
   return { day: part('weekday').toLowerCase() as CrowdWeekday, minute: Number(part('hour')) * 60 + Number(part('minute')) };
 }
@@ -97,5 +98,7 @@ function mountChart(root: HTMLElement) {
     selectDay(day);
   });
   selectDay(day);
+  // A simulated time (developer tools) moves the "now" marker right away.
+  document.addEventListener(CLOCK_EVENT, updateNow);
   setInterval(updateNow, 60_000);
 }

@@ -1,4 +1,5 @@
 import { type MensaChoice, type RatingPrompt } from './getRatingPrompt.ts';
+import { appNow } from '../time/clock.ts';
 import { mensaCandidates, STATE_KEY, useRatingPrompt } from './useRatingPrompt.ts';
 import { loadMeals } from './mealSource.ts';
 import { anonymousUserId, DuplicateMealRatingError, RATINGS_KEY, saveMealRating, type Stars } from './saveMealRating.ts';
@@ -42,7 +43,7 @@ export function mountRatingCard(): void {
   // The override and isolated simulator storage are removed from production bundles.
   const override = import.meta.env.DEV ? new URL(location.href).searchParams.get('ratingNow') : null;
   const simulated = Boolean(override && /(?:Z|[+-]\d{2}:\d{2})$/.test(override) && Number.isFinite(Date.parse(override)));
-  const now = () => simulated ? new Date(override!) : new Date();
+  const now = () => simulated ? new Date(override!) : appNow();
   const stateKey = `${STATE_KEY}${simulated ? ':dev' : ''}`;
   const ratingsKey = `${RATINGS_KEY}${simulated ? ':dev' : ''}`;
   const candidates = () => {
