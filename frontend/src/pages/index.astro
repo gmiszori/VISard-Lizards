@@ -15,7 +15,7 @@ const { canteens, menuDate, today, source, sampleReason, days, chosenDay } = awa
 const openCount = canteens.filter((canteen) => canteen.isOpen).length;
 ---
 <BaseLayout title="Campus canteens">
-  <div class="section-head" style="margin-top:0"><div><h2 role="heading" aria-level="1" data-i18n="campus">Campus canteens</h2></div><span class="count" hidden={openCount === 0}><span data-live="open-count">{openCount}</span> <span data-i18n="openCount">open right now</span></span></div>
+  <div class="section-head" style="margin-top:0"><div><h1 data-i18n="campus">Campus canteens</h1></div><span class="count" hidden={openCount === 0}><span data-live="open-count">{openCount}</span> <span data-i18n="openCount">open right now</span></span></div>
   <FilterBar />
   <NearMe />
   <DevTools canteens={canteens} source={source} sampleReason={sampleReason} menuDate={menuDate} today={today} />
