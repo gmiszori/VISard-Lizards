@@ -20,31 +20,27 @@ The four recommendations prefer saved favourites, then descending profile
 `mensaRatings`. There is no visit history or rating frequency in Profile; its
 ratings are preference scores, not counts.
 
-## Persistence and DB alignment
+## Persistence and backend
 
-`saveMealRating()` is the only rating save boundary, currently a local mock with
-`TODO(backend)`. It writes `{userId, mealId, mensaId, rating, ratedAt, mealDate}`
-to `campuseats-meal-ratings`. The persistent anonymous userId is a UUID with an
-`anon:` prefix. The demo login is not authentication. A real account integration
-must provide its trusted identity at this boundary.
+`saveMealRating()` is the only rating save boundary. With a backend (`PUBLIC_API_URL`, see
+`src/data/api.ts`) it sends `{userId, stars}` to `POST /api/meals/{id}/ratings`. The backend stores
+1–5 stars, enforces one rating per `(userId, mealId)` with a unique constraint (`409` →
+`DuplicateMealRatingError`) and returns the meal's mensa and date plus the server's `ratedAt`.
+Every saved rating is also kept in `campuseats-meal-ratings` on the device. The persistent anonymous
+userId is a UUID with an `anon:` prefix; the backend rejects other formats. The demo login is not
+authentication. A real account integration must provide its trusted identity at this boundary.
 
-Meal IDs come directly from DB `Meal.id`, and `mealDate` from `Meal.date`. The
-picker filters by the exact mensa and target date; it never substitutes the
-home screen's fallback menu date. Saved meal stars continue using names.
-The frontend's bundled DB has no meal-rating table or authenticated user ID.
-The separately developed backend branch now has `POST /api/meals/{id}/ratings`,
-but accepts 1–5 `stars` and optional tags, with IP-based 24-hour throttling.
-Its rating entity has no user identity or unique user/meal constraint, so it does
-not yet implement this prompt's payload or duplicate rule. The mock remains
-behind `saveMealRating()` until that contract is aligned; no scale conversion is
-silently applied. Backend source reviewed: commit `7ec8898` on 2026-10-10.
-Mensa aggregate ratings in the bundled frontend data are explicitly synthetic and use a separate 1–5 scale.
-This feature uses the requested 1–3 scale without changing those aggregates.
+Ratings use 1–5 stars (decided 2026-10-10, replacing the earlier 1–3 scale), the same scale as the
+mensa ratings. In the development simulator (`?ratingNow=`), ratings stay on the device only.
 
-The mock rejects duplicate `(userId, mealId)` pairs. Web Locks serialize writes
-across browser tabs where supported. There is no cross-device/server uniqueness
-until the backend supplies a UNIQUE(userId, mealId) constraint and validates the
-meal, mensa, date, and trusted identity. No backend route was invented.
+The picker loads the target day's meals from `GET /api/meals?date=`, so meal ids match the backend.
+Without a backend it falls back to the bundled DB (`Meal.id`, `Meal.date`). It filters by the exact
+mensa and target date and never substitutes the home screen's fallback menu date.
+
+Without a backend, the device copy rejects duplicate `(userId, mealId)` pairs. Web Locks serialize writes
+across browser tabs where supported. Across devices, uniqueness holds only per anonymous id: the
+backend validates the meal and derives mensa and date from it, but it cannot tell that two anonymous
+ids belong to the same person.
 
 ## Development simulator
 

@@ -34,6 +34,8 @@ const { title } = Astro.props;
       Object.assign(translations.en, { priceCategory: 'Price category', priceCategoryHint: 'Show only your selected price on every dish. Student is the default.', yourPrice: 'Your price' });
       Object.assign(translations.de, { priceCategory: 'Preiskategorie', priceCategoryHint: 'Zeige bei jedem Gericht nur deinen gewählten Preis. Standard ist der Studierendenpreis.', yourPrice: 'Dein Preis' });
       translations.de.footerMade = 'Von Studierenden mit <3 für Studierende';
+      translations.en.sampleMenus = 'Showing sample menus: the CampusEats backend is not reachable.';
+      translations.de.sampleMenus = 'Beispielmenüs: Das CampusEats-Backend ist nicht erreichbar.';
       translations.en.filtersHint = 'Choose one or more campus locations to include.';
       translations.de.filtersHint = 'Wähle einen oder mehrere Campus-Standorte aus.';
       const applyLanguage = (lang) => {

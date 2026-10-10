@@ -76,6 +76,8 @@ Services only see domain models through `MensaRepository` (implemented by `JpaMe
   Windows: `app.rate-limit.*` in `application.properties`. Meal ratings are limited per user instead:
   one rating per anonymous user id and meal (`409` otherwise).
 - CORS is open for the Astro dev server (`http://localhost:4321`), see `app.cors.allowed-origins`.
+- **Frontend:** the Astro app in `frontend/` uses `/api/meta`, `/api/meals`, `/api/mensas`,
+  `/api/mensas/{id}/crowd` and `POST /api/meals/{id}/ratings` (see `frontend/README.md`).
 
 ## Mensas
 
