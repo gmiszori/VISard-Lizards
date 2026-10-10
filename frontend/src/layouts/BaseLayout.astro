@@ -17,13 +17,14 @@ const { title } = Astro.props;
     <title>{title} | CampusEats</title>
   </head>
   <body>
+    <a class="skip-link" href="#main" data-i18n="skipToContent">Skip to content</a>
     <div class="app-shell">
       <header class="site-header">
         <a class="brand" href="/" aria-label="CampusEats home"><span class="brand-mark">✳</span><span>CampusEats<small data-i18n="tagline">YOUR CAMPUS, SERVED</small></span></a>
         <HeaderAccount />
         <div class="header-controls"><a class="settings-link" href="/settings" data-i18n="settings">Settings</a><button class="control-btn" id="theme-toggle" type="button" aria-label="Switch to dark theme" title="Switch theme">☾</button><label class="language-control"><span class="visually-hidden">Language</span><select id="language-select" aria-label="Language"><option value="en">EN</option><option value="de">DE</option></select></label></div>
       </header>
-      <main class="main"><slot /></main>
+      <main class="main" id="main" tabindex="-1"><slot /></main>
       <footer class="footer"><span data-i18n="footerMade">Made by students with &lt;3 for students</span></footer>
     </div>
     <script is:inline>
@@ -43,6 +44,8 @@ const { title } = Astro.props;
       translations.de.sampleMenus = 'Beispielmenüs: Das CampusEats-Backend ist nicht erreichbar.';
       Object.assign(translations.en, { campusSelect: 'Campus', campusPreset: 'My campuses', campusAll: 'All campuses' });
       Object.assign(translations.de, { campusSelect: 'Campus', campusPreset: 'Meine Auswahl', campusAll: 'Alle Standorte' });
+      Object.assign(translations.en, { skipToContent: 'Skip to content' });
+      Object.assign(translations.de, { skipToContent: 'Zum Inhalt springen' });
       Object.assign(translations.en, { mapLink: 'Location' });
       Object.assign(translations.de, { mapLink: 'Standort' });
       Object.assign(translations.en, { sampleMenusInvalid: 'Showing sample menus: the CampusEats backend sent data this page could not read.' });
