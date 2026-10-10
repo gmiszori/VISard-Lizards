@@ -105,6 +105,7 @@ Response `200`: `MensaDTO[]`
     },
     "campus": "Irchel",
     "location": "Winterthurerstrasse 190, 8057 Zürich",
+    "coordinates": { "lat": 47.39704196675, "lng": 8.5482430458069 },
     "avgRating": null,
     "mealPlan": null
   }
@@ -116,6 +117,10 @@ Response `200`: `MensaDTO[]`
   temporarily closed.
 - `avgRating` is the average of all user ratings, rounded to one decimal, or `null` if nobody has
   rated the mensa yet.
+- `coordinates` is the mensa's WGS84 position (degrees), or `null` if unknown. It is accurate to the
+  building (about ±50 m): mensas in the same building share a point, e.g. Polysnack and
+  Dozentenfoyer (ETH main building) or Obere and Untere Mensa (UZH main building). The frontend uses
+  it to find the mensas near the user (`frontend/src/location/`).
 - `id` is not on the whiteboard; it was added so the frontend can call `/api/mensas/{id}`.
 
 ### GET /api/campuses

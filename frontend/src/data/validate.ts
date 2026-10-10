@@ -80,7 +80,18 @@ export function parseMensas(value: unknown): BackendMensa[] {
   for (const item of value.slice(0, 500)) {
     if (!isObject(item)) continue;
     const id = text(item.id, 100);
-    if (id) out.push({ id, title: text(item.title, 200) ?? id, avgRating: average(item.avgRating) });
+    const coordinates = isObject(item.coordinates) &&
+      typeof item.coordinates.lat === 'number' && Number.isFinite(item.coordinates.lat) &&
+      typeof item.coordinates.lng === 'number' && Number.isFinite(item.coordinates.lng)
+      ? { lat: item.coordinates.lat, lng: item.coordinates.lng }
+      : null;
+    if (id) out.push({
+      id,
+      title: text(item.title, 200) ?? id,
+      campus: text(item.campus, 100) ?? '',
+      coordinates,
+      avgRating: average(item.avgRating),
+    });
   }
   return out;
 }

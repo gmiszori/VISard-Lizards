@@ -120,7 +120,10 @@ test('F08: meta needs two real dates', () => {
 });
 
 test('F08: mensa ratings are optional, so a bad list means no ratings', () => {
-  assert.deepEqual(parseMensas([{ id: 'a', title: 'A', avgRating: 4 }, { id: 'b', avgRating: 9 }, { id: '', title: 'x' }, null, 5, { title: 'no id' }]),
-    [{ id: 'a', title: 'A', avgRating: 4 }, { id: 'b', title: 'b', avgRating: null }]);
+  assert.deepEqual(parseMensas([{ id: 'a', title: 'A', campus: 'Zentrum', coordinates: { lat: 47.1, lng: 8.2 }, avgRating: 4 }, { id: 'b', avgRating: 9 }, { id: '', title: 'x' }, null, 5, { title: 'no id' }]),
+    [
+      { id: 'a', title: 'A', campus: 'Zentrum', coordinates: { lat: 47.1, lng: 8.2 }, avgRating: 4 },
+      { id: 'b', title: 'b', campus: '', coordinates: null, avgRating: null },
+    ]);
   for (const bad of [null, undefined, {}, 'x', 7]) assert.deepEqual(parseMensas(bad), []);
 });

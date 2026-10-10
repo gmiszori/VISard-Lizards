@@ -5,6 +5,7 @@ import { anonymousUserId, DuplicateMealRatingError, RATINGS_KEY, saveMealRating,
 import { API_URL, apiGet, type BackendMealDetail } from '../data/api.ts';
 import type { Profile } from '../onboarding/profile';
 import { ratingText, translateRating, type RatingText } from './i18n';
+import { readVisits } from '../location/visits.ts';
 
 interface MealOption { id: string; mensaId: string; date: string; name: string }
 interface CardData { mensas: MensaChoice[]; meals: MealOption[] }
@@ -47,7 +48,19 @@ export function mountRatingCard(): void {
     const profile = readOptional<Partial<Profile>>('campuseats-profile');
     const rawFavourites = readOptional<unknown>('campuseats-favourites');
     const favourites = Array.isArray(rawFavourites) ? rawFavourites.filter((id): id is string => typeof id === 'string') : [];
-    return mensaCandidates(data.mensas, profile, favourites);
+    const mensasById = new Map(data.mensas.map(mensa => [mensa.mensaId, mensa]));
+    const visited = readVisits(storage).flatMap(visit => {
+      const mensa = mensasById.get(visit.mensaId);
+      return mensa ? [{ ...mensa, date: visit.date }] : [];
+    });
+    const preferred = mensaCandidates(data.mensas, profile, favourites);
+    const seen = new Set<string>();
+    return [...visited, ...preferred].filter(choice => {
+      const key = `${choice.date ?? ''}:${choice.mensaId}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
   };
   const store = useRatingPrompt(now, candidates, storage, stateKey);
   let prompt: RatingPrompt | null = null;
@@ -233,6 +246,7 @@ export function mountRatingCard(): void {
   const interval = setInterval(refresh, 30_000);
   window.addEventListener('storage', refresh);
   document.addEventListener('campuseats:canteen-favourites-changed', refresh);
+  document.addEventListener('campuseats:user-located', refresh);
   document.addEventListener('visibilitychange', refresh);
   window.addEventListener('pagehide', () => { clearInterval(interval); if (closeTimer) clearTimeout(closeTimer); }, { once: true });
 }

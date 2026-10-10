@@ -4,6 +4,7 @@ export interface Preferences {
   locations: string[]; openOnly: boolean; priceTier: 'student' | 'worker' | 'external';
   /** Allergen ids (allergens/allergens.ts) whose dishes are hidden. */
   avoid: AllergenId[];
+  devMode: boolean;
 }
 export const PREFERENCES_KEY = 'campuseats-preferences';
 export const FAVOURITES_KEY = 'campuseats-favourites';
@@ -19,8 +20,8 @@ export function normalizePreferences(value: unknown, profileTier: unknown = 'stu
   const locations = raw.length && !valid.length ? campuses : [...new Set(valid)];
   const bool = (key: string, fallback: boolean) => typeof saved[key] === 'boolean' ? saved[key] as boolean : fallback;
   return { vegan: bool('vegan', true), vegetarian: bool('vegetarian', true), meat: bool('meat', true), compact: bool('compact', false),
-    openOnly: bool('openOnly', false), priceTier: isPriceTier(saved.priceTier) ? saved.priceTier : isPriceTier(profileTier) ? profileTier : 'student', locations,
-    avoid: normalizeAvoid(saved.avoid) };
+    openOnly: bool('openOnly', false), priceTier: isPriceTier(saved.priceTier) ? saved.priceTier : isPriceTier(profileTier) ? profileTier : 'student',
+    locations, devMode: bool('devMode', false), avoid: normalizeAvoid(saved.avoid) };
 }
 export function readPreferences(storage: Pick<Storage, 'getItem'> = localStorage): Preferences {
   try {

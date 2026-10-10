@@ -15,6 +15,7 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 import com.visardlizards.backend.model.domain.Address;
+import com.visardlizards.backend.model.domain.Coordinates;
 import com.visardlizards.backend.model.domain.Mensa;
 import com.visardlizards.backend.model.domain.ServiceHours;
 
@@ -82,7 +83,8 @@ class CrowdServiceTests {
 
 	/** Lunch 11:00-14:00 on weekdays. */
 	private static final Mensa POLYTERRASSE = new Mensa("polyterrasse", "Mensa Polyterrasse", "ETH", "zentrum",
-			new Address("Leonhardstrasse 34", "8092", "Zürich", null), true, false,
+			new Address("Leonhardstrasse 34", "8092", "Zürich", null),
+			new Coordinates(47.3762048, 8.5467367, null), true, false,
 			Map.of("mon", List.of(LUNCH), "tue", List.of(LUNCH), "wed", List.of(LUNCH), "thu", List.of(LUNCH),
 					"fri", List.of(LUNCH)),
 			List.of(), null);

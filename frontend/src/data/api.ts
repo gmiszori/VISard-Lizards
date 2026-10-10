@@ -71,6 +71,10 @@ export interface BackendMealDetail {
 export interface BackendMensa {
   id: string;
   title: string;
+  /** Campus display name: Zentrum, Hönggerberg or Irchel. */
+  campus: string;
+  /** WGS84, accurate to the building; null when unknown. */
+  coordinates: { lat: number; lng: number } | null;
   avgRating: number | null;
 }
 

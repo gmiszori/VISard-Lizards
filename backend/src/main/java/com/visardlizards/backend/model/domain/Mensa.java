@@ -17,6 +17,8 @@ public record Mensa(
 		String institution,
 		String campusId,
 		Address address,
+		/** Building-level position; null when unknown. */
+		@Nullable Coordinates coordinates,
 		boolean hasMenu,
 		boolean temporarilyClosed,
 		/** Keys: mon, tue, wed, thu, fri, sat, sun. */
