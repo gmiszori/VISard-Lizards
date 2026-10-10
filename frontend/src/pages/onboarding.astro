@@ -63,7 +63,7 @@ const payload = {
         <section data-step="theme" hidden>
           <h1 tabindex="-1" data-ob-i18n="themeTitle">{t('themeTitle')}</h1>
           <p class="ob-lead" data-ob-i18n="themeHint">{t('themeHint')}</p>
-          <ChipSelect name="theme" labelKey="themePreference" mode="single" options={keys(['lightTheme', 'darkTheme'])} />
+          <ChipSelect name="theme" labelKey="themePreference" mode="single" options={[{ value: 'light', key: 'lightTheme' }, { value: 'dark', key: 'darkTheme' }]} />
         </section>
         <section data-step="price" hidden>
           <h1 tabindex="-1" data-ob-i18n="priceTitle">{t('priceTitle')}</h1>
