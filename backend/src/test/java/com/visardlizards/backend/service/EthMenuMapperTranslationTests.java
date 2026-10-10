@@ -68,10 +68,10 @@ class EthMenuMapperTranslationTests {
 	}
 
 	@Test
-	void withoutGermanPagesTheEnglishTextIsUsed() throws IOException {
+	void withoutGermanPagesContradictoryEnglishNamesAreNotImported() throws IOException {
 		List<Meal> monday = mapper.map(page("weekly-rotas-2026-10-12-broken-en.json"), Map.of(11, "tannenbar"), MONDAY,
 				MONDAY);
-		assertThat(monday).extracting(Meal::title).containsOnly("Chicken Katsu");
+		assertThat(monday).isEmpty();
 	}
 
 }
