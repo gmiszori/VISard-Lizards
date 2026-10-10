@@ -1,21 +1,6 @@
-import { createSearch, type Search, type SearchText } from '../search/dishSearch';
+import { createSearch } from '../search/dishSearch';
 import { ALL_CAMPUS_IDS, isPriceTier, isViewMode, readPreferences, PREFERENCES_KEY, type Preferences } from '../preferences/state';
-import { API_URL, apiPost } from '../data/api';
 import { canShowCanteen } from '../preferences/canteenVisibility';
-let aiMatchedIds: Set<string> | null = null;
-let aiQuery = '';
-// true while the backend search runs; its "Finding matching canteens…" message must not be overwritten
-let aiPending = false;
-let searchVersion = 0;
-let searchTimer: ReturnType<typeof setTimeout> | undefined;
-
-function searchStatus(message: string) {
-  const status = document.querySelector<HTMLElement>('#search-status');
-  if (status) {
-    status.textContent = message;
-    status.hidden = !message;
-  }
-}
 let preferences: Preferences;
 try {
   preferences = readPreferences();
@@ -27,15 +12,13 @@ let ignoreOpenOnly = false;
 /** Why the list is empty, so the message names the real cause instead of always blaming the search. */
 const EMPTY_MESSAGES = {
   en: {
-    search: 'No canteens match your search. Try another dish or campus.',
-    searchFiltered: 'Your search finds dishes, but not with your current filters (Lunch/Dinner, campus or food preferences). Try “All” or another campus.',
+    search: 'No matching canteens or dishes. Try another search or adjust your filters.',
     closed: 'No canteen is open right now, and “Only show open canteens” is on in Settings.',
     campus: 'No campus is selected in Settings.',
     other: 'No canteens to show here. Try another campus.',
   },
   de: {
-    search: 'Keine Mensen gefunden. Suche ein anderes Gericht oder einen anderen Campus.',
-    searchFiltered: 'Deine Suche findet Gerichte, aber nicht mit deinen aktuellen Filtern (Mittag-/Abendessen, Campus oder Essenspräferenzen). Probiere «Alle» oder einen anderen Campus.',
+    search: 'Keine passenden Mensen oder Gerichte. Suche anders oder passe die Filter an.',
     closed: 'Gerade ist keine Mensa geöffnet, und in den Einstellungen ist «Nur geöffnete Mensen anzeigen» aktiv.',
     campus: 'In den Einstellungen ist kein Campus ausgewählt.',
     other: 'Hier gibt es keine Mensen zu zeigen. Probiere einen anderen Campus.',
@@ -53,15 +36,6 @@ function cardService(card: Element | null | undefined, picked: string | undefine
 
 /** What a dish row is searched on: its canteen's name (so "polyterrasse pizza" works) and its own search text. */
 const searchTextOf = (row: HTMLElement, card: HTMLElement) => `${card.dataset.name ?? ''} ${row.dataset.search ?? row.dataset.mealName ?? ''}`;
-
-/** Shown while the results are look-alikes for a misspelt word. */
-function similarResultsNotice(search: Search, query: string): string {
-  if (!search.active || !search.fuzzy) return '';
-  const shown = query.trim();
-  return document.documentElement.lang === 'de'
-    ? `Keine genaue Übereinstimmung für «${shown}». Ähnliche Ergebnisse werden angezeigt.`
-    : `No exact match for “${shown}”. Showing similar results.`;
-}
 
 function applyPreferences() {
   document.documentElement.dataset.density = preferences.viewMode;
@@ -82,15 +56,7 @@ function applyPreferences() {
   document.querySelectorAll<HTMLSelectElement>('[data-price-tier]').forEach(select => select.value = preferences.priceTier);
 
   const query = document.querySelector<HTMLInputElement>('#search-input')?.value ?? '';
-  // Everything on the page that can be searched, so the search knows whether an exact match exists or typos are allowed.
-  const corpus: SearchText[] = [];
-  if (query.trim() !== '') {
-    document.querySelectorAll<HTMLElement>('[data-canteen-card]').forEach(card => {
-      corpus.push({ text: card.dataset.name ?? '' });
-      card.querySelectorAll<HTMLElement>('[data-meal-row]').forEach(row => corpus.push({ text: searchTextOf(row, card), diet: row.dataset.diet }));
-    });
-  }
-  const search = createSearch(query, corpus);
+  const search = createSearch(query);
   // Lunch / dinner choice of the day picker (components/DayPicker.astro); unset shows both.
   const service = document.documentElement.dataset.serviceFilter;
   document.querySelectorAll<HTMLElement>('[data-diet]').forEach((meal) => {
@@ -150,9 +116,7 @@ function applyPreferences() {
       : campusChoice === 'preset' ? preferences.locations.includes(card.dataset.campusId ?? '')
         : card.dataset.campusId === campusChoice;
     const matchesOpen = !preferences.openOnly || ignoreOpenOnly || card.dataset.isOpen === 'true';
-    const fallbackSearch = search.test(card.dataset.name ?? '') || card.querySelector('[data-meal-row]:not([hidden])') !== null;
-    const matchesSearch = aiMatchedIds && aiQuery === query
-      ? aiMatchedIds.has(card.dataset.canteenId ?? '') : fallbackSearch;
+    const matchesSearch = search.test(card.dataset.name ?? '') || card.querySelector('[data-meal-row]:not([hidden])') !== null;
     // With lunch or dinner picked, a canteen without that service counts as having no menu.
     const effectiveService = cardService(card, service);
     const servesChoice = !effectiveService || (effectiveService !== 'closed' && card.querySelector(`[data-meal-group][data-service="${effectiveService}"], [data-meal-group]:not([data-service])`) !== null);
@@ -169,7 +133,6 @@ function applyPreferences() {
     card.hidden = !matches || (!hasMenu && collapseWithoutMenu);
     if (!card.hidden) visibleCanteens++;
   });
-  if (!aiPending) searchStatus(aiMatchedIds && aiQuery === query ? '' : similarResultsNotice(search, query));
   const noMenuToggle = document.querySelector<HTMLButtonElement>('#no-menu-toggle');
   if (noMenuToggle) {
     noMenuToggle.hidden = preferences.viewMode === 'list' || withoutMenuCount === 0 || withMenuCount === 0 || !!query.trim();
@@ -187,7 +150,7 @@ function applyPreferences() {
   if (emptyState) emptyState.style.display = visibleCanteens === 0 ? 'block' : 'none';
   const emptyMessage = document.querySelector<HTMLElement>('#empty-message');
   if (emptyMessage && visibleCanteens === 0) {
-    const reason = query.trim() ? (search.hasMatches ? 'searchFiltered' : 'search')
+    const reason = query.trim() ? 'search'
       : preferences.openOnly && !ignoreOpenOnly && candidates.some(c => c.card.dataset.isOpen !== 'true') ? 'closed'
         : campusChoice === 'preset' && preferences.locations.length === 0 ? 'campus' : 'other';
     emptyMessage.textContent = EMPTY_MESSAGES[document.documentElement.lang === 'de' ? 'de' : 'en'][reason];
@@ -249,42 +212,7 @@ document.querySelector<HTMLFormElement>('#preferences-form')?.addEventListener('
   catch { showSavedState(false); }
 });
 
-document.querySelector<HTMLInputElement>('#search-input')?.addEventListener('input', (event) => {
-  const query = (event.target as HTMLInputElement).value.trim();
-  const version = ++searchVersion;
-  clearTimeout(searchTimer);
-  aiMatchedIds = null;
-  aiQuery = '';
-  aiPending = false;
-  applyPreferences();
-  if (query.length < 2 || !API_URL) return;
-
-  searchTimer = setTimeout(async () => {
-    const candidates = [...document.querySelectorAll<HTMLElement>('[data-canteen-card]')]
-      .filter(card => canShowCanteen(card.dataset.canteenId ?? '', preferences.priceTier)).map(card => ({
-      id: card.dataset.canteenId ?? '',
-      name: card.dataset.name ?? '',
-      campus: card.dataset.campus ?? '',
-      menu: card.dataset.menu ?? '',
-      diets: card.dataset.diets ?? '',
-    }));
-    if (!candidates.length) return;
-    aiPending = true;
-    searchStatus(document.documentElement.lang === 'de' ? 'Suche nach passenden Mensen …' : 'Finding matching canteens…');
-    try {
-      const result = await apiPost<{ ids: string[] }>('/api/search', { query, candidates }, API_URL, 15000);
-      if (version !== searchVersion) return;
-      aiMatchedIds = new Set(result.ids);
-      aiQuery = query;
-      aiPending = false;
-      applyPreferences();
-    } catch {
-      if (version !== searchVersion) return;
-      aiPending = false;
-      applyPreferences();
-    }
-  }, 650);
-});
+document.querySelector<HTMLInputElement>('#search-input')?.addEventListener('input', applyPreferences);
 document.querySelector<HTMLSelectElement>('#campus-select')?.addEventListener('change', applyPreferences);
 document.querySelector<HTMLButtonElement>('#no-menu-toggle')?.addEventListener('click', () => {
   showWithoutMenu = !showWithoutMenu;
