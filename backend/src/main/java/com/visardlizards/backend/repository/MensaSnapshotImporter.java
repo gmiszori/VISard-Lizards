@@ -21,11 +21,8 @@ import com.visardlizards.backend.model.db.ClosureEmbeddable;
 import com.visardlizards.backend.model.db.MealEntity;
 import com.visardlizards.backend.model.db.MensaEntity;
 import com.visardlizards.backend.model.db.ServiceHoursEmbeddable;
-<<<<<<< HEAD
-import com.visardlizards.backend.model.domain.Coordinates;
-=======
 import com.visardlizards.backend.model.domain.Campus;
->>>>>>> feature/ai-dish-search
+import com.visardlizards.backend.model.domain.Coordinates;
 import com.visardlizards.backend.model.domain.Meal;
 import com.visardlizards.backend.model.domain.Mensa;
 import com.visardlizards.backend.model.domain.MensaDb;
@@ -60,15 +57,6 @@ public class MensaSnapshotImporter implements ApplicationRunner {
 	@Override
 	@Transactional
 	public void run(ApplicationArguments args) {
-<<<<<<< HEAD
-		if (mensas.count() > 0) {
-			log.info("Mensa data already present, skipping snapshot import");
-			backfillFacilityIds();
-			backfillCoordinates();
-			return;
-		}
-=======
->>>>>>> feature/ai-dish-search
 		MensaDb db = readSnapshot();
 		for (Campus c : db.campuses()) {
 			if (entityManager.find(CampusEntity.class, c.id()) == null) {
@@ -91,6 +79,7 @@ public class MensaSnapshotImporter implements ApplicationRunner {
 			log.info("Imported {} snapshot meals from {}", db.meals().size(), SNAPSHOT);
 		}
 		backfillFacilityIds();
+		backfillCoordinates();
 	}
 
 	/** Databases created before the eth_facility_id column existed get the ids from the snapshot. */

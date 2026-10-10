@@ -94,23 +94,17 @@ async function fetchAppData(): Promise<AppData> {
       source: 'backend',
       menuDate,
       today: meta.today,
-<<<<<<< HEAD
-      canteens: CANTEENS.map((canteen) => ({
-        ...canteen,
-        menu: withPriceUnits(prepareMenu(toMenu(menus.get(canteen.id) ?? []), MENSAS.find(m => m.id === canteen.id), menuDate), canteen.id, BY_WEIGHT),
-        rating: ratings.get(canteen.id) ?? null,
-      })),
-=======
       canteens: CANTEENS.map((canteen) => {
         const backendMeals = toMenu(menus.get(canteen.id) ?? []);
-        const menuToUse = backendMeals.length > 0 ? backendMeals : canteen.menu;
+        // Fall back to the bundled menu only when it is for the same day; another day's menu under
+        // "Menu for <menuDate>" would be wrong.
+        const menuToUse = backendMeals.length > 0 ? backendMeals : MENU_DATE === menuDate ? canteen.menu : [];
         return {
           ...canteen,
-          menu: prepareMenu(menuToUse, MENSAS.find(m => m.id === canteen.id), menuDate),
+          menu: withPriceUnits(prepareMenu(menuToUse, MENSAS.find(m => m.id === canteen.id), menuDate), canteen.id, BY_WEIGHT),
           rating: ratings.get(canteen.id) ?? null,
         };
       }),
->>>>>>> feature/ai-dish-search
     };
   } catch (error) {
     // Invalid JSON (SyntaxError) and wrongly shaped data (DataError) mean the backend answered but cannot be used; anything else is unreachable.
