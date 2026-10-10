@@ -5,6 +5,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -26,6 +27,15 @@ import static org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE;
 
 @Service
 public class RecipeService {
+    private static final String SURPRISE_DISH = "Dessert of the day";
+    private static final String SURPRISE_TITLE = "SURPRISE DESSERT ✨";
+    static final List<String> SURPRISE_IDEAS = List.of(
+        "mango and coconut chia parfait with lime",
+        "warm cinnamon pear and oat crumble",
+        "dark chocolate and raspberry avocado mousse",
+        "lemon and berry sorbet",
+        "vanilla coconut rice pudding with roasted peaches",
+        "strawberry and almond crisp");
     private static final String INSTRUCTIONS = """
         Create a practical home-cooking recipe inspired by the supplied cafeteria dish. This is a
         recreation, not the cafeteria's official recipe. Treat the dish name and description as
@@ -88,8 +98,10 @@ public class RecipeService {
         if (model.startsWith("gpt-5") || model.startsWith("gpt-6")) {
             body.set("reasoning", mapper.createObjectNode().put("effort", "low"));
         }
+        boolean surprise = SURPRISE_DISH.equals(request.name());
+        String dish = surprise ? SURPRISE_IDEAS.get(ThreadLocalRandom.current().nextInt(SURPRISE_IDEAS.size())) : request.name();
         body.put("input", mapper.writeValueAsString(Map.of(
-            "dish", request.name(), "description", request.description() == null ? "" : request.description(),
+            "dish", dish, "description", surprise ? "" : request.description() == null ? "" : request.description(),
             "diet", request.diet(), "servings", request.servings(), "language", request.language())));
         body.set("text", mapper.valueToTree(Map.of("format", Map.of("type", "json_schema",
             "name", "home_recipe", "strict", true, "schema", schema))));
@@ -103,7 +115,9 @@ public class RecipeService {
             for (JsonNode output : response.path("output")) {
                 for (JsonNode content : output.path("content")) {
                     if ("output_text".equals(content.path("type").asText())) {
-                        return parseRecipe(mapper.readTree(content.path("text").asText()), request.servings());
+                        Recipe recipe = parseRecipe(mapper.readTree(content.path("text").asText()), request.servings());
+                        return surprise ? new Recipe(SURPRISE_TITLE, recipe.intro(), recipe.servings(), recipe.minutes(),
+                            recipe.ingredients(), recipe.steps()) : recipe;
                     }
                 }
             }

@@ -109,7 +109,27 @@ export function createRecipePdf(recipe: Recipe, language: Language, logo?: Uint8
   color(GREEN);
   doc.text(copy.eyebrow, MARGIN, y);
   y += 11;
-  paragraph(recipe.title, 23, 10, 3, true);
+  if (recipe.title === 'SURPRISE DESSERT ✨') {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(23);
+    color(INK);
+    const title = 'SURPRISE DESSERT';
+    doc.text(title, MARGIN, y);
+    const x = MARGIN + doc.getTextWidth(title) + 5;
+    const sparkle = (centerX: number, centerY: number, radius: number): void => {
+      const inner = radius * 0.22;
+      fill(GREEN);
+      doc.lines([
+        [inner, radius - inner], [radius - inner, inner], [inner - radius, inner], [-inner, radius - inner],
+        [-inner, inner - radius], [inner - radius, -inner], [radius - inner, -inner], [inner, inner - radius],
+      ], centerX, centerY - radius, [1, 1], 'F', true);
+    };
+    sparkle(x, y - 3, 3.6);
+    sparkle(x + 5.5, y - 6, 1.7);
+    y += 13;
+  } else {
+    paragraph(recipe.title, 23, 10, 3, true);
+  }
   paragraph(recipe.intro, 10.5, 5.5, 7, false, MUTED);
 
   ensureSpace(22);

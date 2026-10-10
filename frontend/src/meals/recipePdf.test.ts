@@ -28,3 +28,13 @@ test('German recipe labels and offline logo fallback remain printable', () => {
   assert.match(doc.output(), /Zubereitung/);
   assert.match(doc.output(), /Seite 1 \/ 1/);
 });
+
+test('surprise dessert title prints a sparkle without an unsupported font glyph', () => {
+  const doc = createRecipePdf({
+    title: 'SURPRISE DESSERT ✨', intro: 'A sweet surprise.', servings: 2, minutes: 20,
+    ingredients: [{ amount: '200 g', item: 'berries' }, { amount: '150 g', item: 'coconut yogurt' }],
+    steps: ['Prepare the berries.', 'Serve with yogurt.'],
+  }, 'en');
+  assert.match(doc.output(), /\(SURPRISE DESSERT\) Tj/);
+  assert.doesNotMatch(doc.output(), /SURPRISE DESSERT '\(/);
+});
