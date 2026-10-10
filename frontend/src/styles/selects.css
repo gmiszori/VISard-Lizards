@@ -1,5 +1,5 @@
 /* Keep the OS picker on touch devices; the styled picker suits mouse-driven screens. */
-@media (hover: hover) and (pointer: fine) {
+@media (min-width: 701px) and (hover: hover) and (pointer: fine) {
 @supports (appearance: base-select) {
   select:not([multiple]),
   select:not([multiple])::picker(select) {
