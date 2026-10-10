@@ -179,3 +179,7 @@ SESSION 3 - 02:52 - connecting frontend and backend (user request), branch featu
          (render time), rating card 1-5 stars -> POST /api/meals/{id}/ratings, crowd chart -> backend prediction when
          sufficient. Sample-data fallback when the backend is down. Verified end to end in the browser
          (rating 201 + 409 on repeat, crowd chart switches to backend). Backend 96 tests, frontend 44 tests, astro check 0 errors.
+  05:35  DONE (user request): crowd survey 'How busy is it right now?' on the canteen page (frontend/src/crowd/
+         CrowdSurvey.astro, survey.ts, survey-logic.ts). Uses the existing backend endpoints, no backend change.
+         Martin: touches src/pages/canteen/[id].astro (one component line) and src/scripts/live-status.ts (skips the
+         Current crowd box once real reports exist). Branch feature/crowd-survey.
