@@ -51,3 +51,8 @@ build/
 
 ### Local H2 database (ratings, crowd reports) ###
 data/*.db
+
+data/scraped-menus.json
+data/vapid-keys.properties
+data/*.log
+data/scraped-menus-*.tmp

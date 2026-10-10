@@ -1,4 +1,5 @@
 ---
+import ScrapedMenus from '../components/ScrapedMenus.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import CanteenCard from '../components/CanteenCard.astro';
 import FilterBar from '../components/FilterBar.astro';
@@ -20,8 +21,8 @@ const openCount = canteens.filter((canteen) => canteen.isOpen).length;
   <DevTools canteens={canteens} source={source} sampleReason={sampleReason} menuDate={menuDate} today={today} />
   <RatingCard />
   {source === 'sample' && (sampleReason === 'invalid'
-    ? <p class="data-source-note" data-i18n="sampleMenusInvalid">Showing sample menus: the CampusEats backend sent data this page could not read.</p>
-    : <p class="data-source-note" data-i18n="sampleMenus">Showing sample menus: the CampusEats backend is not reachable.</p>)}
+    ? <p class="data-source-note" data-i18n="sampleMenusInvalid">Showing sample menus: the UniEats backend sent data this page could not read.</p>
+    : <p class="data-source-note" data-i18n="sampleMenus">Showing sample menus: the UniEats backend is not reachable.</p>)}
   <StarredMealsToday date={menuDate} />
   <section id="favourites-section" hidden>
     <div class="section-head favourites-heading"><div><h2 data-i18n="favourites">Your favourites</h2></div></div>
@@ -37,6 +38,8 @@ const openCount = canteens.filter((canteen) => canteen.isOpen).length;
     <p data-i18n="empty">No canteens match your search. Try another dish or campus.</p>
     <div class="empty-actions"><button type="button" data-reset-filters data-i18n="resetFilters">Show all canteens</button><a href="/settings" data-i18n="checkSettings">Check my settings</a></div>
   </div>
+  <ScrapedMenus />
+  <button class="back-to-top" type="button" data-back-to-top data-i18n-aria="backToTop" aria-label="Back to top"><span aria-hidden="true">↑</span></button>
   <script>
     import { readFavourites, FAVOURITES_KEY } from '../preferences/state';
     const allCards = [...document.querySelectorAll<HTMLElement>('[data-canteen-card]')];
@@ -81,6 +84,10 @@ const openCount = canteens.filter((canteen) => canteen.isOpen).length;
     });
     document.addEventListener('languagechange', renderFavourites);
     document.addEventListener('campuseats:preferences-applied', renderFavourites);
+    document.querySelector<HTMLButtonElement>('[data-back-to-top]')?.addEventListener('click', () => {
+      const behavior: ScrollBehavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+      window.scrollTo({ top: 0, behavior });
+    });
     window.addEventListener('storage', event => {
       if (event.key === FAVOURITES_KEY || event.key === null) {
         try { favourites.clear(); readFavourites().forEach(id => favourites.add(id)); renderFavourites(); } catch { /* Storage blocked. */ }
@@ -94,4 +101,7 @@ const openCount = canteens.filter((canteen) => canteen.isOpen).length;
   .menu-list-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 12px}
   #no-menu-toggle{min-height:44px;padding:5px 0;border:0;background:none;color:var(--green);font-size:12px;font-weight:700;text-decoration:underline;text-underline-offset:3px}
   #no-menu-toggle[hidden]{display:none}
+  .back-to-top{position:fixed;right:max(16px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom));z-index:30;display:grid;place-items:center;width:44px;height:44px;padding:0;border:1px solid var(--line);border-radius:50%;background:var(--paper);color:var(--green);box-shadow:var(--shadow);font:700 22px/1 'DM Sans',sans-serif;cursor:pointer;transition:transform .18s,background .18s}
+  .back-to-top:hover{transform:translateY(-2px)}
+  .back-to-top:focus-visible{outline:3px solid var(--green);outline-offset:3px}
 </style>

@@ -1,6 +1,6 @@
-# CampusEats frontend
+# UniEats frontend
 
-Astro site for the ETH and UZH mensas. Menus, ratings and crowd predictions come from the CampusEats
+Astro site for the ETH and UZH mensas. Menus, ratings and crowd predictions come from the UniEats
 backend in `../backend` (Spring Boot); mensa details (photos, addresses, opening windows) come from the
 bundled database in `src/data/canteens.ts`.
 
@@ -40,6 +40,25 @@ the device only if no backend is configured.
 
 **Static builds:** `pnpm dev` renders every request, so menus are always current. `pnpm build`
 takes the menus of build time; rebuild to refresh them (the backend imports new menus every 6 hours).
+
+## Docker demo deployment
+
+From the repository root, configure any secrets in `.env` and start both services:
+
+```sh
+docker compose up --build -d
+```
+
+The frontend is served by Caddy over plain HTTP on `0.0.0.0:8080` and proxies `/api` to the backend,
+which remains private on the Compose network. This matches the hackathon managed address, which
+forwards traffic to port 8080 and handles access control and TLS. The `backend-data` volume persists
+the H2 database. Set `CORS_ALLOWED_ORIGINS` to specific origins only if you need cross-origin API
+access; same-origin requests through Caddy do not need a broad CORS rule.
+
+The Astro site is statically generated in the image, so its initial menu snapshot is taken during
+the image build. Browser API calls use the frontend origin and reach the live backend through Caddy.
+The separate menu scraper is off by default because it requires a separately deployed connector;
+enable it with `MEAL_SCRAPER_ENABLED=true` after setting its connector URL and token.
 
 ## Commands
 

@@ -53,6 +53,10 @@ public class WebConfig implements WebMvcConfigurer {
 		// behind one IP address can still rate the same meal.
 		registry.addInterceptor(new RateLimitInterceptor(crowdReportWindow, "report this mensa again", clock))
 				.addPathPatterns("/api/mensas/*/crowd-reports");
+		registry.addInterceptor(new RateLimitInterceptor(Duration.ofSeconds(10), "search again", clock))
+				.addPathPatterns("/api/search");
+		registry.addInterceptor(new RateLimitInterceptor(Duration.ofMinutes(1), "send another test notification", clock))
+				.addPathPatterns("/api/push/test");
 	}
 
 }

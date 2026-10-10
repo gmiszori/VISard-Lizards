@@ -1,0 +1,112 @@
+---
+// Settings: the meal ratings saved from this device, newest first, each with "Remove" (takes it back).
+---
+<section class="settings-group your-ratings" aria-labelledby="your-ratings-title" data-your-ratings hidden>
+  <h2 id="your-ratings-title" data-your-ratings-copy="title">Your meal ratings</h2>
+  <p data-your-ratings-copy="hint">Rated on this device. Remove a rating to take it back; it then no longer counts for the dish.</p>
+  <ul class="your-ratings-list" data-your-ratings-list></ul>
+  <p class="your-ratings-status" role="status" aria-live="polite" data-your-ratings-status></p>
+</section>
+<script>
+  import { apiGet, type BackendMealDetail, type BackendMensa } from '../data/api';
+  import { RATINGS_KEY, undoMealRating, type MealRating } from '../rating/saveMealRating';
+
+  const copy = {
+    en: { title: 'Your meal ratings', hint: 'Rated on this device. Remove a rating to take it back; it then no longer counts for the dish.', remove: 'Remove', removed: 'Rating removed.', failed: 'Could not remove the rating. Check your connection and try again.', meal: 'A meal', stars: 'of 5 stars' },
+    de: { title: 'Deine Essensbewertungen', hint: 'Auf diesem Gerät bewertet. Entferne eine Bewertung, um sie zurückzunehmen; sie zählt dann nicht mehr für das Gericht.', remove: 'Entfernen', removed: 'Bewertung entfernt.', failed: 'Die Bewertung konnte nicht entfernt werden. Prüfe deine Verbindung und versuche es erneut.', meal: 'Ein Gericht', stars: 'von 5 Sternen' },
+  };
+  type Key = keyof typeof copy.en;
+  const de = () => document.documentElement.lang === 'de';
+  const t = (key: Key) => copy[de() ? 'de' : 'en'][key];
+  /** At most this many, newest first. */
+  const SHOWN = 30;
+
+  const root = document.querySelector<HTMLElement>('[data-your-ratings]');
+  const list = root?.querySelector<HTMLElement>('[data-your-ratings-list]');
+  const status = root?.querySelector<HTMLElement>('[data-your-ratings-status]');
+  /** Names of ratings saved before names were kept, from the backend. */
+  const fetchedNames = new Map<string, string>();
+  const mensaNames = new Map<string, string>();
+
+  function readRatings(): MealRating[] {
+    try {
+      const raw: unknown = JSON.parse(localStorage.getItem(RATINGS_KEY) ?? '[]');
+      return Array.isArray(raw)
+        ? raw.filter((r): r is MealRating => typeof r?.mealId === 'string' && typeof r?.userId === 'string' && typeof r?.rating === 'number')
+          .sort((a, b) => String(b.ratedAt).localeCompare(String(a.ratedAt))).slice(0, SHOWN)
+        : [];
+    } catch { return []; }
+  }
+
+  function render() {
+    if (!root || !list) return;
+    root.querySelectorAll<HTMLElement>('[data-your-ratings-copy]').forEach(el => { el.textContent = t(el.dataset.yourRatingsCopy as Key); });
+    const ratings = readRatings();
+    root.hidden = ratings.length === 0;
+    const day = new Intl.DateTimeFormat(de() ? 'de-CH' : 'en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' });
+    list.replaceChildren(...ratings.map(rating => {
+      const li = document.createElement('li');
+      const stars = Object.assign(document.createElement('span'), { className: 'your-rating-stars', textContent: '★'.repeat(rating.rating) + '☆'.repeat(5 - rating.rating) });
+      stars.setAttribute('aria-label', `${rating.rating} ${t('stars')}`);
+      const text = document.createElement('span');
+      text.className = 'your-rating-text';
+      const name = Object.assign(document.createElement('strong'), { textContent: rating.mealName ?? fetchedNames.get(rating.mealId) ?? t('meal') });
+      const date = /^\d{4}-\d{2}-\d{2}$/.test(rating.mealDate) ? day.format(new Date(`${rating.mealDate}T12:00:00Z`)) : '';
+      const meta = Object.assign(document.createElement('small'), { textContent: [rating.mensaName ?? mensaNames.get(rating.mensaId) ?? rating.mensaId, date].filter(Boolean).join(' · ') });
+      text.append(name, meta);
+      const remove = Object.assign(document.createElement('button'), { type: 'button', className: 'your-rating-remove', textContent: t('remove') });
+      remove.setAttribute('aria-label', `${t('remove')}: ${name.textContent}`);
+      remove.addEventListener('click', async () => {
+        remove.disabled = true;
+        try {
+          await undoMealRating(rating);
+          if (status) status.textContent = t('removed');
+          render();
+          list.querySelector<HTMLButtonElement>('button')?.focus();
+        } catch {
+          if (status) status.textContent = t('failed');
+          remove.disabled = false;
+        }
+      });
+      li.append(stars, text, remove);
+      return li;
+    }));
+  }
+
+  /** Ratings saved before names were kept: ask the backend once for the dish name. */
+  async function fillNames() {
+    const ratings = readRatings();
+    const missing = ratings.filter(r => !r.mealName && !fetchedNames.has(r.mealId));
+    const needMensas = ratings.some(r => !r.mensaName) && mensaNames.size === 0;
+    await Promise.all([
+      ...missing.map(async rating => {
+        try { fetchedNames.set(rating.mealId, (await apiGet<BackendMealDetail>(`/api/meals/${encodeURIComponent(rating.mealId)}`)).meal.name); }
+        catch { /* stays "A meal" */ }
+      }),
+      needMensas ? apiGet<BackendMensa[]>('/api/mensas').then(list => list.forEach(m => mensaNames.set(m.id, m.title))).catch(() => { /* ids stay */ }) : null,
+    ]);
+    if (missing.length || needMensas) render();
+  }
+
+  render();
+  void fillNames();
+  document.addEventListener('languagechange', render);
+  window.addEventListener('storage', event => { if (event.key === RATINGS_KEY || event.key === null) render(); });
+</script>
+<style is:global>
+  .your-ratings[hidden]{display:none}
+  .your-ratings h2{margin:0 0 6px;font:800 18px Manrope,sans-serif;letter-spacing:-.3px}
+  .your-ratings>p{color:var(--muted);font-size:13px;line-height:1.5;margin:0 0 12px}
+  .your-ratings-list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+  .your-ratings-list li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--line);border-radius:12px}
+  .your-rating-stars{color:var(--green);font-size:13px;letter-spacing:1px;white-space:nowrap}
+  .your-rating-text{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .your-rating-text strong{font-size:13px;overflow-wrap:anywhere}
+  .your-rating-text small{color:var(--muted);font-size:11px}
+  .your-rating-remove{min-height:40px;padding:6px 12px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);font:700 12px 'DM Sans',sans-serif;cursor:pointer}
+  .your-rating-remove:hover{border-color:var(--green)}
+  .your-rating-remove:disabled{opacity:.6;cursor:wait}
+  .your-ratings-status{margin:8px 0 0;font-size:12px;color:var(--green)}
+  .your-ratings-status:empty{display:none}
+  @media(max-width:420px){.your-ratings-list li{grid-template-columns:minmax(0,1fr) auto}.your-rating-stars{grid-column:1/-1}}
+</style>

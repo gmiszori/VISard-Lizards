@@ -1,0 +1,11 @@
+.push-optin{max-width:min(420px,calc(100% - 32px));padding:22px 22px 18px;border:1px solid var(--line);border-radius:18px;background:var(--paper);color:var(--ink);box-shadow:var(--shadow)}
+.push-optin::backdrop{background:#0006}
+.push-optin h2{margin:0 0 10px;font:800 20px/1.25 Manrope,sans-serif;letter-spacing:-.3px}
+.push-optin p{margin:0 0 10px;font-size:14px;line-height:1.55}
+.push-optin .push-optin-where{color:var(--muted);font-size:13px}
+.push-optin-actions{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:8px;margin-top:16px}
+.push-optin-actions button{min-height:44px;padding:10px 16px;border-radius:12px;font:700 14px 'DM Sans',sans-serif;cursor:pointer}
+.push-optin-no{border:1px solid var(--line);background:var(--paper);color:var(--ink)}
+.push-optin-yes{border:1px solid var(--green);background:var(--green);color:var(--paper)}
+.push-optin-actions button:focus-visible{outline:3px solid color-mix(in srgb,var(--green) 45%,transparent);outline-offset:2px}
+.push-optin-actions button:disabled{opacity:.6;cursor:wait}

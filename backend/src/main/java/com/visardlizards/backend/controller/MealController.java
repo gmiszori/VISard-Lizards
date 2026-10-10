@@ -8,6 +8,7 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -38,6 +39,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Pattern;
 
 // The @Operation descriptions are shown in the Swagger UI; keep them in sync with backend/API.md.
 @RestController
@@ -148,6 +150,22 @@ public class MealController {
 				rating.tags() == null ? List.of() : rating.tags(), rating.source());
 		return new MealRatingDTO(meal.id(), meal.mensaId(), meal.date(), rating.userId(), saved.stars(), saved.tags(),
 				saved.createdAt(), saved.source());
+	}
+
+	@DeleteMapping("/{id}/ratings")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(summary = "Take back a meal rating", description = """
+			Deletes this user's rating of the meal ("undo"), so `avgRating` and `tagCounts` no longer count it and
+			the user can rate the meal again.
+			""")
+	@ApiResponse(responseCode = "204", description = "Deleted")
+	@ApiResponse(responseCode = "400", description = "Missing or invalid userId")
+	@ApiResponse(responseCode = "404", description = "Unknown meal, or this user has not rated it")
+	public void unrateMeal(
+			@Parameter(description = "Meal id, e.g. `polyterrasse.2026-10-06.lunch.2`") @PathVariable String id,
+			@Parameter(description = "The anonymous user id the rating was saved with (`anon:` + UUID)")
+			@RequestParam @Pattern(regexp = "anon:[0-9a-fA-F-]{36}", message = "must be \"anon:\" followed by a UUID") String userId) {
+		mealService.unrateMeal(id, userId);
 	}
 
 	private MealDetailDTO toDetail(Meal meal, PriceCategory priceCategory) {

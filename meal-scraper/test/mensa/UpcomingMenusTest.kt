@@ -1,0 +1,57 @@
+package mensa
+
+import java.time.LocalDate
+import kotlinx.serialization.json.*
+import kotlin.test.*
+
+class UpcomingMenusTest {
+    private val url = "https://app.food2050.ch/de/zfv/uzh/raemi/lunch/menu/weekly"
+    private fun page(sourceUrl: String, dates: List<String>): SourceDocument {
+        val daily = buildJsonArray { dates.forEach { date -> add(buildJsonObject {
+            put("__typename", "OutletMenuCategoryCalendarRangeDay")
+            putJsonObject("from") { put("dateLocal", "${date}T00:00:00+02:00") }
+            putJsonArray("menuItems") { add(buildJsonObject { put("id",date); putJsonObject("dish") { put("name","Soup") } }) }
+        }) } }
+        val chunk = buildJsonArray { add(1); add("7:$daily\n") }
+        return SourceDocument(sourceUrl,"text/html","<script>self.__next_f.push($chunk)</script>".toByteArray())
+    }
+    @Test fun weekdayKeepsTodayAndFutureAndNeverPastDates() {
+        val calls = mutableListOf<String>()
+        val scraper = MealScraper({ sourceUrl -> calls += sourceUrl; page(sourceUrl,listOf("2026-10-05","2026-10-09","2026-10-08")) }, today = { LocalDate.parse("2026-10-08") })
+        val meals = scraper.scrape(url).meals
+        assertEquals(listOf("2026-10-08","2026-10-09"), meals.map { it.date })
+        assertEquals(2,calls.size)
+        assertTrue(calls.last().contains("week=41&year=2026"))
+    }
+    @Test fun weekendChecksNextWeekAndOldPdfAdvances() {
+        val old = "$url.pdf?week=40&year=2026"
+        val calls = mutableListOf<String>()
+        val scraper = MealScraper({ sourceUrl ->
+            calls += sourceUrl
+            when {
+                sourceUrl == old -> SourceDocument(old,"application/pdf","%PDF-fixture".toByteArray())
+                sourceUrl.contains("week=41") -> page(sourceUrl,listOf("2026-10-09"))
+                sourceUrl.contains("week=42") -> page(sourceUrl,listOf("2026-10-12","2026-10-13"))
+                else -> error("Unexpected week: $sourceUrl")
+            }
+        }, today = { LocalDate.parse("2026-10-10") })
+        val result = scraper.scrape(old)
+        assertEquals(listOf("2026-10-12","2026-10-13"), result.meals.map { it.date })
+        assertTrue(result.warnings.any { it.contains("showing the next published meals") })
+        assertEquals(3,calls.size)
+        assertTrue(result.sources.any { it.url.contains("week=42") })
+    }
+    @Test fun lookaheadIsBoundedAndNeverFallsBackToPastMeals() {
+        var calls = 0
+        val scraper = MealScraper({ sourceUrl -> calls++; page(sourceUrl,listOf("2026-10-05")) },today = { LocalDate.parse("2026-10-10") })
+        val result = scraper.scrape(url)
+        assertTrue(result.meals.isEmpty()); assertEquals(4,calls)
+        assertTrue(result.warnings.any { it.contains("three-week window") })
+    }
+    @Test fun isoYearBoundaryAndExplicitFutureWeekArePreserved() {
+        val date = LocalDate.parse("2027-01-01")
+        assertTrue(UpcomingMenus.foodWeek(url,UpcomingMenus.firstFoodWeek(url,date)).endsWith("week=53&year=2026"))
+        assertEquals(LocalDate.parse("2027-01-11"),UpcomingMenus.firstFoodWeek("$url?week=2&year=2027",date))
+        assertTrue(UpcomingMenus.ethUpcoming("https://idapps.ethz.ch/cookpit-pub-services/v1/weeklyrotas?facility=10&valid-after=2026-10-05",LocalDate.parse("2026-10-10")).contains("valid-after=2026-10-10&valid-before=2026-10-26"))
+    }
+}

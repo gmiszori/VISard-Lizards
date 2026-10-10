@@ -39,11 +39,22 @@ const payload = {
   <div class="ob" id="onboarding">
     <div data-flow>
       <header class="ob-progress-header">
-        <span class="eyebrow">CampusEats · <span data-ob-i18n="intro">{t('intro')}</span></span>
+        <span class="eyebrow"><span data-ob-i18n="intro">{t('intro')}</span></span>
         <p class="ob-progress-label" data-progress-label aria-live="polite" aria-atomic="true"></p>
-        <progress data-progress max="4" value="1" aria-label="Onboarding progress"></progress>
+        <progress data-progress max="6" value="1" aria-label="Onboarding progress"></progress>
       </header>
       <div class="ob-content">
+        <section data-step="language" hidden>
+          <h1 tabindex="-1" data-ob-i18n="languageTitle">{t('languageTitle')}</h1>
+          <p class="ob-lead" data-ob-i18n="languageHint">{t('languageHint')}</p>
+          <label class="ob-language-control" for="language-select">
+            <span data-ob-i18n="languageLabel">{t('languageLabel')}</span>
+            <select id="language-select" aria-label="Language">
+              <option value="en" data-i18n="english">English</option>
+              <option value="de" data-i18n="german">German</option>
+            </select>
+          </label>
+        </section>
         <section data-step="campus" hidden>
           <h1 tabindex="-1" data-ob-i18n="campusTitle">{t('campusTitle')}</h1>
           <p class="ob-lead" data-ob-i18n="campusHint">{t('campusHint')}</p>
@@ -59,6 +70,11 @@ const payload = {
               notice: value === 'halal' || value === 'kosher' }))} />
             <p class="ob-note" data-ob-i18n="hardHint">{t('hardHint')}</p>
           </div>
+        </section>
+        <section data-step="theme" hidden>
+          <h1 tabindex="-1" data-ob-i18n="themeTitle">{t('themeTitle')}</h1>
+          <p class="ob-lead" data-ob-i18n="themeHint">{t('themeHint')}</p>
+          <ChipSelect name="theme" labelKey="themePreference" mode="single" options={[{ value: 'light', key: 'lightTheme' }, { value: 'dark', key: 'darkTheme' }]} />
         </section>
         <section data-step="price" hidden>
           <h1 tabindex="-1" data-ob-i18n="priceTitle">{t('priceTitle')}</h1>

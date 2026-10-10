@@ -5,6 +5,7 @@ import com.github.benmanes.caffeine.cache.stats.CacheStats;
 import com.visardlizards.backend.config.CacheConfig;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.caffeine.CaffeineCache;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,6 +16,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/cache")
+@ConditionalOnProperty(name = "app.internal-api.enabled", havingValue = "true")
 public class CacheManagementController {
 
     private final CacheManager cacheManager;

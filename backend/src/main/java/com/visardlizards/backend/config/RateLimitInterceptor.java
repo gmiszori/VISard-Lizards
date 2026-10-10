@@ -3,8 +3,9 @@ package com.visardlizards.backend.config;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -21,19 +22,20 @@ import jakarta.servlet.http.HttpServletResponse;
  */
 public class RateLimitInterceptor implements HandlerInterceptor {
 
-	/** Expired entries are dropped once the map grows beyond this size. */
-	private static final int CLEANUP_THRESHOLD = 10_000;
-
 	private final Duration window;
 	private final String what;
 	private final Clock clock;
-	private final Map<String, Instant> lastAccepted = new ConcurrentHashMap<>();
+	private final Cache<String, Instant> lastAccepted;
 
 	/** @param what describes the action for the error message, e.g. "rate this again" */
 	public RateLimitInterceptor(Duration window, String what, Clock clock) {
 		this.window = window;
 		this.what = what;
 		this.clock = clock;
+		this.lastAccepted = Caffeine.newBuilder()
+				.maximumSize(50_000)
+				.expireAfterWrite(window)
+				.build();
 	}
 
 	@Override
@@ -43,14 +45,10 @@ public class RateLimitInterceptor implements HandlerInterceptor {
 		}
 		Instant now = clock.instant();
 		String key = request.getRemoteAddr() + " " + request.getRequestURI();
-		Instant previous = lastAccepted.get(key);
+		Instant previous = lastAccepted.asMap().putIfAbsent(key, now);
 		if (previous != null && previous.plus(window).isAfter(now)) {
 			Duration retryAfter = Duration.between(now, previous.plus(window));
 			throw new TooManyRequestsException("You can " + what + " in " + format(retryAfter) + ".", retryAfter);
-		}
-		lastAccepted.put(key, now);
-		if (lastAccepted.size() > CLEANUP_THRESHOLD) {
-			lastAccepted.values().removeIf(accepted -> accepted.plus(window).isBefore(now));
 		}
 		return true;
 	}

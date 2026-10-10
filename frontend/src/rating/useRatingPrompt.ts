@@ -49,6 +49,13 @@ export function useRatingPrompt(now: () => Date, candidates: MensaChoice[] | (()
       state.promptedDays[today] = date;
       storage.setItem(key, JSON.stringify(state));
     },
+    /** After "Undo": the date can be answered again. */
+    reopen(date: string) {
+      const state = read();
+      state.resolvedDates = state.resolvedDates.filter(d => d !== date);
+      state.dismissedDates = state.dismissedDates.filter(d => d !== date);
+      storage.setItem(key, JSON.stringify(state));
+    },
     /** quietDays: "nowhere" on a guess question also pauses guess questions for that many more days. */
     resolve(date: string, dismissed = false, quietDays = 0) {
       const state = read();

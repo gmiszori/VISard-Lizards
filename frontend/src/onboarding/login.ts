@@ -2,8 +2,8 @@
 const DEMO_SESSION_KEY = 'campuseats-demo-session';
 const copy = {
   en: {
-    navigation: 'Your CampusEats', personalization: 'PERSONALIZATION', login: 'Login',
-    close: 'Close login', welcome: 'Welcome back.', intro: 'Your campus, your lunch. All in one place.',
+    navigation: 'Account', settings: 'Settings', login: 'Login',
+    close: 'Close login', welcome: 'Welcome back.', intro: 'Find a lunch that fits your day.',
     email: 'Email address', password: 'Password', show: 'Show', hide: 'Hide',
     quickAccess: 'Just trying it out?', helperHint: 'Enter a demo session. No details needed.',
     previewNote: 'Login preview · Account connection coming soon.',
@@ -11,12 +11,12 @@ const copy = {
     demoAccount: 'Demo account', demoBadge: 'Demo session active', demoTitle: 'You’re in.',
     demoIntro: 'A little shortcut to your next lunch.',
     sessionHint: 'Make yourself at home. Your preferences stay on this device.',
-    personalize: 'Personalize my lunch', signout: 'Leave demo session',
+    signout: 'Leave demo session',
     entered: 'You’re in — demo session active.', left: 'You’ve left the demo session.',
   },
   de: {
-    navigation: 'Dein CampusEats', personalization: 'PERSONALISIERUNG', login: 'Login',
-    close: 'Login schließen', welcome: 'Willkommen zurück.', intro: 'Dein Campus, dein Mittagessen. Alles an einem Ort.',
+    navigation: 'Konto', settings: 'Einstellungen', login: 'Login',
+    close: 'Login schließen', welcome: 'Willkommen zurück.', intro: 'Finde ein Mittagessen, das zu deinem Tag passt.',
     email: 'E-Mail-Adresse', password: 'Passwort', show: 'Zeigen', hide: 'Verbergen',
     quickAccess: 'Einfach ausprobieren?', helperHint: 'Starte eine Demo-Sitzung. Ganz ohne Angaben.',
     previewNote: 'Login-Vorschau · Kontoanbindung folgt bald.',
@@ -24,7 +24,7 @@ const copy = {
     demoAccount: 'Demo-Konto', demoBadge: 'Demo-Sitzung aktiv', demoTitle: 'Du bist drin.',
     demoIntro: 'Eine kleine Abkürzung zu deinem nächsten Mittagessen.',
     sessionHint: 'Mach es dir gemütlich. Deine Einstellungen bleiben auf diesem Gerät.',
-    personalize: 'Mein Mittagessen personalisieren', signout: 'Demo-Sitzung verlassen',
+    signout: 'Demo-Sitzung verlassen',
     entered: 'Du bist drin — Demo-Sitzung aktiv.', left: 'Du hast die Demo-Sitzung verlassen.',
   },
 };

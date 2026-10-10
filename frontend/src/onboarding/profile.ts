@@ -7,6 +7,7 @@ export interface Profile {
   lang: 'de' | 'en';
   campus: CampusId;
   campusSecondary: CampusId[];
+  theme: 'light' | 'dark';
   diet: 'omnivore' | 'flexitarian' | 'pescetarian' | 'vegetarian' | 'vegan' | 'carnivore';
   hard: ('no_pork' | 'halal' | 'kosher' | 'lactose_free' | 'gluten_free' | 'nut_free')[];
   soft: string[];
@@ -25,9 +26,8 @@ export const HARD: Profile['hard'] = ['no_pork', 'halal', 'kosher', 'lactose_fre
 export const PRIORITIES: Profile['priority'] = ['taste', 'price', 'speed', 'health'];
 export const TIERS: Profile['priceTier'][] = ['student', 'worker', 'external'];
 
-export function defaults(campus: CampusId, lang: Profile['lang'] = 'en'): Profile {
-  return { v: 1, lang, campus, campusSecondary: [], diet: 'omnivore', hard: [], soft: [], dislikes: [],
+export function defaults(campus: CampusId, lang: Profile['lang'] = 'en', theme: Profile['theme'] = 'light'): Profile {
+  return { v: 1, lang, campus, campusSecondary: [], theme, diet: 'omnivore', hard: [], soft: [], dislikes: [],
     priority: [...PRIORITIES], priceTier: 'student', maxPrice: null, priceMode: 'soft',
     lunchTime: null, notifyDaily: false, mensaRatings: [] };
 }
-

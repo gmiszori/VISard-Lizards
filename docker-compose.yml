@@ -1,16 +1,49 @@
 services:
+  meal-scraper:
+    build:
+      context: ./meal-scraper
+      dockerfile: Dockerfile
+    init: true
+    restart: unless-stopped
+    environment:
+      - MEAL_CONNECTOR_HOST=0.0.0.0
+      - MEAL_CONNECTOR_PORT=8091
+      - MEAL_CONNECTOR_TOKEN=${MEAL_CONNECTOR_TOKEN:?Set MEAL_CONNECTOR_TOKEN in .env}
+
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    environment:
+      - DB_URL=jdbc:h2:file:./data/visard
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-http://localhost:4321,http://127.0.0.1:4321}
+      - INTERNAL_API_ENABLED=${INTERNAL_API_ENABLED:-false}
+      - SERVER_FORWARD_HEADERS_STRATEGY=framework
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4.1-mini}
+      - MEAL_SCRAPER_ENABLED=${MEAL_SCRAPER_ENABLED:-false}
+      - MEAL_SCRAPER_MODEL=${MEAL_SCRAPER_MODEL:-gpt-4.1-mini}
+      - MEAL_SCRAPER_CRON=${MEAL_SCRAPER_CRON:-0 0 6 * * *}
+      - MEAL_CONNECTOR_URL=http://meal-scraper:8091
+      - MEAL_CONNECTOR_TOKEN=${MEAL_CONNECTOR_TOKEN:?Set MEAL_CONNECTOR_TOKEN in .env}
+    depends_on:
+      meal-scraper:
+        condition: service_healthy
+    restart: unless-stopped
+    volumes:
+      - backend-data:/app/data
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    depends_on:
+      - backend
     ports:
       - "8080:8080"
     environment:
-      - DB_URL=jdbc:h2:file:./data/visard
-      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
-      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4.1-mini}
-    volumes:
-      - backend-data:/app/data
+      - CADDY_TRUSTED_PROXY_RANGES=${CADDY_TRUSTED_PROXY_RANGES:-private_ranges}
+    restart: unless-stopped
 
 volumes:
   backend-data:

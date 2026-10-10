@@ -19,10 +19,12 @@ public class MensaService {
 
 	private final MensaRepository mensaRepository;
 	private final RatingService ratingService;
+	private final ScrapedMenuRefreshService scraped;
 
-	public MensaService(MensaRepository mensaRepository, RatingService ratingService) {
+	public MensaService(MensaRepository mensaRepository, RatingService ratingService, ScrapedMenuRefreshService scraped) {
 		this.mensaRepository = mensaRepository;
 		this.ratingService = ratingService;
+		this.scraped = scraped;
 	}
 
 	/** All mensas, optionally only those of one campus. */
@@ -42,7 +44,18 @@ public class MensaService {
 		if (dateEnd.isBefore(dateStart)) {
 			throw new IllegalArgumentException("dateEnd must not be before dateStart");
 		}
-		return MealQuality.readable(mensaRepository.findMeals(getMensa(mensaId).id(), dateStart, dateEnd));
+		getMensa(mensaId);
+		var existing=MealQuality.readable(mensaRepository.findMeals(mensaId, dateStart, dateEnd));
+		var dates=existing.stream().map(Meal::date).collect(java.util.stream.Collectors.toSet());
+		var today=LocalDate.now(java.time.ZoneId.of("Europe/Zurich"));
+		var from=dateStart.isBefore(today) ? today : dateStart;
+		boolean missing=false;
+		for(var day=from;!day.isAfter(dateEnd) && !day.isAfter(from.plusDays(31));day=day.plusDays(1)) if(!dates.contains(day)) { missing=true; break; }
+		if(missing) {
+			scraped.ensureMeals(mensaId,dateStart,dateEnd);
+			return MealQuality.readable(mensaRepository.findMeals(mensaId,dateStart,dateEnd));
+		}
+		return existing;
 	}
 
 	/** How far ahead getMenuDate looks for the next menu, e.g. from Saturday to Monday. */
@@ -55,6 +68,10 @@ public class MensaService {
 	 */
 	public LocalDate getMenuDate(LocalDate today) {
 		SortedSet<LocalDate> dates = mensaRepository.findMealDates();
+		if(dates.subSet(today,today.plusDays(NEXT_MENU_DAYS+1)).isEmpty()) {
+			for(var venue:mensaRepository.findAllMensas()) scraped.ensureMeals(venue.id(),today,today.plusDays(NEXT_MENU_DAYS));
+			dates=mensaRepository.findMealDates();
+		}
 		if (dates.isEmpty() || dates.contains(today)) {
 			return today;
 		}

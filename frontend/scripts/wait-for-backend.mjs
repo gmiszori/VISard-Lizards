@@ -1,5 +1,5 @@
 // A static build needs the backend awake so its generated menus are current.
-const url = process.env.PUBLIC_API_URL?.trim().replace(/\/+$/, '');
+const url = (process.env.SERVER_API_URL ?? process.env.PUBLIC_API_URL)?.trim().replace(/\/+$/, '');
 if (!url) process.exit(0);
 
 const deadline = Date.now() + 5 * 60_000;

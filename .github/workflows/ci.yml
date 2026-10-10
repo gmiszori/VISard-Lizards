@@ -6,6 +6,46 @@ on:
   pull_request:
 
 jobs:
+  meal-scraper:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: meal-scraper
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - run: sh ./kotlin test -p jvm
+
+  mcp-linux-deployment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      MEAL_CONNECTOR_TOKEN: ci-only-local-test-token
+      MEAL_SCRAPER_ENABLED: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose config --quiet
+      - run: docker compose up --build -d backend meal-scraper
+      - name: Verify real MCP tools and private backend connection
+        run: |
+          docker compose exec -T meal-scraper sh -c 'curl -fsS -H "Authorization: Bearer $MEAL_CONNECTOR_TOKEN" http://127.0.0.1:8091/api/ai/tools' > /tmp/mcp-tools.json
+          python3 -c 'import json; assert {t["name"] for t in json.load(open("/tmp/mcp-tools.json"))["tools"]} == {"scrape_meals", "discover_menu_sources", "read_menu_source"}'
+          for attempt in $(seq 1 60); do
+            if docker compose exec -T meal-scraper curl -fsS http://backend:8080/api/health; then
+              docker compose exec -T meal-scraper curl -fsS http://backend:8080/api/scraped-menus
+              exit 0
+            fi
+            sleep 2
+          done
+          exit 1
+      - if: always()
+        run: docker compose logs --tail=100 backend meal-scraper
+      - if: always()
+        run: docker compose down
+
   backend:
     runs-on: ubuntu-latest
     defaults:

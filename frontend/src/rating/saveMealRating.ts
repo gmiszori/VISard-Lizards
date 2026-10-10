@@ -1,4 +1,4 @@
-import { API_URL, ApiError, apiPost, type BackendMealRating } from '../data/api.ts';
+import { API_URL, ApiError, apiDelete, apiPost, type BackendMealRating } from '../data/api.ts';
 import { isIsoDate } from '../data/menuDate.ts';
 import type { RatingSource } from './getRatingPrompt.ts';
 
@@ -12,6 +12,9 @@ export interface MealRating {
   mealDate: string;
   /** How the app knows the user ate there; crowd and guess ratings count half in the backend's average. */
   source?: RatingSource;
+  /** Shown in Settings, "Your meal ratings" (device copy only, not sent). */
+  mealName?: string;
+  mensaName?: string;
 }
 export const RATINGS_KEY = 'campuseats-meal-ratings';
 export class DuplicateMealRatingError extends Error {
@@ -79,4 +82,23 @@ export async function saveMealRating(value: MealRating, storage: Storage = local
     return;
   }
   await writeDeviceCopy();
+}
+
+/**
+ * Takes a rating back ("Undo"): deletes it on the backend (DELETE /api/meals/{id}/ratings?userId=) and
+ * from the device copy, so the meal can be rated again. A rating the backend no longer has counts as undone.
+ */
+export async function undoMealRating(value: Pick<MealRating, 'userId' | 'mealId'>, storage: Storage = localStorage,
+  key = RATINGS_KEY, apiUrl = API_URL): Promise<void> {
+  if (apiUrl) {
+    try {
+      await apiDelete(`/api/meals/${encodeURIComponent(value.mealId)}/ratings?userId=${encodeURIComponent(value.userId)}`, undefined, apiUrl);
+    } catch (error) {
+      if (!(error instanceof ApiError && error.status === 404)) throw error;
+    }
+  }
+  try {
+    const raw: unknown = JSON.parse(storage.getItem(key) ?? '[]');
+    if (Array.isArray(raw)) storage.setItem(key, JSON.stringify(raw.filter(r => !(r && r.userId === value.userId && r.mealId === value.mealId))));
+  } catch { /* the device copy is only a cache */ }
 }

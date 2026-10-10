@@ -26,10 +26,12 @@ public class MealService {
 
 	private final MensaRepository mensaRepository;
 	private final RatingService ratingService;
+	private final ScrapedMenuRefreshService scraped;
 
-	public MealService(MensaRepository mensaRepository, RatingService ratingService) {
+	public MealService(MensaRepository mensaRepository, RatingService ratingService, ScrapedMenuRefreshService scraped) {
 		this.mensaRepository = mensaRepository;
 		this.ratingService = ratingService;
+		this.scraped = scraped;
 	}
 
 	/** Diets a meal can have; filtering by vegetarian also returns vegan meals. */
@@ -49,6 +51,9 @@ public class MealService {
 						.filter(mensa -> mensa.campusId().equals(campusId))
 						.map(Mensa::id)
 						.collect(Collectors.toSet());
+		var present=MealQuality.readable(mensaRepository.findMealsOn(date)).stream().map(Meal::mensaId).collect(Collectors.toSet());
+		for(Mensa venue:mensaRepository.findAllMensas()) if((mensaIds==null || mensaIds.contains(venue.id())) && !present.contains(venue.id()))
+			scraped.ensureMeals(venue.id(),date,date);
 		return MealQuality.readable(mensaRepository.findMealsOn(date)).stream()
 				.filter(meal -> mensaIds == null || mensaIds.contains(meal.mensaId()))
 				.filter(meal -> diet == null || meal.dietTag().equals(diet)
@@ -80,6 +85,11 @@ public class MealService {
 			}
 		}
 		return ratingService.addUserRating(getMeal(id).id(), userId, stars, Set.copyOf(tags), source);
+	}
+
+	/** Takes back a user's rating of a meal (404 if the meal or the rating does not exist). */
+	public void unrateMeal(String id, String userId) {
+		ratingService.removeUserRating(getMeal(id).id(), userId);
 	}
 
 	public @Nullable BigDecimal getAverageRating(String mealId) {

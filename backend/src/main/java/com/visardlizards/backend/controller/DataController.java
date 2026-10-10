@@ -5,12 +5,14 @@ import com.visardlizards.backend.model.dto.DataRequestDto;
 import com.visardlizards.backend.model.dto.DataResponseDto;
 import com.visardlizards.backend.service.DataService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/data")
+@ConditionalOnProperty(name = "app.internal-api.enabled", havingValue = "true")
 public class DataController {
 
     private final DataService dataService;

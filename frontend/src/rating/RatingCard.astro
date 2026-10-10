@@ -18,6 +18,7 @@ const data = {
   </div>
   <MensaChips /><MealPicker /><RatingButtons />
   <p role="status" aria-live="polite" aria-atomic="true" data-rating-status></p>
+  <button type="button" class="meal-rating-undo" data-rating-undo data-rating-text="undo" hidden>Undo</button>
 </section>
 <script type="application/json" data-rating-data set:html={JSON.stringify(data).replace(/</g, '\\u003c')} />
 <script>

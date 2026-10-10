@@ -4,6 +4,7 @@ import { readStarredMeals } from '../meals/stars.ts';
 const PROFILE_KEY = 'campuseats-profile';
 const PREFERENCES_KEY = 'campuseats-preferences';
 const LANGUAGE_KEY = 'campuseats-language';
+const THEME_KEY = 'campuseats-theme';
 
 type Store = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
 
@@ -15,10 +16,10 @@ type Store = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
 export function saveProfile(profile: Profile): boolean {
   let saved = true;
   try { writeProfile(profile, localStorage, starredMeals()); }
-  catch (error) { saved = false; console.warn('CampusEats could not save your profile on this device:', (error as Error).message); }
+  catch { saved = false; console.warn('UniEats could not save the profile on this device.'); }
+  document.documentElement.dataset.theme = profile.theme;
   const select = document.querySelector<HTMLSelectElement>('#language-select');
   if (select) { select.value = profile.lang; select.dispatchEvent(new Event('change', { bubbles: true })); }
-  console.info('CampusEats profile', JSON.stringify(profile, null, 2));
   return saved;
 }
 
@@ -49,6 +50,7 @@ export function writeProfile(profile: Profile, store: Store, starred: string[]):
       meat: profile.diet !== 'vegan' && profile.diet !== 'vegetarian',
     })],
     [LANGUAGE_KEY, profile.lang],
+    [THEME_KEY, profile.theme],
   ];
   const previous = new Map(writes.map(([key]) => [key, readOrNull(store, key)]));
   const replaced: string[] = [];

@@ -31,7 +31,7 @@ node backend/scripts/export-mensa-db.mjs
 ```
 
 **Live ETH menus:** `LiveMenuImportService` loads the current and the next week from ETH Cookpit on
-startup and every 6 hours (`app.live-import.cron`, Zurich time). For each ETH mensa with live meals in a
+startup and daily at 06:00 Europe/Zurich (`app.live-import.cron`, Zurich time). For each ETH mensa with live meals in a
 week, that week's meals are replaced; mensas without live meals keep what they had, and a failed download
 keeps the existing meals. `EthMenuMapper` maps Cookpit's classes, allergens and customer groups to the
 app's values (diet, canonical allergen ids, student/staff/external prices). English texts are used; where
@@ -64,6 +64,11 @@ Services only see domain models through `MensaRepository` (implemented by `JpaMe
 | POST | [`/api/search`](#post-apisearch) | Match a search query to displayed canteens with OpenAI |
 | GET | [`/api/meals/{id}`](#get-apimealsid) | One meal with its ratings |
 | POST | [`/api/meals/{id}/ratings`](#post-apimealsidratings) | Rate a meal |
+| DELETE | [`/api/meals/{id}/ratings?userId=`](#delete-apimealsidratings) | Take back a meal rating |
+| GET | [`/api/push/public-key`](#push-notifications-for-starred-dishes) | VAPID key for Web Push |
+| PUT | [`/api/push/subscription`](#push-notifications-for-starred-dishes) | Subscribe, or update the starred dishes |
+| DELETE | [`/api/push/subscription`](#push-notifications-for-starred-dishes) | Unsubscribe |
+| POST | [`/api/push/test`](#push-notifications-for-starred-dishes) | Send a test notification |
 
 ### Conventions
 
@@ -82,7 +87,11 @@ Services only see domain models through `MensaRepository` (implemented by `JpaMe
 - **Spam protection:** a client (IP address) can rate each mensa once per 24 hours and report each
   mensa once per 5 minutes; otherwise `429 Too Many Requests` with a `Retry-After` header (seconds).
   Windows: `app.rate-limit.*` in `application.properties`. Meal ratings are limited per user instead:
-  one rating per anonymous user id and meal (`409` otherwise).
+  one rating per anonymous user id and meal (`409` otherwise). OpenAI-backed `POST /api/search` is
+  limited to one request per IP every 10 seconds.
+- **Operational endpoints:** generic data CRUD, cache management, and manual ETH/UZH import endpoints
+  are disabled unless `INTERNAL_API_ENABLED=true`. Do not enable them on a public deployment without
+  placing them behind authentication or a private network.
 - CORS is open for the Astro dev server (`http://localhost:4321`), see `app.cors.allowed-origins`.
 - **Frontend:** the Astro app in `frontend/` uses `/api/meta`, `/api/meals`, `/api/mensas`,
   `/api/mensas/{id}/crowd`, `POST /api/search` and `POST /api/meals/{id}/ratings` (see `frontend/README.md`).
@@ -304,7 +313,7 @@ endpoints.
 Body: `{"stars": 4}` with `stars` from 1 to 5.
 
 Response `201` without body. Errors: `404` unknown mensa, `400` stars outside 1–5 or invalid body,
-`429` already rated by this client in the last 24 hours.
+`430` already rated by this client in the last 24 hours.
 
 ## Crowd
 
@@ -346,7 +355,7 @@ cannot backdate reports. Each client (IP address) can report a mensa once every 
 Body: `{"level": 3}`, where 1 = empty, 2 = quiet, 3 = some queue, 4 = busy, 5 = packed.
 
 Response `201` with the stored report: `{"mensaId": "polyterrasse", "level": 3, "timestamp": "..."}`.
-Errors: `404` unknown mensa, `400` level outside 1–5 or invalid body, `429` already reported
+Errors: `404` unknown mensa, `400` level outside 1–5 or invalid body, `430` already reported
 by this client in the last 5 minutes.
 
 ## Meals
@@ -421,6 +430,47 @@ Response `201` with the saved rating:
 Errors: `404` unknown meal, `400` missing or invalid `userId`, stars outside 1–5, unknown tag or
 source, or invalid body, `409` this user already rated this meal.
 
+### DELETE /api/meals/{id}/ratings
+
+Takes back a user's rating of a meal ("Undo" in the rating card): `DELETE /api/meals/{id}/ratings?userId=anon:...`.
+Afterwards `avgRating` and `tagCounts` no longer count it and the user can rate the meal again.
+Response `204`. Errors: `400` missing or invalid `userId`, `404` unknown meal or no rating of this user.
+
+## Push notifications for starred dishes
+
+Web Push (RFC 8030/8291/8292, no third-party library): the browser subscribes with the server's VAPID key
+and sends the subscription with its starred dishes. Once a day (`app.push.cron`, default 09:30 Zurich) every
+subscription gets **at most one** notification listing the starred dishes that appear on a menu from today on
+that it was not told about yet ("Pad Thai is back on the menu", one line per dish and day with the mensas).
+A dish that is already on a menu when it is starred does not trigger a notification for those days; only a
+later menu does. Dish names match ignoring case and spacing. Subscriptions the push service reports as gone
+(404/410) are deleted.
+
+- `GET /api/push/public-key` → `{"publicKey": "BN..."}`: pass it as `applicationServerKey` to
+  `PushManager.subscribe()`.
+- `PUT /api/push/subscription` with `PushSubscription.toJSON()` plus dishes and language:
+  `{"endpoint": "https://fcm.googleapis.com/fcm/send/...", "keys": {"p256dh": "...", "auth": "..."}, "dishes": ["Pad Thai"], "language": "de"}`.
+  Creates the subscription or replaces its dishes. `200` with `{endpoint, dishes, language}`; `400` for an
+  endpoint outside the browsers' push services (Google, Mozilla, Microsoft, Apple), malformed keys or more
+  than 100 dishes.
+- `DELETE /api/push/subscription` with `{"endpoint": "..."}` → `204`, also for unknown endpoints.
+- `POST /api/push/test` with `{"endpoint": "..."}` sends "Notifications are on" → `200`
+  `{"delivered": true, "pushServiceStatus": 201}`; `404` without such a subscription; `429` more than once a
+  minute per client.
+
+- `POST /api/push/run?forgetAnnounced=false` (internal, only with `INTERNAL_API_ENABLED=true`) runs the daily
+  job now and returns `{"sent": n}`. With `forgetAnnounced=true` every subscription first forgets what it was
+  told, so starred dishes on the current menus are announced again (for testing; developer tools, "Push
+  notifications").
+
+The notification payload (decrypted by the service worker `frontend/public/sw.js`) is
+`{"title", "body", "url", "tag": "starred-dishes"}`.
+
+Configuration: `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` (base64url), else a key pair is generated once into
+`VAPID_KEY_FILE` (default `./data/vapid-keys.properties`; in Docker inside the `backend-data` volume). A new
+key pair invalidates every subscription. `PUSH_SUBJECT` (default `mailto:unieats@example.com`) is the contact
+the push services see; `PUSH_ENABLED=false` stops the daily job; `PUSH_CRON` changes its time.
+
 ## Raw upstream endpoints (optional)
 
 The ETH/UZH API clients (on `main`) add raw inspection endpoints under `/api/upstream`. They are
@@ -437,3 +487,17 @@ data mapping; the frontend should use the endpoints above.
 | `GET /api/upstream/uzh/locations` | Bundled catalog of ZFV location ids |
 
 Details, configuration (ZFV API key) and error codes: [MENSA_API.md](MENSA_API.md).
+
+## Scheduled website menus
+
+`GET /api/scraped-menus` returns all 39 cafeterias in the main app catalog from the database's `scraped_menu` table. Each entry includes raw MCP `toolResults`, a model explanation, `updatedAt`, `lastAttempt`, `stale` and a generic error on refresh failure. Root fields expose `enabled`, `configured`, `running`, `lastAttempt` and `lastCompleted`. No credentials are returned. Missing or outdated cache entries trigger a background retrieval when enabled and configured; this endpoint returns the currently saved data without waiting for the batch.
+
+Successful raw tool results and their meal projections commit in one database transaction. The normal `GET /api/meals` and `GET /api/mensas/{id}/meal-plan` APIs read the existing `meal` table first. For a missing cafeteria/day, the backend retrieves through OpenAI and the connector's MCP relay, saves the raw JSON, and re-reads the database. Existing upstream meals take precedence, including when an ETH/UZH import arrives after the fallback. Stable IDs prevent duplicate scraper rows. Empty menus and closures are cached for the Zurich day; failed attempts retry after 15 minutes and retain prior evidence. Concurrent requests for the same venue share a lock within one backend instance. Historical reads do not trigger scraping, and on-demand date ranges are bounded to 31 days. A first cache miss can take as long as the AI/MCP retrieval; subsequent reads use the database.
+
+Set `OPENAI_API_KEY` on the backend. The bundled Kotlin connector/MCP sources are in `meal-scraper/`. Root Docker Compose builds and runs them as a private service and sets `MEAL_CONNECTOR_URL=http://meal-scraper:8091`; configure the required shared `MEAL_CONNECTOR_TOKEN` in `.env`. Only the main website/backend address is public; the connector port is not published. Devices use the existing backend meal routes and do not receive either key. For development outside Compose, run the bundled connector locally and use `MEAL_CONNECTOR_URL=http://127.0.0.1:8091` with the same optional local token. See [../DEPLOY.md](../DEPLOY.md) for Linux deployment and readiness checks.
+
+Missing cache entries refresh after startup, with a full refresh daily at 06:00 Europe/Zurich. Set `MEAL_SCRAPER_ENABLED=true` and configure the backend key to enable retrieval; disabling it still allows reading stored results. Override `MEAL_SCRAPER_CRON` as needed. Each venue is bounded to 6 model turns and 8 tool calls; the batch uses the backend OpenAI account. Missing/invalid sources remain explicit failures; original data survives with `stale=true`. The existing backend database now stores the raw evidence and meals. A legacy `backend/data/scraped-menus.json` file is imported once when the raw database table is empty; `MEAL_SCRAPER_SNAPSHOT` specifies that legacy file only. New results are no longer written to JSON files. Mount the backend database data directory to survive container replacement. Runs are serialized in one backend instance, not across multiple replicas.
+
+The existing frontend can read both the raw results API and the normal meal DTO APIs without changes. Meals with a missing, null or empty date are projected as recurring meals for today and the next 14 days; further requested dates reuse the stored raw result. The raw source date remains unchanged. Published closures suppress the scraper projection for affected dates. Unknown dietary information remains `unknown`; a general CHF price applies to all price categories. Source references and the recurring label are retained in the existing description field, with full original metadata in the raw table.
+
+All 39 main-app cafeterias appear in the snapshot. A cafeteria with only a provider homepage/directory in the seed has `url: null` and `status: source_unavailable` after a refresh; no AI call is spent on a non-specific source. Configure a verified venue URL in `mensa/scraper-locations.json` to enable it. Existing imported menus remain visible in the regular menu cards.

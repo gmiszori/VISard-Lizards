@@ -37,8 +37,8 @@ test('candidates carry readyAt and source; lunch and dinner on one day give the 
     { mensaId: 'archimedes', date: '2026-10-08', service: 'lunch' },
   ]);
   assert.deepEqual(candidates, [
-    { mensaId: 'polyterrasse', name: 'Polyterrasse', date: '2026-10-09', readyAt: lunch + 30 * 60_000, source: 'crowd' },
-    { mensaId: 'archimedes', name: 'Archimedes', date: '2026-10-08', source: 'location' },
+    { mensaId: 'polyterrasse', name: 'Polyterrasse', date: '2026-10-09', readyAt: lunch + 30 * 60_000, source: 'crowd', service: 'lunch' },
+    { mensaId: 'archimedes', name: 'Archimedes', date: '2026-10-08', source: 'location', service: 'lunch' },
   ]);
   // Reported from the queue at 12:10 with level 4: asked from 12:40 on.
   assert.equal(getRatingPrompt(new Date('2026-10-09T12:39:00+02:00'), candidates, state), null);

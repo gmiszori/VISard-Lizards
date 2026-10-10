@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.Map;
 
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,6 +19,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/api/uzh/sync")
+@ConditionalOnProperty(name = "app.internal-api.enabled", havingValue = "true")
 @Tag(name = "UZH Live Sync", description = "Live meal synchronization from Food2050 / UZH")
 public class UzhLiveSyncController {
 

@@ -1,10 +1,12 @@
 const en = {
-  rerunOnboarding: 'Rerun the onboarding',
+  replayOnboarding: 'Replay onboarding',
+  languageTitle: 'Choose your language.', languageHint: 'You can change this any time in Settings.', languageLabel: 'Language',
   intro: 'A little about you. A better lunch.', saved: 'Your answers stay on this device. Every step is optional.',
   campusTitle: 'Where do you eat?', campusHint: 'Start with your usual campus. We’ll find your next favourite nearby.',
   home: 'My main campus', secondary: 'I also eat at', mensas: 'mensas',
   dietTitle: 'What’s on your plate?', dietHint: 'Choose how you usually eat, then add any firm limits.',
   diet: 'My usual diet', omnivore: 'A bit of everything', flexitarian: 'Mostly plants, sometimes meat',
+  themeTitle: 'Make it feel like yours.', themeHint: 'Choose the look you prefer. You can change it any time in Settings.', themePreference: 'Theme', lightTheme: 'Light', darkTheme: 'Dark',
   pescetarian: 'Plants & fish', vegetarian: 'Vegetarian', vegan: 'Vegan', carnivore: 'Carnivore', never: 'Never show me',
   hardHint: 'Exclude dishes with these ingredients. Halal and kosher checks are not available yet.',
   no_pork: 'Pork', halal: 'Not halal', kosher: 'Not kosher', lactose_free: 'Milk', gluten_free: 'Gluten', nut_free: 'Nuts & peanuts',
@@ -30,12 +32,14 @@ const en = {
 };
 export type Key = keyof typeof en;
 const de: Record<Key, string> = {
-  rerunOnboarding: 'Onboarding erneut starten',
+  replayOnboarding: 'Onboarding erneut starten',
+  languageTitle: 'Wähle deine Sprache.', languageHint: 'Du kannst sie jederzeit in den Einstellungen ändern.', languageLabel: 'Sprache',
   intro: 'Ein wenig über dich. Ein besseres Mittagessen.', saved: 'Deine Antworten bleiben auf diesem Gerät. Jeder Schritt ist optional.',
   campusTitle: 'Wo isst du?', campusHint: 'Wähle deinen üblichen Campus. Wir finden deinen nächsten Favoriten in der Nähe.',
   home: 'Mein Hauptcampus', secondary: 'Hier esse ich auch', mensas: 'Mensen',
   dietTitle: 'Was kommt auf deinen Teller?', dietHint: 'Wähle deine übliche Ernährung und ergänze feste Einschränkungen.',
   diet: 'Meine Ernährung', omnivore: 'Von allem etwas', flexitarian: 'Meist Pflanzen, manchmal Fleisch',
+  themeTitle: 'Gestalte es nach deinem Geschmack.', themeHint: 'Wähle dein bevorzugtes Design. Du kannst es jederzeit in den Einstellungen ändern.', themePreference: 'Design', lightTheme: 'Hell', darkTheme: 'Dunkel',
   pescetarian: 'Pflanzen & Fisch', vegetarian: 'Vegetarisch', vegan: 'Vegan', carnivore: 'Fleischesser', never: 'Niemals anzeigen',
   hardHint: 'Gerichte mit diesen Zutaten ausschliessen. Halal und koscher sind noch nicht prüfbar.',
   no_pork: 'Schweinefleisch', halal: 'Nicht halal', kosher: 'Nicht koscher', lactose_free: 'Milch', gluten_free: 'Gluten', nut_free: 'Nüsse & Erdnüsse',

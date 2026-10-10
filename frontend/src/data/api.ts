@@ -1,5 +1,5 @@
 /**
- * Connection to the CampusEats backend (backend/, Spring Boot). Used at build/render time by the pages
+ * Connection to the UniEats backend (backend/, Spring Boot). Used at build/render time by the pages
  * (src/data/app-data.ts) and in the browser (meal ratings, crowd chart).
  *
  * PUBLIC_API_URL (see .env.example) overrides the backend's base URL. Browser requests default to
@@ -18,7 +18,13 @@ export function resolveApiUrl(configured: string | undefined, pageOrigin?: strin
 export const API_URL: string = (() => {
   const env = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env;
   if (!env) return '';
-  return resolveApiUrl(env.PUBLIC_API_URL, typeof window === 'undefined' ? undefined : window.location.origin);
+  if (typeof window === 'undefined') {
+    // Static pages in the Docker image are rendered after the backend starts. This
+    // server-only URL must never be baked into browser requests; Caddy proxies /api.
+    const serverUrl = typeof process === 'undefined' ? undefined : process.env.SERVER_API_URL;
+    return resolveApiUrl(serverUrl ?? env.PUBLIC_API_URL);
+  }
+  return resolveApiUrl(env.PUBLIC_API_URL, window.location.origin);
 })();
 
 /** An HTTP error from the backend, with its problem-detail message (backend/API.md, "Errors"). */
@@ -45,7 +51,7 @@ export function retryAfterMs(header: string | null, now = Date.now()): number | 
   return Number.isFinite(timestamp) ? Math.max(0, timestamp - now) : undefined;
 }
 
-async function request<T>(method: 'GET' | 'POST', path: string, body: unknown, baseUrl: string, timeoutMs: number): Promise<T> {
+async function request<T>(method: 'GET' | 'POST' | 'PUT' | 'DELETE', path: string, body: unknown, baseUrl: string, timeoutMs: number): Promise<T> {
   if (!baseUrl) throw new ApiError(0, 'No backend configured (PUBLIC_API_URL is empty).');
   const response = await fetch(`${baseUrl}${path}`, {
     method,
@@ -58,6 +64,7 @@ async function request<T>(method: 'GET' | 'POST', path: string, body: unknown, b
     try { detail = ((await response.json()) as { detail?: string }).detail ?? detail; } catch { /* not a problem detail */ }
     throw new ApiError(response.status, detail, retryAfterMs(response.headers.get('Retry-After')));
   }
+  if (response.status === 204) return undefined as T;
   return response.json() as Promise<T>;
 }
 
@@ -65,6 +72,10 @@ export const apiGet = <T>(path: string, baseUrl = API_URL, timeoutMs = 5000) =>
   request<T>('GET', path, undefined, baseUrl, timeoutMs);
 export const apiPost = <T>(path: string, body: unknown, baseUrl = API_URL, timeoutMs = 8000) =>
   request<T>('POST', path, body, baseUrl, timeoutMs);
+export const apiPut = <T>(path: string, body: unknown, baseUrl = API_URL, timeoutMs = 8000) =>
+  request<T>('PUT', path, body, baseUrl, timeoutMs);
+export const apiDelete = (path: string, body: unknown, baseUrl = API_URL, timeoutMs = 8000) =>
+  request<void>('DELETE', path, body, baseUrl, timeoutMs);
 
 // ───────── Backend response shapes (subset the frontend uses) ─────────
 

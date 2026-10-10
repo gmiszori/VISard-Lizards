@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,6 +24,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/api/eth/sync")
+@ConditionalOnProperty(name = "app.internal-api.enabled", havingValue = "true")
 @Tag(name = "ETH Live Sync", description = "Imports live meal rotas from the ETH Cookpit API into the mensa database")
 public class EthLiveSyncController {
 

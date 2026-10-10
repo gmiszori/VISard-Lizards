@@ -1,5 +1,83 @@
 # Test deployment
 
+## Docker demo on a server
+
+The hackathon managed address forwards plain HTTP to port 8080 on the VM. Copy `.env.example` to
+`.env`, set `MEAL_CONNECTOR_TOKEN` to a generated secret (`openssl rand -hex 32`), set
+`OPENAI_API_KEY` and `MEAL_SCRAPER_ENABLED=true` to enable AI menu retrieval, and run from the repository root:
+
+```sh
+docker compose up --build -d
+```
+
+Caddy serves the frontend over plain HTTP on `0.0.0.0:8080`; the backend is reachable only by Caddy
+over the private Compose network. The hackathon managed address handles access control and TLS, so
+no VM firewall rule or TLS configuration is needed. The `backend-data` volume persists the H2
+database. Back up this volume before replacing the server or removing volumes. Do not commit `.env`.
+
+The Caddy proxy trusts client-IP forwarding headers from private proxy ranges by default. If the
+hackathon ingress uses public source addresses, set `CADDY_TRUSTED_PROXY_RANGES` in `.env` to the
+documented ingress CIDR(s), separated by spaces. Trust only proxy address ranges; do not use `0.0.0.0/0`.
+Rate limits rely on these forwarded client addresses.
+
+Caddy limits request bodies to 2 MB and adds `nosniff`, frame-denial, referrer, and permissions
+headers to responses.
+
+Generic data CRUD, cache-management, and manual menu-sync endpoints are disabled by default. Do not
+set `INTERNAL_API_ENABLED=true` on a publicly reachable deployment unless those routes are protected
+by authentication or restricted to a private network.
+
+The frontend is statically generated during the image build, so its initial menu is a snapshot and
+falls back to bundled sample data if the backend is not reachable while building. Browser features
+that call the API use the live backend through Caddy. Rebuild the frontend to refresh the initial
+menu snapshot. The Kotlin scraper and its HTTP connector are built from `meal-scraper/` and deployed
+as the private `meal-scraper` service. No separate repository checkout, Windows process, or
+`host.docker.internal` connection is needed on Linux.
+
+## Meal scraping from other devices
+
+```text
+Phone / laptop -> https://your-server/api/* -> Java backend
+                                             -> http://meal-scraper:8091 (shared token)
+                                             -> Kotlin MCP server (stdio child)
+                                             -> public meal websites / PDFs
+```
+
+Use the same deployed website address on every device. Existing backend routes
+`/api/meals`, `/api/mensas/{id}/meal-plan`, and `/api/scraped-menus` expose database-backed meal
+results. Missing current/future data invokes the connector when scraping is enabled and the
+backend key is configured. Refresh also runs daily at 06:00 Europe/Zurich. Devices do not need
+an OpenAI key or connector token. The backend is the only OpenAI client in this path.
+
+Compose sets `MEAL_CONNECTOR_URL=http://meal-scraper:8091` and passes the same required
+`MEAL_CONNECTOR_TOKEN` to both services. It waits for connector/MCP readiness before starting the
+backend. Port 8091 is not published and is not proxied by Caddy. Keep `.env` on the server; never
+put these keys in browser settings or frontend build variables. The existing `backend-data`
+volume holds both raw MCP evidence and projected meal rows.
+
+For a general Linux VM, install Docker Engine with Compose v2, clone this repo, configure `.env`,
+and run the same Compose command. Point your HTTPS ingress/domain to the server's port 8080.
+On a private LAN, the website is reachable at `http://<server-LAN-IP>:8080` when that port is
+allowed by the host firewall. `localhost` on a phone refers to the phone, so use the server address.
+
+Verify deployment:
+
+```sh
+docker compose ps
+docker compose exec meal-scraper sh -c 'curl -fsS -H "Authorization: Bearer $MEAL_CONNECTOR_TOKEN" http://127.0.0.1:8091/health'
+docker compose exec meal-scraper sh -c 'curl -fsS -H "Authorization: Bearer $MEAL_CONNECTOR_TOKEN" http://127.0.0.1:8091/api/ai/tools'
+curl -fsS https://your-server/api/health
+curl -fsS https://your-server/api/scraped-menus
+docker compose logs --tail=100 backend meal-scraper
+```
+
+After updating source, run `docker compose up --build -d` again. If connector health reports
+MCP unavailable, inspect logs and run `docker compose restart meal-scraper`. Do not use
+`docker compose down -v` during an update: it removes the database volume. Linux CI builds
+the bundled MCP image and checks MCP readiness and backend connectivity without OpenAI calls.
+
+Open the managed address provided by the hackathon to access the demo.
+
 The GitHub Actions workflow in `.github/workflows/ci.yml` checks the Java backend and the Astro
 frontend on pushes to `main` and on pull requests. The optional `render.yaml` Blueprint defines a
 Spring Boot API and a static Astro site on Render. Adding the Blueprint file does not create the

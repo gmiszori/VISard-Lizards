@@ -14,4 +14,7 @@ public interface RatingRepository {
 	/** Whether this user already rated this mensa or meal. */
 	boolean existsBySubjectIdAndUserId(String subjectId, String userId);
 
+	/** Deletes this user's rating of this mensa or meal; false if there was none. */
+	boolean deleteBySubjectIdAndUserId(String subjectId, String userId);
+
 }

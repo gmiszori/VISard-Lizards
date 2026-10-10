@@ -1,0 +1,10 @@
+product: jvm/app
+dependencies:
+  - ../
+  - io.modelcontextprotocol:kotlin-sdk-server:0.15.0
+  - org.slf4j:slf4j-nop:2.0.17
+settings:
+  kotlin:
+    serialization: json
+  jvm:
+    mainClass: mensa.server.ProgramKt
