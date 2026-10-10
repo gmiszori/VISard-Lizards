@@ -52,6 +52,12 @@
   .welcome-tour[data-step="install"][data-anchor="bottom"] .welcome-pointer{top:auto;bottom:2px;right:calc(50% - 10px)}
   .welcome-tour[data-step="install"][data-anchor="bottom"] .welcome-pointer::before{content:"↓"}
   @media(max-width:600px){.welcome-dialog{top:calc(env(safe-area-inset-top) + 96px);right:16px}.welcome-tour[data-step="settings"] .welcome-dialog{top:calc(env(safe-area-inset-top) + 132px)}.welcome-content h2{font-size:21px}.welcome-image{height:145px}}
+  /* Phones held sideways are only ~375 px high: without the photo and the 96 px top gap (moved to the left, so the
+     arrow on the right stays visible) the Continue button stays in view instead of hiding below the dialog's edge. */
+  @media(max-height:520px){
+    .welcome-image{display:none}
+    .welcome-tour:not([data-step="settings"]):not([data-step="finish"]):not([data-anchor="bottom"]) .welcome-dialog{top:12px;left:16px;right:auto;max-height:calc(100dvh - 24px)}
+  }
   @media(prefers-reduced-motion:reduce){.welcome-dialog,.welcome-tour[data-step="finish"] .welcome-dialog{animation:none}}
   @keyframes welcome-in{from{opacity:0;translate:0 8px}to{opacity:1;translate:0 0}}
   @keyframes welcome-finish{from{opacity:0;transform:translate(-50%,-48%)}to{opacity:1;transform:translate(-50%,-50%)}}
