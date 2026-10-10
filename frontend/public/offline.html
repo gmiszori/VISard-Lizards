@@ -43,10 +43,27 @@
   </head>
   <body>
     <main>
-      <h1>You are offline</h1>
-      <p>We could not open this page from cache yet.</p>
-      <p>Already visited pages and menus are still available offline.</p>
-      <a href="/">Back to campus canteens</a>
+      <h1 data-offline="title">You are offline</h1>
+      <p data-offline="missing">We could not open this page from cache yet.</p>
+      <p data-offline="visited">Already visited pages and menus are still available offline.</p>
+      <a href="/" data-offline="back">Back to campus canteens</a>
     </main>
+    <script>
+      // This page is static, so it translates itself using the language the app saved.
+      try {
+        if (localStorage.getItem('campuseats-language') === 'de') {
+          var de = {
+            title: 'Du bist offline',
+            missing: 'Diese Seite konnte noch nicht aus dem Zwischenspeicher geöffnet werden.',
+            visited: 'Bereits besuchte Seiten und Menüs sind weiterhin offline verfügbar.',
+            back: 'Zurück zu allen Mensen'
+          };
+          document.documentElement.lang = 'de';
+          document.querySelectorAll('[data-offline]').forEach(function (element) {
+            element.textContent = de[element.getAttribute('data-offline')];
+          });
+        }
+      } catch (error) { /* storage blocked: the page stays English */ }
+    </script>
   </body>
 </html>

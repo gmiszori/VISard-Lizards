@@ -1,8 +1,8 @@
 // UniEats service worker: push notifications for starred dishes (src/push/push.ts)
 // plus an offline cache for visited and prewarmed pages.
 
-// v5 lets push start even when an optional offline page cannot be fetched during installation.
-const CACHE_NAME = 'unieats-shell-v5';
+// v6 refreshes the offline page, which now translates itself. v5 lets push start even when an optional offline page cannot be fetched during installation.
+const CACHE_NAME = 'unieats-shell-v6';
 const PRECACHE_URLS = ['/', '/settings', '/onboarding', '/offline.html', '/manifest.webmanifest', '/favicon.svg', '/icon-192.png', '/icon-512.png'];
 
 /**
