@@ -24,6 +24,7 @@ const { title } = Astro.props;
         const savedPreferences = JSON.parse(localStorage.getItem('campuseats-preferences') || '{}');
         document.documentElement.dataset.density = ['standard', 'compact', 'list'].includes(savedPreferences?.viewMode)
           ? savedPreferences.viewMode : savedPreferences?.compact === true ? 'compact' : 'standard';
+        document.documentElement.dataset.devMode = String(savedPreferences?.devMode === true);
       } catch (error) { /* storage blocked: the defaults apply */ }
     </script>
     <meta name="description" content="Find what's cooking at ETH and UZH campus canteens." />

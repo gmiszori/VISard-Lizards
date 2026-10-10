@@ -31,6 +31,7 @@
 .site-header>.header-controls{justify-self:end}.header-account{display:flex;align-items:center;justify-content:center;gap:8px}
 .header-account :is(a,button){display:inline-flex;align-items:center;justify-content:center;min-height:44px;border:1px solid var(--line);border-radius:12px;padding:10px 15px;font:700 12px 'DM Sans',sans-serif;text-decoration:none;cursor:pointer}
 .header-account .login-trigger{background:var(--green);color:var(--paper);min-width:75px}.header-account :is(a,button):hover{box-shadow:var(--shadow);border-color:var(--green)}
+:root:not([data-dev-mode="true"]) .header-account .login-trigger{display:none}
 .header-account :is(a,button):focus-visible,.login-dialog :is(a,button,input):focus-visible{outline:3px solid var(--green);outline-offset:3px}
 .login-is-open{overflow:hidden}.login-dialog{box-sizing:border-box;position:fixed;inset:0;width:min(440px,calc(100% - 32px));max-height:calc(100svh - 32px);margin:auto;padding:32px;border:1px solid var(--line);border-radius:26px;background:var(--paper);color:var(--ink);box-shadow:var(--shadow);font-family:'DM Sans',sans-serif;overflow-y:auto;overscroll-behavior:contain}
 .login-dialog::backdrop{background:color-mix(in srgb,var(--ink) 28%,transparent);backdrop-filter:blur(6px)}
