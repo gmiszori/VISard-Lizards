@@ -114,10 +114,19 @@ const shownDays = days.includes(menuDate) ? days : [...days, menuDate].sort();
     } catch { /* storage blocked */ }
   }));
 
+  // On a day the visitor picked that is not today, live status ("Closed" right now), the current crowd and today's hours say nothing
+  // about that day: hide them (CSS: [data-other-day] in styles/global.css).
+  function markOtherDay() {
+    if (!root) return;
+    const other = root.dataset.chosenDay === 'true' && root.dataset.pickerDate !== zurichParts(appNow()).date;
+    document.documentElement.toggleAttribute('data-other-day', other);
+  }
+
   renderDays();
+  markOtherDay();
   followSimulatedDay();
   document.addEventListener('languagechange', renderDays);
-  document.addEventListener(CLOCK_EVENT, () => { renderDays(); followSimulatedDay(); });
+  document.addEventListener(CLOCK_EVENT, () => { renderDays(); markOtherDay(); followSimulatedDay(); });
 </script>
 <style>
   .day-picker{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;margin:0 0 14px}
