@@ -1,11 +1,23 @@
 <section class="scraped-menus" aria-labelledby="scraped-title">
-  <div class="section-head"><div><h2 id="scraped-title">Live menus from cafeteria websites</h2><p>Meals, catering offers and published closures. Refreshed daily at 06:00 Zurich time.</p></div></div>
-  <p data-scraped-status role="status">Loading saved menus…</p>
+  <div class="section-head"><div><h2 id="scraped-title" data-scraped-title>Live menus from cafeteria websites</h2><p data-scraped-intro>Meals, catering offers and published closures. Refreshed daily at 06:00 Zurich time.</p></div></div>
+  <p data-scraped-status role="status" data-scraped-loading>Loading saved menus…</p>
   <div data-scraped-list></div>
 </section>
 <script>
   import { apiGet } from '../data/api';
   type RecordValue = Record<string, any>;
+  // The page language decides the texts of this block (English / German); a language switch re-renders it.
+  const german = () => document.documentElement.lang === 'de';
+  const L = (english: string, deutsch: string) => german() ? deutsch : english;
+  const when = (value: unknown) => new Date(String(value)).toLocaleString(german() ? 'de-CH' : undefined);
+  function translateStatic() {
+    const title = document.querySelector<HTMLElement>('[data-scraped-title]');
+    const intro = document.querySelector<HTMLElement>('[data-scraped-intro]');
+    if (title) title.textContent = L('Live menus from cafeteria websites', 'Live-Menüs von Cafeteria-Websites');
+    if (intro) intro.textContent = L('Meals, catering offers and published closures. Refreshed daily at 06:00 Zurich time.', 'Gerichte, Catering-Angebote und veröffentlichte Schliessungen. Täglich um 06:00 Uhr (Zürcher Zeit) aktualisiert.');
+    const loading = document.querySelector<HTMLElement>('[data-scraped-loading]');
+    if (loading) loading.textContent = L('Loading saved menus…', 'Gespeicherte Menüs werden geladen …');
+  }
   const status = document.querySelector<HTMLElement>('[data-scraped-status]');
   const list = document.querySelector<HTMLElement>('[data-scraped-list]');
   function node(tag: string, text: string): HTMLElement {
@@ -14,7 +26,7 @@
   function sourceLink(url: unknown): HTMLElement | null {
     if (typeof url !== 'string') return null;
     try { if (new URL(url).protocol !== 'https:') return null; } catch { return null; }
-    const link = document.createElement('a'); link.href = url; link.textContent = 'View source';
+    const link = document.createElement('a'); link.href = url; link.textContent = L('View source', 'Quelle ansehen');
     link.target = '_blank'; link.rel = 'noopener noreferrer'; return link;
   }
   async function refresh() {
@@ -22,9 +34,10 @@
     try {
       const data = await apiGet<RecordValue>('/api/scraped-menus', undefined, 10000);
       if (!Array.isArray(data.cafeterias)) throw new Error('Invalid menus');
-      status.textContent = !data.configured ? (data.lastCompleted ? 'Showing saved results. Configure the backend OpenAI key to enable automatic refreshes.' : 'Live website menus have not been enabled yet.') : !data.enabled ? 'Showing saved results. Automatic refreshes are disabled.' : data.running ?
-        'Menus are refreshing in the background. Showing the latest saved results.' :
-        data.lastCompleted ? `Last refresh: ${new Date(data.lastCompleted).toLocaleString()}` : 'Waiting for the first refresh.';
+      status.removeAttribute('data-scraped-loading');
+      status.textContent = !data.configured ? (data.lastCompleted ? L('Showing saved results. Configure the backend OpenAI key to enable automatic refreshes.', 'Gespeicherte Ergebnisse werden angezeigt. Für automatische Aktualisierungen muss der OpenAI-Schlüssel im Backend konfiguriert werden.') : L('Live website menus have not been enabled yet.', 'Die Live-Menüs von Websites sind noch nicht aktiviert.')) : !data.enabled ? L('Showing saved results. Automatic refreshes are disabled.', 'Gespeicherte Ergebnisse werden angezeigt. Automatische Aktualisierungen sind deaktiviert.') : data.running ?
+        L('Menus are refreshing in the background. Showing the latest saved results.', 'Menüs werden im Hintergrund aktualisiert. Die zuletzt gespeicherten Ergebnisse werden angezeigt.') :
+        data.lastCompleted ? `${L('Last refresh', 'Letzte Aktualisierung')}: ${when(data.lastCompleted)}` : L('Waiting for the first refresh.', 'Warten auf die erste Aktualisierung.');
       const today = new Intl.DateTimeFormat('en-CA', {timeZone:'Europe/Zurich', year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
       const expanded = new Set(Array.from(list.querySelectorAll<HTMLDetailsElement>('details.scraped-venue[open]')).map(card => card.dataset.venue));
       list.replaceChildren();
@@ -41,38 +54,40 @@
           for (const closure of raw.availability ?? []) if (!closure.dateTo || closure.dateTo >= today) closures.set(JSON.stringify(closure), closure);
           for (const warning of raw.warnings ?? []) if (typeof warning === 'string') warnings.add(warning);
         }
-        card.append(node('summary', `${venue.name} · ${meals.size} entries${closures.size ? ' · Closure published' : ''}${venue.status === 'source_unavailable' ? ' · Source unavailable' : venue.stale ? ' · Refresh failed' : ''}`));
-        if (venue.updatedAt) card.append(node('p', `Updated: ${new Date(venue.updatedAt).toLocaleString()}`));
-        if (venue.status === 'source_unavailable') card.append(node('p', 'A public meal source is not available for this cafeteria yet.'));
-        else if (venue.error) card.append(node('p', venue.result ? 'Showing previous results because the latest refresh failed.' : 'No live results yet; the latest refresh failed.'));
-        if (venue.status === 'pending') card.append(node('p', 'Waiting for the scheduled refresh.'));
+        card.append(node('summary', `${venue.name} · ${meals.size} ${L('entries', 'Einträge')}${closures.size ? L(' · Closure published', ' · Schliessung veröffentlicht') : ''}${venue.status === 'source_unavailable' ? L(' · Source unavailable', ' · Quelle nicht verfügbar') : venue.stale ? L(' · Refresh failed', ' · Aktualisierung fehlgeschlagen') : ''}`));
+        if (venue.updatedAt) card.append(node('p', `${L('Updated', 'Aktualisiert')}: ${when(venue.updatedAt)}`));
+        if (venue.status === 'source_unavailable') card.append(node('p', L('A public meal source is not available for this cafeteria yet.', 'Für diese Cafeteria ist noch keine öffentliche Menüquelle verfügbar.')));
+        else if (venue.error) card.append(node('p', venue.result ? L('Showing previous results because the latest refresh failed.', 'Die letzte Aktualisierung ist fehlgeschlagen; frühere Ergebnisse werden angezeigt.') : L('No live results yet; the latest refresh failed.', 'Noch keine Live-Ergebnisse; die letzte Aktualisierung ist fehlgeschlagen.')));
+        if (venue.status === 'pending') card.append(node('p', L('Waiting for the scheduled refresh.', 'Warten auf die geplante Aktualisierung.')));
         for (const closure of closures.values()) {
-          card.append(node('p', `Closed: ${closure.dateFrom ?? 'start unknown'} – ${closure.dateTo ?? 'until further notice'}. ${closure.evidence}`));
+          card.append(node('p', `${L('Closed', 'Geschlossen')}: ${closure.dateFrom ?? L('start unknown', 'Beginn unbekannt')} – ${closure.dateTo ?? L('until further notice', 'bis auf Weiteres')}. ${closure.evidence}`));
           const link = sourceLink(closure.sourceUrl); if (link) card.append(link);
         }
         if (venue.result?.explanation) card.append(node('p', venue.result.explanation));
         for (const meal of meals.values()) {
           const entry = document.createElement('article'); entry.className = 'scraped-dish';
-          entry.append(node('h3', meal.name ?? 'Unnamed entry'));
-          entry.append(node('p', `${meal.date || 'Every day'}${meal.timeStart ? ` · ${meal.timeStart}–${meal.timeEnd ?? '?'}` : ''}`));
+          entry.append(node('h3', meal.name ?? L('Unnamed entry', 'Eintrag ohne Namen')));
+          entry.append(node('p', `${meal.date || L('Every day', 'Täglich')}${meal.timeStart ? ` · ${meal.timeStart}–${meal.timeEnd ?? '?'}` : ''}`));
           if (meal.description) entry.append(node('p', meal.description));
           const prices = meal.prices?.length ? meal.prices : meal.price ? [meal.price] : [];
-          entry.append(node('p', prices.length ? prices.map((price: RecordValue) => `${price.customerGroup ?? 'Price'}: ${price.currency} ${price.amount}`).join(' · ') : 'Price unknown'));
+          entry.append(node('p', prices.length ? prices.map((price: RecordValue) => `${price.customerGroup ?? L('Price', 'Preis')}: ${price.currency} ${price.amount}`).join(' · ') : L('Price unknown', 'Preis unbekannt')));
           if (meal.dietaryLabels?.length) entry.append(node('p', meal.dietaryLabels.join(' · ')));
-          if (meal.allergens?.length) entry.append(node('p', `Allergens: ${meal.allergens.join(', ')}`));
+          if (meal.allergens?.length) entry.append(node('p', `${L('Allergens', 'Allergene')}: ${meal.allergens.join(', ')}`));
           const link = sourceLink(meal.sourceUrl); if (link) entry.append(link);
           card.append(entry);
         }
         for (const warning of warnings) card.append(node('p', warning));
         if (venue.result) {
-          const raw = document.createElement('details'); raw.append(node('summary', 'Full source results'));
+          const raw = document.createElement('details'); raw.append(node('summary', L('Full source results', 'Vollständige Quellergebnisse')));
           raw.append(node('pre', JSON.stringify(venue.result, null, 2))); card.append(raw);
         }
         list.append(card);
       }
-    } catch { status.textContent = 'Live website menus are currently unavailable.'; }
+    } catch { status.removeAttribute('data-scraped-loading'); status.textContent = L('Live website menus are currently unavailable.', 'Die Live-Menüs von Websites sind derzeit nicht verfügbar.'); }
   }
+  translateStatic();
   void refresh();
+  document.addEventListener('languagechange', () => { translateStatic(); void refresh(); });
   // Poll saved results only. This endpoint never starts an AI request.
   window.setInterval(() => { if (!document.hidden) void refresh(); }, 60000);
 </script>
