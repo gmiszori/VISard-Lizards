@@ -25,9 +25,9 @@ function rank(a: HTMLElement, b: HTMLElement) {
 function render() {
   document.querySelectorAll<HTMLElement>('[data-meal-copy]').forEach(el => el.textContent = t(el.dataset.mealCopy as Key));
   rows.forEach(row => row.dataset.mealStarred = String(matchesMeal(row.querySelector<HTMLElement>('[data-meal-star]')?.dataset.mealName ?? '', stars)));
-  document.querySelectorAll<HTMLElement>('[data-meal-list]').forEach(list => {
+  document.querySelectorAll<HTMLElement>('[data-meal-list], [data-meal-group]').forEach(list => {
     const children = [...list.children].filter((el): el is HTMLElement => el instanceof HTMLElement && el.matches('[data-meal-row]'));
-    const after = [...list.children].find(el => !el.matches('[data-meal-row]')) ?? null;
+    const after = children.length ? children[children.length - 1]!.nextElementSibling : null;
     children.sort(rank).forEach(row => list.insertBefore(row, after));
   });
   cards.forEach(card => {

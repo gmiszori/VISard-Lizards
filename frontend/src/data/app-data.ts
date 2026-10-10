@@ -9,7 +9,7 @@
  * current; a static build takes the data of build time.
  */
 import { CANTEENS, MENSAS, MENU_DATE, type Canteen, type MenuItem } from './canteens';
-import { prepareMenu, type DisplayMenuItem } from './menu-display';
+import { compareMealServiceAndKind, prepareMenu, type DisplayMenuItem } from './menu-display';
 import { API_URL, apiGet, type BackendMealDetail } from './api';
 import { DataError, hasOnlyOnePriceCategory, mergePrices, parseMealList, parseMensas, parseMeta } from './validate';
 import { menuDateCandidates } from './menuDate';
@@ -106,8 +106,7 @@ async function fetchAppData(): Promise<AppData> {
 function toMenu(meals: BackendMealDetail[]): Array<MenuItem & Pick<DisplayMenuItem, 'dietTag' | 'allergenIds'>> {
   return meals
     .map((detail) => detail.meal)
-    .sort((a, b) => Number(a.classification[2] === 'dinner') - Number(b.classification[2] === 'dinner'))
-    .sort((a, b) => Number(a.classification[1] !== 'main') - Number(b.classification[1] !== 'main'))
+    .sort(compareMealServiceAndKind)
     .map((meal, index) => {
       const [diet, kind, service] = meal.classification;
       return {

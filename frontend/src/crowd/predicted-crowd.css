@@ -1,5 +1,5 @@
 /* Predicted crowd: a small, orientative histogram (no slider, no readout). */
-.predicted-crowd{margin:0 0 24px;padding:16px 18px 12px;border:1px solid var(--line);border-radius:16px;background:var(--paper);box-shadow:var(--shadow);color:var(--ink);font-family:'DM Sans',sans-serif}
+.predicted-crowd{margin:24px 0;padding:16px 18px 12px;border:1px solid var(--line);border-radius:16px;background:var(--paper);box-shadow:var(--shadow);color:var(--ink);font-family:'DM Sans',sans-serif}
 
 .crowd-heading{display:flex;justify-content:space-between;align-items:center;gap:12px}
 .crowd-eyebrow{font-size:10px;font-weight:700;letter-spacing:.12em;color:var(--green)}

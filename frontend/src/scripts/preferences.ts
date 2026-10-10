@@ -26,6 +26,10 @@ function applyPreferences() {
     meal.hidden = !preferences[diet];
   });
 
+  document.querySelectorAll<HTMLElement>('[data-meal-group]').forEach(group => {
+    group.hidden = group.querySelector('[data-meal-row]:not([hidden])') === null;
+  });
+
   document.querySelectorAll<HTMLElement>('[data-preference-list]').forEach((list) => {
     const hasVisibleMeals = list.querySelectorAll<HTMLElement>('[data-diet]:not([hidden])').length > 0;
     let emptyMessage = list.querySelector<HTMLElement>('[data-no-preference-meals]');

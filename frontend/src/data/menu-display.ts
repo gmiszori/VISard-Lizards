@@ -1,4 +1,4 @@
-import type { Mensa, MenuItem, Weekday } from './canteens.ts';
+import type { Mensa, MenuItem, Service, Weekday } from './canteens.ts';
 
 export type DisplayMenuItem = MenuItem & {
   servingWindows?: Array<{ open: string; close: string }>;
@@ -6,6 +6,17 @@ export type DisplayMenuItem = MenuItem & {
   dietTag?: 'vegan' | 'vegetarian' | 'meat' | 'fish';
   allergenIds?: string[];
 };
+
+export function groupMenuByService<T extends Pick<MenuItem, 'service'>>(menu: T[]): Array<{ service: Service | undefined; items: T[] }> {
+  return (['lunch', 'dinner', undefined] as const)
+    .map(service => ({ service, items: menu.filter(item => item.service === service) }))
+    .filter(group => group.items.length > 0);
+}
+
+export function compareMealServiceAndKind(a: { classification: readonly string[] }, b: { classification: readonly string[] }): number {
+  return Number(a.classification[2] === 'dinner') - Number(b.classification[2] === 'dinner') ||
+    Number(a.classification[1] !== 'main') - Number(b.classification[1] !== 'main');
+}
 
 /** Match meal-service hours to the menu date, never today's building opening hours. */
 export function prepareMenu<T extends MenuItem>(menu: T[], mensa: Mensa | undefined, date: string): Array<T & DisplayMenuItem> {

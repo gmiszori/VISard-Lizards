@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { MENSAS, MEALS, CANTEENS, type Mensa } from './canteens.ts';
-import { prepareMenu } from './menu-display.ts';
+import { compareMealServiceAndKind, groupMenuByService, prepareMenu } from './menu-display.ts';
 
 const meal = CANTEENS.find(c => c.menu.length)!.menu[0]!;
 const mensa = { ...MENSAS[0]!, temporarilyClosed: false, closures: [], openingHours: {
@@ -22,6 +22,24 @@ test('duplicate IDs render once while distinct offerings with the same name rema
   const lunch = { ...meal, id: 'lunch', service: 'lunch' as const };
   const dinner = { ...meal, id: 'dinner', service: 'dinner' as const };
   assert.deepEqual(prepareMenu([lunch, lunch, dinner, dinner], mensa, '2026-10-12').map(m => m.id), ['lunch', 'dinner']);
+});
+
+test('lunch and dinner remain separate even when the same dish is offered twice', () => {
+  const dinner = { ...meal, id: 'dinner', service: 'dinner' as const };
+  const lunch = { ...meal, id: 'lunch', service: 'lunch' as const };
+  assert.deepEqual(groupMenuByService([dinner, lunch]).map(group => [group.service, group.items.map(item => item.id)]),
+    [['lunch', ['lunch']], ['dinner', ['dinner']]]);
+});
+
+test('menu order keeps lunch before dinner and mains before sides within each service', () => {
+  const offerings = [
+    { id: 'dinner-side', classification: ['vegan', 'buffet', 'dinner'] },
+    { id: 'lunch-side', classification: ['vegan', 'buffet', 'lunch'] },
+    { id: 'dinner-main', classification: ['vegan', 'main', 'dinner'] },
+    { id: 'lunch-main', classification: ['vegan', 'main', 'lunch'] },
+  ];
+  assert.deepEqual(offerings.sort(compareMealServiceAndKind).map(item => item.id),
+    ['lunch-main', 'lunch-side', 'dinner-main', 'dinner-side']);
 });
 
 test('all published service windows are preserved without duplicate windows', () => {

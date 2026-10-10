@@ -6,6 +6,7 @@ import LocationLink from '../../components/LocationLink.astro';
 import { CANTEENS, CROWD, LIVE_DATA } from '../../data/canteens';
 import { loadAppData } from '../../data/app-data';
 import MenuDate from '../../components/MenuDate.astro';
+import { groupMenuByService } from '../../data/menu-display';
 import { WEEKDAYS, type CrowdPrediction } from '../../crowd/prediction';
 // Only the ids come from here: `astro dev` caches getStaticPaths, so menus passed as props would go stale.
 export function getStaticPaths() {
@@ -24,17 +25,27 @@ const prediction: CrowdPrediction = {
     })) : {},
   ])),
 };
+const menuGroups = groupMenuByService(canteen.menu);
+const showServiceHeadings = menuGroups.some(group => group.service === 'lunch') && menuGroups.some(group => group.service === 'dinner');
 ---
 <BaseLayout title={canteen.name}>
   <a href="/" class="detail-back" data-i18n="back">← All canteens</a>
   <section class="detail-hero"><img src={canteen.imageUrl} alt="" /><div class="detail-overlay"><div><div class="detail-hero-title"><h1>{canteen.name}</h1><LocationLink mensaId={canteen.id} /></div><p>{canteen.campus} · {canteen.location} · ★ {canteen.rating !== null ? canteen.rating.toFixed(1) : <span title="No ratings yet">–</span>}</p></div><span data-live="status" data-live-id={canteen.id} class={`status ${canteen.isOpen ? 'open' : 'closed'}`}>● <span data-i18n={canteen.isOpen ? 'open' : 'closed'}>{canteen.isOpen ? 'Open now' : 'Closed'}</span></span></div></section>
   <div class="detail-info"><div class="info-box"><small data-i18n="hours">Opening hours</small><strong data-live="hours" data-live-id={canteen.id}>{canteen.hours}</strong></div><div class="info-box"><small data-i18n="crowd">Current crowd</small><strong data-live="crowd" data-live-id={canteen.id} data-i18n={canteen.isOpen ? canteen.occupancy : 'closed'}>{canteen.isOpen ? canteen.occupancy[0].toUpperCase() + canteen.occupancy.slice(1) : 'Closed'}</strong></div></div>
-  <PredictedCrowd prediction={prediction} />
   <section><h2 class="menu-section-title"><MenuDate date={menuDate} today={today} variant="heading" /> <span class="count">· {canteen.menu.length} <span data-i18n="dishes">dishes</span></span></h2>
-    {canteen.menu.length ? <><div class="menu-list" data-preference-list data-meal-list>{canteen.menu.map((item) => <MenuItem item={item} />)}</div><div class="empty-state preference-empty" data-no-preference-meals hidden data-i18n="noPreferenceMeals">No dishes match your food preferences.</div></> : <div class="empty-state" style="display:block" data-i18n="menuEmpty">No menu available for this date.</div>}
+    {canteen.menu.length ? <><div class="menu-list" data-preference-list data-meal-list>{menuGroups.map(group => <div class="menu-service-group" data-meal-group>
+      {showServiceHeadings && group.service && <h3 class="menu-service-heading" data-i18n={group.service}>{group.service === 'dinner' ? 'Dinner' : 'Lunch'}</h3>}
+      {group.items.map(item => <MenuItem item={item} />)}
+    </div>)}</div><div class="empty-state preference-empty" data-no-preference-meals hidden data-i18n="noPreferenceMeals">No dishes match your food preferences.</div></> : <div class="empty-state" style="display:block" data-i18n="menuEmpty">No menu available for this date.</div>}
   </section>
+  <PredictedCrowd prediction={prediction} />
 </BaseLayout>
-<style>.detail-hero-title{display:flex;align-items:center;gap:12px;flex-wrap:wrap}</style>
+<style>
+  .detail-hero-title{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .menu-service-group{display:contents}
+  .menu-service-group[hidden]{display:none}
+  .menu-service-heading{grid-column:1/-1;margin:10px 0 0;color:var(--muted);font-size:14px;text-transform:uppercase}
+</style>
 <script>
   // Replace the preview chart with the backend's prediction once enough crowd reports exist (src/crowd/README.md).
   import { apiGet, type BackendCrowd } from '../../data/api';
