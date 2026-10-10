@@ -12,7 +12,7 @@ import com.visardlizards.backend.service.LiveMenuImportService.ImportResult;
  * @author Nikita & Jona because AI wasn't helping
  */
 @RestController
-@RequestMapping("/api/meals/trigger-update")
+@RequestMapping("/api/trigger-update")
 public class MealUpdateTriggerController {
 	
 	private LiveMenuImportService importService;
