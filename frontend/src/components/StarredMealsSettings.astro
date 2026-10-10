@@ -6,4 +6,99 @@ import '../meals/stars.css';
   <p data-meal-copy="savedHint">When these dishes return to the menu, we’ll bring them to the top. Saved on this device.</p>
   <p class="starred-meals-empty" data-starred-meals-empty data-meal-copy="empty">No starred meals yet. Tap the star next to a dish to save it.</p>
   <ul class="saved-meals-list" data-saved-meals-list></ul>
+  <div class="push-settings" data-push-settings hidden>
+    <label class="setting-option compact-option push-setting">
+      <span class="compact-icon" aria-hidden="true">🔔</span>
+      <span class="setting-copy"><strong data-push-copy="toggle">Notify me when they’re back</strong>
+        <small data-push-copy="hint">At most one notification a day, in the morning, when a starred dish is on a new menu. For this, the dishes above are stored on the UniEats server with an anonymous browser address.</small></span>
+      <input type="checkbox" data-push-toggle />
+    </label>
+    <p class="push-status" data-push-status role="status" aria-live="polite"></p>
+    <button type="button" class="push-test" data-push-test hidden data-push-copy="test">Send a test notification</button>
+  </div>
 </section>
+<script>
+  import { disablePush, enablePush, markAsked, PUSH_EVENT, pushState, sendTestPush, type PushState } from '../push/push';
+
+  const copy = {
+    en: {
+      toggle: 'Notify me when they’re back',
+      hint: 'At most one notification a day, in the morning, when a starred dish is on a new menu. For this, the dishes above are stored on the UniEats server with an anonymous browser address.',
+      test: 'Send a test notification',
+      on: 'On. The server knows the dishes above and nothing else about you.', off: '',
+      denied: 'Blocked in your browser. Allow notifications for this site in the browser settings to turn this on.',
+      unsupported: 'This browser cannot receive notifications. On iPhone and iPad, add UniEats to the home screen first.',
+      'no-backend': 'Not available: this version runs without the UniEats server.',
+      working: 'One moment…', failed: 'That did not work. Check your connection and try again.',
+      sent: 'Sent. It should arrive in a few seconds.', notSent: 'The notification service did not accept it. Try turning notifications off and on.',
+    },
+    de: {
+      toggle: 'Benachrichtigen, wenn sie wieder da sind',
+      hint: 'Höchstens eine Nachricht pro Tag, am Morgen, wenn ein markiertes Gericht auf einem neuen Menü steht. Dafür speichern wir die Gerichte oben mit einer anonymen Browser-Adresse auf dem UniEats-Server.',
+      test: 'Test-Benachrichtigung senden',
+      on: 'An. Der Server kennt die Gerichte oben und sonst nichts über dich.', off: '',
+      denied: 'In deinem Browser blockiert. Erlaube Benachrichtigungen für diese Seite in den Browser-Einstellungen, um das einzuschalten.',
+      unsupported: 'Dieser Browser kann keine Benachrichtigungen empfangen. Auf iPhone und iPad füge UniEats zuerst zum Home-Bildschirm hinzu.',
+      'no-backend': 'Nicht verfügbar: Diese Version läuft ohne den UniEats-Server.',
+      working: 'Einen Moment…', failed: 'Das hat nicht geklappt. Prüfe deine Verbindung und versuche es erneut.',
+      sent: 'Gesendet. Sie sollte in ein paar Sekunden ankommen.', notSent: 'Der Benachrichtigungsdienst hat sie nicht angenommen. Schalte Benachrichtigungen aus und wieder ein.',
+    },
+  };
+  type Key = keyof typeof copy.en;
+  const t = (key: Key) => copy[document.documentElement.lang === 'de' ? 'de' : 'en'][key];
+
+  const root = document.querySelector<HTMLElement>('[data-push-settings]');
+  const toggle = root?.querySelector<HTMLInputElement>('[data-push-toggle]');
+  const status = root?.querySelector<HTMLElement>('[data-push-status]');
+  const test = root?.querySelector<HTMLButtonElement>('[data-push-test]');
+  let state: PushState = 'off';
+  let message: Key | null = null;
+
+  function render() {
+    if (!root || !toggle || !status || !test) return;
+    root.querySelectorAll<HTMLElement>('[data-push-copy]').forEach(el => { el.textContent = t(el.dataset.pushCopy as Key); });
+    toggle.checked = state === 'on';
+    toggle.disabled = state === 'unsupported' || state === 'no-backend' || state === 'denied';
+    test.hidden = state !== 'on';
+    status.textContent = t(message ?? state);
+  }
+
+  async function refresh() {
+    state = await pushState();
+    render();
+  }
+
+  if (root && toggle && test) {
+    root.hidden = false;
+    toggle.addEventListener('change', async () => {
+      const wanted = toggle.checked;
+      toggle.disabled = true;
+      message = 'working';
+      render();
+      // Choosing here counts as the answer to the one-time question after starring.
+      markAsked();
+      try { state = wanted ? await enablePush() : await disablePush(); message = null; }
+      catch { message = 'failed'; state = await pushState(); }
+      render();
+    });
+    test.addEventListener('click', async () => {
+      test.disabled = true;
+      try { message = (await sendTestPush()) ? 'sent' : 'notSent'; }
+      catch { message = 'failed'; }
+      test.disabled = false;
+      render();
+    });
+    document.addEventListener('languagechange', render);
+    document.addEventListener(PUSH_EVENT, () => { message = null; void refresh(); });
+    void refresh();
+  }
+</script>
+<style>
+  .push-settings{margin-top:16px}
+  .push-settings[hidden],.push-test[hidden]{display:none}
+  .push-setting{max-width:none}
+  .push-status{margin:8px 2px 0;color:var(--muted);font-size:12px;line-height:1.5}
+  .push-status:empty{display:none}
+  .push-test{margin-top:8px;min-height:40px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--green);font:700 12px 'DM Sans',sans-serif;cursor:pointer}
+  .push-test:disabled{opacity:.6;cursor:wait}
+</style>

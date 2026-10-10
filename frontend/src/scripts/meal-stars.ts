@@ -1,4 +1,5 @@
 import { matchesMeal, normalizedName, starName, PROFILE_KEY, readStarredMeals, writeStarredMeals } from '../meals/stars';
+import { askForPushOnce, syncLater } from '../push/optin';
 
 const copy = {
   en: { featured: 'Your starred meals', savedTitle: 'Starred meals', savedHint: 'When these dishes return to the menu, we’ll bring them to the top. Saved on this device.', empty: 'No starred meals yet. Tap the star next to a dish to save it.', star: 'Star meal', unstar: 'Unstar meal', remove: 'Remove', menuFor: 'On the menu for', added: 'Starred', removed: 'Unstarred', error: 'Could not save your starred meals on this device.' },
@@ -123,11 +124,17 @@ document.addEventListener('click', event => {
     else if (fallback) { fallback.tabIndex = -1; fallback.focus({ preventScroll: true }); }
   }
   announce(`${t(previous ? 'removed' : 'added')}: ${name}`);
+  // Push for starred dishes: offered once on the first star; the server's list follows the stars.
+  syncLater();
+  if (!previous && removedName === undefined) void askForPushOnce(announce);
 });
 document.addEventListener('languagechange', render);
 document.addEventListener('campuseats:preferences-applied', render);
 document.addEventListener('campuseats:canteen-favourites-changed', render);
 window.addEventListener('storage', event => {
-  if (event.key === PROFILE_KEY || event.key === null) { stars = readStarredMeals(); render(); }
+  if (event.key === PROFILE_KEY || event.key === null) { stars = readStarredMeals(); render(); syncLater(); }
 });
 render();
+// Catches changes made elsewhere (onboarding, another tab) and the language; skipped when nothing changed.
+syncLater();
+document.addEventListener('languagechange', syncLater);

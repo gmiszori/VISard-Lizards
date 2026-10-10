@@ -1,0 +1,16 @@
+PLAN - Push notifications for starred dishes (Claude, working for IllusioQuest)
+Started: 2026-10-10
+
+What I am building:
+  Backend (new files only, plus WebConfig/application.properties/API.md):
+    - Web Push (RFC 8291 encryption + VAPID, JDK crypto only, no new dependency)
+    - /api/push/public-key, PUT+DELETE /api/push/subscription, POST /api/push/test
+    - Daily job (09:30 Zurich): a starred dish that is on a menu again -> at most one push per day
+  Frontend:
+    - public/sw.js (service worker), src/push/* (subscribe, opt-in dialog)
+    - opt-in asked once, on the first starred dish
+    - toggle + explanation in components/StarredMealsSettings.astro (NOT pages/settings.astro)
+    - scripts/meal-stars.ts: tells the push module when stars change
+
+I will NOT touch: pages/settings.astro, preferences/*, scripts/preferences.ts, layouts/BaseLayout.astro
+(another session is changing the overview layout there; uncommitted work in this checkout).

@@ -53,4 +53,5 @@ build/
 data/*.db
 
 data/scraped-menus.json
+data/vapid-keys.properties
 data/scraped-menus-*.tmp
