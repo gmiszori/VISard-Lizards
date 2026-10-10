@@ -2,6 +2,7 @@ import { matchesQuery } from '../search/fold';
 import { isPriceTier, readPreferences, PREFERENCES_KEY, type Preferences } from '../preferences/state';
 let preferences: Preferences;
 try { preferences = readPreferences(); } catch { preferences = { vegan: true, vegetarian: true, meat: true, compact: false, openOnly: false, locations: ['zentrum', 'hoenggerberg', 'irchel'], priceTier: 'student', devMode: false }; }
+let showWithoutMenu = false;
 
 function applyPreferences() {
   document.documentElement.dataset.density = preferences.compact ? 'compact' : 'standard';
@@ -33,6 +34,21 @@ function applyPreferences() {
     group.hidden = group.querySelector('[data-meal-row]:not([hidden])') === null;
   });
 
+  document.querySelectorAll<HTMLElement>('[data-canteen-card]').forEach(card => {
+    const dishSearch = query.trim() !== '' && !matchesQuery(card.dataset.name ?? '', query);
+    const rows = [...card.querySelectorAll<HTMLElement>('[data-meal-row]:not([hidden])')];
+    rows.forEach((row, index) => row.classList.toggle('preview-clipped', !dishSearch && index >= 2));
+    card.querySelectorAll<HTMLElement>('[data-meal-group]').forEach(group => {
+      group.classList.toggle('preview-empty', !group.querySelector('[data-meal-row]:not([hidden]):not(.preview-clipped)'));
+    });
+    const fullMenu = card.querySelector<HTMLAnchorElement>('[data-preview-link]');
+    if (fullMenu) {
+      fullMenu.hidden = dishSearch || rows.length <= 2;
+      const lang = document.documentElement.lang;
+      fullMenu.textContent = lang === 'de' ? `Alle ${rows.length} Gerichte ansehen` : `View all ${rows.length} dishes`;
+    }
+  });
+
   document.querySelectorAll<HTMLElement>('[data-preference-list]').forEach((list) => {
     const hasVisibleMeals = list.querySelectorAll<HTMLElement>('[data-diet]:not([hidden])').length > 0;
     let emptyMessage = list.querySelector<HTMLElement>('[data-no-preference-meals]');
@@ -43,8 +59,7 @@ function applyPreferences() {
   });
 
   const campusChoice = document.querySelector<HTMLSelectElement>('#campus-select')?.value ?? 'preset';
-  let visibleCanteens = 0;
-  document.querySelectorAll<HTMLElement>('[data-canteen-card]').forEach((card) => {
+  const candidates = [...document.querySelectorAll<HTMLElement>('[data-canteen-card]')].map((card) => {
     // "preset" = the campuses chosen in settings; the selector can override that for this visit only.
     const matchesCampus = campusChoice === 'all' ? true
       : campusChoice === 'preset' ? preferences.locations.includes(card.dataset.campusId ?? '')
@@ -52,9 +67,25 @@ function applyPreferences() {
     const matchesOpen = !preferences.openOnly || card.dataset.isOpen === 'true';
     // Umlauts are optional: "zurich", "zuerich" and "Zürich" all find the same dishes.
     const matchesSearch = matchesQuery(card.dataset.name ?? '', query) || card.querySelector('[data-meal-row]:not([hidden])') !== null;
-    card.hidden = !(matchesCampus && matchesOpen && matchesSearch);
+    return { card, matches: matchesCampus && matchesOpen && matchesSearch, hasMenu: card.dataset.hasMenu === 'true' };
+  });
+  const withMenuCount = candidates.filter(candidate => candidate.matches && candidate.hasMenu).length;
+  const withoutMenuCount = candidates.filter(candidate => candidate.matches && !candidate.hasMenu).length;
+  const collapseWithoutMenu = !showWithoutMenu && !query.trim() && withMenuCount > 0;
+  let visibleCanteens = 0;
+  candidates.forEach(({ card, matches, hasMenu }) => {
+    card.hidden = !matches || (!hasMenu && collapseWithoutMenu);
     if (!card.hidden) visibleCanteens++;
   });
+  const noMenuToggle = document.querySelector<HTMLButtonElement>('#no-menu-toggle');
+  if (noMenuToggle) {
+    noMenuToggle.hidden = withoutMenuCount === 0 || withMenuCount === 0 || !!query.trim();
+    noMenuToggle.setAttribute('aria-pressed', String(showWithoutMenu));
+    const lang = document.documentElement.lang;
+    noMenuToggle.textContent = lang === 'de'
+      ? `${withoutMenuCount} ohne Menü ${showWithoutMenu ? 'ausblenden' : 'anzeigen'}`
+      : `${showWithoutMenu ? 'Hide' : 'Show'} ${withoutMenuCount} without menus`;
+  }
 
   const favouritesSection = document.querySelector<HTMLElement>('#favourites-section');
   const visibleFavourites = document.querySelectorAll<HTMLElement>('#favourites-grid [data-canteen-card]:not([hidden])').length;
@@ -96,6 +127,10 @@ document.querySelector<HTMLFormElement>('#preferences-form')?.addEventListener('
 
 document.querySelector<HTMLInputElement>('#search-input')?.addEventListener('input', applyPreferences);
 document.querySelector<HTMLSelectElement>('#campus-select')?.addEventListener('change', applyPreferences);
+document.querySelector<HTMLButtonElement>('#no-menu-toggle')?.addEventListener('click', () => {
+  showWithoutMenu = !showWithoutMenu;
+  applyPreferences();
+});
 // "Show all canteens" in the empty state: clears the search and looks at every campus for this visit. Settings stay as they are.
 document.querySelector<HTMLElement>('[data-reset-filters]')?.addEventListener('click', () => {
   const search = document.querySelector<HTMLInputElement>('#search-input');

@@ -76,7 +76,10 @@ function refresh(): boolean {
   });
 
   const total = document.querySelector<HTMLElement>('[data-live="open-count"]');
-  if (total && seen.size > 0 && total.textContent !== String(openCount)) total.textContent = String(openCount);
+  if (total && seen.size > 0) {
+    if (total.textContent !== String(openCount)) total.textContent = String(openCount);
+    if (total.parentElement) total.parentElement.hidden = openCount === 0;
+  }
   return changed;
 }
 
