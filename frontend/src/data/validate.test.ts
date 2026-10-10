@@ -75,17 +75,22 @@ test('F08: ratings outside 0-5 or not numbers become null', () => {
   assert.equal(average(5), 5);
 });
 
-test('F08: a meal that cannot be identified or classified is dropped', () => {
+test('F08: a meal without a usable identity is dropped', () => {
   const broken: Array<(m: ReturnType<typeof good>) => unknown> = [
     (m) => ({ ...m, mensaId: '' }), (m) => ({ ...m, mensaId: 7 }), (m) => ({ ...m, date: '2026-02-31' }), (m) => ({ ...m, date: 'tomorrow' }),
     (m) => ({ ...m, meal: null }), (m) => ({ ...m, meal: 'x' }), (m) => ({ ...m, meal: { ...m.meal, id: '' } }), (m) => ({ ...m, meal: { ...m.meal, id: 'x'.repeat(201) } }),
     (m) => ({ ...m, meal: { ...m.meal, name: '   ' } }), (m) => ({ ...m, meal: { ...m.meal, name: 5 } }),
-    (m) => ({ ...m, meal: { ...m.meal, classification: ['meat', 'main'] } }), (m) => ({ ...m, meal: { ...m.meal, classification: 'meat,main,lunch' } }),
-    (m) => ({ ...m, meal: { ...m.meal, classification: ['halal', 'main', 'lunch'] } }), (m) => ({ ...m, meal: { ...m.meal, classification: ['meat', 'snack', 'lunch'] } }),
-    (m) => ({ ...m, meal: { ...m.meal, classification: ['meat', 'main', 'brunch'] } }), (m) => ({ ...m, meal: { ...m.meal, classification: [1, 2, 3] } }),
     () => null, () => 'meal', () => 42, () => [],
   ];
   for (const make of broken) assert.equal(parseMeal(make(good())), null, JSON.stringify(make(good())).slice(0, 80));
+});
+
+test('Food2050 meals without a known classification get conservative defaults', () => {
+  const meal = good();
+  assert.deepEqual(parseMeal({ ...meal, meal: { ...meal.meal, classification: 'meat,main,lunch' } })?.meal.classification,
+    ['meat', 'main', 'lunch']);
+  assert.deepEqual(parseMeal({ ...meal, meal: { ...meal.meal, classification: ['veggie', 'snack', 'brunch'] } })?.meal.classification,
+    ['vegetarian', 'main', 'lunch']);
 });
 
 test('F08: description and allergens are cleaned, extra fields are ignored', () => {

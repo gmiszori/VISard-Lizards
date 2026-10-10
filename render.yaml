@@ -1,0 +1,38 @@
+# Apply as a Blueprint from gmiszori/VISard-Lizards on main. See DEPLOY.md.
+services:
+  - type: web
+    name: visard-lizards-api
+    runtime: docker
+    plan: free
+    region: frankfurt
+    branch: main
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/meta
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: PORT
+        value: '8080'
+      - key: APP_CORS_ALLOWED_ORIGINS
+        value: https://visard-lizards*.onrender.com,http://localhost:4321,http://127.0.0.1:4321
+      - key: SERVER_FORWARD_HEADERS_STRATEGY
+        value: framework
+      - key: JAVA_TOOL_OPTIONS
+        value: -XX:MaxRAMPercentage=70 -XX:+UseSerialGC -Xss512k
+
+  - type: web
+    name: visard-lizards
+    runtime: static
+    branch: main
+    rootDir: frontend
+    buildCommand: npm install -g pnpm@11.25.0 && pnpm install --frozen-lockfile && node scripts/wait-for-backend.mjs && pnpm build
+    staticPublishPath: dist
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: NODE_VERSION
+        value: 22.12.0
+      - key: SKIP_INSTALL_DEPS
+        value: 'true'
+      - key: PUBLIC_API_URL
+        value: https://visard-lizards-api.onrender.com
