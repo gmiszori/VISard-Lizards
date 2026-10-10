@@ -145,6 +145,17 @@ export function mountRatingCard(): void {
     const devStatus = dev.querySelector<HTMLElement>('[data-rating-dev-status]')!;
     input.value = override ?? now().toISOString();
     devStatus.textContent = simulated ? 'Simulation active. Ratings and prompt state are isolated from normal use.' : 'Using the real clock. Apply a timestamp to enter isolated simulation.';
+    document.querySelector('[data-rating-open]')!.addEventListener('click', () => {
+      try {
+        // Open a fresh prompt with real fixture menus, keeping any simulated ratings.
+        const date = data.meals.reduce((latest, option) => option.date > latest ? option.date : latest, '') || new Date().toISOString().slice(0, 10);
+        localStorage.removeItem(`${STATE_KEY}:dev`);
+        const url = new URL(location.href);
+        // 13:00 UTC is inside the Zurich afternoon window in winter and summer.
+        url.searchParams.set('ratingNow', `${date}T13:00:00Z`);
+        location.assign(url);
+      } catch { devStatus.textContent = 'Device storage is unavailable.'; (dev as HTMLDetailsElement).open = true; }
+    });
     dev.querySelector('[data-rating-clock]')!.addEventListener('click', () => {
       if (!/(?:Z|[+-]\d{2}:\d{2})$/.test(input.value) || !Number.isFinite(Date.parse(input.value))) { devStatus.textContent = 'Enter an ISO timestamp including Z or an explicit offset, such as +02:00.'; return; }
       const url = new URL(location.href); url.searchParams.set('ratingNow', input.value); location.assign(url);

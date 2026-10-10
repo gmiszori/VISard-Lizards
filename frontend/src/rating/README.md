@@ -42,6 +42,11 @@ meal, mensa, date, and trusted identity. No backend route was invented.
 
 ## Development simulator
 
+The small **rate** button above the card opens a fresh, isolated development
+prompt immediately. It uses the latest date with fixture menus and an afternoon
+Zurich time. Only simulated prompt state is reset; simulated saved ratings remain,
+so duplicate rejection can also be tried. The button is absent from production.
+
 Run the existing `pnpm dev` script (background server: `pnpm exec astro dev --background`).
 Open `http://localhost:4321/?ratingNow=2026-10-09T13%3A30%3A00%2B02%3A00`, or expand
 "Meal-rating simulator · development only" and apply an ISO timestamp with an

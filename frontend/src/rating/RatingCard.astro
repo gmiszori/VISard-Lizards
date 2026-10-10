@@ -10,6 +10,7 @@ const data = {
   meals: MEALS.map(m => ({ id: m.id, mensaId: m.mensaId, date: m.date, name: m.title })),
 };
 ---
+{import.meta.env.DEV && <div class="meal-rating-dev-shortcut"><button type="button" data-rating-open title="Preview meal rating">rate</button></div>}
 <section class="meal-rating-card" data-rating-card hidden aria-labelledby="meal-rating-title">
   <div class="meal-rating-header">
     <div><p class="meal-rating-eyebrow">A little lunch feedback</p><h2 id="meal-rating-title" tabindex="-1">How was lunch?</h2><p data-rating-date></p></div>
