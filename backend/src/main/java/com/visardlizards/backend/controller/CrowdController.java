@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.visardlizards.backend.model.domain.CrowdHistogram;
 import com.visardlizards.backend.model.domain.CrowdReport;
+import com.visardlizards.backend.model.domain.Mensa;
 import com.visardlizards.backend.model.dto.CrowdHistogramDTO;
 import com.visardlizards.backend.model.dto.CrowdInfoDTO;
 import com.visardlizards.backend.model.dto.CrowdReportDTO;
@@ -42,23 +43,24 @@ public class CrowdController {
 	@Operation(summary = "How full a mensa is now and usually", description = """
 			Says how full a mensa is, based on what users reported. `live` holds the reports of the last 30
 			minutes, newest first: show them as "right now". `histogram` is the "popular times" chart: for
-			each weekday and hour, how full the mensa usually is, from all reports ever made.
+			each weekday and 15-minute slot, how full the mensa usually is, from all reports ever made.
 
-			- `byWeekday` has the keys `mon` to `sun`, each with 24 values (index = hour of day in Zurich,
-			  0-23). A value is the average reported level of that hour, scaled to 0-100 (level 1 = 0,
-			  level 5 = 100); hours without reports are 0.
+			- `byWeekday` has the keys `mon` to `sun`. Each maps slot start times in Zurich time (`"11:00"`,
+			  `"11:15"`, ...) to the average reported occupancy, scaled to 0-100 (level 1 = 0, level 5 = 100).
+			  Slots during the opening hours without any report are `null` (unknown, not empty).
+			  This is the frontend's `CrowdPrediction` shape (`intervalMinutes` 15, `timeZone` Europe/Zurich).
 			- With fewer than **10** reports the chart would be meaningless: then `sufficient` is `false` and
 			  `byWeekday` is left out. `sampleSize` is always the number of reports.
 			""")
 	@ApiResponse(responseCode = "200", description = "Histogram and live reports")
 	@ApiResponse(responseCode = "404", description = "Unknown mensa")
 	public CrowdInfoDTO getCrowd(@Parameter(description = "Mensa id, e.g. `polyterrasse`") @PathVariable String id) {
-		String mensaId = mensaService.getMensa(id).id();
-		CrowdHistogram histogram = crowdService.getHistogram(mensaId);
+		Mensa mensa = mensaService.getMensa(id);
+		CrowdHistogram histogram = crowdService.getHistogram(mensa);
 		return new CrowdInfoDTO(
 				new CrowdHistogramDTO(histogram.mensaId(), histogram.sufficient(), histogram.sampleSize(),
-						histogram.byWeekday()),
-				crowdService.getLiveReports(mensaId).stream().map(CrowdController::toDTO).toList());
+						CrowdHistogram.INTERVAL_MINUTES, "Europe/Zurich", histogram.byWeekday()),
+				crowdService.getLiveReports(mensa.id()).stream().map(CrowdController::toDTO).toList());
 	}
 
 	@PostMapping("/crowd-reports")

@@ -1,8 +1,11 @@
+import { API_URL, ApiError, apiPost, type BackendMealRating } from '../data/api.ts';
+
+export type Stars = 1 | 2 | 3 | 4 | 5;
 export interface MealRating {
   userId: string;
   mealId: string;
   mensaId: string;
-  rating: 1 | 2 | 3;
+  rating: Stars;
   ratedAt: string;
   mealDate: string;
 }
@@ -10,6 +13,7 @@ export const RATINGS_KEY = 'campuseats-meal-ratings';
 export class DuplicateMealRatingError extends Error {
   constructor() { super('This meal has already been rated.'); }
 }
+/** The anonymous id the backend identifies this device by: "anon:" + UUID (backend/API.md). */
 export function anonymousUserId(storage: Storage = localStorage): string {
   const key = 'campuseats-rating-anon-id';
   const existing = storage.getItem(key);
@@ -19,22 +23,39 @@ export function anonymousUserId(storage: Storage = localStorage): string {
   return id;
 }
 
-/** TODO(backend): replace the local mock with the real authenticated rating endpoint.
- * Enforce UNIQUE(userId, mealId) server-side, and validate meal/mensa/date membership.
- * The demo login is deliberately not an authenticated user identity.
+/**
+ * The only rating save boundary. With a backend (apiUrl, default PUBLIC_API_URL) the rating goes to
+ * POST /api/meals/{id}/ratings, which enforces one rating per user and meal (409 -> DuplicateMealRatingError)
+ * and stamps ratedAt. Every saved rating is also kept on this device, so the duplicate check works offline.
+ * Without a backend (apiUrl ''), only the device copy is written.
+ * The anonymous id is not authentication; a real account integration must provide a trusted identity here.
  */
-export async function saveMealRating(value: MealRating, storage: Storage = localStorage, key = RATINGS_KEY): Promise<void> {
-  if (!value.userId || !value.mealId || !value.mensaId || ![1, 2, 3].includes(value.rating) ||
+export async function saveMealRating(value: MealRating, storage: Storage = localStorage, key = RATINGS_KEY,
+  apiUrl = API_URL): Promise<void> {
+  if (!value.userId || !value.mealId || !value.mensaId || ![1, 2, 3, 4, 5].includes(value.rating) ||
       !/^\d{4}-\d{2}-\d{2}$/.test(value.mealDate) || !Number.isFinite(Date.parse(value.ratedAt))) {
     throw new Error('Invalid meal rating.');
+  }
+  let saved = value;
+  if (apiUrl) {
+    try {
+      const response = await apiPost<BackendMealRating>(`/api/meals/${encodeURIComponent(value.mealId)}/ratings`,
+        { userId: value.userId, stars: value.rating }, apiUrl);
+      saved = { ...value, mensaId: response.mensaId, mealDate: response.mealDate, ratedAt: response.ratedAt };
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 409) throw new DuplicateMealRatingError();
+      throw error;
+    }
   }
   const save = () => {
     const raw: unknown = JSON.parse(storage.getItem(key) ?? '[]');
     if (!Array.isArray(raw)) throw new Error('Stored ratings could not be read.');
-    if (raw.some(r => r && r.userId === value.userId && r.mealId === value.mealId)) throw new DuplicateMealRatingError();
-    storage.setItem(key, JSON.stringify([...raw, value]));
+    const duplicate = raw.some(r => r && r.userId === value.userId && r.mealId === value.mealId);
+    // The backend already accepted it, so a stale device copy is not a reason to fail.
+    if (duplicate && !apiUrl) throw new DuplicateMealRatingError();
+    if (!duplicate) storage.setItem(key, JSON.stringify([...raw, saved]));
   };
-  // Serialize this local mock across browser tabs where Web Locks are available.
+  // Serialize the device copy across browser tabs where Web Locks are available.
   if (typeof window !== 'undefined' && navigator.locks) await navigator.locks.request(key, save);
   else save();
 }

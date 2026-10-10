@@ -14,9 +14,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "rating", indexes = @Index(columnList = "subjectId"))
+@Table(name = "rating", indexes = @Index(columnList = "subjectId"),
+		uniqueConstraints = @UniqueConstraint(name = "uk_rating_subject_user", columnNames = { "subjectId", "userId" }))
 public class RatingEntity {
 
 	@Id
@@ -36,14 +38,19 @@ public class RatingEntity {
 	@Column(nullable = false)
 	private Instant createdAt;
 
+	/** Anonymous frontend user id for meal ratings (one rating per user and meal), null for mensa ratings. */
+	@Column(length = 80)
+	private String userId;
+
 	protected RatingEntity() {
 	}
 
-	public RatingEntity(String subjectId, int stars, List<String> tags, Instant createdAt) {
+	public RatingEntity(String subjectId, int stars, List<String> tags, Instant createdAt, String userId) {
 		this.subjectId = subjectId;
 		this.stars = stars;
 		this.tags = new ArrayList<>(tags);
 		this.createdAt = createdAt;
+		this.userId = userId;
 	}
 
 	public String getSubjectId() {
@@ -60,6 +67,10 @@ public class RatingEntity {
 
 	public Instant getCreatedAt() {
 		return createdAt;
+	}
+
+	public String getUserId() {
+		return userId;
 	}
 
 }

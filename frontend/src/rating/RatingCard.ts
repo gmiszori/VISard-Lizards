@@ -1,6 +1,7 @@
 import { type MensaChoice, type RatingPrompt } from './getRatingPrompt.ts';
 import { mensaCandidates, STATE_KEY, useRatingPrompt } from './useRatingPrompt.ts';
-import { anonymousUserId, DuplicateMealRatingError, RATINGS_KEY, saveMealRating } from './saveMealRating.ts';
+import { anonymousUserId, DuplicateMealRatingError, RATINGS_KEY, saveMealRating, type Stars } from './saveMealRating.ts';
+import { API_URL, apiGet, type BackendMealDetail } from '../data/api.ts';
 import type { Profile } from '../onboarding/profile';
 
 interface MealOption { id: string; mensaId: string; date: string; name: string }
@@ -59,11 +60,30 @@ export function mountRatingCard(): void {
     try { store.resolve(prompt.date, dismissed); hide(); }
     catch { status.textContent = 'Could not save your choice on this device. Please try again.'; }
   }
-  function chooseMensa(choice: MensaChoice) {
+  // Meals of the target day from the backend, so ids match what it stores; the bundled list is the fallback.
+  const mealsByDate = new Map<string, Promise<MealOption[]>>();
+  function mealsOn(date: string): Promise<MealOption[]> {
+    if (!mealsByDate.has(date)) {
+      mealsByDate.set(date, API_URL
+        ? apiGet<BackendMealDetail[]>(`/api/meals?date=${encodeURIComponent(date)}`)
+          // The API orders by id; show lunch before dinner like the menus.
+          .then(list => [...list]
+            .sort((a, b) => Number(a.meal.classification[2] === 'dinner') - Number(b.meal.classification[2] === 'dinner'))
+            .map(m => ({ id: m.meal.id, mensaId: m.mensaId, date: m.date, name: m.meal.name })))
+          .catch(() => { mealsByDate.delete(date); return data.meals.filter(m => m.date === date); })
+        : Promise.resolve(data.meals.filter(m => m.date === date)));
+    }
+    return mealsByDate.get(date)!;
+  }
+  async function chooseMensa(choice: MensaChoice) {
     if (!prompt) return;
     mensa = choice;
     meal = undefined;
-    const meals = data.meals.filter(m => m.mensaId === choice.mensaId && m.date === prompt!.date);
+    const target = prompt.date;
+    status.textContent = 'Loading meals…';
+    const meals = (await mealsOn(target)).filter(m => m.mensaId === choice.mensaId);
+    status.textContent = '';
+    if (prompt?.date !== target || mensa !== choice) return;
     if (!meals.length) {
       try { store.resolve(prompt.date); feedback('No menu available for this date.'); }
       catch { status.textContent = 'Could not save your choice on this device. Please try again.'; }
@@ -132,11 +152,13 @@ export function mountRatingCard(): void {
       let duplicate = false;
       try {
         await saveMealRating({ userId: anonymousUserId(), mealId: meal.id, mensaId: mensa.mensaId,
-          rating: Number(button.dataset.ratingScore) as 1 | 2 | 3, ratedAt: now().toISOString(), mealDate: prompt.date }, localStorage, ratingsKey);
+          rating: Number(button.dataset.ratingScore) as Stars, ratedAt: now().toISOString(), mealDate: prompt.date }, localStorage, ratingsKey,
+          simulated ? '' : API_URL);
       } catch (error) { if (error instanceof DuplicateMealRatingError) duplicate = true; else throw error; }
       store.resolve(prompt.date);
-      feedback(duplicate ? 'You already rated this meal. Thank you!' : 'Thanks! Your meal rating is saved on this device.');
-    } catch { status.textContent = 'Could not save your rating on this device. Please try again.'; }
+      feedback(duplicate ? 'You already rated this meal. Thank you!'
+        : simulated || !API_URL ? 'Thanks! Your meal rating is saved on this device.' : 'Thanks! Your meal rating is saved.');
+    } catch { status.textContent = 'Could not save your rating. Please check your connection and try again.'; }
     finally { busy = false; root.querySelectorAll<HTMLButtonElement>('button').forEach(b => { b.disabled = false; }); }
   }));
   if (import.meta.env.DEV) {

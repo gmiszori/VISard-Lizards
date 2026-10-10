@@ -19,7 +19,7 @@ test('saves exact rating payload; rejects same user + meal; another user may rat
 });
 test('rejects invalid ratings and surfaces persistence failures', async () => {
   const storage = memoryStorage();
-  await assert.rejects(saveMealRating({ ...rating, rating: 5 as 3 }, storage, 'ratings'));
+  await assert.rejects(saveMealRating({ ...rating, rating: 6 as 5 }, storage, 'ratings'));
   storage.setItem('ratings', 'broken');
   await assert.rejects(saveMealRating(rating, storage, 'ratings'));
   storage.setItem('ratings', '[]'); storage.setItem = () => { throw new Error('Quota exceeded'); };
@@ -46,4 +46,28 @@ test('favourites first, highest mensa ratings next, maximum four unique choices'
   const mensas = [1, 2, 3, 4, 5, 6].map(i => ({ mensaId: String(i), name: String(i) }));
   assert.deepEqual(mensaCandidates(mensas, { mensaRatings: [{ mensaId: '1', rating: 2 }, { mensaId: '2', rating: 5 },
     { mensaId: '3', rating: 4 }, { mensaId: '4', rating: 3 }, { mensaId: '5', rating: 1 }] }, ['6', '3']).map(m => m.mensaId), ['3', '6', '2', '4']);
+});
+test('with a backend: posts userId + stars, keeps a device copy with server values, maps 409', async () => {
+  const storage = memoryStorage();
+  const calls: Array<{ url: string; body: unknown }> = [];
+  const original = globalThis.fetch;
+  let status = 201;
+  globalThis.fetch = (async (url: string, init: RequestInit) => {
+    calls.push({ url, body: JSON.parse(String(init.body)) });
+    const body = status === 201
+      ? { mealId: rating.mealId, mensaId: 'archimedes', mealDate: '2026-10-09', userId: rating.userId, stars: 4, ratedAt: '2026-10-09T12:00:05Z' }
+      : { status, detail: 'You already rated this.' };
+    return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
+  }) as typeof fetch;
+  try {
+    await saveMealRating({ ...rating, rating: 4 }, storage, 'ratings', 'http://backend');
+    assert.equal(calls[0]!.url, 'http://backend/api/meals/archimedes.2026-10-09.lunch.1/ratings');
+    assert.deepEqual(calls[0]!.body, { userId: 'anon:a', stars: 4 });
+    assert.equal(JSON.parse(storage.getItem('ratings')!)[0].ratedAt, '2026-10-09T12:00:05Z');
+    status = 409;
+    await assert.rejects(saveMealRating({ ...rating, rating: 2 }, storage, 'ratings', 'http://backend'), DuplicateMealRatingError);
+    status = 500;
+    await assert.rejects(saveMealRating({ ...rating, mealId: 'other' }, storage, 'ratings', 'http://backend'), /500|already/);
+    assert.equal(JSON.parse(storage.getItem('ratings')!).length, 1);
+  } finally { globalThis.fetch = original; }
 });

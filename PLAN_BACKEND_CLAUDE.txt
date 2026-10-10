@@ -163,3 +163,19 @@ HANDOFF SESSION 2 (01:46) - open points:
          the German Cookpit data has the real meals. A scan found the same in Clausiusbar ("novalue"), food market,
          Archimedes, Polysnack, food&lab. EthMenuMapper now also reads lang=de and uses German name/description
          where the English one is missing or a placeholder (matched by line-id). Snapshot week: 12/12 identical. 83 tests.
+
+=======================================================
+SESSION 3 - 02:52 - connecting frontend and backend (user request), branch feature/connect-backend
+  = backend (200539c) + Martin's feature/meal-rating (merged cleanly). main/backend untouched until the team merges.
+  Backend (done, 96 tests):
+    - POST /api/meals/{id}/ratings: {userId "anon:<uuid>", stars 1-5, tags?} -> 201 {mealId, mensaId, mealDate,
+      userId, stars, tags, ratedAt}; one rating per user+meal (DB unique constraint) -> 409. No IP limit for meals.
+    - GET /api/mensas/{id}/crowd: histogram in Martin's CrowdPrediction shape, 15-min "HH:mm" slots, null = unknown.
+    - MealDTO.prices {student, staff, external}.
+  Frontend (in progress): menus + ratings from the API (PUBLIC_API_URL, default http://localhost:8080, snapshot
+    fallback), rating card with 5 stars saving to the backend, crowd chart switching to backend predictions.
+  Martin: this changes your rating scale from 1-3 to 1-5 stars (user decision) - details in the commit messages.
+  03:02  DONE: frontend connected (branch feature/connect-backend). Menus + mensa ratings via app-data.ts
+         (render time), rating card 1-5 stars -> POST /api/meals/{id}/ratings, crowd chart -> backend prediction when
+         sufficient. Sample-data fallback when the backend is down. Verified end to end in the browser
+         (rating 201 + 409 on repeat, crowd chart switches to backend). Backend 96 tests, frontend 44 tests, astro check 0 errors.

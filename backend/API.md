@@ -71,10 +71,13 @@ Services only see domain models through `MensaRepository` (implemented by `JpaMe
   `{"status": 404, "title": "Not Found", "detail": "Mensa not found: xyz", "instance": "/api/mensas/xyz"}`.
   Unknown ids return 404; invalid parameters or bodies return 400. For an invalid body, `detail` names
   the field, e.g. `"stars: must be less than or equal to 5"`.
-- **Spam protection:** a client (IP address) can rate each mensa/meal once per 24 hours and report each
+- **Spam protection:** a client (IP address) can rate each mensa once per 24 hours and report each
   mensa once per 5 minutes; otherwise `429 Too Many Requests` with a `Retry-After` header (seconds).
-  Windows: `app.rate-limit.*` in `application.properties`.
+  Windows: `app.rate-limit.*` in `application.properties`. Meal ratings are limited per user instead:
+  one rating per anonymous user id and meal (`409` otherwise).
 - CORS is open for the Astro dev server (`http://localhost:4321`), see `app.cors.allowed-origins`.
+- **Frontend:** the Astro app in `frontend/` uses `/api/meta`, `/api/meals`, `/api/mensas`,
+  `/api/mensas/{id}/crowd` and `POST /api/meals/{id}/ratings` (see `frontend/README.md`).
 
 ## Mensas
 
@@ -199,6 +202,8 @@ publishes none.
 **`MealDTO` fields:**
 - `id`: for [`/api/meals/{id}`](#get-apimealsid). Not on the whiteboard, added so single meals can be addressed.
 - `price.price`: the price in CHF for the requested `priceCategory` (`price.cat`), `null` when the source has no price.
+- `prices`: all three prices `{student, staff, external}` in CHF (each `null` if unpublished), for clients that
+  let the user pick the category themselves.
 - `description`: the meal's components joined with commas, `null` if there are none.
 - `allergens`: EU allergen ids such as `gluten`, `milk`, `soy`.
 - `classification`: `[diet, kind, service]`, where diet is `vegan`/`vegetarian`/`meat`/`fish`, kind is `main`/`buffet`/`dessert`/`drink` and service is `lunch`/`dinner`.
@@ -221,21 +226,26 @@ Response `201` without body. Errors: `404` unknown mensa, `400` stars outside 1�
 
 Says how full a mensa is, based on what users reported. `live` holds the reports of the last 30
 minutes, newest first: show them as "right now". `histogram` is the "popular times" chart: for
-each weekday and hour, how full the mensa usually is, from all reports ever made.
+each weekday and 15-minute slot, how full the mensa usually is, from all reports ever made.
 
 Response `200`:
 
 ```json
 {
-  "histogram": { "mensaId": "polyterrasse", "sufficient": true, "sampleSize": 42,
-                 "byWeekday": { "mon": [0, 0, "... 24 values"], "tue": ["..."] } },
+  "histogram": {
+    "mensaId": "polyterrasse", "sufficient": true, "sampleSize": 42,
+    "intervalMinutes": 15, "timeZone": "Europe/Zurich",
+    "byWeekday": { "mon": { "11:15": 25, "11:30": null, "11:45": 75, "...": null }, "sat": {} }
+  },
   "live": [{ "mensaId": "polyterrasse", "level": 3, "timestamp": "2026-10-09T22:44:23.796Z" }]
 }
 ```
 
-- `byWeekday` has the keys `mon` to `sun`, each with 24 values (index = hour of day in Zurich,
-  0–23). A value is the average reported level of that hour, scaled to 0–100 (level 1 = 0,
-  level 5 = 100); hours without reports are 0.
+- `byWeekday` has the keys `mon` to `sun`. Each maps slot start times in Zurich time (`"11:00"`,
+  `"11:15"`, ...) to the average reported occupancy of that slot, scaled to 0–100 (level 1 = 0,
+  level 5 = 100). Slots during the opening hours without any report are `null`, meaning unknown
+  (not empty); reports outside the opening hours get their own slot. This is the frontend's
+  `CrowdPrediction` shape (`frontend/src/crowd/prediction.ts`).
 - With fewer than **10** reports the chart would be meaningless: then `sufficient` is `false` and
   `byWeekday` is left out. `sampleSize` is always the number of reports.
 
@@ -304,17 +314,21 @@ Errors: `404` unknown meal.
 
 ### POST /api/meals/{id}/ratings
 
-Saves a user's rating of a meal: stars plus optional tags that say why. Each client (IP address) can
-rate a meal once every 24 hours. The result shows up in [`GET /api/meals/{id}`](#get-apimealsid).
+Saves a user's rating of a meal: 1–5 stars plus optional tags that say why. Users are identified by
+the anonymous id the frontend keeps per device. Each user can rate each meal once. The result shows up
+in [`GET /api/meals/{id}`](#get-apimealsid).
 
-Body: `{"stars": 5, "tags": ["tasty", "worth-it"]}`
+Body: `{"userId": "anon:3f1c2b7e-9a4d-4e8b-8c1f-2d5e6a7b8c9d", "stars": 5, "tags": ["tasty", "worth-it"]}`
 
+- `userId`: `anon:` followed by a UUID (required).
 - `stars`: 1 to 5.
 - `tags` (optional): any of `tasty`, `big-portion`, `small-portion`, `cold`, `too-salty`,
   `worth-it`. A tag listed twice in one rating counts once.
 
-Response `201` without body. Errors: `404` unknown meal, `400` stars outside 1–5, unknown tag or
-invalid body, `429` already rated by this client in the last 24 hours.
+Response `201` with the saved rating:
+`{"mealId": "...", "mensaId": "polyterrasse", "mealDate": "2026-10-06", "userId": "anon:...", "stars": 5, "tags": [], "ratedAt": "..."}`.
+Errors: `404` unknown meal, `400` missing or invalid `userId`, stars outside 1–5, unknown tag or
+invalid body, `409` this user already rated this meal.
 
 ## Raw upstream endpoints (optional)
 

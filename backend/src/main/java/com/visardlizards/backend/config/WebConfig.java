@@ -48,7 +48,9 @@ public class WebConfig implements WebMvcConfigurer {
 			return;
 		}
 		registry.addInterceptor(new RateLimitInterceptor(ratingWindow, "rate this again", clock))
-				.addPathPatterns("/api/mensas/*/ratings", "/api/meals/*/ratings");
+				.addPathPatterns("/api/mensas/*/ratings");
+		// Meal ratings are limited per user instead (one per user and meal), so a whole campus network
+		// behind one IP address can still rate the same meal.
 		registry.addInterceptor(new RateLimitInterceptor(crowdReportWindow, "report this mensa again", clock))
 				.addPathPatterns("/api/mensas/*/crowd-reports");
 	}

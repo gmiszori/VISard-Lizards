@@ -1,46 +1,42 @@
-# Astro Starter Kit: Basics
+# CampusEats frontend
+
+Astro site for the ETH and UZH mensas. Menus, ratings and crowd predictions come from the CampusEats
+backend in `../backend` (Spring Boot); mensa details (photos, addresses, opening windows) come from the
+bundled database in `src/data/canteens.ts`.
+
+## Run it with the backend
 
 ```sh
-pnpm create astro@latest -- --template basics
+cd ../backend && ./mvnw spring-boot:run      # http://localhost:8080
+cd ../frontend && pnpm install && pnpm dev   # http://localhost:4321
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+The backend URL is `PUBLIC_API_URL` (copy `.env.example` to `.env`); it defaults to
+`http://localhost:8080`. Set it to an empty value to work without a backend.
 
-## 🚀 Project Structure
+| What | From | Where |
+| --- | --- | --- |
+| Today's menus, prices, allergens | `GET /api/meta`, `GET /api/meals?date=` | `src/data/app-data.ts` (page render) |
+| Mensa ratings | `GET /api/mensas` | `src/data/app-data.ts` |
+| Meal rating (1–5 stars) | `GET /api/meals?date=`, `POST /api/meals/{id}/ratings` | `src/rating/` (browser) |
+| Predicted crowd | `GET /api/mensas/{id}/crowd` | `src/pages/canteen/[id].astro` (browser) |
 
-Inside of your Astro project, you'll see the following folders and files:
+API reference: `../backend/API.md` and the backend's Swagger UI at `/swagger-ui.html`.
 
-```text
-/
-├── public/
-│   └── favicon.svg
-├── src
-│   ├── assets
-│   │   └── astro.svg
-│   ├── components
-│   │   └── Welcome.astro
-│   ├── layouts
-│   │   └── Layout.astro
-│   └── pages
-│       └── index.astro
-└── package.json
-```
+**When the backend is not reachable**, pages render the bundled sample menus and show a note on the
+home page; the build logs a `[campuseats] Backend ... not reachable` warning. The rating card saves on
+the device only if no backend is configured.
 
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
+**Static builds:** `pnpm dev` renders every request, so menus are always current. `pnpm build`
+takes the menus of build time; rebuild to refresh them (the backend imports new menus every 6 hours).
 
-## 🧞 Commands
+## Commands
 
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `pnpm install`             | Installs dependencies                            |
-| `pnpm dev`             | Starts local dev server at `localhost:4321`      |
-| `pnpm build`           | Build your production site to `./dist/`          |
-| `pnpm preview`         | Preview your build locally, before deploying     |
-| `pnpm astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `pnpm astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+| Command | Action |
+| :-- | :-- |
+| `pnpm install` | Install dependencies |
+| `pnpm dev` | Dev server at `localhost:4321` |
+| `pnpm build` | Static site in `./dist/` |
+| `pnpm preview` | Preview the build |
+| `pnpm check` | Type check (`astro check`) |
+| `pnpm test` | Unit tests (onboarding, rating) |

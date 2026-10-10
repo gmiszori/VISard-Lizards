@@ -4,21 +4,23 @@ import CanteenCard from '../components/CanteenCard.astro';
 import FilterBar from '../components/FilterBar.astro';
 import RatingCard from '../rating/RatingCard.astro';
 import StarredMealsToday from '../components/StarredMealsToday.astro';
-import { CANTEENS, MENU_DATE } from '../data/canteens';
-const openCount = CANTEENS.filter((canteen) => canteen.isOpen).length;
+import { loadAppData } from '../data/app-data';
+const { canteens, menuDate, source } = await loadAppData();
+const openCount = canteens.filter((canteen) => canteen.isOpen).length;
 ---
 <BaseLayout title="Campus canteens">
   <div class="section-head" style="margin-top:0"><div><h2 data-i18n="campus">Campus canteens</h2></div><span class="count"><span data-live="open-count">{openCount}</span> <span data-i18n="openCount">open right now</span></span></div>
   <FilterBar />
   <RatingCard />
-  <StarredMealsToday date={MENU_DATE} />
+  {source === 'sample' && <p class="data-source-note" data-i18n="sampleMenus">Showing sample menus: the CampusEats backend is not reachable.</p>}
+  <StarredMealsToday date={menuDate} />
   <section id="favourites-section" hidden>
     <div class="section-head favourites-heading"><div><h2 data-i18n="favourites">Your favourites</h2></div></div>
     <div id="favourites-grid" class="canteen-grid"></div>
   </section>
   <div class="section-head all-canteens-heading"><div><h2 data-i18n="allCanteens">All canteens</h2></div></div>
-  <div id="visible-count" class="count" style="margin:0 0 12px">{CANTEENS.length} canteens</div>
-  <div id="canteen-grid" class="canteen-grid">{CANTEENS.map((canteen) => <CanteenCard canteen={canteen} />)}</div>
+  <div id="visible-count" class="count" style="margin:0 0 12px">{canteens.length} canteens</div>
+  <div id="canteen-grid" class="canteen-grid">{canteens.map((canteen) => <CanteenCard canteen={canteen} />)}</div>
   <div id="empty-state" class="empty-state" data-i18n="empty">No canteens match your search. Try another dish or campus.</div>
   <script>
     const allCards = [...document.querySelectorAll<HTMLElement>('[data-canteen-card]')];
@@ -60,3 +62,4 @@ const openCount = CANTEENS.filter((canteen) => canteen.isOpen).length;
     renderFavourites();
   </script>
 </BaseLayout>
+<style>.data-source-note{margin:0 0 14px;padding:10px 14px;border:1px solid var(--line);border-radius:12px;color:var(--muted);font-size:13px}</style>

@@ -3,6 +3,7 @@ package com.visardlizards.backend.exception;
 import java.util.stream.Collectors;
 
 import org.jspecify.annotations.Nullable;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -25,6 +26,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler(NotFoundException.class)
 	public ProblemDetail handleNotFound(NotFoundException e) {
 		return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage());
+	}
+
+	@ExceptionHandler(ConflictException.class)
+	public ProblemDetail handleConflict(ConflictException e) {
+		return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, e.getMessage());
+	}
+
+	/** Two identical requests at the same moment can both pass the service check; the database then decides. */
+	@ExceptionHandler(DataIntegrityViolationException.class)
+	public ProblemDetail handleDataIntegrity(DataIntegrityViolationException e) {
+		return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, "This was already saved.");
 	}
 
 	@ExceptionHandler(IllegalArgumentException.class)
