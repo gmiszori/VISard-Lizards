@@ -4,6 +4,7 @@ import '../styles/selects.css';
 import '../styles/touch-targets.css';
 import '../styles/list-view.css';
 import SimulatedClockBanner from '../time/SimulatedClockBanner.astro';
+import RecipeDialog from '../meals/RecipeDialog.astro';
 import { LIVE_DATA } from '../data/canteens';
 interface Props { title: string; hideFooter?: boolean }
 const { title, hideFooter = false } = Astro.props;
@@ -65,6 +66,7 @@ const { title, hideFooter = false } = Astro.props;
       </footer>}
       <SimulatedClockBanner />
     </div>
+    <RecipeDialog />
     <script is:inline>
       const translations = {
         en: { campus:'Campus canteens', openCount:'open right now', search:'Search canteens or dishes', all:'All spots', favourites:'Your favourites', settings:'Settings', settingsTitle:'Your settings', settingsIntro:'Choose which meals you want to see. Your choices are saved on this device.', foodPreferences:'Food preferences', vegan:'Vegan', vegetarian:'Vegetarian', meat:'Meat', preferencesHint:'Select every type of meal you want included.', plantBased:'Plant-based', meatFree:'Meat-free', meatDishes:'Including meat dishes', canteenFilters:'Canteen filters', filtersHint:'Choose which campus locations to include.', location:'Campus location', zentrum:'Zentrum', hoenggerberg:'Hönggerberg', irchel:'Irchel', openOnly:'Only show open canteens', noPreferenceMeals:'No dishes match your food preferences.', noDishesAvailable:'No dishes available', compact:'Compact', settingsSaved:'Saved', today:'On the menu today', open:'Open now', closed:'Closed', back:'← All canteens', hours:'Opening hours', lunch:'Lunch',allMeals:'All', dinner:'Dinner', servingTimeUnknown:'Serving time unavailable', crowd:'Current crowd', todayMenu:'Today’s menu', dishes:'dishes', empty:'No canteens match your search. Try another dish or campus.', contains:'Contains', noAllergens:'No listed allergens', student:'Student', worker:'Staff', external:'External', low:'Quiet', medium:'Moderate', high:'Busy', diet_vegan:'Vegan', diet_vegetarian:'Vegetarian', diet_meat:'Meat', category_daily_special:'Daily Special', category_classic:'Classic', category_side:'Side' },
