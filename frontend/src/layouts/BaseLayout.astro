@@ -37,7 +37,7 @@ const { title } = Astro.props;
       <header class="site-header">
         <a class="brand" href="/" aria-label="UniEats home"><span class="brand-mark">✳</span><span>UniEats</span></a>
         <HeaderAccount />
-        <div class="header-controls"><a class="settings-link" href="/settings" data-i18n="settings">Settings</a><label class="language-control"><span class="visually-hidden">Language</span><select id="language-select" aria-label="Language"><option value="en">EN</option><option value="de">DE</option></select></label></div>
+        <div class="header-controls"><a class="settings-link" href="/settings" data-i18n="settings">Settings</a></div>
       </header>
       <main class="main" id="main" tabindex="-1"><slot /></main>
       <SimulatedClockBanner />
@@ -71,8 +71,8 @@ const { title } = Astro.props;
       Object.assign(translations.de, { canteensTitle: 'Mensen' });
       Object.assign(translations.en, { sampleMenusInvalid: 'Showing sample menus: the UniEats backend sent data this page could not read.' });
       Object.assign(translations.de, { sampleMenusInvalid: 'Beispielmenüs: Das UniEats-Backend hat Daten gesendet, die diese Seite nicht lesen konnte.' });
-      Object.assign(translations.en, { appearance: 'Appearance', themeLabel: 'Theme', lightTheme: 'Light', darkTheme: 'Dark' });
-      Object.assign(translations.de, { appearance: 'Darstellung', themeLabel: 'Design', lightTheme: 'Hell', darkTheme: 'Dunkel' });
+      Object.assign(translations.en, { appearance: 'Appearance', themeLabel: 'Theme', languageLabel: 'Language', english: 'English', german: 'German', lightTheme: 'Light', darkTheme: 'Dark' });
+      Object.assign(translations.de, { appearance: 'Darstellung', themeLabel: 'Design', languageLabel: 'Sprache', english: 'Englisch', german: 'Deutsch', lightTheme: 'Hell', darkTheme: 'Dunkel' });
       Object.assign(translations.en, { menuFor: 'Menu for', menusFor: 'Menus for' });
       Object.assign(translations.de, { menuFor: 'Menü für', menusFor: 'Menüs für' });
       Object.assign(translations.en, { devMode: 'Dev mode', devModeDescription: 'Show diagnostics for live data, location, storage and backend connectivity.', devTools: 'Developer tools' });
@@ -107,10 +107,10 @@ const { title } = Astro.props;
       const setTheme = (requested) => { const theme = requested === 'dark' ? 'dark' : 'light'; document.documentElement.dataset.theme = theme; campusStorage.set('campuseats-theme', theme); if (themeSelect) themeSelect.value = theme; };
       const languageSelect = document.querySelector('#language-select');
       const language = knownLanguage(campusStorage.get('campuseats-language'));
-      languageSelect.value = language;
+      if (languageSelect) languageSelect.value = language;
       applyLanguage(language);
       setTheme(campusStorage.get('campuseats-theme'));
-      languageSelect.addEventListener('change', () => applyLanguage(languageSelect.value));
+      if (languageSelect) languageSelect.addEventListener('change', () => applyLanguage(languageSelect.value));
       if (themeSelect) themeSelect.addEventListener('change', () => setTheme(themeSelect.value));
     </script>
     <script type="application/json" id="live-data" is:inline set:html={JSON.stringify(LIVE_DATA).replace(/</g, '\\u003c')} />

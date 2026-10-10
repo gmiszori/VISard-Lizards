@@ -185,23 +185,65 @@
   }
 }
 
+:root[data-density="compact"] article.canteen-card[data-canteen-card] {
+  display: block;
+}
+:root[data-density="compact"] article.canteen-card[data-canteen-card] .canteen-card-link {
+  display: block;
+}
+:root[data-density="compact"] article.canteen-card[data-canteen-card] .card-image {
+  display: block;
+  height: auto;
+  min-height: 0;
+  padding: 12px 54px 0 12px;
+  background: transparent;
+}
+:root[data-density="compact"] article.canteen-card[data-canteen-card] .canteen-image-link {
+  display: none;
+}
+:root[data-density="compact"] article.canteen-card[data-canteen-card] .canteen-photo-caption {
+  position: static;
+  inset: auto;
+  display: block;
+  width: auto;
+  padding: 0;
+  background: none;
+  color: var(--ink);
+  pointer-events: auto;
+}
+:root[data-density="compact"] article.canteen-card[data-canteen-card] .canteen-photo-title {
+  display: block;
+}
+:root[data-density="compact"] article.canteen-card[data-canteen-card] .card-title {
+  font-size: 15px;
+}
+:root[data-density="compact"] article.canteen-card[data-canteen-card] .campus {
+  color: var(--muted);
+}
+:root[data-density="compact"] article.canteen-card[data-canteen-card] .status {
+  position: static;
+  display: block;
+  width: max-content;
+  min-height: 0;
+  margin: 7px 0 0;
+}
+:root[data-density="compact"] article.canteen-card[data-canteen-card] .rating {
+  position: static;
+  display: block;
+  width: max-content;
+  margin: 6px 0 0;
+  box-shadow: none;
+}
+:root[data-density="compact"] article.canteen-card[data-canteen-card] .card-body {
+  min-width: 0;
+  padding: 10px 12px 12px;
+}
+:root[data-density="compact"] article.canteen-card[data-canteen-card] .favorite-toggle {
+  top: 8px;
+  right: 8px;
+}
+
 @media (max-width: 700px) {
-  :root[data-density="compact"] article.canteen-card[data-canteen-card] {
-    display: grid;
-    grid-template-columns: 96px minmax(0, 1fr);
-    align-items: stretch;
-  }
-  :root[data-density="compact"] article.canteen-card[data-canteen-card] > .canteen-card-link { display: contents; }
-  :root[data-density="compact"] article.canteen-card[data-canteen-card] .card-image {
-    grid-column: 1;
-    grid-row: 1;
-    height: 100%;
-    min-height: 96px;
-  }
-  :root[data-density="compact"] article.canteen-card[data-canteen-card] .card-body {
-    grid-column: 2;
-    grid-row: 1;
-    min-width: 0;
-    padding: 42px 10px 10px;
-  }
+  :root .canteen-card .canteen-photo-title .status { position: absolute; top: 8px; left: 8px; right: auto; }
+  :root .canteen-card .rating { top: 46px; left: 8px; right: auto; bottom: auto; }
 }

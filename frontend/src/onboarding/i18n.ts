@@ -1,5 +1,6 @@
 const en = {
   replayOnboarding: 'Replay onboarding',
+  languageTitle: 'Choose your language.', languageHint: 'You can change this any time in Settings.', languageLabel: 'Language',
   intro: 'A little about you. A better lunch.', saved: 'Your answers stay on this device. Every step is optional.',
   campusTitle: 'Where do you eat?', campusHint: 'Start with your usual campus. We’ll find your next favourite nearby.',
   home: 'My main campus', secondary: 'I also eat at', mensas: 'mensas',
@@ -32,6 +33,7 @@ const en = {
 export type Key = keyof typeof en;
 const de: Record<Key, string> = {
   replayOnboarding: 'Onboarding erneut starten',
+  languageTitle: 'Wähle deine Sprache.', languageHint: 'Du kannst sie jederzeit in den Einstellungen ändern.', languageLabel: 'Sprache',
   intro: 'Ein wenig über dich. Ein besseres Mittagessen.', saved: 'Deine Antworten bleiben auf diesem Gerät. Jeder Schritt ist optional.',
   campusTitle: 'Wo isst du?', campusHint: 'Wähle deinen üblichen Campus. Wir finden deinen nächsten Favoriten in der Nähe.',
   home: 'Mein Hauptcampus', secondary: 'Hier esse ich auch', mensas: 'Mensen',

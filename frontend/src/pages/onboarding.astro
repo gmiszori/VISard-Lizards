@@ -41,9 +41,20 @@ const payload = {
       <header class="ob-progress-header">
         <span class="eyebrow"><span data-ob-i18n="intro">{t('intro')}</span></span>
         <p class="ob-progress-label" data-progress-label aria-live="polite" aria-atomic="true"></p>
-        <progress data-progress max="5" value="1" aria-label="Onboarding progress"></progress>
+        <progress data-progress max="6" value="1" aria-label="Onboarding progress"></progress>
       </header>
       <div class="ob-content">
+        <section data-step="language" hidden>
+          <h1 tabindex="-1" data-ob-i18n="languageTitle">{t('languageTitle')}</h1>
+          <p class="ob-lead" data-ob-i18n="languageHint">{t('languageHint')}</p>
+          <label class="ob-language-control" for="language-select">
+            <span data-ob-i18n="languageLabel">{t('languageLabel')}</span>
+            <select id="language-select" aria-label="Language">
+              <option value="en" data-i18n="english">English</option>
+              <option value="de" data-i18n="german">German</option>
+            </select>
+          </label>
+        </section>
         <section data-step="campus" hidden>
           <h1 tabindex="-1" data-ob-i18n="campusTitle">{t('campusTitle')}</h1>
           <p class="ob-lead" data-ob-i18n="campusHint">{t('campusHint')}</p>

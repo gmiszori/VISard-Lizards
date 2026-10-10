@@ -31,6 +31,11 @@ const sync = (root: HTMLElement, name: string, values: string[]) => {
   if (group) syncChipSelect(group, values);
 };
 
+function mountLanguage(root: HTMLElement, ctx: Context) {
+  const select = root.querySelector<HTMLSelectElement>('#language-select')!;
+  return () => { select.value = ctx.store.state.profile.lang; };
+}
+
 function mountCampus(root: HTMLElement, ctx: Context) {
   mountChipSelect(root, ({ name, values }) => {
     if (name === 'campus') {
@@ -148,6 +153,7 @@ function mountRatings(root: HTMLElement, ctx: Context) {
   };
 }
 export const steps: Step[] = [
+  { id: 'language', titleKey: 'languageTitle', skippable: true, mount: mountLanguage },
   { id: 'campus', titleKey: 'campusTitle', skippable: true, mount: mountCampus },
   { id: 'diet', titleKey: 'dietTitle', skippable: true, mount: mountDiet },
   { id: 'theme', titleKey: 'themeTitle', skippable: true, mount: mountTheme },
