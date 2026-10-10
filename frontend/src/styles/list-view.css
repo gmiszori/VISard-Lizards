@@ -112,6 +112,9 @@
 .canteen-card .compact-service-heading {
   display: none;
 }
+.canteen-card .meal-service-heading .meal-service-time {
+  color: var(--muted);
+}
 
 :root[data-density="list"] :is(#canteen-grid, #favourites-grid) .canteen-card .dish-preview,
 :root[data-density="list"] :is(#canteen-grid, #favourites-grid) .canteen-card .dish-preview:not([hidden]) ~ .dish-preview:not([hidden]) {
@@ -303,6 +306,10 @@
 }
 :root[data-density="compact"] article.canteen-card[data-canteen-card] .compact-service-heading {
   display: block;
+}
+:root[data-density="compact"] article.canteen-card[data-canteen-card] .meal-service-group[data-service="lunch"] > .dish-preview .meal-service-time,
+:root[data-density="compact"] article.canteen-card[data-canteen-card] .meal-service-group[data-service="dinner"] > .dish-preview .meal-service-time {
+  display: none;
 }
 @media (max-width: 700px) {
   :root .canteen-card .canteen-photo-title .status { position: absolute; top: 8px; left: 8px; right: auto; }

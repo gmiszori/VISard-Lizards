@@ -27,8 +27,8 @@ const showServiceHeadings = menuGroups.some(group => group.service === 'lunch') 
     </div>
   <div class="card-body">
     <div class="menu-preview" data-preference-list data-meal-list>
-      {menuGroups.map(group => <div class="meal-service-group" data-meal-group data-service={group.service}>
-        {group.service && <h4 class:list={['meal-service-heading', { 'compact-service-heading': !showServiceHeadings }]} data-i18n={group.service}>{group.service === 'dinner' ? 'Dinner' : 'Lunch'}</h4>}
+      {menuGroups.map(group => <div class:list={['meal-service-group', { 'has-service-heading': showServiceHeadings && Boolean(group.service) }]} data-meal-group data-service={group.service}>
+        {group.service && <h4 class:list={['meal-service-heading', { 'compact-service-heading': !showServiceHeadings }]}><span data-i18n={group.service}>{group.service === 'dinner' ? 'Dinner' : 'Lunch'}</span>&nbsp;<MealServingTime item={group.items[0]!} /></h4>}
         {group.items.map((item) => <div class="dish-preview" data-diet={item.dietary} data-meal-row data-meal-id={item.id} data-meal-name={item.name}><div class="meal-preview-heading"><div class="dish"><a href={canteenHref}>{item.name}<span class={`diet diet-${item.dietary}`} data-i18n={`diet_${item.dietary}`}>{item.dietary}</span></a></div><MealStar item={item} /></div><MealServingTime item={item} /><MealPrice item={item} compact /></div>)}
       </div>)}
       <p class="preference-empty" data-no-preference-meals hidden data-i18n={canteen.menu.length ? 'noPreferenceMeals' : 'menuEmpty'}>{canteen.menu.length ? 'No dishes match your food preferences.' : 'No menu available for this date.'}</p>
@@ -54,7 +54,8 @@ const showServiceHeadings = menuGroups.some(group => group.service === 'lunch') 
   .canteen-card .meal-service-group>.dish-preview:not([hidden])~.dish-preview:not([hidden]){border-top:1px solid var(--line);margin-top:10px;padding-top:10px}
   .canteen-card .meal-service-group:not([hidden])~.meal-service-group:not([hidden]){border-top:1px solid var(--line);margin-top:13px;padding-top:10px}
   .canteen-card .meal-service-group[hidden]{display:none}
-  .canteen-card .meal-service-heading{margin:0 0 8px;color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase}
+  .canteen-card .meal-service-heading{display:flex;align-items:center;gap:0;margin:0 0 8px;color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase}
+  .canteen-card .has-service-heading>.dish-preview .meal-service-time{display:none}
   .canteen-card .meal-preview-heading{align-items:center}.canteen-card .meal-preview-heading>.dish{margin-top:0}
   .canteen-card .menu-preview>.preference-empty{margin:0;padding:8px 0;font-size:12px;line-height:1.5}
   .canteen-card .dish-preview.preview-clipped,.canteen-card .meal-service-group.preview-empty{display:none}
