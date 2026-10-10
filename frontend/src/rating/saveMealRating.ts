@@ -56,6 +56,16 @@ export async function saveMealRating(value: MealRating, storage: Storage = local
     if (!duplicate) storage.setItem(key, JSON.stringify([...raw, saved]));
   };
   // Serialize the device copy across browser tabs where Web Locks are available.
-  if (typeof window !== 'undefined' && navigator.locks) await navigator.locks.request(key, save);
-  else save();
+  const writeDeviceCopy = async () => {
+    if (typeof window !== 'undefined' && navigator.locks) await navigator.locks.request(key, save);
+    else save();
+  };
+  if (apiUrl) {
+    // The server has already accepted the rating, so the device copy is only a cache for the offline
+    // duplicate check. If it cannot be written (corrupt data, full storage) the rating still counts and
+    // the user must not be told that saving failed.
+    try { await writeDeviceCopy(); } catch { /* best effort */ }
+    return;
+  }
+  await writeDeviceCopy();
 }
