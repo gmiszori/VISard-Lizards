@@ -69,8 +69,8 @@ export function mountProfileMealSettings() {
   mountBudgetSlider(budget, value => {
     const range = rangeFor(tier);
     const maxPrice = value >= range.max ? null : value;
-    renderBudget();
     save({ maxPrice });
+    renderBudget();
   });
 
   form.addEventListener('change', event => {
