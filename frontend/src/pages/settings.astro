@@ -5,7 +5,7 @@ import StarredMealsSettings from '../components/StarredMealsSettings.astro';
 import YourRatings from '../components/YourRatings.astro';
 ---
 <BaseLayout title="Settings">
-  <a href="/" class="detail-back settings-back-link" data-i18n="back">← All canteens</a>
+  <a href="/" class="detail-back sticky-back-link" data-i18n="back">← All canteens</a>
   <section class="settings-intro">
     <div><span class="eyebrow" data-i18n="settings">Settings</span>
       <h1 data-i18n="settingsTitle">Your settings</h1>
@@ -85,7 +85,6 @@ import YourRatings from '../components/YourRatings.astro';
 </BaseLayout>
 <style>
   .settings-intro{max-width:820px}
-  .settings-back-link{position:sticky;top:12px;z-index:10;display:flex;align-items:center;width:max-content;max-width:100%;min-height:44px;margin:0 0 10px;padding:0 13px;border:1px solid var(--line);border-radius:12px;background:var(--paper);box-shadow:var(--shadow);text-decoration:none}
   .settings-sections{display:grid;gap:14px;max-width:820px;margin:0 0 14px}
   .settings-sections :global(.onboarding-restart){justify-self:start;margin:0;min-height:44px;padding:10px 15px;border-color:var(--line);background:var(--paper);color:var(--green);font-size:13px;transition:background .18s,border-color .18s,transform .18s}
   .settings-sections :global(.onboarding-restart:hover){background:#edf4ed;border-color:#b9d0bf;transform:translateY(-1px)}
