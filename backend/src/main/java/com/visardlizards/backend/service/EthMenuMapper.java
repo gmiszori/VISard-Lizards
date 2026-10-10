@@ -140,27 +140,42 @@ public class EthMenuMapper {
 	/** Detect one repeated English name used for meals with different German dish names. */
 	private static Set<String> placeholderNames(JsonNode rota, @Nullable JsonNode germanRota) {
 		Map<String, Set<String>> names = new HashMap<>();
+		Set<String> placeholders = new LinkedHashSet<>();
 		for (JsonNode day : rota.path("day-of-week-array")) {
 			Map<Integer, JsonNode> germanMeals = germanMealsOfDay(germanRota, day.path("day-of-week-code").asInt());
 			for (JsonNode hours : day.path("opening-hour-array")) {
 				for (JsonNode mealTime : hours.path("meal-time-array")) {
+					Map<EnglishText, Set<String>> dietsByText = new HashMap<>();
 					for (JsonNode line : mealTime.path("line-array")) {
 						JsonNode meal = line.path("meal");
+						String englishName = cleanText(meal, "name");
+						if (usableText(englishName)) {
+							dietsByText.computeIfAbsent(new EnglishText(englishName,
+									cleanText(meal, "description"), price(meal)),
+									key -> new LinkedHashSet<>())
+									.add(diet(meal, Set.of()));
+						}
 						JsonNode german = germanMeals.get(meal.path("line-id").asInt());
 						if (german != null && usableText(cleanText(german, "name"))) {
-							names.computeIfAbsent(cleanText(meal, "name"), key -> new LinkedHashSet<>())
+							names.computeIfAbsent(englishName, key -> new LinkedHashSet<>())
 									.add(cleanText(german, "name"));
 						}
 					}
+					dietsByText.forEach((text, diets) -> {
+						if (diets.size() > 1) placeholders.add(text.name());
+					});
 				}
 			}
 		}
-		return names.entrySet().stream().filter(entry -> entry.getValue().size() > 1)
-				.map(Map.Entry::getKey).collect(java.util.stream.Collectors.toSet());
+		names.forEach((name, translations) -> { if (translations.size() > 1) placeholders.add(name); });
+		return placeholders;
 	}
+
+	private record EnglishText(String name, String description, @Nullable Price price) { }
 
 	private static @Nullable Meal toMeal(JsonNode meal, @Nullable JsonNode germanMeal,
 			boolean preferGerman, String line, String mensaId, LocalDate date, String service, int index) {
+		if (preferGerman && germanMeal == null) { return null; }
 		JsonNode textSource = preferGerman && germanMeal != null ? germanMeal : meal;
 		String title = translatedText(textSource, germanMeal, "name");
 		// Do not invent a dish name or publish Cookpit's translation placeholder.

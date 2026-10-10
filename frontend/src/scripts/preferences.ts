@@ -110,6 +110,15 @@ document.querySelector<HTMLFormElement>('#preferences-form')?.addEventListener('
 
 document.querySelector<HTMLInputElement>('#search-input')?.addEventListener('input', applyPreferences);
 document.querySelector<HTMLSelectElement>('#campus-select')?.addEventListener('change', applyPreferences);
+// "Show all canteens" in the empty state: clears the search and looks at every campus for this visit. Settings stay as they are.
+document.querySelector<HTMLElement>('[data-reset-filters]')?.addEventListener('click', () => {
+  const search = document.querySelector<HTMLInputElement>('#search-input');
+  const campus = document.querySelector<HTMLSelectElement>('#campus-select');
+  if (search) search.value = '';
+  if (campus) campus.value = 'all';
+  applyPreferences();
+  search?.focus();
+});
 document.addEventListener('languagechange', applyPreferences);
 
 function showSavedState(success = true) {

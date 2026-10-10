@@ -1,6 +1,9 @@
 package com.visardlizards.backend.service;
 
 import java.net.http.HttpClient;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
 import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -11,6 +14,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
@@ -128,10 +134,23 @@ public class EthMensaClient {
     }
 
     private static JdkClientHttpRequestFactory requestFactory() {
-        HttpClient httpClient = HttpClient.newBuilder()
+        HttpClient.Builder builder = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(10))
-                .followRedirects(HttpClient.Redirect.NORMAL)
-                .build();
+                .followRedirects(HttpClient.Redirect.NORMAL);
+        if (System.getProperty("os.name", "").startsWith("Windows")) {
+            try {
+                KeyStore roots = KeyStore.getInstance("Windows-ROOT");
+                roots.load(null, null);
+                TrustManagerFactory trust = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+                trust.init(roots);
+                SSLContext tls = SSLContext.getInstance("TLS");
+                tls.init(null, trust.getTrustManagers(), null);
+                builder.sslContext(tls);
+            } catch (GeneralSecurityException | IOException e) {
+                throw new IllegalStateException("Cannot load the Windows certificate store for ETH menus", e);
+            }
+        }
+        HttpClient httpClient = builder.build();
         JdkClientHttpRequestFactory factory = new JdkClientHttpRequestFactory(httpClient);
         factory.setReadTimeout(Duration.ofSeconds(30));
         return factory;

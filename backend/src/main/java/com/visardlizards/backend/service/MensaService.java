@@ -42,7 +42,7 @@ public class MensaService {
 		if (dateEnd.isBefore(dateStart)) {
 			throw new IllegalArgumentException("dateEnd must not be before dateStart");
 		}
-		return mensaRepository.findMeals(getMensa(mensaId).id(), dateStart, dateEnd);
+		return MealQuality.readable(mensaRepository.findMeals(getMensa(mensaId).id(), dateStart, dateEnd));
 	}
 
 	/** How far ahead getMenuDate looks for the next menu, e.g. from Saturday to Monday. */

@@ -49,7 +49,7 @@ public class MealService {
 						.filter(mensa -> mensa.campusId().equals(campusId))
 						.map(Mensa::id)
 						.collect(Collectors.toSet());
-		return mensaRepository.findMealsOn(date).stream()
+		return MealQuality.readable(mensaRepository.findMealsOn(date)).stream()
 				.filter(meal -> mensaIds == null || mensaIds.contains(meal.mensaId()))
 				.filter(meal -> diet == null || meal.dietTag().equals(diet)
 						|| (diet.equals("vegetarian") && meal.dietTag().equals("vegan")))
@@ -58,8 +58,12 @@ public class MealService {
 	}
 
 	public Meal getMeal(String id) {
-		return mensaRepository.findMealById(id)
+		Meal meal = mensaRepository.findMealById(id)
 				.orElseThrow(() -> new NotFoundException("Meal not found: " + id));
+		if (!MealQuality.readable(mensaRepository.findMeals(meal.mensaId(), meal.date(), meal.date())).contains(meal)) {
+			throw new NotFoundException("Meal not found: " + id);
+		}
+		return meal;
 	}
 
 	/** Saves a user's rating of a meal; each user can rate each meal once (ConflictException otherwise). */
