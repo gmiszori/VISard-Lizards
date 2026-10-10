@@ -18,7 +18,13 @@ export function resolveApiUrl(configured: string | undefined, pageOrigin?: strin
 export const API_URL: string = (() => {
   const env = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env;
   if (!env) return '';
-  return resolveApiUrl(env.PUBLIC_API_URL, typeof window === 'undefined' ? undefined : window.location.origin);
+  if (typeof window === 'undefined') {
+    // Static pages in the Docker image are rendered after the backend starts. This
+    // server-only URL must never be baked into browser requests; Caddy proxies /api.
+    const serverUrl = typeof process === 'undefined' ? undefined : process.env.SERVER_API_URL;
+    return resolveApiUrl(serverUrl ?? env.PUBLIC_API_URL);
+  }
+  return resolveApiUrl(env.PUBLIC_API_URL, window.location.origin);
 })();
 
 /** An HTTP error from the backend, with its problem-detail message (backend/API.md, "Errors"). */
