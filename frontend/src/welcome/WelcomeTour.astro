@@ -4,7 +4,7 @@
   <span class="welcome-pointer" aria-hidden="true"></span>
   <section class="welcome-dialog" role="dialog" aria-modal="true" aria-labelledby="welcome-title" tabindex="-1" data-welcome-dialog>
     <div class="welcome-topline"><span data-welcome-progress></span><button type="button" class="welcome-skip" data-welcome-skip>Skip tour</button></div>
-    <div class="welcome-image" data-welcome-image hidden><img src="/welcome-bowl.jpg" alt="A colourful bowl with vegetables" width="880" height="660" /></div>
+    <div class="welcome-image" data-welcome-image hidden><img src="/welcome-bowl.jpg" alt="" width="880" height="660" onerror="this.hidden=true;" /></div>
     <div class="welcome-content">
       <h2 id="welcome-title" data-welcome-title></h2>
       <p data-welcome-description></p>
@@ -38,7 +38,7 @@
   .welcome-primary{border:1px solid var(--green,#17664f);background:var(--green,#17664f);color:#fff}
   .welcome-install{margin:0 0 10px;border:1px solid var(--green,#17664f);background:var(--paper,#fff);color:var(--green,#17664f)}
   .welcome-primary:focus-visible,.welcome-install:focus-visible,.welcome-skip:focus-visible{outline:3px solid #e1a33d;outline-offset:3px}
-  .welcome-image{height:170px;margin:14px 22px 0;overflow:hidden;border-radius:6px}
+  .welcome-image{height:170px;margin:14px 22px 0;overflow:hidden;border-radius:6px;background:linear-gradient(145deg,#1d765a,#124a3b)}
   .welcome-image img{width:100%;height:100%;object-fit:cover;object-position:center 47%}
   .welcome-tour[data-step="finish"] .welcome-dialog{top:50%;left:50%;right:auto;transform:translate(-50%,-50%);animation:welcome-finish .36s ease both}
   .welcome-tour[data-step="settings"] .welcome-dialog{top:132px}
