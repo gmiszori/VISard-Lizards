@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { clearAppStorage, nextWelcomeStep, welcomeStep } from './state.ts';
+import { clearAppCaches, clearAppStorage, nextWelcomeStep, welcomeStep } from './state.ts';
 
 test('new visitors start with install guidance and continue after onboarding', () => {
   assert.equal(welcomeStep(null, false), 'install');
@@ -11,6 +11,12 @@ test('new visitors start with install guidance and continue after onboarding', (
   assert.equal(nextWelcomeStep('finish'), 'done');
   assert.equal(welcomeStep('done', false), null);
   assert.equal(welcomeStep(null, true), null);
+});
+
+test('new-user reset removes the PWA cache without touching unrelated caches', async () => {
+  const entries = new Set(['unieats-shell-v2', 'campuseats-old', 'another-app']);
+  await clearAppCaches({ keys: async () => [...entries], delete: async key => entries.delete(key) } as CacheStorage);
+  assert.deepEqual([...entries], ['another-app']);
 });
 
 test('new-user reset removes all app storage but preserves unrelated origin data', () => {

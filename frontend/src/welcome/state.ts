@@ -18,3 +18,9 @@ export function clearAppStorage(storage: Pick<Storage, 'length' | 'key' | 'remov
     if (key?.startsWith('campuseats-')) storage.removeItem(key);
   }
 }
+
+export async function clearAppCaches(cacheStorage: Pick<CacheStorage, 'keys' | 'delete'>): Promise<void> {
+  const keys = await cacheStorage.keys();
+  await Promise.all(keys.filter(key => key.startsWith('unieats-') || key.startsWith('campuseats-'))
+    .map(key => cacheStorage.delete(key)));
+}

@@ -1,5 +1,5 @@
 import { disablePush } from '../push/push';
-import { clearAppStorage } from './state';
+import { clearAppCaches, clearAppStorage } from './state';
 
 export async function resetAsNewUser(): Promise<void> {
   try {
@@ -14,5 +14,6 @@ export async function resetAsNewUser(): Promise<void> {
   }
   clearAppStorage(window.localStorage);
   clearAppStorage(window.sessionStorage);
+  if ('caches' in window) await clearAppCaches(window.caches);
   window.location.replace('/');
 }
