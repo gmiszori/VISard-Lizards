@@ -35,3 +35,21 @@ test('no_pork does not reject champignons or hamburger from a ham substring', ()
   for (const component of ['Schweinefleisch', 'Bratwurst', 'Schinkenwürfel'])
     assert.equal(matchesConstraints({ ...meal, components: [component] }, { diet: 'omnivore', hard: ['no_pork'] }), false);
 });
+
+test('nut_free also reads the dish text when the allergen list is incomplete (walnuts in the description)', () => {
+  const bowl = { ...meal, dietTag: 'vegan' as const, allergens: ['gluten', 'sulphites', 'sesame'] as never, title: 'BULGUR BOWL', components: ['Baumnüssen & süss saure Orangen', 'Bulgur'] };
+  assert.equal(matchesConstraints(bowl, { diet: 'vegan', hard: ['nut_free'] }), false);
+  for (const word of ['Walnuss', 'Haselnüsse', 'Mandeln', 'Cashew', 'Pistazien', 'Pecan', 'peanut sauce', 'almond milk'.replace('almond milk', 'Mandelcreme')])
+    assert.equal(matchesConstraints({ ...meal, components: [word] }, { diet: 'omnivore', hard: ['nut_free'] }), false, word);
+  assert.equal(matchesConstraints({ ...meal, title: 'Mandel-Torte', components: [] }, { diet: 'omnivore', hard: ['nut_free'] }), false);
+});
+test('nut_free does not drop nutmeg or coconut milk', () => {
+  for (const component of ['Muskatnuss', 'Kokosmilch', 'Kokosnuss', 'Hafermilch', 'Gemüse'])
+    assert.equal(matchesConstraints({ ...meal, components: [component] }, { diet: 'omnivore', hard: ['nut_free'] }), true, component);
+});
+test('lactose_free and gluten_free also read the dish text', () => {
+  assert.equal(matchesConstraints({ ...meal, components: ['Reis', 'Rahmsauce'] }, { diet: 'omnivore', hard: ['lactose_free'] }), false);
+  assert.equal(matchesConstraints({ ...meal, components: ['Reis', 'Hafermilch', 'Erdnussbutter'] }, { diet: 'omnivore', hard: ['lactose_free'] }), true);
+  assert.equal(matchesConstraints({ ...meal, components: ['Penne Arrabbiata'] }, { diet: 'omnivore', hard: ['gluten_free'] }), false);
+  assert.equal(matchesConstraints({ ...meal, components: ['Reisnudeln', 'Gemüse'] }, { diet: 'omnivore', hard: ['gluten_free'] }), true);
+});
