@@ -3,7 +3,8 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 0;
-  max-width: 480px;
+  width: 100%;
+  max-width: 100%;
 }
 
 :root[data-density="list"] .canteen-card,
@@ -65,15 +66,17 @@
 }
 
 :root[data-density="list"] .canteen-card .favorite-toggle {
-  top: 4px;
-  right: 0;
-  width: 44px;
-  height: 44px;
+  position: static;
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  margin: 0;
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: 9px;
   background: var(--paper);
   box-shadow: none;
-  font-size: 18px;
+  font-size: 19px;
+  pointer-events: auto;
 }
 
 :root[data-density="list"] .canteen-card .distance-chip {
@@ -155,7 +158,7 @@
 @media (min-width: 701px) {
   :root[data-density="list"] :is(#canteen-grid, #favourites-grid) .canteen-card .dish-preview,
   :root[data-density="list"] :is(#canteen-grid, #favourites-grid) .canteen-card .dish-preview:not([hidden]) ~ .dish-preview:not([hidden]) {
-    grid-template-columns: minmax(0, 270px) 120px 44px;
+    grid-template-columns: minmax(0, 1fr) 120px 44px;
     justify-content: start;
     column-gap: 10px;
   }
@@ -163,7 +166,6 @@
   :root[data-density="list"] .canteen-card .meal-preview-heading .dish { grid-column: 1; }
   :root[data-density="list"] .canteen-card .meal-price { grid-column: 2; grid-row: 1; }
   :root[data-density="list"] .canteen-card .meal-preview-heading .meal-star { grid-column: 3; grid-row: 1; }
-  :root[data-density="list"] .canteen-card .favorite-toggle { right: 26px; }
 }
 
 @media (max-width: 700px) {
@@ -191,7 +193,7 @@
 :root[data-density="compact"] article.canteen-card[data-canteen-card] .canteen-card-link {
   display: block;
 }
-:root[data-density="compact"] article.canteen-card[data-canteen-card] > .favorite-toggle {
+:root[data-density="compact"] article.canteen-card[data-canteen-card] .favorite-toggle {
   position: absolute;
   top: 8px;
   right: 8px;

@@ -1,13 +1,17 @@
 ---
 import { CAMPUSES } from '../data/canteens';
+import NearMe from '../location/NearMe.astro';
 ---
 <div class="toolbar">
   <label class="search"><span class="search-icon" aria-hidden="true">⌕</span><input type="search" id="search-input" maxlength="200" data-i18n-placeholder="search" data-i18n-aria="search" placeholder="Search canteens or dishes" aria-label="Search canteens or dishes" /></label>
-  <select id="campus-select" class="campus-select" data-i18n-aria="campusSelect" aria-label="Campus">
-    <option value="preset" data-i18n="campusPreset">My campuses</option>
-    <option value="all" data-i18n="campusAll">All campuses</option>
-    {CAMPUSES.map((campus) => <option value={campus.id}>{campus.name}</option>)}
-  </select>
+  <div class="campus-tools">
+    <select id="campus-select" class="campus-select" data-i18n-aria="campusSelect" aria-label="Campus">
+      <option value="preset" data-i18n="campusPreset">My campuses</option>
+      <option value="all" data-i18n="campusAll">All campuses</option>
+      {CAMPUSES.map((campus) => <option value={campus.id}>{campus.name}</option>)}
+    </select>
+    <NearMe />
+  </div>
 </div>
 <p id="search-status" class="search-status" role="status" aria-live="polite" hidden></p>
 <style>
@@ -16,18 +20,22 @@ import { CAMPUSES } from '../data/canteens';
   .toolbar :global(.search){flex:0 1 240px;min-width:0;margin:0}
   .toolbar :global(.search input){height:40px;font-size:14px}
   .toolbar :global(.search-icon){top:10px}
+  .campus-tools{display:flex;align-items:center;gap:8px;min-width:0}
   .campus-select{height:40px;min-height:40px;flex:0 1 auto;max-width:48%;padding:0 12px;border:1px solid var(--line);border-radius:14px;background:var(--paper);color:var(--ink);font:inherit;font-size:14px}
+  .campus-tools :global(.near-me){margin:0;flex:0 0 auto}
   .campus-select:focus-visible{outline:2px solid var(--green);outline-offset:2px}
   @media(max-width:700px){
-    .toolbar :global(.search){flex:1 1 0;display:block;margin:0}
+    .toolbar{flex-wrap:wrap}
+    .toolbar :global(.search){flex:1 1 220px;display:block;margin:0}
     .toolbar :global(.search input){height:44px;font-size:16px}
     .toolbar :global(.search-icon){top:12px}
-    .campus-select{height:44px;min-height:44px;font-size:14px;max-width:46%}
+    .campus-tools{flex:0 1 auto}
+    .campus-select{height:44px;min-height:44px;font-size:14px;max-width:none}
   }
-  /* After the 700px block so it wins: on small phones the search and the selector get a row each. */
+  /* Keep the campus selector and distance sort together even on narrow phones. */
   @media(max-width:400px){
-    .toolbar{flex-wrap:wrap}
     .toolbar :global(.search){flex:1 1 100%}
-    .campus-select{flex:1 1 100%;max-width:none}
+    .campus-tools{flex:1 1 100%}
+    .campus-select{flex:1 1 auto;max-width:none}
   }
 </style>
