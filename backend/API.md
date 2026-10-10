@@ -4,8 +4,10 @@ Start: `cd backend && ./mvnw spring-boot:run` → `http://localhost:8080`
 
 Interactive docs: [Swagger UI](http://localhost:8080/swagger-ui.html), OpenAPI JSON at `/v3/api-docs`.
 
-> If Maven fails with `PKIX path building failed`, Java does not trust your network's TLS certificate.
-> Run with the Windows certificate store: `MAVEN_OPTS="-Djavax.net.ssl.trustStoreType=Windows-ROOT" ./mvnw spring-boot:run`
+> If Food2050 imports log `PKIX path building failed` on Windows, Java does not trust the
+> TLS certificate, even if the site opens in a browser. In PowerShell, start the backend with
+> `$env:JAVA_TOOL_OPTIONS='-Djavax.net.ssl.trustStoreType=Windows-ROOT'; .\mvnw.cmd spring-boot:run`.
+> `JAVA_TOOL_OPTIONS` also reaches the Java process launched by the Spring Boot Maven plugin.
 
 ## Data
 
@@ -36,8 +38,11 @@ app's values (diet, canonical allergen ids, student/staff/external prices). Engl
 Cookpit's English translation is missing ("novalue") or a placeholder (one English name for meals with
 different German names, e.g. Tannenbar's "Chicken Katsu" in October 2026), the German name and
 description are used instead. Turn it off with
-`app.live-import.enabled=false`. UZH menus are not imported yet: the maintained ZFV API needs
-`MENSA_ZFV_API_KEY` (see [MENSA_API.md](MENSA_API.md)), so UZH mensas only have the snapshot.
+`app.live-import.enabled=false`. UZH menus are imported on startup from Food2050's weekly pages
+for today and the next Monday; the legacy GraphQL endpoint is attempted first. A TLS error or
+unavailable Food2050 page leaves those dates without live UZH meals. Check the startup log for
+`Live UZH meal import` and verify `/api/meals?date=YYYY-MM-DD` after starting the backend.
+The separate maintained ZFV API needs `MENSA_ZFV_API_KEY` (see [MENSA_API.md](MENSA_API.md)).
 
 Services only see domain models through `MensaRepository` (implemented by `JpaMensaRepository`).
 
