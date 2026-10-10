@@ -17,7 +17,7 @@ export function savedTheme(): Profile['theme'] {
 }
 const strings = (value: unknown): value is string[] => Array.isArray(value) && value.every(v => typeof v === 'string');
 
-export function createOnboardingStore(campuses: CampusId[], stepCount: number, restart = false) {
+export function createOnboardingStore(campuses: CampusId[], stepCount: number, restart = false, editSavedProfile = false) {
   // This factory is called only by main.ts in the browser, never during SSR.
   const lang = savedLanguage();
   const initial = defaults(campuses[0]!, lang, savedTheme());
@@ -27,7 +27,7 @@ export function createOnboardingStore(campuses: CampusId[], stepCount: number, r
   let state: Draft = { profile: { ...initial, ...seed }, step: 0, picks: [], ratingScale: 5 };
   if (restart) { try { localStorage.removeItem(KEY); } catch { /* nothing saved to remove */ } }
   try {
-    const saved = JSON.parse(localStorage.getItem(KEY) ?? 'null') as Draft | null;
+    const saved = editSavedProfile ? null : JSON.parse(localStorage.getItem(KEY) ?? 'null') as Draft | null;
     const p = saved?.profile;
     if (saved && p?.v === 1 && campuses.includes(p.campus) && [...DIETS, 'flexitarian', 'pescetarian'].includes(p.diet) && TIERS.includes(p.priceTier) &&
       (p.lang === 'en' || p.lang === 'de') && (p.priceMode === 'soft' || p.priceMode === 'hard') &&
@@ -53,6 +53,27 @@ export function createOnboardingStore(campuses: CampusId[], stepCount: number, r
         picks: strings(saved.picks) ? [...new Set(saved.picks)] : [], ratingScale: 5 };
     }
   } catch { /* Invalid or older drafts start with safe defaults. */ }
+  if (editSavedProfile) {
+    try {
+      const p = JSON.parse(localStorage.getItem('campuseats-profile') ?? 'null') as Partial<Profile> | null;
+      if (p?.v === 1 && p.lang && (p.lang === 'en' || p.lang === 'de') && campuses.includes(p.campus!) &&
+        [...DIETS, 'flexitarian', 'pescetarian'].includes(p.diet!) && TIERS.includes(p.priceTier!) &&
+        (p.theme === 'dark' || p.theme === 'light' || p.theme === 'system') &&
+        (p.priceMode === 'soft' || p.priceMode === 'hard') &&
+        (p.maxPrice === null || (typeof p.maxPrice === 'number' && Number.isFinite(p.maxPrice) && p.maxPrice >= 0)) &&
+        strings(p.campusSecondary) && strings(p.hard) && strings(p.priority) &&
+        p.priority.length === PRIORITIES.length && new Set(p.priority).size === PRIORITIES.length &&
+        p.priority.every(value => PRIORITIES.includes(value as Profile['priority'][number])) &&
+        Array.isArray(p.mensaRatings) && p.mensaRatings.every(r => typeof r.mensaId === 'string' && [1, 2, 3, 4, 5].includes(r.rating))) {
+        state = { profile: { ...initial, ...p,
+          campusSecondary: [...new Set(p.campusSecondary.filter(id => campuses.includes(id as CampusId) && id !== p.campus))],
+          hard: p.hard.filter(value => HARD.includes(value as Profile['hard'][number])),
+          priority: [...p.priority] as Profile['priority'],
+          mensaRatings: p.mensaRatings as Profile['mensaRatings'],
+        }, step: 0, picks: [], ratingScale: 5 };
+      }
+    } catch { /* A malformed saved profile falls back to the normal defaults. */ }
+  }
   // A full or blocked storage only means the draft is not saved; the flow itself keeps working.
   const persist = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch { /* draft not saved */ } };
   return {

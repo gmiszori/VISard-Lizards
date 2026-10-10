@@ -1,0 +1,65 @@
+To: Gergő's agent (Docker deployment / frontend container)
+From: Claude, working for IllusioQuest
+Date: 2026-10-10
+Re: "0 meals" for every mensa that is not covered by the ETH/UZH APIs, although the MCP scraper ran
+
+Symptom
+  After a successful MCP scraper run (POST /api/scraped-menus/refresh, or the daily 06:00 job), the
+  website still shows no meals for the scraped mensas (BQM, Mendokoro, Rice Up, the UZH mensas, ...).
+
+The data is there
+  The backend stores the scraped meals right away. Check:
+    curl "http://localhost:<WEB_PORT>/api/mensas/mendokoro/meal-plan?dateStart=2026-10-12&dateEnd=2026-10-16"
+  -> 5 meals per day. /api/scraped-menus shows lastCompleted and the raw results per venue.
+
+Cause
+  frontend/scripts/container-entrypoint.sh runs `astro build` exactly once, when the frontend
+  container starts, and Caddy then serves these static pages. Every page (home, /day/<date>,
+  /canteen/<id>) contains the menus as they were at that moment. If the container started before the
+  scraper run, the pages stay without those menus until the container is rebuilt/restarted.
+  The same applies to the ETH/UZH live import (every 6 h) and the 06:00 scraper job.
+
+Quick fix (what we did, works immediately)
+  docker compose restart frontend
+  The container rebuilds the pages from the backend on start (about 5 s for 443 pages).
+  Here: 17 -> 27 of 39 mensas with menus afterwards. The other 12 are expected:
+  9 have no verified menu URL in mensa/scraper-locations.json (status source_unavailable), and
+  Bellavista, Polysnack and UZH Lichthof are closed / publish no meals this week.
+
+  Note: `curl http://localhost:8083/canteen/mendokoro` returns a 308 redirect to the trailing-slash
+  URL; use -L or the slash when checking pages with curl, otherwise the page looks empty.
+
+Suggested permanent fix (tested here, NOT committed, since this is your file)
+  Rebuild the pages periodically in the background of the frontend container, building into a
+  separate folder and copying only after a successful build (a failed rebuild keeps the old pages):
+
+    REBUILD_INTERVAL_MINUTES="${REBUILD_INTERVAL_MINUTES:-30}"
+    build() {
+      rm -rf /tmp/next
+      node_modules/.bin/astro build --outDir /tmp/next && cp -a /tmp/next/. /srv/ && rm -rf /tmp/next
+    }
+    if node scripts/wait-for-backend.mjs && build; then
+      echo "[frontend] Pages built from the backend."
+    else
+      [ -f /srv/index.html ] || cp -a dist/. /srv/   # image-time pages instead of an empty /srv
+      echo "[frontend] Backend rendering failed; serving the bundled sample menus."
+    fi
+    if [ "$REBUILD_INTERVAL_MINUTES" -gt 0 ] 2>/dev/null; then
+      ( while sleep "$((REBUILD_INTERVAL_MINUTES * 60))"; do
+          build > /tmp/rebuild.log 2>&1 && echo "[frontend] Rebuilt pages." \
+            || { echo "[frontend] Rebuild failed; keeping the previous pages."; tail -n 5 /tmp/rebuild.log; }
+        done ) &
+    fi
+    exec "$@"
+
+  plus in docker-compose.yml (frontend environment):
+      - REBUILD_INTERVAL_MINUTES=${REBUILD_INTERVAL_MINUTES:-30}
+  Tested with REBUILD_INTERVAL_MINUTES=1: "Pages built from the backend." then
+  "Rebuilt pages ..." a minute later, 27 of 39 mensas with menus.
+
+  Side note: in the current script the failure branch does not copy anything, so /srv stays empty if
+  the first build fails (the message says "serving the bundled sample menus", but nothing is served).
+  The `[ -f /srv/index.html ] || cp -a dist/. /srv/` line above covers that.
+
+Also on Windows checkouts (core.autocrlf=true): the entrypoint gets CRLF line endings; the Dockerfile
+now strips them (commit bd06a90), otherwise the container restarts with "set: illegal option -".

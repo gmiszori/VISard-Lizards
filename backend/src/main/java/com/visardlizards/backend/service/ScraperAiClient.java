@@ -33,7 +33,7 @@ public class ScraperAiClient {
     private final String key, model, relayUrl, relayToken;
     @org.springframework.beans.factory.annotation.Autowired
     public ScraperAiClient(JsonMapper mapper, @Value("${openai.api-key:}") String key,
-            @Value("${app.scraper.model:gpt-4.1-mini}") String model,
+            @Value("${app.scraper.model:gpt-5-mini}") String model,
             @Value("${app.scraper.connector-url:http://127.0.0.1:8091}") String relayUrl,
             @Value("${app.scraper.connector-token:}") String relayToken) {
         this(mapper, key, model, relayUrl, relayToken, createClient());
@@ -67,6 +67,11 @@ public class ScraperAiClient {
         for(int round=0; round<6; round++) {
             var body=mapper.createObjectNode().put("model",model).put("store",false).put("parallel_tool_calls",false)
                 .put("instructions",INSTRUCTIONS).put("max_output_tokens",2000);
+            if(model.equals("gpt-5-mini") || model.startsWith("gpt-5-mini-")) {
+                // Reasoning tokens share the output budget with tool arguments and the final explanation.
+                body.put("max_output_tokens",8000);
+                body.set("reasoning",mapper.createObjectNode().put("effort","low"));
+            }
             body.set("tools",tools); body.set("input",input);
             if(round==0) body.set("tool_choice",mapper.createObjectNode().put("type","function").put("name","discover_menu_sources"));
             else body.put("tool_choice",scraped ? "auto" : "required");

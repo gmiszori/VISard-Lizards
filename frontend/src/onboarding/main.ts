@@ -31,10 +31,12 @@ function initialise(root: HTMLElement) {
     const data = JSON.parse(document.querySelector('#onboarding-data')!.textContent!) as OnboardingData;
     const url = new URL(window.location.href);
     const restart = url.searchParams.get('restart') === '1';
-    const store = createOnboardingStore(data.campuses.map(c => c.id), steps.length, restart);
-    if (restart) {
-      // Consume the command so reloading afterwards resumes the new draft.
+    const editSavedProfile = url.searchParams.get('edit') === '1';
+    const store = createOnboardingStore(data.campuses.map(c => c.id), steps.length, restart, editSavedProfile);
+    if (restart || editSavedProfile) {
+      // Consume the command so reloads resume this draft rather than resetting it.
       url.searchParams.delete('restart');
+      url.searchParams.delete('edit');
       window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
     }
     const initial = defaults(data.campuses[0]!.id, savedLanguage(), savedTheme());

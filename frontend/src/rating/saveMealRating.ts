@@ -41,8 +41,8 @@ export function anonymousUserId(storage: Storage | (() => Storage) = () => local
  * The only rating save boundary. With a backend (apiUrl, default PUBLIC_API_URL) the rating goes to
  * POST /api/meals/{id}/ratings, which enforces one rating per user and meal (409 -> DuplicateMealRatingError)
  * and stamps ratedAt. Every saved rating is also kept on this device, so the duplicate check works offline.
- * Without a backend (apiUrl ''), only the device copy is written.
- * The anonymous id is not authentication; a real account integration must provide a trusted identity here.
+ * Without a backend (apiUrl ''), only the device copy is written. When the reverse proxy supplies
+ * X-User-Id, the backend uses that trusted identity and returns it with the saved rating.
  */
 export async function saveMealRating(value: MealRating, storage: Storage = localStorage, key = RATINGS_KEY,
   apiUrl = API_URL): Promise<void> {
@@ -55,7 +55,7 @@ export async function saveMealRating(value: MealRating, storage: Storage = local
     try {
       const response = await apiPost<BackendMealRating>(`/api/meals/${encodeURIComponent(value.mealId)}/ratings`,
         { userId: value.userId, stars: value.rating, ...(value.source ? { source: value.source } : {}) }, apiUrl);
-      saved = { ...value, mensaId: response.mensaId, mealDate: response.mealDate, ratedAt: response.ratedAt };
+      saved = { ...value, userId: response.userId, mensaId: response.mensaId, mealDate: response.mealDate, ratedAt: response.ratedAt };
     } catch (error) {
       if (error instanceof ApiError && error.status === 409) throw new DuplicateMealRatingError();
       throw error;
