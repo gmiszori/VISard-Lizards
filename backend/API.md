@@ -31,7 +31,7 @@ node backend/scripts/export-mensa-db.mjs
 ```
 
 **Live ETH menus:** `LiveMenuImportService` loads the current and the next week from ETH Cookpit on
-startup and every 6 hours (`app.live-import.cron`, Zurich time). For each ETH mensa with live meals in a
+startup and daily at 06:00 Europe/Zurich (`app.live-import.cron`, Zurich time). For each ETH mensa with live meals in a
 week, that week's meals are replaced; mensas without live meals keep what they had, and a failed download
 keeps the existing meals. `EthMenuMapper` maps Cookpit's classes, allergens and customer groups to the
 app's values (diet, canonical allergen ids, student/staff/external prices). English texts are used; where
@@ -78,7 +78,7 @@ Services only see domain models through `MensaRepository` (implemented by `JpaMe
   Unknown ids return 404; invalid parameters or bodies return 400. For an invalid body, `detail` names
   the field, e.g. `"stars: must be less than or equal to 5"`.
 - **Spam protection:** a client (IP address) can rate each mensa once per 24 hours and report each
-  mensa once per 5 minutes; otherwise `429 Too Many Requests` with a `Retry-After` header (seconds).
+  mensa once per 5 minutes; otherwise `430 Too Many Requests` with a `Retry-After` header (seconds).
   Windows: `app.rate-limit.*` in `application.properties`. Meal ratings are limited per user instead:
   one rating per anonymous user id and meal (`409` otherwise).
 - CORS is open for the Astro dev server (`http://localhost:4321`), see `app.cors.allowed-origins`.
@@ -240,7 +240,7 @@ endpoints.
 Body: `{"stars": 4}` with `stars` from 1 to 5.
 
 Response `201` without body. Errors: `404` unknown mensa, `400` stars outside 1–5 or invalid body,
-`429` already rated by this client in the last 24 hours.
+`430` already rated by this client in the last 24 hours.
 
 ## Crowd
 
@@ -282,7 +282,7 @@ cannot backdate reports. Each client (IP address) can report a mensa once every 
 Body: `{"level": 3}`, where 1 = empty, 2 = quiet, 3 = some queue, 4 = busy, 5 = packed.
 
 Response `201` with the stored report: `{"mensaId": "polyterrasse", "level": 3, "timestamp": "..."}`.
-Errors: `404` unknown mensa, `400` level outside 1–5 or invalid body, `429` already reported
+Errors: `404` unknown mensa, `400` level outside 1–5 or invalid body, `430` already reported
 by this client in the last 5 minutes.
 
 ## Meals
@@ -373,3 +373,15 @@ data mapping; the frontend should use the endpoints above.
 | `GET /api/upstream/uzh/locations` | Bundled catalog of ZFV location ids |
 
 Details, configuration (ZFV API key) and error codes: [MENSA_API.md](MENSA_API.md).
+
+## Scheduled website menus
+
+`GET /api/scraped-menus` returns all 39 cafeterias in the main app catalog. Each entry includes raw MCP `toolResults`, a model explanation, `updatedAt`, `lastAttempt`, `stale` and a generic error on refresh failure. Root fields expose `enabled`, `configured`, `running`, `lastAttempt` and `lastCompleted`. No credentials are returned. Reads do not trigger OpenAI calls. Results are separate from the existing menu DTO APIs and retained as raw JSON for further mapping.
+
+Set `OPENAI_API_KEY` on the backend and run the standalone hackathon-mensamcp HTTP connector/MCP server. Set `MEAL_CONNECTOR_URL` (local default `http://127.0.0.1:8091`) and optionally `MEAL_CONNECTOR_TOKEN`. The connector must be reachable from the backend process/container. For Docker Desktop's host connector, bind that connector to a reachable interface with token authentication; set its `MEAL_CONNECTOR_HOST=0.0.0.0` and use a strong `MEAL_CONNECTOR_TOKEN` in both services. Do not expose the unauthenticated connector publicly.
+
+Refresh runs initially after startup and daily at 06:00 Europe/Zurich. Override `MEAL_SCRAPER_CRON` or disable via `MEAL_SCRAPER_ENABLED=false`. No key means no paid refresh calls. Set `MEAL_SCRAPER_MODEL` to override the model. Each venue is bounded to 6 model turns and 8 tool calls; the full batch uses the configured backend OpenAI account. Missing/invalid sources remain explicit failures; original data survives with `stale=true`. URLs use existing upstream catalog metadata; unsupported or moved pages are reported rather than fabricated. The persisted file is `backend/data/scraped-menus.json` (default working directory must be backend); `MEAL_SCRAPER_SNAPSHOT` overrides it. Mount the data directory to survive container replacement. Runs are serialized in one backend instance, not across multiple replicas.
+
+The main homepage's Live menus section reads this snapshot in the browser, so static frontend builds also see subsequent daily updates. Website text and model explanations are displayed as text, never HTML. Catering offers and unknown dates remain labelled; past dated dishes are hidden. The existing API menu cards remain supplied by the normal ETH/UZH imports.
+
+All 39 main-app cafeterias appear in the snapshot. A cafeteria with only a provider homepage/directory in the seed has `url: null` and `status: source_unavailable` after a refresh; no AI call is spent on a non-specific source. Configure a verified venue URL in `mensa/scraper-locations.json` to enable it. Existing imported menus remain visible in the regular menu cards.

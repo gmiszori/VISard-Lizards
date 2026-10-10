@@ -9,6 +9,13 @@ services:
       - DB_URL=jdbc:h2:file:./data/visard
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4.1-mini}
+      - MEAL_SCRAPER_ENABLED=${MEAL_SCRAPER_ENABLED:-true}
+      - MEAL_SCRAPER_MODEL=${MEAL_SCRAPER_MODEL:-gpt-4.1-mini}
+      - MEAL_SCRAPER_CRON=${MEAL_SCRAPER_CRON:-0 0 6 * * *}
+      - MEAL_CONNECTOR_URL=${MEAL_CONNECTOR_URL:-http://host.docker.internal:8091}
+      - MEAL_CONNECTOR_TOKEN=${MEAL_CONNECTOR_TOKEN:-}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - backend-data:/app/data
 

@@ -1,0 +1,197 @@
+[
+  {
+    "id": "archimedes",
+    "name": "Archimedes",
+    "url": "https://ethz.ch/en/campus/getting-to-know/cafes-restaurants-shops/gastronomy/restaurants-and-cafeterias/zentrum/archimedes.html"
+  },
+  {
+    "id": "clausiusbar",
+    "name": "Clausiusbar",
+    "url": "https://ethz.ch/en/campus/getting-to-know/cafes-restaurants-shops/gastronomy/restaurants-and-cafeterias/zentrum/clausiusbar.html"
+  },
+  {
+    "id": "dozentenfoyer",
+    "name": "Dozentenfoyer",
+    "url": "https://ethz.ch/en/campus/getting-to-know/cafes-restaurants-shops/gastronomy/restaurants-and-cafeterias/zentrum/dozentenfoyer.html"
+  },
+  {
+    "id": "food-and-lab",
+    "name": "food&lab",
+    "url": "https://ethz.ch/en/campus/getting-to-know/cafes-restaurants-shops/gastronomy/restaurants-and-cafeterias/zentrum/food-lab.html"
+  },
+  {
+    "id": "polyterrasse",
+    "name": "Mensa Polyterrasse",
+    "url": "https://ethz.ch/en/campus/getting-to-know/cafes-restaurants-shops/gastronomy/restaurants-and-cafeterias/zentrum/mensa-polyterrasse.html"
+  },
+  {
+    "id": "polysnack",
+    "name": "Polysnack",
+    "url": "https://ethz.ch/de/campus/erleben/gastronomie-und-einkaufen/gastronomie/restaurants-und-cafeterias/zentrum/polysnack.html"
+  },
+  {
+    "id": "tannenbar",
+    "name": "Tannenbar",
+    "url": "https://ethz.ch/en/campus/getting-to-know/cafes-restaurants-shops/gastronomy/restaurants-and-cafeterias/zentrum/tannenbar.html"
+  },
+  {
+    "id": "uzh-zzm",
+    "name": "Cafeteria Zentrum für Zahnmedizin (ZZM)",
+    "url": "https://www.zfv.ch/de/essen-gehen/cafeteria-zentrum-fuer-zahnmedizin-zzm"
+  },
+  {
+    "id": "uzh-lichthof",
+    "name": "Lichthof",
+    "url": "https://www.zfv.ch/de/essen-gehen/lichthof"
+  },
+  {
+    "id": "uzh-obere-mensa",
+    "name": "Obere Mensa",
+    "url": "https://www.zfv.ch/de/essen-gehen/obere-mensa-uzh"
+  },
+  {
+    "id": "uzh-platte-14",
+    "name": "Platte 14",
+    "url": "https://www.zfv.ch/de/essen-gehen/platte-14"
+  },
+  {
+    "id": "uzh-raemi-59",
+    "name": "Rämi 59",
+    "url": "https://www.zfv.ch/de/essen-gehen/raemi-59"
+  },
+  {
+    "id": "uzh-untere-mensa",
+    "name": "Untere Mensa",
+    "url": "https://www.zfv.ch/de/essen-gehen/untere-mensa-uzh"
+  },
+  {
+    "id": "alumni-quattro-lounge",
+    "name": "Alumni quattro Lounge",
+    "url": "https://ethz.ch/en/campus/getting-to-know/cafes-restaurants-shops/gastronomy/restaurants-and-cafeterias/hoenggerberg/alumni-quattro-lounge.html"
+  },
+  {
+    "id": "food-market",
+    "name": "food market",
+    "url": "https://ethz.ch/en/campus/getting-to-know/cafes-restaurants-shops/gastronomy/restaurants-and-cafeterias/hoenggerberg/food-market-pizza-pasta.html"
+  },
+  {
+    "id": "fusion-meal",
+    "name": "FUSION meal",
+    "url": "https://ethz.ch/en/campus/getting-to-know/cafes-restaurants-shops/gastronomy/restaurants-and-cafeterias/hoenggerberg/fusion-meal.html"
+  },
+  {
+    "id": "mendokoro",
+    "name": "Mendokoro",
+    "url": "https://ethz.ch/en/campus/getting-to-know/cafes-restaurants-shops/gastronomy/restaurants-and-cafeterias/hoenggerberg/mendokoro.html"
+  },
+  {
+    "id": "rice-up",
+    "name": "Rice Up!",
+    "url": "https://ethz.ch/en/campus/getting-to-know/cafes-restaurants-shops/gastronomy/restaurants-and-cafeterias/hoenggerberg/rice-up.html"
+  },
+  {
+    "id": "uzh-seerose-irchel",
+    "name": "Cafeteria Seerose",
+    "url": "https://www.zfv.ch/de/essen-gehen/cafeteria-uzh-irchel-seerose"
+  },
+  {
+    "id": "uzh-green-kitchen-lab",
+    "name": "Green Kitchen Lab",
+    "url": "https://www.zfv.ch/de/essen-gehen/uzh-green-kitchen-lab"
+  },
+  {
+    "id": "uzh-irchel-bar",
+    "name": "Irchel Bar",
+    "url": "https://www.zfv.ch/de/essen-gehen/irchel-bar"
+  },
+  {
+    "id": "uzh-mensa-irchel",
+    "name": "Mensa Irchel",
+    "url": "https://www.zfv.ch/de/essen-gehen/mensa-uzh-irchel"
+  },
+  {
+    "id": "bellavista",
+    "name": "Restaurant Bellavista",
+    "url": "https://bellavista-ethz.ch/mittagessen/"
+  },
+  {
+    "id": "octavo",
+    "name": "Restaurant Octavo",
+    "url": "https://ethz.ch/en/campus/getting-to-know/cafes-restaurants-shops/gastronomy/restaurants-and-cafeterias/oerlikon/octavo.html"
+  },
+  {
+    "id": "zwei-grad",
+    "name": "Zwei Grad Bistro",
+    "url": null
+  },
+  {
+    "id": "science-lounge",
+    "name": "Science Lounge",
+    "url": null
+  },
+  {
+    "id": "bqm",
+    "name": "bQm Kulturcafé & Bar",
+    "url": "https://bqm-bar.ch/de"
+  },
+  {
+    "id": "bistro-hpi",
+    "name": "Bistro HPI",
+    "url": null
+  },
+  {
+    "id": "mensa-binzmuhle",
+    "name": "Mensa Oerlikon",
+    "url": "https://www.zfv.ch/de/essen-gehen/mensa-uzh-binzmuehle"
+  },
+  {
+    "id": "bim11",
+    "name": "BIM11",
+    "url": null
+  },
+  {
+    "id": "cityport",
+    "name": "Cityport Mensa",
+    "url": null
+  },
+  {
+    "id": "tierspital",
+    "name": "Tierspital Mensa",
+    "url": "https://www.zfv.ch/de/essen-gehen/cafeteria-uzh-tierspital"
+  },
+  {
+    "id": "the-yard",
+    "name": "The YARD & Cafeteria Brunnenhof",
+    "url": null
+  },
+  {
+    "id": "uniturm",
+    "name": "Restaurant UniTurm & Cafeteria Rämi 74",
+    "url": null
+  },
+  {
+    "id": "botanischer-garten",
+    "name": "Cafeteria Botanischer Garten",
+    "url": null
+  },
+  {
+    "id": "phzh",
+    "name": "Mensa PHZH",
+    "url": null
+  },
+  {
+    "id": "molki",
+    "name": "Mensa Molki",
+    "url": null
+  },
+  {
+    "id": "bistro-tonino",
+    "name": "Bistro Tonino",
+    "url": null
+  },
+  {
+    "id": "zhaw-lagerstrasse",
+    "name": "ZHAW Cafeteria Lagerstrasse & Sihlhof",
+    "url": null
+  }
+]
