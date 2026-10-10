@@ -32,6 +32,12 @@ test('F29: a successful save writes profile, merged preferences and language', (
   assert.equal(s.data.get('campuseats-language'), 'de');
 });
 
+test('onboarding answers about gluten, milk and nuts also fill the allergen filter', () => {
+  const s = store({ 'campuseats-preferences': '{"avoid":["sesame"]}' });
+  writeProfile({ ...profile, hard: ['gluten_free', 'nut_free', 'halal'] }, s, []);
+  assert.deepEqual(JSON.parse(s.data.get('campuseats-preferences')!).avoid, ['sesame', 'gluten', 'nuts', 'peanuts']);
+});
+
 test('F29: a failure on the second write puts the first one back', () => {
   const s = store(OLD, ['campuseats-preferences']);
   assert.throws(() => writeProfile(profile, s, []), /full/);

@@ -1,5 +1,6 @@
 import type { Profile } from './profile.ts';
 import { readStarredMeals } from '../meals/stars.ts';
+import { mergeAvoidFromProfile } from '../allergens/allergens.ts';
 
 const PROFILE_KEY = 'campuseats-profile';
 const PREFERENCES_KEY = 'campuseats-preferences';
@@ -43,6 +44,8 @@ export function writeProfile(profile: Profile, store: Store, starred: string[]):
     [PROFILE_KEY, JSON.stringify({ ...profile, starredMeals: starred })],
     [PREFERENCES_KEY, JSON.stringify({ ...existing,
       priceTier: profile.priceTier,
+      // "Never show me milk / gluten / nuts" also hides those dishes on the menus.
+      avoid: mergeAvoidFromProfile((existing as { avoid?: unknown }).avoid, profile.hard),
       locations: [...new Set([profile.campus, ...profile.campusSecondary])],
       vegan: profile.diet !== 'carnivore', vegetarian: profile.diet !== 'vegan' && profile.diet !== 'carnivore',
       // Existing preferences group fish with meat; detailed diet filtering is in the payoff.

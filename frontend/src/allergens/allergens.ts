@@ -50,3 +50,17 @@ export function conflicts(dishAllergens: readonly AllergenId[], avoid: readonly 
 export function normalizeAvoid(value: unknown): AllergenId[] {
   return Array.isArray(value) ? allergenIds(value.filter((v): v is string => typeof v === 'string' && isAllergenId(v))) : [];
 }
+
+/** What the onboarding answers "milk / gluten / nuts & peanuts" mean as allergen ids. */
+const HARD_TO_ALLERGENS: Record<string, AllergenId[]> = {
+  lactose_free: ['milk'],
+  gluten_free: ['gluten'],
+  nut_free: ['nuts', 'peanuts'],
+};
+
+/** Adds the allergens implied by the onboarding "never show me" answers to the stored avoid list. Never removes any. */
+export function mergeAvoidFromProfile(existing: unknown, hard: readonly string[]): AllergenId[] {
+  const merged = normalizeAvoid(existing);
+  for (const answer of hard) for (const id of HARD_TO_ALLERGENS[answer] ?? []) if (!merged.includes(id)) merged.push(id);
+  return merged;
+}

@@ -41,3 +41,12 @@ test('allergens: the hidden-dishes notice reads naturally in both languages', ()
   assert.equal(allergenNotice(1, ['Milch'], 'de'), '1 Gericht ausgeblendet: enthält Milch.');
   assert.equal(allergenNotice(2, ['Milch', 'Sellerie'], 'de'), '2 Gerichte ausgeblendet: enthalten Milch, Sellerie.');
 });
+
+import { mergeAvoidFromProfile } from './allergens.ts';
+test('allergens: onboarding answers add to the avoid list and never remove from it', () => {
+  assert.deepEqual(mergeAvoidFromProfile(undefined, ['gluten_free', 'nut_free']), ['gluten', 'nuts', 'peanuts']);
+  assert.deepEqual(mergeAvoidFromProfile(['milk', 'sesame'], ['gluten_free']), ['milk', 'sesame', 'gluten']);
+  assert.deepEqual(mergeAvoidFromProfile(['gluten'], []), ['gluten'], 'answering nothing keeps what was set in settings');
+  assert.deepEqual(mergeAvoidFromProfile(['gluten'], ['gluten_free', 'no_pork', 'halal']), ['gluten'], 'no duplicates, unrelated answers ignored');
+  assert.deepEqual(mergeAvoidFromProfile('junk', ['lactose_free']), ['milk']);
+});
