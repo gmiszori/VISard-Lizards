@@ -186,10 +186,18 @@
 }
 
 :root[data-density="compact"] article.canteen-card[data-canteen-card] {
-  display: block;
+  display: flow-root;
 }
 :root[data-density="compact"] article.canteen-card[data-canteen-card] .canteen-card-link {
   display: block;
+  clear: both;
+}
+:root[data-density="compact"] article.canteen-card[data-canteen-card] > .favorite-toggle {
+  position: static;
+  float: right;
+  width: 44px;
+  height: 44px;
+  margin: 8px 8px 0;
 }
 :root[data-density="compact"] article.canteen-card[data-canteen-card] .card-image {
   display: block;
@@ -238,11 +246,6 @@
   min-width: 0;
   padding: 10px 12px 12px;
 }
-:root[data-density="compact"] article.canteen-card[data-canteen-card] .favorite-toggle {
-  top: 8px;
-  right: 8px;
-}
-
 @media (max-width: 700px) {
   :root .canteen-card .canteen-photo-title .status { position: absolute; top: 8px; left: 8px; right: auto; }
   :root .canteen-card .rating { top: 46px; left: 8px; right: auto; bottom: auto; }
