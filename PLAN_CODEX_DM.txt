@@ -62,3 +62,5 @@ New venue records omit hoursSource, so the frontend type now permits an absent
 provenance field instead of inventing a source. Production build: 43 pages.
 Running backend tests with a checksum-verified portable Temurin JDK 25 in
 this session's scratch directory; no global Java settings changed.
+
+06:05: Integrated main 6694a4b crowd mock/recency work, preserving 429 rejection, Retry-After and blocked-storage cooldown. Mock forceOpen is honored on submit; Reset report lock clears retry storage and in-session state. Retained backend-only menu provenance and incremental importer documentation. All 170 frontend tests pass; production build has 43 pages. Backend full suite: 111 tests, 0 failures/errors, 2 skipped. UZH startup now honors app.live-import.enabled=false; import unit test stubs Food2050 HTTP. Final type/browser checks in progress.

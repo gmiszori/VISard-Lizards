@@ -183,3 +183,8 @@ SESSION 3 - 02:52 - connecting frontend and backend (user request), branch featu
          CrowdSurvey.astro, survey.ts, survey-logic.ts). Uses the existing backend endpoints, no backend change.
          Martin: touches src/pages/canteen/[id].astro (one component line) and src/scripts/live-status.ts (skips the
          Current crowd box once real reports exist). Branch feature/crowd-survey.
+  05:58  FIX on main: LikeScience's merge of feature/ai-dish-search (834b6cf) committed conflict markers in
+         MensaSnapshotImporter.java and frontend/src/data/app-data.ts, so main did not compile. Resolved keeping both
+         sides (new-mensa upsert + facility/coordinate backfills; price units + same-day-only sample fallback) and
+         updated tests to 39 mensas / 7 campuses. LikeScience: astro check reports 17 errors, the 17 new mensas in
+         canteens.ts lack hoursSource - please add it.

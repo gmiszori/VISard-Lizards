@@ -73,6 +73,30 @@ const devData = {
       </table>
     </div>
   </section>
+  <section class="dev-panel dev-crowd-mock" data-dev-crowd-mock aria-labelledby="dev-crowd-title">
+    <h3 id="dev-crowd-title">Crowd survey mock</h3>
+    <p class="dev-hint">Test "How busy is it right now?" without the backend. While the mock is on, canteen pages on this device read and write these reports instead of the backend, and the survey card says "Mock data".</p>
+    <div class="dev-crowd-toggles">
+      <label><input type="checkbox" id="dev-crowd-enabled" data-dev-crowd-enabled /> Use mock crowd data</label>
+      <label><input type="checkbox" id="dev-crowd-force-open" data-dev-crowd-force-open /> Show the survey even when the mensa is closed</label>
+    </div>
+    <div class="dev-crowd-form">
+      <label for="dev-crowd-mensa">Mensa<select id="dev-crowd-mensa" data-dev-crowd-mensa>{MENSAS.map((mensa) => <option value={mensa.id}>{mensa.name}</option>)}</select></label>
+      <label for="dev-crowd-level">Level<select id="dev-crowd-level" data-dev-crowd-level>
+        <option value="1">1 · Empty</option><option value="2">2 · Quiet</option><option value="3">3 · Some queue</option><option value="4" selected>4 · Busy</option><option value="5">5 · Packed</option>
+      </select></label>
+      <label for="dev-crowd-count">Reports<input id="dev-crowd-count" type="number" min="1" max="50" value="3" data-dev-crowd-count /></label>
+    </div>
+    <div class="dev-actions dev-crowd-actions">
+      <button type="button" data-dev-crowd-add>Add reports</button>
+      <button type="button" data-dev-crowd-clear>Clear this mensa</button>
+      <button type="button" data-dev-crowd-clear-all>Clear all</button>
+      <button type="button" data-dev-crowd-reset-lock>Reset report lock</button>
+      <a class="dev-crowd-open" data-dev-crowd-open href="/">Open canteen page →</a>
+    </div>
+    <p class="dev-crowd-status" data-dev-crowd-status role="status" aria-live="polite"></p>
+    <ul class="dev-crowd-list" data-dev-crowd-list></ul>
+  </section>
   <section class="dev-panel" aria-labelledby="dev-storage-title">
     <h3 id="dev-storage-title">Device state</h3>
     <div class="dev-storage" data-dev-storage></div>
@@ -107,5 +131,17 @@ const devData = {
   .dev-live-open{color:var(--green);font-weight:800}.dev-live-closed{color:var(--muted);font-weight:700}
   .dev-storage{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;font-size:12px}
   .dev-storage pre{margin:0;max-height:160px;overflow:auto;padding:10px;border:1px solid var(--line);border-radius:8px;background:color-mix(in srgb,var(--paper) 92%,var(--line));white-space:pre-wrap;overflow-wrap:anywhere}
+  .dev-crowd-mock{margin-bottom:12px}
+  .dev-hint{margin:0 0 10px;color:var(--muted);font-size:12px;line-height:1.5;max-width:75ch}
+  .dev-crowd-toggles{display:flex;flex-wrap:wrap;gap:8px 18px;margin-bottom:10px;font-size:12px;font-weight:700}
+  .dev-crowd-toggles label{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+  .dev-crowd-form{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,90px);gap:8px;margin-bottom:10px}
+  .dev-crowd-form label{display:grid;gap:4px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;min-width:0}
+  .dev-crowd-form select,.dev-crowd-form input{min-height:38px;width:100%;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);font:600 13px 'DM Sans',sans-serif;padding:6px 8px;text-transform:none}
+  .dev-crowd-actions{justify-content:flex-start;align-items:center}
+  .dev-crowd-open{font-size:12px;font-weight:700;color:var(--green)}
+  .dev-crowd-status{margin:8px 0 0;font-size:12px;color:var(--green);font-weight:700}.dev-crowd-status:empty{display:none}
+  .dev-crowd-list{margin:8px 0 0;padding-left:20px;font-size:12px;line-height:1.6;color:var(--muted)}
+  @media(max-width:760px){.dev-crowd-form{grid-template-columns:1fr 1fr}.dev-crowd-form label:first-child{grid-column:1/-1}}
   @media(max-width:760px){.dev-tools-head,.dev-grid{display:block}.dev-actions{justify-content:flex-start;margin-top:10px}.dev-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.dev-panel{margin-bottom:12px}.dev-storage{grid-template-columns:1fr}}
 </style>

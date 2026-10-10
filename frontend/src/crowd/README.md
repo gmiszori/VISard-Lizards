@@ -31,7 +31,8 @@ The backend's `GET /api/mensas/{id}/crowd` returns `histogram.byWeekday` in exac
 `CrowdSurvey.astro` sits below the opening hours on the canteen page. While the mensa is open (Zurich
 time, opening windows from `#live-data`) and a backend is configured, visitors pick one of five levels
 (empty, quiet, some queue, busy, packed). Reports go to `POST /api/mensas/{id}/crowd-reports`; the card
-then summarizes the reports of the last 30 minutes (`GET /api/mensas/{id}/crowd`, `live`, rounded mean)
+then summarizes the reports of the last 30 minutes (`GET /api/mensas/{id}/crowd`, `live`): the level is the rounded mean of the 6 newest reports, each
+weighted by its age (half-life 10 minutes), so it follows a change after a few reports
 and the "Current crowd" box shows that real level instead of the illustrative value
 (`live-status.ts` skips boxes marked `data-crowd-reported`). With at least 10 reports the backend's
 prediction replaces the preview chart.
@@ -46,3 +47,12 @@ when that header is absent or invalid). Retry deadlines are stored separately fr
 and the cooldown also works in memory when browser storage is unavailable. Logic lives in
 `survey-logic.ts` (tested in `survey.test.ts`).
 In development, `?crowdNow=2026-10-12T12:00:00%2B02:00` shows the survey as if it were that time.
+
+### Testing the survey without a backend (developer tools)
+
+Settings → **Dev mode** shows the developer tools on the home page. Their **Crowd survey mock** section
+switches the survey on this device to mock reports (`survey-mock.ts`, stored under
+`campuseats-dev-crowd-mock`): pick a mensa, a level and a number of reports, add them, then open the
+canteen page. While the mock is on, the survey never calls the backend, its card shows "Mock data", and
+"Show the survey even when the mensa is closed" lets you test outside opening hours. "Reset report lock"
+clears the 5-minute device lock. The predicted crowd chart keeps using the backend.

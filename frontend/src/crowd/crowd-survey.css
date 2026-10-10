@@ -17,3 +17,5 @@
 .crowd-survey-status:empty,.crowd-survey-summary:empty{display:none}
 .crowd-survey-status{margin-top:4px;color:var(--green);font-weight:600}
 @media(max-width:420px){.crowd-survey{padding:14px}.crowd-survey-levels{gap:4px}.crowd-survey-levels button{font-size:11px;padding:8px 2px}}
+.crowd-survey-mock{display:inline-block;margin-bottom:6px;padding:2px 8px;border:1px dashed var(--green);border-radius:999px;color:var(--green);font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.crowd-survey-mock[hidden]{display:none}

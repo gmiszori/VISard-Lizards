@@ -8,20 +8,39 @@ export const CROWD_LEVELS: readonly CrowdLevel[] = [1, 2, 3, 4, 5];
 
 /** The backend accepts one report per mensa and client every 5 minutes (app.rate-limit.crowd-report-window). */
 export const REPORT_COOLDOWN_MS = 5 * 60_000;
+/** Device storage of the last report time per mensa id (enforces the cooldown on this device). */
+export const LAST_REPORT_KEY = 'campuseats-crowd-last-report';
+export const RETRY_UNTIL_KEY = 'campuseats-crowd-retry-until';
 export const LIVE_REPORT_WINDOW_MS = 30 * 60_000;
 
 export interface LiveReport { level: number; timestamp: string }
 export interface CrowdSummary { level: CrowdLevel; count: number }
 
-/** The typical level of the reports of the last 30 minutes (rounded mean), or null without reports. */
+/** Only the newest reports decide the current level, so it follows a change after a few reports. */
+export const RECENT_REPORTS = 6;
+/** A report this old counts half as much as a fresh one. */
+export const REPORT_HALF_LIFE_MS = 10 * 60_000;
+
+/**
+ * The current level from the reports of the last 30 minutes: the mean of the RECENT_REPORTS newest
+ * reports, each weighted by its age (half-life REPORT_HALF_LIFE_MS), rounded. count is the number of
+ * all reports of the last 30 minutes. null without reports.
+ */
 export function summarize(reports: readonly LiveReport[], now = Date.now()): CrowdSummary | null {
-  const levels = reports.filter(report => {
-    const timestamp = Date.parse(report?.timestamp);
-    return Number.isFinite(timestamp) && timestamp > now - LIVE_REPORT_WINDOW_MS && timestamp <= now;
-  }).map(r => r.level).filter(level => Number.isInteger(level) && level >= 1 && level <= 5);
-  if (!levels.length) return null;
-  const mean = levels.reduce((sum, level) => sum + level, 0) / levels.length;
-  return { level: Math.min(5, Math.max(1, Math.round(mean))) as CrowdLevel, count: levels.length };
+  const valid = reports
+    .map(report => ({ level: report?.level, at: Date.parse(report?.timestamp) }))
+    .filter(({ level, at }) => Number.isInteger(level) && level >= 1 && level <= 5
+      && Number.isFinite(at) && at > now - LIVE_REPORT_WINDOW_MS && at <= now)
+    .sort((a, b) => b.at - a.at);
+  if (!valid.length) return null;
+  let weighted = 0;
+  let weights = 0;
+  for (const { level, at } of valid.slice(0, RECENT_REPORTS)) {
+    const weight = 0.5 ** ((now - at) / REPORT_HALF_LIFE_MS);
+    weighted += level * weight;
+    weights += weight;
+  }
+  return { level: Math.min(5, Math.max(1, Math.round(weighted / weights))) as CrowdLevel, count: valid.length };
 }
 
 /** The "Current crowd" box's three labels (translation keys low/medium/high). */

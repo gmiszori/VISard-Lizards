@@ -30,6 +30,29 @@ test('live summary ignores invalid, future and expired timestamps', () => {
   assert.deepEqual(summarize([{ level: 3, timestamp: new Date(now).toISOString() }], now), { level: 3, count: 1 });
 });
 
+test('summarize follows a change after a few new reports, not after outweighing all old ones', () => {
+  const at = (minutesAgo: number, level: number) => ({ level, timestamp: new Date(now - minutesAgo * 60_000).toISOString() });
+  // 20 "quiet" reports over the last 25 minutes ...
+  const quiet = Array.from({ length: 20 }, (_, i) => at(25 - i, 2));
+  assert.deepEqual(summarize(quiet, now), { level: 2, count: 20 });
+  // ... then people report "empty": two are not enough, four flip it.
+  assert.equal(summarize([...quiet, at(1, 1), at(0, 1)], now)!.level, 2);
+  assert.equal(summarize([...quiet, at(3, 1), at(2, 1), at(1, 1), at(0, 1)], now)!.level, 1);
+  assert.equal(summarize([...quiet, at(3, 1), at(2, 1), at(1, 1), at(0, 1)], now)!.count, 24);
+});
+
+test('summarize: one outlier moves the level by at most one step', () => {
+  const at = (minutesAgo: number, level: number) => ({ level, timestamp: new Date(now - minutesAgo * 60_000).toISOString() });
+  const quiet = [at(10, 2), at(8, 2), at(6, 2), at(4, 2), at(2, 2)];
+  assert.equal(summarize([...quiet, at(0, 5)], now)!.level, 3);
+});
+
+test('summarize: older reports count less', () => {
+  const at = (minutesAgo: number, level: number) => ({ level, timestamp: new Date(now - minutesAgo * 60_000).toISOString() });
+  // Plain mean would be 3 (some queue); the fresh "packed" weighs more than the 25-minute-old "empty".
+  assert.equal(summarize([at(25, 1), at(0, 5)], now)!.level, 4);
+});
+
 test('occupancyOf maps levels to the Current crowd labels', () => {
   assert.deepEqual([1, 2, 3, 4, 5].map(l => occupancyOf(l as 1)), ['low', 'low', 'medium', 'high', 'high']);
 });
