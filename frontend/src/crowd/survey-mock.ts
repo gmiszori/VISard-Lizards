@@ -33,10 +33,13 @@ export function writeCrowdMock(mock: CrowdMock, storage: Storage = localStorage)
   storage.setItem(CROWD_MOCK_KEY, JSON.stringify(mock));
 }
 
-/** Adds count reports of one level, spread over the last minutes (newest now), and drops expired ones. */
+/**
+ * Adds count reports of one level as the newest reports (one second apart, the last one now), like people
+ * reporting right now, and drops expired ones.
+ */
 export function addMockReports(mock: CrowdMock, mensaId: string, level: CrowdLevel, count: number, now: number): CrowdMock {
   const n = Math.max(1, Math.min(50, Math.floor(count)));
-  const added = Array.from({ length: n }, (_, i) => ({ level, timestamp: new Date(now - (n - 1 - i) * 60_000).toISOString() }));
+  const added = Array.from({ length: n }, (_, i) => ({ level, timestamp: new Date(now - (n - 1 - i) * 1000).toISOString() }));
   const kept = (mock.reports[mensaId] ?? []).filter(r => now - Date.parse(r.timestamp) < LIVE_WINDOW_MS);
   return { ...mock, reports: { ...mock.reports, [mensaId]: [...kept, ...added] } };
 }

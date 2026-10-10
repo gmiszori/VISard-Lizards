@@ -19,10 +19,10 @@ test('read/write round trip; broken or missing storage gives the disabled defaul
   assert.deepEqual(readCrowdMock(storage), mock);
 });
 
-test('addMockReports spreads reports over the last minutes and caps the count', () => {
+test('addMockReports adds the newest reports, one second apart, and caps the count', () => {
   const mock = addMockReports(EMPTY_MOCK, 'polyterrasse', 4, 3, NOW);
   assert.deepEqual(mock.reports.polyterrasse!.map(r => r.timestamp),
-    ['2026-10-12T09:58:00.000Z', '2026-10-12T09:59:00.000Z', '2026-10-12T10:00:00.000Z']);
+    ['2026-10-12T09:59:58.000Z', '2026-10-12T09:59:59.000Z', '2026-10-12T10:00:00.000Z']);
   assert.equal(addMockReports(EMPTY_MOCK, 'polyterrasse', 2, 500, NOW).reports.polyterrasse!.length, 50);
 });
 
@@ -31,7 +31,7 @@ test('liveMockReports: last 30 minutes, newest first; old reports are dropped on
   mock = addMockReports(mock, 'polyterrasse', 5, 2, NOW);
   assert.equal(mock.reports.polyterrasse!.length, 2);
   assert.deepEqual(liveMockReports(mock, 'polyterrasse', NOW).map(r => r.timestamp),
-    ['2026-10-12T10:00:00.000Z', '2026-10-12T09:59:00.000Z']);
+    ['2026-10-12T10:00:00.000Z', '2026-10-12T09:59:59.000Z']);
   assert.deepEqual(liveMockReports(mock, 'polyterrasse', NOW + 31 * 60_000), []);
 });
 
