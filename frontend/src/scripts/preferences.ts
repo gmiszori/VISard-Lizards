@@ -264,9 +264,7 @@ document.querySelector<HTMLInputElement>('#search-input')?.addEventListener('inp
       searchStatus('');
     } catch {
       if (version !== searchVersion) return;
-      searchStatus(document.documentElement.lang === 'de'
-        ? 'KI-Suche nicht verfügbar. Textsuche wird angezeigt.'
-        : 'AI search unavailable. Showing text matches.');
+      searchStatus('');
     }
   }, 650);
 });
