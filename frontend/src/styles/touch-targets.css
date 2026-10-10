@@ -45,3 +45,9 @@
 
 /* "per 100 g" next to a price that is not for a plate. */
 .price-unit { font-weight: 700; color: var(--ink); white-space: nowrap; }
+
+/* iPhones zoom the whole page when a field with text smaller than 16px gets focus (and do not zoom back).
+   Only there the selects and fields get 16px; other browsers keep the compact sizes. */
+@supports (-webkit-touch-callout: none) {
+  select, textarea, input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]) { font-size: 16px !important; }
+}

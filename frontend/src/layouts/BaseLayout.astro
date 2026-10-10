@@ -12,6 +12,14 @@ const { title } = Astro.props;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#f5f6f1" />
+    <script is:inline>
+      // Apply the saved theme and language before the page is painted, so dark-theme users do not see a white flash
+      // while the rest of the page loads. The full handling stays in the script at the end of the body.
+      try {
+        if (localStorage.getItem('campuseats-theme') === 'dark') document.documentElement.dataset.theme = 'dark';
+        if (localStorage.getItem('campuseats-language') === 'de') document.documentElement.lang = 'de';
+      } catch (error) { /* storage blocked: the defaults apply */ }
+    </script>
     <meta name="description" content="Find what's cooking at ETH and UZH campus canteens." />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title data-page-title={title}>{title} | CampusEats</title>
