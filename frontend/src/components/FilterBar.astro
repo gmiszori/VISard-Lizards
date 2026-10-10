@@ -36,5 +36,8 @@ import NearMe from '../location/NearMe.astro';
     .toolbar :global(.search){flex:1 1 100%}
     .campus-tools{flex:1 1 100%}
     .campus-select{flex:1 1 auto;max-width:none}
+    /* A long label ("Nach Entfernung sortieren") wraps inside the button instead of widening the page. */
+    .campus-tools :global(.near-me){flex:0 1 auto;min-width:0}
+    .campus-tools :global(.near-me-toggle){white-space:normal;line-height:1.2;padding-block:6px;text-align:center}
   }
 </style>
