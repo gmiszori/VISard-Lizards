@@ -76,6 +76,14 @@ export function zurichParts(at: Date | number): { date: string; time: string; we
   return { date: `${get('year')}-${get('month')}-${get('day')}`, time: `${get('hour')}:${get('minute')}`, weekday: get('weekday').toLowerCase().slice(0, 3) };
 }
 
+export type ClockWeekday = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
+
+/** Weekday and minutes since midnight in Zurich, independent of the device's time zone. */
+export function zurichClock(at: Date | number): { weekday: ClockWeekday; minutes: number } {
+  const { time, weekday } = zurichParts(at);
+  return { weekday: weekday as ClockWeekday, minutes: Number(time.slice(0, 2)) * 60 + Number(time.slice(3, 5)) };
+}
+
 /** The instant (epoch ms) of a Zurich wall-clock date (YYYY-MM-DD) and time (HH:mm), DST-aware. */
 export function zurichToEpoch(date: string, time: string): number | null {
   const d = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);

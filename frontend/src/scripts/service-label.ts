@@ -1,14 +1,12 @@
-import { appNow, CLOCK_EVENT } from '../time/clock';
+import { appNow, CLOCK_EVENT, zurichParts } from '../time/clock';
 
 type ServiceWindow = { service: 'lunch' | 'dinner'; open: string; close: string };
 
+const minuteOf = (value: string) => Number(value.slice(0, 2)) * 60 + Number(value.slice(3, 5));
+
 function zurichNow() {
-  const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Europe/Zurich', year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', hour12: false,
-  }).formatToParts(appNow());
-  const get = (type: string) => parts.find(part => part.type === type)?.value ?? '';
-  return { date: `${get('year')}-${get('month')}-${get('day')}`, minute: (Number(get('hour')) % 24) * 60 + Number(get('minute')) };
+  const { date, time } = zurichParts(appNow());
+  return { date, minute: minuteOf(time) };
 }
 
 function translated(key: string) {
@@ -18,7 +16,6 @@ function translated(key: string) {
       : de ? 'Geschlossen' : 'Closed';
 }
 
-const minuteOf = (value: string) => Number(value.slice(0, 2)) * 60 + Number(value.slice(3, 5));
 const range = (window: ServiceWindow) => `${window.open}–${window.close}`;
 
 /** Writes the service name and its time range into the line; no time removes the range. */

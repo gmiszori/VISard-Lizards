@@ -1,6 +1,6 @@
 import { formatTime, slotsForDay, WEEKDAYS, type CrowdPrediction, type CrowdSlot, type CrowdWeekday } from './prediction';
 import { defaultCrowdDay } from './defaultDay';
-import { appNow, CLOCK_EVENT } from '../time/clock';
+import { appNow, CLOCK_EVENT, zurichClock } from '../time/clock';
 
 const copy = {
   en: { eyebrow: 'PLAN YOUR LUNCH', title: 'Predicted crowd', minutes: 'min', subtitle: 'Typical occupancy, every 15 minutes.', day: 'Day', quiet: 'Quiet', moderate: 'Moderate', busy: 'Busy', now: 'Now', empty: 'No prediction available for this day.', missing: 'No prediction for this interval', preview: 'Preview data · Illustrative occupancy, not a live forecast.', backend: 'Estimated occupancy · 15-minute intervals · Zürich time.', chart: 'Predicted occupancy by time', occupancy: 'predicted occupancy', hint: 'Tap a bar, or use the arrow keys, to see its time slot.' },
@@ -11,9 +11,8 @@ const language = () => document.documentElement.lang === 'de' ? 'de' : 'en';
 const t = (key: Key) => copy[language()][key];
 const svgNS = 'http://www.w3.org/2000/svg';
 function nowInZurich() {
-  const parts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Zurich', weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(appNow());
-  const part = (type: string) => parts.find(p => p.type === type)?.value ?? '';
-  return { day: part('weekday').toLowerCase() as CrowdWeekday, minute: Number(part('hour')) * 60 + Number(part('minute')) };
+  const { weekday, minutes } = zurichClock(appNow());
+  return { day: weekday as CrowdWeekday, minute: minutes };
 }
 const weekdayName = (day: CrowdWeekday) => new Intl.DateTimeFormat(language(), { weekday: 'long', timeZone: 'UTC' }).format(new Date(Date.UTC(2026, 0, 5 + WEEKDAYS.indexOf(day))));
 
