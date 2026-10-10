@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { addDays, isWeekend, menuDateCandidates, pickSampleMenuDate, weekdayIndex, wantedMenuDate } from './menuDate.ts';
+import { addDays, isIsoDate, isWeekend, menuDateCandidates, pickSampleMenuDate, weekdayIndex, wantedMenuDate } from './menuDate.ts';
 
 // 2026-10-10 is a Saturday.
 test('weekday numbers and weekend detection', () => {
@@ -78,4 +78,10 @@ test('sample data: empty or invalid lists return today', () => {
   assert.equal(pickSampleMenuDate([], '2026-10-10'), '2026-10-10');
   assert.equal(pickSampleMenuDate(['x', '2026-99-99'], '2026-10-10'), '2026-10-10');
   assert.equal(pickSampleMenuDate(['2026-10-05', '2026-10-05', 'bad'], '2026-10-10'), '2026-10-05');
+});
+
+test('isIsoDate accepts only real calendar dates', () => {
+  for (const ok of ['2026-10-09', '2028-02-29', '2026-12-31', '2026-01-01']) assert.equal(isIsoDate(ok), true, ok);
+  const bad = ['2026-02-31', '2027-02-29', '2026-13-01', '2026-00-01', '2026-10-32', '2026-1-1', '10.10.2026', '', ' 2026-10-09', '2026-10-09T00:00:00Z', null, undefined, 20261009, {}];
+  for (const value of bad) assert.equal(isIsoDate(value), false, String(value));
 });

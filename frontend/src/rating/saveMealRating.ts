@@ -1,4 +1,5 @@
 import { API_URL, ApiError, apiPost, type BackendMealRating } from '../data/api.ts';
+import { isIsoDate } from '../data/menuDate.ts';
 
 export type Stars = 1 | 2 | 3 | 4 | 5;
 export interface MealRating {
@@ -40,7 +41,7 @@ export function anonymousUserId(storage: Storage | (() => Storage) = () => local
 export async function saveMealRating(value: MealRating, storage: Storage = localStorage, key = RATINGS_KEY,
   apiUrl = API_URL): Promise<void> {
   if (!value.userId || !value.mealId || !value.mensaId || ![1, 2, 3, 4, 5].includes(value.rating) ||
-      !/^\d{4}-\d{2}-\d{2}$/.test(value.mealDate) || !Number.isFinite(Date.parse(value.ratedAt))) {
+      !isIsoDate(value.mealDate) || !Number.isFinite(Date.parse(value.ratedAt))) {
     throw new Error('Invalid meal rating.');
   }
   let saved = value;

@@ -66,3 +66,12 @@ test('F22: blocked or full storage still gives a valid id, the same one within a
   assert.match(anonymousUserId(full), ANON);
   assert.match(anonymousUserId(() => { throw new DOMException('denied', 'SecurityError'); }), ANON);
 });
+
+test('F23: impossible calendar dates are rejected, real ones (including a leap day) are accepted', async () => {
+  for (const mealDate of ['2026-02-31', '2026-13-01', '2026-00-10', '2026-04-31', '2027-02-29', '26-10-09', '', 'garbage']) {
+    await assert.rejects(saveMealRating({ ...rating, mealDate }, memoryStorage(), 'ratings', ''), /Invalid meal rating/, mealDate);
+  }
+  for (const mealDate of ['2028-02-29', '2026-10-09', '2026-12-31']) {
+    await saveMealRating({ ...rating, mealDate, mealId: `m-${mealDate}` }, memoryStorage(), 'ratings', '');
+  }
+});
