@@ -21,6 +21,7 @@ import com.visardlizards.backend.model.db.ClosureEmbeddable;
 import com.visardlizards.backend.model.db.MealEntity;
 import com.visardlizards.backend.model.db.MensaEntity;
 import com.visardlizards.backend.model.db.ServiceHoursEmbeddable;
+import com.visardlizards.backend.model.domain.Campus;
 import com.visardlizards.backend.model.domain.Meal;
 import com.visardlizards.backend.model.domain.Mensa;
 import com.visardlizards.backend.model.domain.MensaDb;
@@ -55,17 +56,28 @@ public class MensaSnapshotImporter implements ApplicationRunner {
 	@Override
 	@Transactional
 	public void run(ApplicationArguments args) {
-		if (mensas.count() > 0) {
-			log.info("Mensa data already present, skipping snapshot import");
-			backfillFacilityIds();
-			return;
-		}
 		MensaDb db = readSnapshot();
-		db.campuses().forEach(c -> entityManager.persist(new CampusEntity(c.id(), c.name(), c.city())));
-		db.mensas().forEach(m -> entityManager.persist(toEntity(m)));
-		db.meals().forEach(m -> entityManager.persist(toEntity(m)));
-		log.info("Imported {} campuses, {} mensas and {} meals from {}", db.campuses().size(), db.mensas().size(),
-				db.meals().size(), SNAPSHOT);
+		for (Campus c : db.campuses()) {
+			if (entityManager.find(CampusEntity.class, c.id()) == null) {
+				entityManager.persist(new CampusEntity(c.id(), c.name(), c.city()));
+			}
+		}
+		int addedMensas = 0;
+		for (Mensa m : db.mensas()) {
+			if (mensas.findById(m.id()).isEmpty()) {
+				entityManager.persist(toEntity(m));
+				addedMensas++;
+			}
+		}
+		if (addedMensas > 0) {
+			log.info("Persisted {} new mensas into database from snapshot", addedMensas);
+		}
+		Long mealCount = entityManager.createQuery("select count(m) from MealEntity m", Long.class).getSingleResult();
+		if (mealCount == 0) {
+			db.meals().forEach(m -> entityManager.persist(toEntity(m)));
+			log.info("Imported {} snapshot meals from {}", db.meals().size(), SNAPSHOT);
+		}
+		backfillFacilityIds();
 	}
 
 	/** Databases created before the eth_facility_id column existed get the ids from the snapshot. */

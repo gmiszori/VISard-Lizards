@@ -269,8 +269,8 @@ by this client in the last 5 minutes.
 
 Returns the meals of all mensas on one day, for questions like "which vegan meals without gluten
 are there today on Zentrum?". Every filter is optional; without any, all meals of the menu date are
-returned. Each result says which mensa serves it and includes its ratings, in the same format as
-[`GET /api/meals/{id}`](#get-apimealsid). Results are ordered by mensa.
+returned. Each result says which mensa serves it and includes its ratings and composite score, in the same format as
+[`GET /api/meals/{id}`](#get-apimealsid). Results are ordered by mensa by default, or ranked according to `sortBy`.
 
 | Query parameter | Required | Description |
 | --- | --- | --- |
@@ -279,11 +279,13 @@ returned. Each result says which mensa serves it and includes its ratings, in th
 | `diet` | no | Only this diet: `vegan`, `vegetarian` (includes vegan meals), `meat` or `fish` |
 | `excludeAllergens` | no | Comma-separated allergen ids to leave out, e.g. `gluten,milk` |
 | `priceCategory` | no | Which price to put into each meal. Default: `STUDENT` |
+| `query` | no | Free-text search query matching dish title, components, or lines |
+| `sortBy` | no | Ranking/sorting criteria: `mensa` (default), `score` (composite scoring), `rating`, `price_asc`, `price_desc`, `name`, `eco` |
 
-Example: `GET /api/meals?date=2026-10-06&campus=irchel&diet=vegetarian&excludeAllergens=gluten`
+Example: `GET /api/meals?date=2026-10-06&campus=irchel&diet=vegetarian&sortBy=score&query=curry`
 
-Response `200`: list of `{mensaId, date, meal, avgRating, tagCounts}` (empty if nothing matches).
-Errors: `400` unknown diet or invalid date.
+Response `200`: list of `{mensaId, date, meal, avgRating, tagCounts, score}` (empty if nothing matches).
+Errors: `400` unknown diet, invalid sortBy, or invalid date.
 
 ### GET /api/meals/{id}
 
