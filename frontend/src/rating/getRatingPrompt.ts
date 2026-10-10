@@ -5,7 +5,7 @@ export type RatingSource = 'location' | 'crowd' | 'guess';
  * Visited mensas carry the visit date and, if known, readyAt (epoch ms) when the meal is probably eaten.
  * Undated choices are guesses (favourites, profile) for users without location.
  */
-export interface MensaChoice { mensaId: string; name: string; date?: string; hasMenu?: boolean; readyAt?: number; source?: RatingSource }
+export interface MensaChoice { mensaId: string; name: string; date?: string; hasMenu?: boolean; readyAt?: number; source?: RatingSource; service?: 'lunch' | 'dinner' }
 export interface RatingPromptState {
   resolvedDates: string[];
   dismissedDates: string[];

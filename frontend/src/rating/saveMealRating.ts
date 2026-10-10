@@ -12,6 +12,9 @@ export interface MealRating {
   mealDate: string;
   /** How the app knows the user ate there; crowd and guess ratings count half in the backend's average. */
   source?: RatingSource;
+  /** Shown in Settings, "Your meal ratings" (device copy only, not sent). */
+  mealName?: string;
+  mensaName?: string;
 }
 export const RATINGS_KEY = 'campuseats-meal-ratings';
 export class DuplicateMealRatingError extends Error {
