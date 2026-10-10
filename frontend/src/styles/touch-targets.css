@@ -27,3 +27,7 @@
 .skip-link { position: absolute; left: 12px; top: -64px; z-index: 100; min-height: 44px; display: inline-flex; align-items: center; padding: 0 16px; border-radius: 12px; background: var(--green); color: #fff; font-weight: 700; text-decoration: none; }
 .skip-link:focus { top: 12px; outline: 3px solid var(--ink); outline-offset: 2px; }
 #main:focus { outline: none; }
+
+/* When a photo does not load (offline, blocked, broken link) the white canteen name must still be readable:
+   the pale placeholder made it invisible. A dark green behind the photo fixes that. */
+.card-image, .detail-hero { background: linear-gradient(145deg, #1d765a, #124a3b); }
