@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import com.visardlizards.backend.model.db.MealEntity;
 import com.visardlizards.backend.service.UzhMensaClient;
@@ -17,9 +18,22 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 class UzhLiveMealImporterTests {
+
+    @Test
+    void disabledStartupDoesNotFetchOrWriteMeals() {
+        UzhMensaClient client = mock(UzhMensaClient.class);
+        MealEntityRepository repo = mock(MealEntityRepository.class);
+        UzhLiveMealImporter importer = new UzhLiveMealImporter(client, repo, JsonMapper.builder().build());
+        ReflectionTestUtils.setField(importer, "liveImportEnabled", false);
+
+        importer.importOnStartup();
+
+        verifyNoInteractions(client, repo);
+    }
 
     private static final String SAMPLE_GRAPHQL_RESPONSE = """
     {
@@ -81,7 +95,12 @@ class UzhLiveMealImporterTests {
 
         when(client.fetchTodayOffers(any())).thenReturn(SAMPLE_GRAPHQL_RESPONSE);
 
-        UzhLiveMealImporter importer = new UzhLiveMealImporter(client, repo, mapper);
+        UzhLiveMealImporter importer = new UzhLiveMealImporter(client, repo, mapper) {
+            @Override
+            public List<MealEntity> scrapeFood2050Weekly(String mensaId, String baseUrl, int week, int year, LocalDate targetDate) {
+                return List.of();
+            }
+        };
         LocalDate date = LocalDate.of(2026, 10, 10);
 
         int count = importer.importTodayUzhMeals(date);

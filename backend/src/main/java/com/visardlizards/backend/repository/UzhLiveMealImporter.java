@@ -17,6 +17,7 @@ import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -70,6 +71,9 @@ public class UzhLiveMealImporter {
     private final JsonMapper jsonMapper;
     private final HttpClient httpClient;
 
+    @Value("${app.live-import.enabled:true}")
+    private boolean liveImportEnabled = true;
+
     public UzhLiveMealImporter(UzhMensaClient uzhClient, MealEntityRepository mealRepository, JsonMapper jsonMapper) {
         this.uzhClient = uzhClient;
         this.mealRepository = mealRepository;
@@ -82,6 +86,9 @@ public class UzhLiveMealImporter {
 
     @org.springframework.context.event.EventListener(org.springframework.boot.context.event.ApplicationReadyEvent.class)
     public void importOnStartup() {
+        if (!liveImportEnabled) {
+            return;
+        }
         try {
             LocalDate today = LocalDate.now();
             importTodayUzhMeals(today);
