@@ -103,7 +103,7 @@ async function fetchAppData(): Promise<AppData> {
 }
 
 /** Same order and categories as the sample menus: lunch before dinner, main dishes first. */
-function toMenu(meals: BackendMealDetail[]): MenuItem[] {
+function toMenu(meals: BackendMealDetail[]): Array<MenuItem & Pick<DisplayMenuItem, 'dietTag' | 'allergenIds'>> {
   return meals
     .map((detail) => detail.meal)
     .sort((a, b) => Number(a.classification[2] === 'dinner') - Number(b.classification[2] === 'dinner'))
@@ -120,8 +120,10 @@ function toMenu(meals: BackendMealDetail[]): MenuItem[] {
         // The pages group fish with meat, like the sample data.
         dietary: diet === 'vegan' || diet === 'vegetarian' ? diet : 'meat',
         allergens: meal.allergens.map((id) => ALLERGEN_LABELS[id] ?? id),
+        allergenIds: meal.allergens,
+        dietTag: diet === 'vegan' || diet === 'vegetarian' || diet === 'fish' ? diet : 'meat',
         category: kind !== 'main' ? 'Side' : index === 0 ? 'Daily Special' : 'Classic',
         service: service === 'dinner' ? 'dinner' : 'lunch',
-      } satisfies MenuItem;
+      } satisfies MenuItem & Pick<DisplayMenuItem, 'dietTag' | 'allergenIds'>;
     });
 }

@@ -1,9 +1,14 @@
 import type { Mensa, MenuItem, Weekday } from './canteens.ts';
 
-export type DisplayMenuItem = MenuItem & { servingWindows?: Array<{ open: string; close: string }> };
+export type DisplayMenuItem = MenuItem & {
+  servingWindows?: Array<{ open: string; close: string }>;
+  /** Live menus only (the sample menus lack them): the exact diet class (fish stays fish) and the allergen ids. */
+  dietTag?: 'vegan' | 'vegetarian' | 'meat' | 'fish';
+  allergenIds?: string[];
+};
 
 /** Match meal-service hours to the menu date, never today's building opening hours. */
-export function prepareMenu(menu: MenuItem[], mensa: Mensa | undefined, date: string): DisplayMenuItem[] {
+export function prepareMenu<T extends MenuItem>(menu: T[], mensa: Mensa | undefined, date: string): Array<T & DisplayMenuItem> {
   const weekday = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'][new Date(`${date}T12:00:00Z`).getUTCDay()] as Weekday;
   const closed = !mensa || mensa.temporarilyClosed || mensa.closures.some(c => c.from <= date && date <= c.to);
   const hours = closed ? [] : mensa.openingHours[weekday] ?? [];
