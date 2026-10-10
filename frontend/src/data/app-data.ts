@@ -10,7 +10,8 @@
  */
 import { CANTEENS, MENSAS, MENU_DATE, type Canteen, type MenuItem } from './canteens';
 import { prepareMenu, type DisplayMenuItem } from './menu-display';
-import { API_URL, apiGet, type BackendMealDetail, type BackendMensa, type BackendMeta } from './api';
+import { API_URL, apiGet, type BackendMealDetail } from './api';
+import { DataError, parseMealList, parseMensas, parseMeta } from './validate';
 import { menuDateCandidates } from './menuDate';
 
 /** A canteen as the pages show it. rating is null when nobody has rated it yet. */
@@ -19,6 +20,8 @@ export type AppCanteen = Omit<Canteen, 'rating' | 'menu'> & { rating: number | n
 export interface AppData {
   /** Where menus and ratings come from. */
   source: 'backend' | 'sample';
+  /** Why sample data is shown: the backend could not be reached, or it answered with data this page cannot read. */
+  sampleReason?: 'unreachable' | 'invalid';
   /** The day whose menu is shown: today, else the next day with menus (e.g. Monday on weekends). */
   menuDate: string;
   /** Today in Zurich, to tell whether menuDate is today. */
@@ -45,8 +48,8 @@ function zurichToday(): string {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Zurich', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
 }
 
-function sampleData(): AppData {
-  return { source: 'sample', menuDate: MENU_DATE, today: zurichToday(), canteens: CANTEENS.map(canteen => ({
+function sampleData(sampleReason?: AppData['sampleReason']): AppData {
+  return { source: 'sample', sampleReason, menuDate: MENU_DATE, today: zurichToday(), canteens: CANTEENS.map(canteen => ({
     ...canteen, menu: prepareMenu(canteen.menu, MENSAS.find(m => m.id === canteen.id), MENU_DATE),
   })) };
 }
@@ -54,15 +57,18 @@ function sampleData(): AppData {
 async function fetchAppData(): Promise<AppData> {
   if (!API_URL) return sampleData();
   try {
-    const meta = await apiGet<BackendMeta>('/api/meta');
-    const mensas = await apiGet<BackendMensa[]>('/api/mensas');
+    // Everything the backend sends is checked first (validate.ts): bad values become "unknown", unusable meals are dropped.
+    const meta = parseMeta(await apiGet<unknown>('/api/meta'));
+    const mensas = parseMensas(await apiGet<unknown>('/api/mensas'));
     // Weekdays: today. Saturday/Sunday: the coming Monday (the backend's menuDate says the same; this also
     // covers an older backend that suggests Friday). If there are no meals for that day, use the backend's suggestion.
     let menuDate = meta.menuDate;
     let meals: BackendMealDetail[] = [];
     for (const day of menuDateCandidates(meta.today, meta.menuDate)) {
       menuDate = day;
-      meals = await apiGet<BackendMealDetail[]>(`/api/meals?date=${encodeURIComponent(day)}`);
+      const parsed = parseMealList(await apiGet<unknown>(`/api/meals?date=${encodeURIComponent(day)}`));
+      if (parsed.rejected) console.warn(`[campuseats] ${parsed.rejected} meal(s) for ${day} were skipped because the backend sent them in a form this page cannot read.`);
+      meals = parsed.meals;
       if (meals.length) break;
     }
     const ratings = new Map(mensas.map((mensa) => [mensa.id, mensa.avgRating]));
@@ -79,8 +85,10 @@ async function fetchAppData(): Promise<AppData> {
       })),
     };
   } catch (error) {
-    console.warn(`[campuseats] Backend at ${API_URL} not reachable, showing the built-in sample menus: ${(error as Error).message}`);
-    return sampleData();
+    // Invalid JSON (SyntaxError) and wrongly shaped data (DataError) mean the backend answered but cannot be used; anything else is unreachable.
+    const invalid = error instanceof DataError || error instanceof SyntaxError;
+    console.warn(`[campuseats] Backend at ${API_URL} ${invalid ? 'sent data this page cannot read' : 'is not reachable'}, showing the built-in sample menus: ${(error as Error).message}`);
+    return sampleData(invalid ? 'invalid' : 'unreachable');
   }
 }
 
