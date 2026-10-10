@@ -1,0 +1,33 @@
+---
+import type { OccupancyLevel } from '../data/canteens';
+
+interface Props {
+  mensaId: string;
+  occupancy: OccupancyLevel | 'closed';
+  card?: boolean;
+}
+
+const { mensaId, occupancy, card = false } = Astro.props;
+const labels = { low: 'Quiet', medium: 'Moderate', high: 'Busy', closed: 'Closed' };
+---
+<span class:list={['crowd-indicator', { 'crowd-indicator-card': card }]} data-live="crowd" data-live-id={mensaId} data-occupancy={occupancy}>
+  <span class="crowd-meter" aria-hidden="true"><i></i><i></i><i></i></span>
+  <span data-crowd-label data-i18n={occupancy}>{labels[occupancy]}</span>
+</span>
+<style>
+  .crowd-indicator{display:inline-flex;align-items:center;gap:7px;white-space:nowrap;color:var(--crowd-color);font-weight:700}
+  .crowd-indicator[data-occupancy=low]{--crowd-color:#20764c}
+  .crowd-indicator[data-occupancy=medium]{--crowd-color:#946000}
+  .crowd-indicator[data-occupancy=high]{--crowd-color:#bb3832}
+  .crowd-indicator[data-occupancy=closed]{--crowd-color:#69716d}
+  .crowd-indicator-card{padding:5px 8px;border-radius:8px;background:#fff;font-size:10px;line-height:1.2;box-shadow:0 1px 6px #0002}
+  .crowd-indicator-card[data-occupancy=closed]{display:none}
+  .crowd-meter{display:inline-flex;align-items:flex-end;gap:2px;height:13px}
+  .crowd-meter i{display:block;width:4px;border-radius:2px 2px 0 0;background:#c7d0ca}
+  .crowd-meter i:nth-child(1){height:5px}
+  .crowd-meter i:nth-child(2){height:9px}
+  .crowd-meter i:nth-child(3){height:13px}
+  .crowd-indicator[data-occupancy=low] .crowd-meter i:nth-child(1),
+  .crowd-indicator[data-occupancy=medium] .crowd-meter i:nth-child(-n+2),
+  .crowd-indicator[data-occupancy=high] .crowd-meter i{background:var(--crowd-color)}
+</style>
