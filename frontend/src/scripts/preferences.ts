@@ -229,3 +229,10 @@ window.addEventListener('storage', event => {
 });
 
 applyPreferences();
+// Browser Back/Forward: the browser puts the search text and the campus choice back into their fields (or brings the
+// whole page back from its cache) without firing any input event, so the list kept showing the unfiltered result.
+// pageshow comes after that restoring, on a fresh load, on Back and on a page restored from the cache.
+window.addEventListener('pageshow', () => {
+  try { preferences = readPreferences(); } catch { /* Keep the current working preferences. */ }
+  applyPreferences();
+});
