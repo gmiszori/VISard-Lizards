@@ -50,7 +50,7 @@ function mountChart(root: HTMLElement) {
     const currentSlot = slots.find(slot => now.minute >= slot.startMinute && now.minute < slot.startMinute + 15);
     const visible = now.day === day && first !== undefined && last !== undefined && currentSlot?.occupancyPct != null;
     const line = root.querySelector<SVGLineElement>('[data-crowd-now]')!;
-    line.toggleAttribute('hidden', !visible);
+    line.style.display = visible ? '' : 'none';
     root.querySelector<HTMLElement>('[data-crowd-now-legend]')!.hidden = !visible;
     if (visible) {
       const x = (now.minute - first!) / (last! + 15 - first!) * 600;

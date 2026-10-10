@@ -20,7 +20,7 @@ const { prediction } = Astro.props;
         <svg class="crowd-bars" viewBox="0 0 600 180" preserveAspectRatio="none" role="img" data-crowd-svg aria-label="Predicted occupancy by time">
           <g class="crowd-grid" aria-hidden="true"><line x1="0" x2="600" y1="1" y2="1"/><line x1="0" x2="600" y1="90" y2="90"/><line x1="0" x2="600" y1="179" y2="179"/></g>
           <g data-crowd-bars></g>
-          <line class="crowd-now-line" data-crowd-now y1="0" y2="180" hidden />
+          <line class="crowd-now-line" data-crowd-now y1="0" y2="180" style="display:none" />
         </svg>
         <div class="crowd-x-axis" data-crowd-ticks aria-hidden="true"></div>
       </div>

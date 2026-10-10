@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import CanteenCard from '../components/CanteenCard.astro';
 import FilterBar from '../components/FilterBar.astro';
+import RatingCard from '../rating/RatingCard.astro';
 import StarredMealsToday from '../components/StarredMealsToday.astro';
 import { CANTEENS, MENU_DATE } from '../data/canteens';
 const openCount = CANTEENS.filter((canteen) => canteen.isOpen).length;
@@ -9,6 +10,7 @@ const openCount = CANTEENS.filter((canteen) => canteen.isOpen).length;
 <BaseLayout title="Campus canteens">
   <div class="section-head" style="margin-top:0"><div><h2 data-i18n="campus">Campus canteens</h2><p data-i18n="campusSub">Fresh picks from around Zürich</p></div><span class="count"><span data-live="open-count">{openCount}</span> <span data-i18n="openCount">open right now</span></span></div>
   <FilterBar />
+  <RatingCard />
   <StarredMealsToday date={MENU_DATE} />
   <section id="favourites-section" hidden>
     <div class="section-head favourites-heading"><div><h2 data-i18n="favourites">Your favourites</h2></div></div>

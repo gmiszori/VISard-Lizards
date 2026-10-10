@@ -14,7 +14,7 @@ export function createOnboardingStore(campuses: CampusId[], stepCount: number, r
   try {
     const saved = JSON.parse(localStorage.getItem(KEY) ?? 'null') as Draft | null;
     const p = saved?.profile;
-    if (p?.v === 1 && campuses.includes(p.campus) && [...DIETS, 'flexitarian', 'pescetarian'].includes(p.diet) && TIERS.includes(p.priceTier) &&
+    if (saved && p?.v === 1 && campuses.includes(p.campus) && [...DIETS, 'flexitarian', 'pescetarian'].includes(p.diet) && TIERS.includes(p.priceTier) &&
       (p.lang === 'en' || p.lang === 'de') && (p.priceMode === 'soft' || p.priceMode === 'hard') &&
       (p.maxPrice === null || (typeof p.maxPrice === 'number' && Number.isFinite(p.maxPrice) && p.maxPrice >= 0)) &&
       strings(p.campusSecondary) && strings(p.hard) && strings(p.soft) && strings(p.dislikes) &&
