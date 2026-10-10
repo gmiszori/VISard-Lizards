@@ -34,9 +34,13 @@ function applyPreferences() {
   });
 
   const query = document.querySelector<HTMLInputElement>('#search-input')?.value.trim().normalize('NFKC').toLocaleLowerCase() ?? '';
+  const campusChoice = document.querySelector<HTMLSelectElement>('#campus-select')?.value ?? 'preset';
   let visibleCanteens = 0;
   document.querySelectorAll<HTMLElement>('[data-canteen-card]').forEach((card) => {
-    const matchesCampus = preferences.locations.includes(card.dataset.campusId ?? '');
+    // "preset" = the campuses chosen in settings; the selector can override that for this visit only.
+    const matchesCampus = campusChoice === 'all' ? true
+      : campusChoice === 'preset' ? preferences.locations.includes(card.dataset.campusId ?? '')
+      : card.dataset.campusId === campusChoice;
     const matchesOpen = !preferences.openOnly || card.dataset.isOpen === 'true';
     const searchText = `${card.dataset.name ?? ''} ${card.dataset.menu ?? ''}`.normalize('NFKC').toLocaleLowerCase();
     const matchesSearch = searchText.includes(query);
@@ -83,6 +87,7 @@ document.querySelector<HTMLFormElement>('#preferences-form')?.addEventListener('
 });
 
 document.querySelector<HTMLInputElement>('#search-input')?.addEventListener('input', applyPreferences);
+document.querySelector<HTMLSelectElement>('#campus-select')?.addEventListener('change', applyPreferences);
 document.addEventListener('languagechange', applyPreferences);
 
 function showSavedState(success = true) {

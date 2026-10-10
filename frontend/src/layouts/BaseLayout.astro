@@ -41,6 +41,8 @@ const { title } = Astro.props;
       translations.de.notFoundText = 'Der Link ist vielleicht veraltet oder falsch geschrieben. Zurück zu den Mensen, um die heutigen Menüs zu finden.';
       translations.en.sampleMenus = 'Showing sample menus: the CampusEats backend is not reachable.';
       translations.de.sampleMenus = 'Beispielmenüs: Das CampusEats-Backend ist nicht erreichbar.';
+      Object.assign(translations.en, { campusSelect: 'Campus', campusPreset: 'My campuses', campusAll: 'All campuses' });
+      Object.assign(translations.de, { campusSelect: 'Campus', campusPreset: 'Meine Auswahl', campusAll: 'Alle Standorte' });
       Object.assign(translations.en, { mapLink: 'Location' });
       Object.assign(translations.de, { mapLink: 'Standort' });
       Object.assign(translations.en, { sampleMenusInvalid: 'Showing sample menus: the CampusEats backend sent data this page could not read.' });
