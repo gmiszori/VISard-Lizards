@@ -13,7 +13,9 @@ export function normalizePreferences(value: unknown, profileTier: unknown = 'stu
   const saved = value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
   const raw = Array.isArray(saved.locations) ? saved.locations : typeof saved.campus === 'string' && saved.campus !== 'all' ? [saved.campus] : campuses;
   const valid = raw.filter((v): v is string => typeof v === 'string').map(v => legacy[v] ?? v).filter(v => campuses.includes(v));
-  const locations = raw.length && !valid.length ? campuses : [...new Set(valid)];
+  // If the user had the default 3 campuses saved before new ones were added, include the new ones too
+  const hasAllLegacy = ['zentrum', 'hoenggerberg', 'irchel'].every(c => valid.includes(c));
+  const locations = (!valid.length || hasAllLegacy) ? campuses : [...new Set(valid)];
   const bool = (key: string, fallback: boolean) => typeof saved[key] === 'boolean' ? saved[key] as boolean : fallback;
   return { vegan: bool('vegan', true), vegetarian: bool('vegetarian', true), meat: bool('meat', true), compact: bool('compact', false),
     openOnly: bool('openOnly', false), priceTier: isPriceTier(saved.priceTier) ? saved.priceTier : isPriceTier(profileTier) ? profileTier : 'student', locations };
