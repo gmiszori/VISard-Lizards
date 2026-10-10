@@ -1,0 +1,15 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+<BaseLayout title="Route planner privacy and service terms">
+  <a href="/route-planner/">← Route planner</a>
+  <h1>Route planner privacy and service terms</h1>
+  <h2>Your journey data</h2>
+  <p>Clicking “Use my location” asks your browser for permission and fills the starting point. Submitting the form sends the starting point, destination, departure time, arrival deadline and meal duration to our backend. The backend forwards the journey to OpenAI for tool calling and explanation, and to Google Maps for routing and restaurant discovery.</p>
+  <p>The entered OpenAI API key is used only to authenticate the two OpenAI requests for this plan. It is cleared from the form after submission and is not saved by this app in browser storage, the application database or application logs. It is not sent to Google Maps or the MCP server.</p>
+  <p>Journey results are returned to the page for the current session; the route planner does not save a journey history or Google restaurant data in the application database. Other app features retain their existing storage behavior. OpenAI and Google process the data under their own policies.</p>
+  <h2>Service terms</h2>
+  <p>The route planner uses Google Maps Platform. Its maps, routes and restaurant information are subject to the <a href="https://maps.google.com/help/terms_maps.html" target="_blank" rel="noopener noreferrer">Google Maps terms of service</a> and <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Google privacy policy</a>. AI processing is subject to <a href="https://openai.com/policies/terms-of-use/" target="_blank" rel="noopener noreferrer">OpenAI’s terms</a> and <a href="https://openai.com/policies/privacy-policy/" target="_blank" rel="noopener noreferrer">privacy policy</a>.</p>
+  <p>This is a branch preview. Routes and transport times are estimates; the app checks at most eight candidate meal stops. Restaurant opening hours do not confirm kitchen service, dishes, prices or table availability. Check the source website and live transport information before travelling.</p>
+</BaseLayout>
+<style>h1{margin:1.5rem 0;font-size:2rem}h2{margin:2rem 0 1rem}p{max-width:750px;line-height:1.8}p a{text-decoration:underline;text-underline-offset:3px}</style>
