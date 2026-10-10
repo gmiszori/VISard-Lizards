@@ -12,7 +12,7 @@ const { canteens, menuDate, today, source, sampleReason } = await loadAppData();
 const openCount = canteens.filter((canteen) => canteen.isOpen).length;
 ---
 <BaseLayout title="Campus canteens">
-  <div class="section-head" style="margin-top:0"><div><h2 role="heading" aria-level="1" data-i18n="campus">Campus canteens</h2></div><span class="count"><span data-live="open-count">{openCount}</span> <span data-i18n="openCount">open right now</span></span></div>
+  <div class="section-head" style="margin-top:0"><div><h2 role="heading" aria-level="1" data-i18n="campus">Campus canteens</h2></div><span class="count" hidden={openCount === 0}><span data-live="open-count">{openCount}</span> <span data-i18n="openCount">open right now</span></span></div>
   <FilterBar />
   <NearMe />
   <DevTools canteens={canteens} source={source} sampleReason={sampleReason} menuDate={menuDate} today={today} />
@@ -25,9 +25,9 @@ const openCount = canteens.filter((canteen) => canteen.isOpen).length;
     <div class="section-head favourites-heading"><div><h2 data-i18n="favourites">Your favourites</h2></div></div>
     <div id="favourites-grid" class="canteen-grid"></div>
   </section>
-  <div class="section-head all-canteens-heading"><div><h2 data-i18n="allCanteens">All canteens</h2></div></div>
+  <div class="section-head all-canteens-heading"><div><h2 data-i18n="canteensTitle">Canteens</h2></div></div>
   <MenuDate date={menuDate} today={today} variant="note" />
-  <div id="visible-count" class="count" style="margin:0 0 12px">{canteens.length} canteens</div>
+  <div class="menu-list-controls"><div id="visible-count" class="count">{canteens.length} canteens</div><button id="no-menu-toggle" type="button" aria-pressed="false" hidden></button></div>
   <p id="favourites-status" role="status" hidden></p>
   <div id="canteen-grid" class="canteen-grid">{canteens.map((canteen) => <CanteenCard canteen={canteen} />)}</div>
   <div id="empty-state" class="empty-state">
@@ -86,4 +86,9 @@ const openCount = canteens.filter((canteen) => canteen.isOpen).length;
     renderFavourites();
   </script>
 </BaseLayout>
-<style>.data-source-note{margin:0 0 14px;padding:10px 14px;border:1px solid var(--line);border-radius:12px;color:var(--muted);font-size:13px}</style>
+<style>
+  .data-source-note{margin:0 0 14px;padding:10px 14px;border:1px solid var(--line);border-radius:12px;color:var(--muted);font-size:13px}
+  .menu-list-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 12px}
+  #no-menu-toggle{min-height:44px;padding:5px 0;border:0;background:none;color:var(--green);font-size:12px;font-weight:700;text-decoration:underline;text-underline-offset:3px}
+  #no-menu-toggle[hidden]{display:none}
+</style>
