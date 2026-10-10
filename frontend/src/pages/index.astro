@@ -30,7 +30,10 @@ const openCount = canteens.filter((canteen) => canteen.isOpen).length;
   <div id="visible-count" class="count" style="margin:0 0 12px">{canteens.length} canteens</div>
   <p id="favourites-status" role="status" hidden></p>
   <div id="canteen-grid" class="canteen-grid">{canteens.map((canteen) => <CanteenCard canteen={canteen} />)}</div>
-  <div id="empty-state" class="empty-state" data-i18n="empty">No canteens match your search. Try another dish or campus.</div>
+  <div id="empty-state" class="empty-state">
+    <p data-i18n="empty">No canteens match your search. Try another dish or campus.</p>
+    <div class="empty-actions"><button type="button" data-reset-filters data-i18n="resetFilters">Show all canteens</button><a href="/settings" data-i18n="checkSettings">Check my settings</a></div>
+  </div>
   <script>
     import { readFavourites, FAVOURITES_KEY } from '../preferences/state';
     const allCards = [...document.querySelectorAll<HTMLElement>('[data-canteen-card]')];

@@ -31,3 +31,14 @@
 /* When a photo does not load (offline, blocked, broken link) the white canteen name must still be readable:
    the pale placeholder made it invisible. A dark green behind the photo fixes that. */
 .card-image, .detail-hero { background: linear-gradient(145deg, #1d765a, #124a3b); }
+
+/* Empty home page: say what to do next. */
+.empty-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 14px; }
+.empty-actions button, .empty-actions a { min-height: 44px; display: inline-flex; align-items: center; padding: 0 16px; border-radius: 12px; border: 1px solid var(--green); font: 700 13px inherit; font-family: inherit; text-decoration: none; cursor: pointer; }
+.empty-actions button { background: var(--green); color: var(--paper); }
+.empty-actions a { background: transparent; color: var(--green); }
+.empty-state > p { margin: 0; }
+
+/* Dish names on the home cards are 23px-high links. The tap area grows to 45px without making the rows taller
+   (negative margin); all links in a card go to the same canteen page, so overlapping areas are harmless. */
+.dish-preview .dish a { display: inline-block; padding-block: 11px; margin-block: -11px; }
