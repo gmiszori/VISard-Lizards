@@ -38,7 +38,6 @@ object MensaSources {
         MensaLocation("bim11", "BIM11", "https://www.zfv.ch/de/essen-gehen/mensa-bim11"),
         MensaLocation("science-lounge", "Science Lounge", "https://www.zfv.ch/de/essen-gehen/eth-zuerich-science-lounge"),
         MensaLocation("zwei-grad", "Zwei Grad Bistro", "https://ethz.ch/de/campus/erleben/gastronomie-und-einkaufen/gastronomie/restaurants-und-cafeterias/zentrum/zwei-grad-bistro.html"),
-        MensaLocation("bellavista", "Restaurant Bellavista", "https://www.zfv.ch/de/essen-gehen/restaurant-bellavista"),
     )
     val toolHint: String get() = " Known cafeteria sources: " + locations.joinToString("; ") {
         "${it.name}: ${(listOf(it.url) + it.additionalUrls).joinToString(", ")}"

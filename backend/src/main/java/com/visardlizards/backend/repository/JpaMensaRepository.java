@@ -47,11 +47,12 @@ public class JpaMensaRepository implements MensaRepository {
 
 	@Override
 	public List<Mensa> findAllMensas() {
-		return mensas.findAll(Sort.by("name")).stream().map(JpaMensaRepository::toDomain).toList();
+		return mensas.findAll(Sort.by("name")).stream().filter(m -> ExcludedMensas.allowed(m.getId())).map(JpaMensaRepository::toDomain).toList();
 	}
 
 	@Override
 	public Optional<Mensa> findMensaById(String id) {
+		if (!ExcludedMensas.allowed(id)) return Optional.empty();
 		return mensas.findById(id).map(JpaMensaRepository::toDomain);
 	}
 
@@ -67,7 +68,7 @@ public class JpaMensaRepository implements MensaRepository {
 
 	@Override
 	public Optional<Meal> findMealById(String id) {
-		return meals.findById(id).map(JpaMensaRepository::toDomain);
+		return meals.findById(id).filter(m -> ExcludedMensas.allowed(m.getMensaId())).map(JpaMensaRepository::toDomain);
 	}
 
 	@Override
@@ -82,6 +83,7 @@ public class JpaMensaRepository implements MensaRepository {
 
 	@Override
 	public List<Meal> findMeals(String mensaId, LocalDate dateStart, LocalDate dateEnd) {
+		if (!ExcludedMensas.allowed(mensaId)) return List.of();
 		return preferUpstream(meals.findByMensaIdAndDateBetweenOrderByDateAsc(mensaId, dateStart, dateEnd)).stream()
 				.map(JpaMensaRepository::toDomain)
 				.toList();
@@ -90,9 +92,10 @@ public class JpaMensaRepository implements MensaRepository {
 	@Override
 	@Transactional
 	public void replaceMeals(String mensaId, LocalDate dateStart, LocalDate dateEnd, List<Meal> newMeals) {
+		if (!ExcludedMensas.allowed(mensaId)) return;
 		meals.deleteAll(meals.findByMensaIdAndDateBetweenOrderByDateAsc(mensaId, dateStart, dateEnd));
 		meals.flush();
-		meals.saveAll(newMeals.stream().map(JpaMensaRepository::toEntity).toList());
+		meals.saveAll(newMeals.stream().filter(m -> ExcludedMensas.allowed(m.mensaId())).map(JpaMensaRepository::toEntity).toList());
 	}
 
 	private static MealEntity toEntity(Meal m) {
@@ -107,7 +110,8 @@ public class JpaMensaRepository implements MensaRepository {
 		var nativeDays=new java.util.HashSet<String>();
 		for(var row:rows) if(!row.getId().startsWith("mcp.") && !row.getTitle().isBlank() && !row.getTitle().equalsIgnoreCase("novalue"))
 			nativeDays.add(row.getMensaId()+"|"+row.getDate());
-		return rows.stream().filter(row -> !row.getId().startsWith("mcp.") || !nativeDays.contains(row.getMensaId()+"|"+row.getDate())).toList();
+		return rows.stream().filter(row -> ExcludedMensas.allowed(row.getMensaId()))
+				.filter(row -> !row.getId().startsWith("mcp.") || !nativeDays.contains(row.getMensaId()+"|"+row.getDate())).toList();
 	}
 
 	private static Campus toDomain(CampusEntity e) {

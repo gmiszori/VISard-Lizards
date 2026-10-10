@@ -30,14 +30,14 @@ class MensaSnapshotImporterTests {
 	@Test
 	void importsTheWholeSnapshotOnStartup() {
 		assertThat(campuses.count()).isEqualTo(7);
-		assertThat(mensas.count()).isEqualTo(39);
+		assertThat(mensas.count()).isEqualTo(37);
 		assertThat(meals.count()).isEqualTo(901);
 	}
 
 	@Test
 	void secondRunKeepsExistingData() {
 		importer.run(new DefaultApplicationArguments());
-		assertThat(mensas.count()).isEqualTo(39);
+		assertThat(mensas.count()).isEqualTo(37);
 		assertThat(meals.count()).isEqualTo(901);
 	}
 

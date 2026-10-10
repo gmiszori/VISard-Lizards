@@ -58,6 +58,7 @@ public class MensaSnapshotImporter implements ApplicationRunner {
 	@Override
 	@Transactional
 	public void run(ApplicationArguments args) {
+		removeExcludedVenues();
 		MensaDb db = readSnapshot();
 		for (Campus c : db.campuses()) {
 			if (entityManager.find(CampusEntity.class, c.id()) == null) {
@@ -66,6 +67,7 @@ public class MensaSnapshotImporter implements ApplicationRunner {
 		}
 		int addedMensas = 0;
 		for (Mensa m : db.mensas()) {
+			if (!ExcludedMensas.allowed(m.id())) continue;
 			if (mensas.findById(m.id()).isEmpty()) {
 				entityManager.persist(toEntity(m));
 				addedMensas++;
@@ -76,11 +78,30 @@ public class MensaSnapshotImporter implements ApplicationRunner {
 		}
 		Long mealCount = entityManager.createQuery("select count(m) from MealEntity m", Long.class).getSingleResult();
 		if (mealCount == 0) {
-			db.meals().forEach(m -> entityManager.persist(toEntity(m)));
+			db.meals().stream().filter(m -> ExcludedMensas.allowed(m.mensaId())).forEach(m -> entityManager.persist(toEntity(m)));
 			log.info("Imported {} snapshot meals from {}", db.meals().size(), SNAPSHOT);
 		}
 		backfillFacilityIds();
 		backfillCoordinates();
+	}
+
+	/** Removing managed entities also deletes their collection rows safely. */
+	private void removeExcludedVenues() {
+		var removedMeals = entityManager.createQuery("select m from MealEntity m where m.mensaId in :ids", MealEntity.class)
+				.setParameter("ids", ExcludedMensas.IDS).getResultList();
+		var subjects = new java.util.HashSet<>(ExcludedMensas.IDS);
+		removedMeals.forEach(m -> subjects.add(m.getId()));
+		entityManager.createQuery("select r from RatingEntity r where r.subjectId in :ids", com.visardlizards.backend.model.db.RatingEntity.class)
+				.setParameter("ids", subjects).getResultList().forEach(entityManager::remove);
+		entityManager.createQuery("select c from CrowdReportEntity c where c.mensaId in :ids", com.visardlizards.backend.model.db.CrowdReportEntity.class)
+				.setParameter("ids", ExcludedMensas.IDS).getResultList().forEach(entityManager::remove);
+		removedMeals.forEach(entityManager::remove);
+		for (String id : ExcludedMensas.IDS) {
+			var cached = entityManager.find(com.visardlizards.backend.model.db.ScrapedMenuEntity.class, id);
+			if (cached != null) entityManager.remove(cached);
+			mensas.findById(id).ifPresent(entityManager::remove);
+		}
+		entityManager.flush();
 	}
 
 	/** Databases created before the eth_facility_id column existed get the ids from the snapshot. */
