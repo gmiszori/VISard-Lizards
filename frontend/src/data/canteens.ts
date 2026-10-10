@@ -73,7 +73,8 @@ export interface Mensa {
   buildingHours: Record<Weekday, BuildingHours[]>;
   /** Raw hours text from the operator page (UZH only). */
   openingHoursText?: string | null;
-  hoursSource: string;
+  /** Opening-hours provenance, when supplied by the source record. */
+  hoursSource?: string;
   closures: Array<{ from: string; to: string; note: string }>;
   pictures: Picture[];
   source: { provider: string; facilityId?: number; url: string | null; menuUrls?: string[] };

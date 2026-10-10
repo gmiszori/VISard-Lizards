@@ -21,11 +21,8 @@ import com.visardlizards.backend.model.db.ClosureEmbeddable;
 import com.visardlizards.backend.model.db.MealEntity;
 import com.visardlizards.backend.model.db.MensaEntity;
 import com.visardlizards.backend.model.db.ServiceHoursEmbeddable;
-<<<<<<< HEAD
 import com.visardlizards.backend.model.domain.Coordinates;
-=======
 import com.visardlizards.backend.model.domain.Campus;
->>>>>>> feature/ai-dish-search
 import com.visardlizards.backend.model.domain.Meal;
 import com.visardlizards.backend.model.domain.Mensa;
 import com.visardlizards.backend.model.domain.MensaDb;
@@ -36,8 +33,9 @@ import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Fills the mensa, campus and meal tables from the bundled snapshot (resources/seed/mensa-snapshot.json)
- * when the mensa table is empty, i.e. on the first start with a new database. Existing data is never
- * touched. A live importer (ETH/UZH APIs) can later write to the same tables.
+ * on first start, and registers newly added campuses/mensas on later starts without replacing existing
+ * records or meals. Missing facility ids and coordinates are backfilled from the snapshot.
+ * A live importer (ETH/UZH APIs) can later write to the same tables.
  * Regenerate the snapshot with: node backend/scripts/export-mensa-db.mjs
  */
 @Component
@@ -60,15 +58,6 @@ public class MensaSnapshotImporter implements ApplicationRunner {
 	@Override
 	@Transactional
 	public void run(ApplicationArguments args) {
-<<<<<<< HEAD
-		if (mensas.count() > 0) {
-			log.info("Mensa data already present, skipping snapshot import");
-			backfillFacilityIds();
-			backfillCoordinates();
-			return;
-		}
-=======
->>>>>>> feature/ai-dish-search
 		MensaDb db = readSnapshot();
 		for (Campus c : db.campuses()) {
 			if (entityManager.find(CampusEntity.class, c.id()) == null) {
@@ -91,6 +80,7 @@ public class MensaSnapshotImporter implements ApplicationRunner {
 			log.info("Imported {} snapshot meals from {}", db.meals().size(), SNAPSHOT);
 		}
 		backfillFacilityIds();
+		backfillCoordinates();
 	}
 
 	/** Databases created before the eth_facility_id column existed get the ids from the snapshot. */

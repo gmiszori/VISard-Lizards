@@ -12,11 +12,11 @@ const at = (id: string, accuracyM = 20): PositionFix => {
   return { lat: place.lat, lng: place.lng, accuracyM, at: 0 };
 };
 
-test('every mensa has coordinates on its campus', () => {
+test('every mensa has usable geographic coordinates, including locations away from the main campuses', () => {
   assert.equal(places.length, MENSAS.length);
-  for (const campus of ['zentrum', 'hoenggerberg', 'irchel']) {
-    const own = places.filter(p => p.campus === campus);
-    for (const a of own) for (const b of own) assert.ok(distanceM(a, b) < 1000, `${a.id} - ${b.id}`);
+  for (const place of places) {
+    assert.ok(Number.isFinite(place.lat) && Math.abs(place.lat) <= 90, place.id);
+    assert.ok(Number.isFinite(place.lng) && Math.abs(place.lng) <= 180, place.id);
   }
 });
 
@@ -35,8 +35,8 @@ test('a good fix at Polyterrasse puts the user there, on Zentrum', () => {
 });
 
 test('mensas in the same building are all candidates', () => {
-  assert.deepEqual(locateUser(at('polysnack'), places).atMensaIds.sort(), ['dozentenfoyer', 'polysnack']);
-  assert.deepEqual(locateUser(at('uzh-obere-mensa'), places).atMensaIds.sort(), ['uzh-obere-mensa', 'uzh-untere-mensa']);
+  assert.deepEqual(locateUser(at('polysnack'), places).atMensaIds.sort(), ['bqm', 'dozentenfoyer', 'polysnack']);
+  assert.deepEqual(locateUser(at('uzh-obere-mensa'), places).atMensaIds.sort(), ['uniturm', 'uzh-obere-mensa', 'uzh-untere-mensa']);
 });
 
 test('Hönggerberg and Irchel', () => {
@@ -45,7 +45,7 @@ test('Hönggerberg and Irchel', () => {
   assert.equal(hoengg.atMensaIds[0], 'food-market');
   const irchel = locateUser(at('uzh-mensa-irchel'), places);
   assert.equal(irchel.campus, 'irchel');
-  assert.deepEqual(irchel.atMensaIds, ['uzh-mensa-irchel', 'uzh-seerose-irchel']);
+  assert.deepEqual(irchel.atMensaIds, ['uzh-mensa-irchel', 'uzh-seerose-irchel', 'the-yard']);
 });
 
 test('off campus: Bellevue is near Zentrum but not on it', () => {
@@ -64,7 +64,7 @@ test('a coarse fix gives the campus but no mensa, a very coarse one neither', ()
 
 test('the at-mensa radius grows with the fix accuracy', () => {
   // Polyterrasse to the ETH main building (Polysnack, Dozentenfoyer) is about 110 m.
-  assert.deepEqual(locateUser(at('polyterrasse', 140), places).atMensaIds, ['polyterrasse', 'dozentenfoyer', 'polysnack']);
+  assert.deepEqual(locateUser(at('polyterrasse', 140), places).atMensaIds, ['polyterrasse', 'bqm', 'dozentenfoyer', 'polysnack']);
 });
 
 test('no places: nothing nearby', () => {

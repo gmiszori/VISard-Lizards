@@ -47,3 +47,18 @@ note: this session's submit-time opening check must honor the mock forceOpen
 flag when that feature is merged. Its "Reset report lock" should also reset
 campuseats-crowd-retry-until and any in-session cooldown. Kept that unmerged
 feature and origin/backend's UZH importer separate from these reliability fixes.
+
+05:54: main 46589f4 has now integrated backend/AI-search/additional-mensa work.
+Pulled it before pushing rejection fix; combined checks found committed merge
+markers in data/app-data.ts and MensaSnapshotImporter.java, plus 4 location
+tests assuming the old venue list. Resolving the markers while preserving
+backend-only menu provenance/price units, incremental mensa registration and
+coordinate backfill. Updating location expectations for bqm/the-yard and the
+expanded geographic coverage. No changes to importers' live scraping logic.
+
+05:57: The expanded catalog has 39 mensas / 7 campuses / 901 snapshot meals.
+Updated importer regression counts and location candidate expectations.
+New venue records omit hoursSource, so the frontend type now permits an absent
+provenance field instead of inventing a source. Production build: 43 pages.
+Running backend tests with a checksum-verified portable Temurin JDK 25 in
+this session's scratch directory; no global Java settings changed.
