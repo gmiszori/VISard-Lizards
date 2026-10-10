@@ -28,7 +28,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: docker compose config --quiet
-      - run: docker compose up --build -d backend meal-scraper
+      - run: docker compose up --build -d backend meal-scraper frontend
       - name: Verify real MCP tools and private backend connection
         run: |
           # The scraper needs a few seconds to start listening after "up -d"; retry like the backend check below.
@@ -47,8 +47,24 @@ jobs:
             sleep 2
           done
           exit 1
+      - name: Verify frontend and proxied backend health
+        run: |
+          for attempt in $(seq 1 60); do
+            if curl -fsS http://localhost:8080/ > /tmp/frontend.html; then
+              break
+            fi
+            sleep 2
+          done
+          grep -q 'Campus canteens' /tmp/frontend.html
+          for attempt in $(seq 1 60); do
+            if curl -fsS http://localhost:8080/api/health > /tmp/frontend-api-health.json; then
+              break
+            fi
+            sleep 2
+          done
+          grep -Eq '"status"[[:space:]]*:[[:space:]]*"UP"' /tmp/frontend-api-health.json
       - if: always()
-        run: docker compose logs --tail=100 backend meal-scraper
+        run: docker compose logs --tail=100 backend meal-scraper frontend
       - if: always()
         run: docker compose down
 
