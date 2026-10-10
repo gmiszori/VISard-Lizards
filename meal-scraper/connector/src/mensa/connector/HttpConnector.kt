@@ -111,13 +111,13 @@ class HttpConnector(
                 val result = runBlocking { withTimeout(240_000) { relay.execute(body) } }
                 respond(exchange, 200, result); return
             }
-            require(body.keys == setOf("url")) { "Only url is accepted." }
+            val date = mensa.menuDate(body)
             val urlValue = body["url"] as? JsonPrimitive
             require(urlValue?.isString == true) { "url must be a string." }
             val url = PublicWebFetcher.validateUrl(urlValue.content)
             if (!connection.isReady()) { respond(exchange, 503, error("MCP server unavailable; restart the connector.")); return }
             // Timeout includes waiting for the dedicated client. The HTTP response is the MCP JSON itself.
-            val result = runBlocking { withTimeout(240_000) { connection.call(requireNotNull(tool), url) } }
+            val result = runBlocking { withTimeout(240_000) { connection.call(requireNotNull(tool), url, date) } }
             respond(exchange, 200, result)
         } catch (ex: ToolFailure) { respond(exchange, 502, ex.json) }
         catch (_: TimeoutCancellationException) { respond(exchange, 504, error("Scraping request timed out.")) }

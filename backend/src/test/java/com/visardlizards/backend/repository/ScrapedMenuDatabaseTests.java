@@ -63,12 +63,12 @@ class ScrapedMenuDatabaseTests {
     @Test void missingDatabaseCallsMcpOnceThenUsesStoredEmptyResult() throws Exception {
         raw.deleteById("bqm");
         var ai=mock(ScraperAiClient.class); when(ai.configured()).thenReturn(true);
-        when(ai.retrieve(anyString())).thenReturn(mapper.readTree("{\"toolResults\":[{\"name\":\"scrape_meals\",\"data\":{\"meals\":[]}}]}"));
+        when(ai.retrieve(anyString(), any(java.time.LocalDate.class))).thenReturn(mapper.readTree("{\"toolResults\":[{\"name\":\"scrape_meals\",\"data\":{\"meals\":[]}}]}"));
         var refresh=new ScrapedMenuRefreshService(ai,mapper,store,true,"target/nonexistent-legacy-menus.json");
         try {
             refresh.ensureMeals("bqm",today,today);
             refresh.ensureMeals("bqm",today,today);
-            verify(ai,times(1)).retrieve("https://bqm-bar.ch/de");
+            verify(ai,times(1)).retrieve(eq("https://bqm-bar.ch/de"), eq(java.time.LocalDate.now(java.time.ZoneId.of("Europe/Zurich"))));
             assertNotNull(store.get("bqm"));
         } finally { refresh.close(); }
     }
@@ -77,11 +77,11 @@ class ScrapedMenuDatabaseTests {
             {"id":"bqm","lastAttempt":"2020-01-01T00:00:00Z","result":{"toolResults":[],"explanation":"Previous evidence"}}
             """); store.save(previous);
         var ai=mock(ScraperAiClient.class); when(ai.configured()).thenReturn(true);
-        when(ai.retrieve(anyString())).thenThrow(new IllegalStateException("secret-key"));
+        when(ai.retrieve(anyString(), any(java.time.LocalDate.class))).thenThrow(new IllegalStateException("secret-key"));
         var refresh=new ScrapedMenuRefreshService(ai,mapper,store,true,"target/nonexistent-legacy-menus.json");
         try {
             refresh.ensureMeals("bqm",today,today); refresh.ensureMeals("bqm",today,today);
-            verify(ai,times(1)).retrieve(anyString());
+            verify(ai,times(1)).retrieve(anyString(), any(java.time.LocalDate.class));
             assertTrue(store.get("bqm").path("stale").asBoolean());
             assertEquals("Previous evidence",store.get("bqm").path("result").path("explanation").asText());
             assertFalse(store.get("bqm").toString().contains("secret-key"));

@@ -20,7 +20,7 @@ import kotlin.time.Duration.Companion.seconds
 interface ToolConnection {
     fun isReady(): Boolean
     fun definitions(): List<ModelTool> = emptyList()
-    suspend fun call(tool: String, url: String): JsonObject
+    suspend fun call(tool: String, url: String, date: java.time.LocalDate? = null): JsonObject
 }
 data class ModelTool(val name: String, val description: String, val parameters: JsonObject)
 class ToolFailure(val json: JsonObject) : RuntimeException("The scraping tool failed.")
@@ -47,7 +47,7 @@ class McpConnection(private val jar: Path) : ToolConnection {
                     ModelTool(tool.name, tool.description.orEmpty(), buildJsonObject {
                         put("type", "object")
                         put("properties", tool.inputSchema.properties ?: buildJsonObject {})
-                        put("required", kotlinx.serialization.json.JsonArray(tool.inputSchema.required.orEmpty().map { kotlinx.serialization.json.JsonPrimitive(it) }))
+                        put("required", kotlinx.serialization.json.JsonArray(tool.inputSchema.properties.orEmpty().keys.map { kotlinx.serialization.json.JsonPrimitive(it) }))
                         put("additionalProperties", false)
                     })
                 }
@@ -57,10 +57,12 @@ class McpConnection(private val jar: Path) : ToolConnection {
     }
     override fun isReady() = connected && this::process.isInitialized && process.isAlive
     override fun definitions() = advertisedTools
-    override suspend fun call(tool: String, url: String): JsonObject = mutex.withLock {
+    override suspend fun call(tool: String, url: String, date: java.time.LocalDate?): JsonObject = mutex.withLock {
         require(tool in tools) { "Unsupported tool." }
         check(isReady()) { "MCP server is unavailable; restart the connector." }
-        val result = client.callTool(tool, mapOf("url" to url), options = RequestOptions(timeout = 240.seconds))
+        val arguments = mutableMapOf<String, Any>("url" to url)
+        if (date != null) arguments["date"] = date.toString()
+        val result = client.callTool(tool, arguments, options = RequestOptions(timeout = 240.seconds))
         val json = result.structuredContent ?: error("MCP server did not return structured JSON.")
         if (result.isError == true) throw ToolFailure(json)
         json

@@ -5,6 +5,25 @@ import kotlinx.serialization.json.*
 import kotlin.test.*
 
 class UpcomingMenusTest {
+    @Test fun explicitDateControlsWeekLookupAndExcludesEarlierMeals() {
+        val calls = mutableListOf<String>()
+        val scraper = MealScraper({ sourceUrl ->
+            calls += sourceUrl
+            page(sourceUrl, listOf("2026-10-10", "2026-10-12", "2026-10-19", "2026-10-20"))
+        }, today = { LocalDate.parse("2026-10-10") })
+        val meals = scraper.scrape(url, LocalDate.parse("2026-10-19")).meals
+        assertEquals(listOf("2026-10-19", "2026-10-20"), meals.map { it.date })
+        assertTrue(calls[1].contains("week=43&year=2026"))
+        assertEquals(listOf("2026-10-10", "2026-10-12", "2026-10-19", "2026-10-20"),
+            scraper.scrape(url, LocalDate.parse("2026-10-01")).meals.map { it.date })
+    }
+    @Test fun dateArgumentsRejectInvalidCalendarDatesAndTypes() {
+        assertNull(menuDate(buildJsonObject { put("url", url) }))
+        assertNull(menuDate(buildJsonObject { put("url", url); put("date", JsonNull) }))
+        for (date in listOf(JsonPrimitive("2026-02-30"), JsonPrimitive("tomorrow"), JsonPrimitive(20261012))) {
+            assertFailsWith<IllegalArgumentException> { menuDate(buildJsonObject { put("url", url); put("date", date) }) }
+        }
+    }
     private val url = "https://app.food2050.ch/de/zfv/uzh/raemi/lunch/menu/weekly"
     private fun page(sourceUrl: String, dates: List<String>): SourceDocument {
         val daily = buildJsonArray { dates.forEach { date -> add(buildJsonObject {

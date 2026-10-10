@@ -18,7 +18,7 @@ class HttpConnectorTest {
         val calls = mutableListOf<Pair<String, String>>()
         val connection = object : ToolConnection {
             override fun isReady() = true
-            override suspend fun call(tool: String, url: String): JsonObject {
+            override suspend fun call(tool: String, url: String, date: java.time.LocalDate?): JsonObject {
                 calls += tool to url
                 return buildJsonObject { put("status", "meals_found"); put("meals", JsonArray(emptyList())) }
             }
@@ -44,7 +44,7 @@ class HttpConnectorTest {
         val connection = object : ToolConnection {
             var ready = false
             override fun isReady() = ready
-            override suspend fun call(tool: String, url: String): JsonObject = throw ToolFailure(buildJsonObject { put("error", "Source unavailable") })
+            override suspend fun call(tool: String, url: String, date: java.time.LocalDate?): JsonObject = throw ToolFailure(buildJsonObject { put("error", "Source unavailable") })
         }
         HttpConnector(InetSocketAddress("127.0.0.1", 0), connection, "secret").use { server ->
             server.start()

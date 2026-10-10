@@ -138,7 +138,7 @@ public class ScrapedMenuRefreshService {
                 if(!venue.path("url").isTextual()) {
                     entry.put("status","source_unavailable").put("error","No verified venue menu URL is configured.").put("stale",false);
                 } else {
-                    entry.set("result",ai.retrieve(venue.path("url").asText()));
+                    entry.set("result",ai.retrieve(venue.path("url").asText(), java.time.LocalDate.now(java.time.ZoneId.of("Europe/Zurich"))));
                     entry.put("updatedAt",Instant.now().toString()).put("stale",false);
                 }
             } catch(RuntimeException ex) {
