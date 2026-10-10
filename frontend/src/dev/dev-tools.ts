@@ -136,13 +136,15 @@ function renderSummary(root: HTMLElement, data: DevData) {
   const now = zurichNow();
   const live = data.mensas.map(mensa => liveState(mensa, now));
   const open = live.filter(state => state.isOpen).length;
-  const withMenu = data.mensas.filter(mensa => mensa.hasMenu).length;
+  const withSource = data.mensas.filter(mensa => mensa.hasMenu).length;
+  const withRenderedMenu = data.mensas.filter(mensa => (mensa.state?.menuCount ?? 0) > 0).length;
   const visible = document.querySelectorAll('[data-canteen-card]:not([hidden])').length;
   const visits = readVisits().length;
   root.replaceChildren(...[
     ['Open now', `${open}/${data.mensas.length}`],
     ['Visible cards', String(visible)],
-    ['Menu-capable', `${withMenu}/${data.mensas.length}`],
+    ['Menus shown', `${withRenderedMenu}/${data.mensas.length}`],
+    ['Sources configured', `${withSource}/${data.mensas.length}`],
     ['Saved visits', String(visits)],
   ].map(([label, value]) => {
     const item = document.createElement('span');
@@ -157,7 +159,8 @@ function renderBackend(root: HTMLElement, data: DevData) {
   const prefs = readPreferences();
   dl(root, [
     ['Page source', data.sampleReason ? `${data.source} (${data.sampleReason})` : data.source],
-    ['API URL', data.apiUrl || '(disabled)'],
+    ['Browser API URL', API_URL || '(disabled)'],
+    ['Build API URL', data.apiUrl || '(disabled)'],
     ['Backend ping', backendState],
     ['Backend checked', backendCheckedAt || 'not yet'],
     ['Menu date', data.menuDate],

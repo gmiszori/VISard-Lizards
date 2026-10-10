@@ -2,7 +2,8 @@
  * Connection to the CampusEats backend (backend/, Spring Boot). Used at build/render time by the pages
  * (src/data/app-data.ts) and in the browser (meal ratings, crowd chart).
  *
- * PUBLIC_API_URL (see .env.example) sets the backend's base URL; it defaults to http://localhost:8080.
+ * PUBLIC_API_URL (see .env.example) overrides the backend's base URL. Browser requests default to
+ * the page's origin; build-time requests use http://localhost:8080.
  * Set it to an empty value to run without a backend on the built-in sample data.
  * Endpoints are documented in backend/API.md and in the backend's Swagger UI (/swagger-ui.html).
  */
@@ -10,10 +11,14 @@
 const DEFAULT_API_URL = 'http://localhost:8080';
 
 /** Base URL without trailing slash; '' means "no backend". Outside Vite (node tests) there is no backend. */
+export function resolveApiUrl(configured: string | undefined, pageOrigin?: string): string {
+  return (configured ?? pageOrigin ?? DEFAULT_API_URL).trim().replace(/\/+$/, '');
+}
+
 export const API_URL: string = (() => {
   const env = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env;
   if (!env) return '';
-  return (env.PUBLIC_API_URL ?? DEFAULT_API_URL).trim().replace(/\/+$/, '');
+  return resolveApiUrl(env.PUBLIC_API_URL, typeof window === 'undefined' ? undefined : window.location.origin);
 })();
 
 /** An HTTP error from the backend, with its problem-detail message (backend/API.md, "Errors"). */
