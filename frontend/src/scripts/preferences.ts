@@ -1,9 +1,11 @@
-import { matchesQuery } from '../search/fold';
+import { createSearch, type Search, type SearchText } from '../search/dishSearch';
 import { ALL_CAMPUS_IDS, isPriceTier, isViewMode, readPreferences, PREFERENCES_KEY, type Preferences } from '../preferences/state';
 import { API_URL, apiPost } from '../data/api';
 import { canShowCanteen } from '../preferences/canteenVisibility';
 let aiMatchedIds: Set<string> | null = null;
 let aiQuery = '';
+// true while the backend search runs; its "Finding matching canteens…" message must not be overwritten
+let aiPending = false;
 let searchVersion = 0;
 let searchTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -26,12 +28,14 @@ let ignoreOpenOnly = false;
 const EMPTY_MESSAGES = {
   en: {
     search: 'No canteens match your search. Try another dish or campus.',
+    searchFiltered: 'Your search finds dishes, but not with your current filters (Lunch/Dinner, campus or food preferences). Try “All” or another campus.',
     closed: 'No canteen is open right now, and “Only show open canteens” is on in Settings.',
     campus: 'No campus is selected in Settings.',
     other: 'No canteens to show here. Try another campus.',
   },
   de: {
     search: 'Keine Mensen gefunden. Suche ein anderes Gericht oder einen anderen Campus.',
+    searchFiltered: 'Deine Suche findet Gerichte, aber nicht mit deinen aktuellen Filtern (Mittag-/Abendessen, Campus oder Essenspräferenzen). Probiere «Alle» oder einen anderen Campus.',
     closed: 'Gerade ist keine Mensa geöffnet, und in den Einstellungen ist «Nur geöffnete Mensen anzeigen» aktiv.',
     campus: 'In den Einstellungen ist kein Campus ausgewählt.',
     other: 'Hier gibt es keine Mensen zu zeigen. Probiere einen anderen Campus.',
@@ -45,6 +49,18 @@ const EMPTY_MESSAGES = {
 function cardService(card: Element | null | undefined, picked: string | undefined): string | undefined {
   const live = card?.querySelector<HTMLElement>('[data-service-label][data-service-live="true"]')?.dataset.service;
   return live === 'closed' ? 'closed' : picked || undefined;
+}
+
+/** What a dish row is searched on: its canteen's name (so "polyterrasse pizza" works) and its own search text. */
+const searchTextOf = (row: HTMLElement, card: HTMLElement) => `${card.dataset.name ?? ''} ${row.dataset.search ?? row.dataset.mealName ?? ''}`;
+
+/** Shown while the results are look-alikes for a misspelt word. */
+function similarResultsNotice(search: Search, query: string): string {
+  if (!search.active || !search.fuzzy) return '';
+  const shown = query.trim();
+  return document.documentElement.lang === 'de'
+    ? `Keine genaue Übereinstimmung für «${shown}». Ähnliche Ergebnisse werden angezeigt.`
+    : `No exact match for “${shown}”. Showing similar results.`;
 }
 
 function applyPreferences() {
@@ -66,17 +82,24 @@ function applyPreferences() {
   document.querySelectorAll<HTMLSelectElement>('[data-price-tier]').forEach(select => select.value = preferences.priceTier);
 
   const query = document.querySelector<HTMLInputElement>('#search-input')?.value ?? '';
+  // Everything on the page that can be searched, so the search knows whether an exact match exists or typos are allowed.
+  const corpus: SearchText[] = [];
+  if (query.trim() !== '') {
+    document.querySelectorAll<HTMLElement>('[data-canteen-card]').forEach(card => {
+      corpus.push({ text: card.dataset.name ?? '' });
+      card.querySelectorAll<HTMLElement>('[data-meal-row]').forEach(row => corpus.push({ text: searchTextOf(row, card), diet: row.dataset.diet }));
+    });
+  }
+  const search = createSearch(query, corpus);
   // Lunch / dinner choice of the day picker (components/DayPicker.astro); unset shows both.
   const service = document.documentElement.dataset.serviceFilter;
   document.querySelectorAll<HTMLElement>('[data-diet]').forEach((meal) => {
     const diet = meal.dataset.diet as keyof Pick<Preferences, 'vegan' | 'vegetarian' | 'meat'>;
     const card = meal.closest<HTMLElement>('[data-canteen-card]');
-    const matchesName = card && matchesQuery(card.dataset.name ?? '', query);
     const effectiveService = cardService(card, service);
     const groupService = meal.closest<HTMLElement>('[data-meal-group]')?.dataset.service;
     const otherService = effectiveService === 'closed' || (!!effectiveService && !!groupService && groupService !== effectiveService);
-    const mealSearchText = `${meal.dataset.mealName ?? ''} ${meal.dataset.cuisine ?? ''}`;
-    meal.hidden = !preferences[diet] || otherService || !!(card && !matchesName && !matchesQuery(mealSearchText, query));
+    meal.hidden = !preferences[diet] || otherService || !!(card && !search.test(searchTextOf(meal, card), meal.dataset.diet));
   });
 
   document.querySelectorAll<HTMLElement>('[data-meal-group]').forEach(group => {
@@ -84,7 +107,7 @@ function applyPreferences() {
   });
 
   document.querySelectorAll<HTMLElement>('[data-canteen-card]').forEach(card => {
-    const dishSearch = query.trim() !== '' && !matchesQuery(card.dataset.name ?? '', query);
+    const dishSearch = search.active && !search.test(card.dataset.name ?? '');
     const rows = [...card.querySelectorAll<HTMLElement>('[data-meal-row]:not([hidden])')];
     rows.forEach((row, index) => row.classList.toggle('preview-clipped', preferences.viewMode !== 'list' && !dishSearch && index >= 2));
     card.querySelectorAll<HTMLElement>('[data-meal-group]').forEach(group => {
@@ -127,7 +150,7 @@ function applyPreferences() {
       : campusChoice === 'preset' ? preferences.locations.includes(card.dataset.campusId ?? '')
         : card.dataset.campusId === campusChoice;
     const matchesOpen = !preferences.openOnly || ignoreOpenOnly || card.dataset.isOpen === 'true';
-    const fallbackSearch = matchesQuery(card.dataset.name ?? '', query) || card.querySelector('[data-meal-row]:not([hidden])') !== null;
+    const fallbackSearch = search.test(card.dataset.name ?? '') || card.querySelector('[data-meal-row]:not([hidden])') !== null;
     const matchesSearch = aiMatchedIds && aiQuery === query
       ? aiMatchedIds.has(card.dataset.canteenId ?? '') : fallbackSearch;
     // With lunch or dinner picked, a canteen without that service counts as having no menu.
@@ -146,6 +169,7 @@ function applyPreferences() {
     card.hidden = !matches || (!hasMenu && collapseWithoutMenu);
     if (!card.hidden) visibleCanteens++;
   });
+  if (!aiPending) searchStatus(aiMatchedIds && aiQuery === query ? '' : similarResultsNotice(search, query));
   const noMenuToggle = document.querySelector<HTMLButtonElement>('#no-menu-toggle');
   if (noMenuToggle) {
     noMenuToggle.hidden = preferences.viewMode === 'list' || withoutMenuCount === 0 || withMenuCount === 0 || !!query.trim();
@@ -163,7 +187,7 @@ function applyPreferences() {
   if (emptyState) emptyState.style.display = visibleCanteens === 0 ? 'block' : 'none';
   const emptyMessage = document.querySelector<HTMLElement>('#empty-message');
   if (emptyMessage && visibleCanteens === 0) {
-    const reason = query.trim() ? 'search'
+    const reason = query.trim() ? (search.hasMatches ? 'searchFiltered' : 'search')
       : preferences.openOnly && !ignoreOpenOnly && candidates.some(c => c.card.dataset.isOpen !== 'true') ? 'closed'
         : campusChoice === 'preset' && preferences.locations.length === 0 ? 'campus' : 'other';
     emptyMessage.textContent = EMPTY_MESSAGES[document.documentElement.lang === 'de' ? 'de' : 'en'][reason];
@@ -231,7 +255,7 @@ document.querySelector<HTMLInputElement>('#search-input')?.addEventListener('inp
   clearTimeout(searchTimer);
   aiMatchedIds = null;
   aiQuery = '';
-  searchStatus('');
+  aiPending = false;
   applyPreferences();
   if (query.length < 2 || !API_URL) return;
 
@@ -245,17 +269,19 @@ document.querySelector<HTMLInputElement>('#search-input')?.addEventListener('inp
       diets: card.dataset.diets ?? '',
     }));
     if (!candidates.length) return;
+    aiPending = true;
     searchStatus(document.documentElement.lang === 'de' ? 'Suche nach passenden Mensen …' : 'Finding matching canteens…');
     try {
       const result = await apiPost<{ ids: string[] }>('/api/search', { query, candidates }, API_URL, 15000);
       if (version !== searchVersion) return;
       aiMatchedIds = new Set(result.ids);
       aiQuery = query;
+      aiPending = false;
       applyPreferences();
-      searchStatus('');
     } catch {
       if (version !== searchVersion) return;
-      searchStatus('');
+      aiPending = false;
+      applyPreferences();
     }
   }, 650);
 });
