@@ -57,6 +57,8 @@ public class WebConfig implements WebMvcConfigurer {
 				.addPathPatterns("/api/search");
 		registry.addInterceptor(new RateLimitInterceptor(Duration.ofMinutes(1), "send another test notification", clock))
 				.addPathPatterns("/api/push/test");
+		registry.addInterceptor(new RateLimitInterceptor(Duration.ofMinutes(1), "plan another meal route", clock))
+				.addPathPatterns("/api/route-planner/plan");
 	}
 
 }

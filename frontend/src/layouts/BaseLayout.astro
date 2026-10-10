@@ -56,7 +56,7 @@ const { title, hideFooter = false } = Astro.props;
     <div class="app-shell">
       <header class="site-header">
         <a class="brand" href="/" aria-label="UniEats home"><span class="brand-mark" aria-hidden="true">U</span><span>UniEats</span></a>
-        <div class="header-controls"><a class="settings-link" href="/settings" data-tour-settings-target data-i18n="settings">Settings</a></div>
+        <div class="header-controls"><a class="settings-link" href="/route-planner/" aria-label="Plan a journey with a meal stop">Route</a><a class="settings-link" href="/settings" data-tour-settings-target data-i18n="settings">Settings</a></div>
       </header>
       <p class="offline-banner" data-offline-banner role="status" hidden>You are offline. Showing the last cached version.</p>
       <main class="main" id="main" tabindex="-1"><slot /></main>

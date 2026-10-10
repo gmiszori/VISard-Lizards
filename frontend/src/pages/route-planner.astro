@@ -1,0 +1,42 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import '../route-planner/styles.css';
+---
+<BaseLayout title="Meal route planner">
+  <div class="planner-heading"><a href="/">← Cafeterias</a><span class="preview-tag">Branch preview</span></div>
+  <section class="planner-intro">
+    <p class="eyebrow">A good meal on the way</p>
+    <h1>Make room for lunch.</h1>
+    <p>Plan a journey by public transport or on foot, with a full meal break before you arrive.</p>
+  </section>
+  <div class="planner-layout">
+    <section class="planner-panel" aria-labelledby="trip-title">
+      <h2 id="trip-title">Your journey</h2>
+      <p id="planner-readiness" role="status">Checking route planner connection…</p>
+      <form id="route-form">
+        <label for="openai-key">Your OpenAI API key</label>
+        <input id="openai-key" type="password" autocomplete="off" spellcheck="false" required maxlength="256" placeholder="sk-…" />
+        <p class="field-note">Used for this request only. Never saved in your browser or the app database.</p>
+        <label for="origin">Starting point</label>
+        <div class="location-row"><input id="origin" required maxlength="200" placeholder="Address or place, e.g. Zürich HB" /><button type="button" id="use-location">Use my location</button></div>
+        <label for="destination">Destination</label>
+        <input id="destination" required maxlength="200" placeholder="e.g. ETH Zürich, Rämistrasse 101" />
+        <p class="field-note" id="time-zone"></p>
+        <div class="time-row">
+          <div><label for="departure">Leave at</label><input id="departure" type="datetime-local" required /></div>
+          <div><label for="arrival">Arrive by</label><input id="arrival" type="datetime-local" required /></div>
+        </div>
+        <label for="meal-minutes">Time to eat</label>
+        <select id="meal-minutes"><option value="45">45 minutes</option><option value="60" selected>1 hour</option></select>
+        <p class="field-note">Within the next seven days. Cafeterias and other restaurants are considered, with a five-minute arrival buffer.</p>
+        <button id="plan-button" class="plan-button" type="submit" disabled>Find my meal stop <span aria-hidden="true">→</span></button>
+      </form>
+      <p id="planner-status" role="status" aria-live="polite"></p>
+    </section>
+    <section class="planner-results" aria-labelledby="result-title" aria-busy="false">
+      <h2 id="result-title">Your options</h2>
+      <div id="route-results"><div class="empty-result"><span aria-hidden="true">↗</span><h3>A little time for a good meal.</h3><p>Enter your journey to see meal stops, walking and transit directions, and how much time you’ll have before arrival.</p></div></div>
+    </section>
+  </div>
+  <script>import '../route-planner/main';</script>
+</BaseLayout>

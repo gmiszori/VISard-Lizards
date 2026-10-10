@@ -95,3 +95,15 @@ Codex MCP tool improvements (2026-10-10):
 - s reports status. Ctrl+C only stops the monitor; it does not cancel backend scraping.
 - Preserved PowerShell built-in alias AllScope behavior. Added offline Windows PowerShell regression script under backend/scripts/test-scraper-console.ps1 covering alias dispatch, progress, final duration and aborted completion.
 - No frontend or IDE configuration edits. Existing background refresh continues.
+2026-10-10 - Codex: meal route planner branch started.
+- Isolated feature branch codex/meal-route-planner; no changes to running main services.
+- User requested a new web page with a per-request OpenAI key and a separate Kotlin routing MCP server.
+- Confirmed public transport plus walking. Google routing credentials and existing-cafeterias/other-restaurants scope are awaiting user answers.
+- Starting provider-independent meal scheduling: 45-60 minutes entirely inside published service hours, actual onward timetables, five-minute arrival buffer, no duplicated stops.
+- Existing exclusions (Bistro HPI, Bellavista) and persistent scraper data remain in place.
+2026-10-10 - Codex: route planner implementation and live verification.
+- New /route-planner/ page, request-scoped OpenAI key, Java backend API, separate Kotlin routing MCP server/HTTP bridge on private port 8092.
+- Google Routes and Places access verified; live OpenAI -> MCP -> Google run returned 8 feasible stops for Zürich HB -> ETH Zentrum on 12 October, with a 60-minute meal and arrival buffer.
+- Cafeteria menus come from the existing DB; restaurants have source links and explicit unverified kitchen/menu/price labels.
+- Testing under isolated Compose project mensa-route-test on 8084 with its own DB, automatic AI scraping disabled. Main app on 8083 remains in place.
+- New credentials only in ignored .env; standalone setup in ROUTE_PLANNER.md and blank .env.route-planner.example.

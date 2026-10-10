@@ -1,0 +1,25 @@
+# Isolated branch test stack: separate project name, ports, and database volume.
+# docker compose -p mensa-route-test -f docker-compose.yml -f compose.route-planner.yaml --profile route-planner up --build -d
+services:
+  route-planner:
+    profiles: [route-planner]
+    build:
+      context: ./meal-scraper
+      dockerfile: Dockerfile.route
+    init: true
+    restart: unless-stopped
+    environment:
+      - GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY:?Set GOOGLE_MAPS_API_KEY in root .env}
+      - ROUTE_CONNECTOR_TOKEN=${ROUTE_CONNECTOR_TOKEN:?Set ROUTE_CONNECTOR_TOKEN in root .env}
+  backend:
+    environment:
+      - ROUTE_CONNECTOR_URL=http://route-planner:8092
+      - ROUTE_CONNECTOR_TOKEN=${ROUTE_CONNECTOR_TOKEN:?Set ROUTE_CONNECTOR_TOKEN in root .env}
+      - ROUTE_PLANNER_MODEL=${ROUTE_PLANNER_MODEL:-gpt-6-astra}
+      - MEAL_SCRAPER_ENABLED=false
+    depends_on:
+      route-planner:
+        condition: service_started
+  frontend:
+    ports: !override
+      - "${ROUTE_WEB_PORT:-8084}:8080"
