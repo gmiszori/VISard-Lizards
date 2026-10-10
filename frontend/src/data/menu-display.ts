@@ -1,6 +1,8 @@
 import type { Mensa, MenuItem, Service, Weekday } from './canteens.ts';
+import { cuisineForDish, type CuisineCategory } from './cuisine';
 
 export type DisplayMenuItem = MenuItem & {
+  cuisine?: CuisineCategory;
   servingWindows?: Array<{ open: string; close: string }>;
   /** Live menus only (the sample menus lack them): the exact diet class (fish stays fish) and the allergen ids. */
   dietTag?: 'vegan' | 'vegetarian' | 'meat' | 'fish';
@@ -64,6 +66,7 @@ export function prepareMenu<T extends MenuItem>(menu: T[], mensa: Mensa | undefi
     return true;
   }).map(item => ({
     ...item,
+    cuisine: cuisineForDish(item.id, item.name, item.description),
     servingWindows: Array.from(new Map(hours.filter(h => h.service === item.service)
       .map(h => [`${h.open}-${h.close}`, { open: h.open, close: h.close }])).values()),
   }));

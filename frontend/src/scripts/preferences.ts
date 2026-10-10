@@ -75,7 +75,8 @@ function applyPreferences() {
     const effectiveService = cardService(card, service);
     const groupService = meal.closest<HTMLElement>('[data-meal-group]')?.dataset.service;
     const otherService = effectiveService === 'closed' || (!!effectiveService && !!groupService && groupService !== effectiveService);
-    meal.hidden = !preferences[diet] || otherService || !!(card && !matchesName && !matchesQuery(meal.dataset.mealName ?? '', query));
+    const mealSearchText = `${meal.dataset.mealName ?? ''} ${meal.dataset.cuisine ?? ''}`;
+    meal.hidden = !preferences[diet] || otherService || !!(card && !matchesName && !matchesQuery(mealSearchText, query));
   });
 
   document.querySelectorAll<HTMLElement>('[data-meal-group]').forEach(group => {
