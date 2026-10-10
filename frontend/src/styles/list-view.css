@@ -50,7 +50,7 @@
 }
 
 :root[data-density="list"] :is(#canteen-grid, #favourites-grid) .canteen-card .canteen-photo-caption .card-title {
-  font-size: 12px;
+  font-size: 15px;
   line-height: 1.35;
   font-weight: 700;
 }
