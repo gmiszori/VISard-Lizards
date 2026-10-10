@@ -38,15 +38,15 @@ import ProfileMealSettings from '../components/ProfileMealSettings.astro';
   </div>
   <form id="preferences-form" class="settings-form">
     <fieldset class="settings-group price-category">
-      <legend data-i18n="priceCategory">Price category</legend>
+      <legend data-i18n="priceCategory">Price &amp; budget</legend>
       <p data-i18n="priceCategoryHint">Show only your selected price on every dish. Student is the default.</p>
       <label class="select-option"><span data-i18n="yourPrice">Your price</span><select name="priceTier" data-price-tier>
         <option value="student" data-i18n="student">Student</option>
         <option value="worker" data-i18n="worker">Staff</option>
         <option value="external" data-i18n="external">External</option>
       </select></label>
+      <ProfileMealSettings section="budget" />
     </fieldset>
-    <ProfileMealSettings />
     <fieldset class="settings-group">
       <legend data-i18n="foodPreferences">Food preferences</legend>
       <p data-i18n="preferencesHint">Select every type of meal you want included.</p>
@@ -55,6 +55,7 @@ import ProfileMealSettings from '../components/ProfileMealSettings.astro';
         <label class="setting-option preference-option preference-vegetarian"><span class="preference-icon" aria-hidden="true">🥬</span><span class="setting-copy"><strong data-i18n="vegetarian">Vegetarian</strong><small data-i18n="meatFree">Meat-free</small></span><input type="checkbox" name="vegetarian" value="vegetarian" /></label>
         <label class="setting-option preference-option preference-meat"><span class="preference-icon" aria-hidden="true">🍗</span><span class="setting-copy"><strong data-i18n="meat">Meat</strong><small data-i18n="meatDishes">Including meat dishes</small></span><input type="checkbox" name="meat" value="meat" /></label>
       </div>
+      <ProfileMealSettings section="exclusions" />
     </fieldset>
     <fieldset class="settings-group">
       <legend data-i18n="canteenFilters">Canteen filters</legend>
@@ -87,6 +88,8 @@ import ProfileMealSettings from '../components/ProfileMealSettings.astro';
     <p class="settings-saved" id="settings-saved" aria-live="polite" data-i18n="settingsSaved" hidden>Saved</p>
   </form>
   <script>
+    import { mountProfileMealSettings } from '../scripts/profile-meal-settings';
+    mountProfileMealSettings();
     // "Select all" / "Deselect all" for the campus locations. Each changed checkbox fires the form's
     // normal change event, so scripts/preferences.ts saves it exactly like a single click.
     const toggleAll = document.querySelector<HTMLButtonElement>('[data-campus-toggle-all]');
