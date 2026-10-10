@@ -8,7 +8,8 @@
  * Pages call loadAppData() in their frontmatter: in `astro dev` that runs per request, so menus stay
  * current; a static build takes the data of build time.
  */
-import { CANTEENS, MENSAS, MENU_DATE, type Canteen, type MenuItem } from './canteens';
+import { CANTEENS, MEALS, MENSAS, MENU_DATE, type Canteen, type MenuItem } from './canteens';
+import { mensasSoldByWeight, withPriceUnits } from './priceUnits';
 import { compareMealServiceAndKind, prepareMenu, type DisplayMenuItem } from './menu-display';
 import { API_URL, apiGet, type BackendMealDetail } from './api';
 import { DataError, hasOnlyOnePriceCategory, mergePrices, parseMealList, parseMensas, parseMeta } from './validate';
@@ -43,6 +44,9 @@ export function loadAppData(): Promise<AppData> {
   return cache.data;
 }
 
+/** Mensas whose buffet is sold per 100 g (the backend does not say, the bundled database does). */
+const BY_WEIGHT = mensasSoldByWeight(MEALS);
+
 /** Today's date (YYYY-MM-DD) in Zurich. */
 function zurichToday(): string {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Zurich', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
@@ -50,7 +54,7 @@ function zurichToday(): string {
 
 function sampleData(sampleReason?: AppData['sampleReason']): AppData {
   return { source: 'sample', sampleReason, menuDate: MENU_DATE, today: zurichToday(), canteens: CANTEENS.map(canteen => ({
-    ...canteen, menu: prepareMenu(canteen.menu, MENSAS.find(m => m.id === canteen.id), MENU_DATE),
+    ...canteen, menu: withPriceUnits(prepareMenu(canteen.menu, MENSAS.find(m => m.id === canteen.id), MENU_DATE), canteen.id, BY_WEIGHT),
   })) };
 }
 
@@ -90,7 +94,7 @@ async function fetchAppData(): Promise<AppData> {
       today: meta.today,
       canteens: CANTEENS.map((canteen) => ({
         ...canteen,
-        menu: prepareMenu(toMenu(menus.get(canteen.id) ?? []), MENSAS.find(m => m.id === canteen.id), menuDate),
+        menu: withPriceUnits(prepareMenu(toMenu(menus.get(canteen.id) ?? []), MENSAS.find(m => m.id === canteen.id), menuDate), canteen.id, BY_WEIGHT),
         rating: ratings.get(canteen.id) ?? null,
       })),
     };

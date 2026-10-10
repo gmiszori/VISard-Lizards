@@ -42,3 +42,6 @@
 /* Dish names on the home cards are 23px-high links. The tap area grows to 45px without making the rows taller
    (negative margin); all links in a card go to the same canteen page, so overlapping areas are harmless. */
 .dish-preview .dish a { display: inline-block; padding-block: 11px; margin-block: -11px; }
+
+/* "per 100 g" next to a price that is not for a plate. */
+.price-unit { font-weight: 700; color: var(--ink); white-space: nowrap; }
