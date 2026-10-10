@@ -1,12 +1,15 @@
 ---
 import { formatPrice, type MenuItem } from '../data/canteens';
+import { pickPrice } from '../data/priceDisplay';
 interface Props { item: Pick<MenuItem, 'priceStudent' | 'priceWorker' | 'priceExternal'>; compact?: boolean }
 const { item, compact = false } = Astro.props;
+const shown = pickPrice({ student: item.priceStudent, worker: item.priceWorker, external: item.priceExternal }, 'student');
+const labels = { student: 'Student', worker: 'Worker', external: 'External' };
 ---
 <div class:list={['meal-price', { 'meal-price-compact': compact }]} data-meal-price
   data-price-student={formatPrice(item.priceStudent)} data-price-worker={formatPrice(item.priceWorker)} data-price-external={formatPrice(item.priceExternal)}>
-  <strong data-price-amount>CHF {formatPrice(item.priceStudent)}</strong>
-  <small data-price-label data-i18n="student">Student</small>
+  <strong data-price-amount>{shown.tier ? `CHF ${formatPrice(shown.value)}` : '–'}</strong>
+  <small data-price-label data-i18n={shown.tier ?? 'priceUnavailable'}>{shown.tier ? labels[shown.tier] : 'Price not published'}</small>
 </div>
 <style>
   .meal-price{display:flex;align-items:baseline;gap:9px;padding-top:13px;margin-top:3px;border-top:1px solid var(--line)}

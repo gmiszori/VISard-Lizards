@@ -1,3 +1,4 @@
+import { pickPrice, type PriceTier } from '../data/priceDisplay';
 import { isPriceTier, readPreferences, PREFERENCES_KEY, type Preferences } from '../preferences/state';
 let preferences: Preferences;
 try { preferences = readPreferences(); } catch { preferences = { vegan: true, vegetarian: true, meat: true, compact: false, openOnly: false, locations: ['zentrum', 'hoenggerberg', 'irchel'], priceTier: 'student' }; }
@@ -7,14 +8,17 @@ function applyPreferences() {
   document.querySelectorAll<HTMLElement>('[data-meal-price]').forEach(price => {
     const amount = price.querySelector<HTMLElement>('[data-price-amount]');
     const label = price.querySelector<HTMLElement>('[data-price-label]');
-    const value = price.getAttribute(`data-price-${preferences.priceTier}`) ?? '–';
-    if (amount) amount.textContent = `CHF ${value}`;
+    // The chosen tier, or another tier's price (labelled as such) when the source publishes none for it.
+    const read = (tier: PriceTier) => { const n = Number.parseFloat(price.getAttribute(`data-price-${tier}`) ?? ''); return Number.isFinite(n) ? n : null; };
+    const shown = pickPrice({ student: read('student'), worker: read('worker'), external: read('external') }, preferences.priceTier);
+    if (amount) amount.textContent = shown.tier ? `CHF ${shown.value!.toFixed(2)}` : '–';
     if (label) {
-      label.dataset.i18n = preferences.priceTier;
-      const labels = document.documentElement.lang === 'de'
+      const de = document.documentElement.lang === 'de';
+      const labels = de
         ? { student: 'Studierende', worker: 'Mitarbeitende', external: 'Externe' }
         : { student: 'Student', worker: 'Worker', external: 'External' };
-      label.textContent = labels[preferences.priceTier];
+      label.dataset.i18n = shown.tier ?? 'priceUnavailable';
+      label.textContent = shown.tier ? labels[shown.tier] : (de ? 'Preis nicht veröffentlicht' : 'Price not published');
     }
   });
   document.querySelectorAll<HTMLSelectElement>('[data-price-tier]').forEach(select => select.value = preferences.priceTier);
