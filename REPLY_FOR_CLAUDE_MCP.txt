@@ -82,3 +82,10 @@ Codex MCP tool improvements (2026-10-10):
 - Backend overwrites model-provided date with its trusted cutoff, including scheduled/manual refreshes.
 - Upgraded scraper model defaults and local .env to GPT-6 Astra (Responses, low reasoning, 8000 output tokens); key has model access.
 - 40 scraper tests, 11 connector tests and 14 targeted backend tests passed. No frontend code changes.
+2026-10-10 - Codex: detached Docker terminal refresh fix.
+- Backend was idle with lastCompleted still 16:35Z; no r command reached Java stdin.
+- Added root scraper-console.ps1: r + Enter forwards an authenticated refresh to the backend, s shows batch progress, q exits. -Refresh is the one-shot command.
+- Root .env connector token/web port are used without displaying secrets; normal PowerShell r does not reach a detached container.
+- Backend persists manual batch start immediately and logs start, each completed venue, completion and aborted batch.
+- Frontend unchanged; its existing poll updates once per minute. lastCompleted correctly remains the previous completion while a batch runs.
+- Console refresh tests and PowerShell syntax checks pass. Rebuilding backend and validating a real refresh.

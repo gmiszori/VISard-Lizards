@@ -63,6 +63,10 @@ class ScrapedMenuRefreshServiceTests {
         try(var service=new TestClose(new ScrapedMenuRefreshService(ai,mapper,store,true,dir.resolve("unused.json").toString()))) {
             assertTrue(service.value.handleConsoleCommand(" r "));
             assertTrue(entered.await(5,java.util.concurrent.TimeUnit.SECONDS));
+            assertTrue(service.value.snapshot().path("running").asBoolean());
+            assertFalse(service.value.snapshot().path("lastAttempt").isNull());
+            assertEquals(service.value.snapshot().path("lastAttempt"), store.get("__meta").path("lastAttempt"));
+            assertTrue(service.value.snapshot().path("lastCompleted").isNull());
             assertTrue(service.value.handleConsoleCommand("R"));
             release.countDown();
             verify(ai,timeout(5000).times(1)).retrieve(eq("https://ethz.ch/en/campus/erleben/gastronomie-und-einkaufen/gastronomie/menueplaene/offerWeek.html?date=2026-10-12&id=16"), eq(java.time.LocalDate.now(java.time.ZoneId.of("Europe/Zurich"))));

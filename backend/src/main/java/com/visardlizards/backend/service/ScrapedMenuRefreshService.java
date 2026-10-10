@@ -99,8 +99,12 @@ public class ScrapedMenuRefreshService {
         if(!enabled) return RefreshStatus.DISABLED;
         if(!ai.configured()) return RefreshStatus.NOT_CONFIGURED;
         if(!running.compareAndSet(false,true)) return RefreshStatus.ALREADY_RUNNING;
+        lastAttempt=Instant.now().toString();
+        try { persist(); } catch(RuntimeException ex) { running.set(false); throw ex; }
         worker.submit(() -> {
-            try { refresh(); } finally { running.set(false); }
+            try { refresh(); }
+            catch(RuntimeException ex) { System.err.println("Scraper batch failed before completion; check saved venue status and database availability."); }
+            finally { running.set(false); }
         });
         return RefreshStatus.STARTED;
     }
@@ -124,10 +128,15 @@ public class ScrapedMenuRefreshService {
     }
     void refresh() {
         lastAttempt=Instant.now().toString();
+        persist();
+        System.out.println("Scraper batch started: " + lastAttempt + "; " + locations.size() + " cafeterias.");
+        int completed=0;
         for(JsonNode venue:locations) {
             synchronized(locks.computeIfAbsent(venue.path("id").asText(), ignored -> new Object())) { refreshVenue(venue); }
+            System.out.println("Scraper progress " + (++completed) + "/" + locations.size() + ": " + venue.path("name").asText());
         }
         lastCompleted=Instant.now().toString(); persist();
+        System.out.println("Scraper batch completed: " + lastCompleted);
     }
     private void refreshVenue(JsonNode venue) {
             String id=venue.path("id").asText();
