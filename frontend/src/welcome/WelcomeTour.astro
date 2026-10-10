@@ -28,6 +28,7 @@
   .welcome-dialog{position:absolute;right:max(24px,env(safe-area-inset-right));top:96px;width:min(390px,calc(100vw - 32px));max-height:calc(100dvh - 116px);overflow:auto;background:var(--paper,#fff);color:var(--ink,#14241b);border:1px solid var(--line,#dce5df);border-radius:8px;box-shadow:0 22px 70px #071a1340;pointer-events:auto;animation:welcome-in .28s ease both}
   .welcome-dialog:focus{outline:none}
   .welcome-topline{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:19px 22px 0;color:var(--muted,#5b6a60);font-size:12px;font-weight:700}
+  .welcome-tour[data-standalone="true"] .welcome-topline{display:none}
   .welcome-skip{display:inline-flex;align-items:center;min-height:44px;padding:0 0 0 12px;margin:-11px 0;border:0;background:transparent;color:inherit;font:inherit;text-decoration:underline;cursor:pointer}
   .welcome-content{padding:8px 22px 24px}
   .welcome-content h2{margin:8px 0 10px;font:800 24px/1.17 Manrope,sans-serif;letter-spacing:0}

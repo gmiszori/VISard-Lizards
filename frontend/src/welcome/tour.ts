@@ -7,20 +7,20 @@ interface InstallPrompt extends Event {
 }
 
 type Copy = { title: string; description: string; next: string };
-const copy: Record<'en' | 'de', Record<WelcomeStep, Copy> & { skip: string; progress: string; help: string; installAction: string }> = {
+const copy: Record<'en' | 'de', Record<WelcomeStep, Copy> & { skip: string; close: string; progress: string; help: string; installAction: string }> = {
   en: {
     install: { title: 'Keep UniEats close', description: 'Add UniEats to your home screen for a quick way back to the menus.', next: 'Continue' },
     personalise: { title: 'Make it yours', description: 'Choose your campuses, food preferences and budget. It only takes a moment.', next: 'Personalise' },
     settings: { title: 'You are in control', description: 'Settings are always up there. Change any choice whenever you like.', next: 'Got it' },
     finish: { title: 'Guten Appetit!', description: 'Your next lunch is waiting. Enjoy exploring the menus.', next: 'Explore menus' },
-    skip: 'Skip tour', progress: 'Step', help: 'Browser instructions', installAction: 'Install app',
+    skip: 'Skip tour', close: 'Close', progress: 'Step', help: 'Browser instructions', installAction: 'Install app',
   },
   de: {
     install: { title: 'UniEats immer griffbereit', description: 'Füge UniEats zum Startbildschirm hinzu, um schnell zu den Menüs zurückzukehren.', next: 'Weiter' },
     personalise: { title: 'Mach es zu deinem', description: 'Wähle Standorte, Essenswünsche und Budget. Das dauert nur kurz.', next: 'Personalisieren' },
     settings: { title: 'Du entscheidest', description: 'Hier oben findest du jederzeit die Einstellungen und kannst alles wieder ändern.', next: 'Verstanden' },
     finish: { title: 'Guten Appetit!', description: 'Dein nächstes Mittagessen wartet schon. Viel Spaß beim Entdecken.', next: 'Menüs entdecken' },
-    skip: 'Tour überspringen', progress: 'Schritt', help: 'Browser-Anleitung', installAction: 'App installieren',
+    skip: 'Tour überspringen', close: 'Schließen', progress: 'Schritt', help: 'Browser-Anleitung', installAction: 'App installieren',
   },
 };
 
@@ -38,13 +38,14 @@ const guide: Record<InstallKind, { en: string; de: string; href?: string; hrefDe
 };
 
 export function mountWelcomeTour(): void {
-  if (window.location.pathname !== '/') return;
+  const standaloneInstall = window.location.pathname.replace(/\/+$/, '') === '/settings' && new URLSearchParams(window.location.search).get('install') === '1';
+  if (!standaloneInstall && window.location.pathname !== '/') return;
   const root = document.querySelector<HTMLElement>('[data-welcome-tour]');
   if (!root) return;
   let saved: string | null = null;
   let hasProfile = false;
   try { saved = localStorage.getItem(WELCOME_KEY); hasProfile = localStorage.getItem('campuseats-profile') !== null; } catch { /* show first-visit tour */ }
-  let step = welcomeStep(saved, hasProfile);
+  let step: WelcomeStep | null = standaloneInstall ? 'install' : welcomeStep(saved, hasProfile);
   if (!step) return;
   const dialog = root.querySelector<HTMLElement>('[data-welcome-dialog]')!;
   const next = root.querySelector<HTMLButtonElement>('[data-welcome-next]')!;
@@ -54,7 +55,8 @@ export function mountWelcomeTour(): void {
   const settingsTarget = document.querySelector<HTMLElement>('[data-tour-settings-target]');
   const settingsSpotlight = root.querySelector<HTMLElement>('[data-welcome-settings-spotlight]')!;
   const pointer = root.querySelector<HTMLElement>('.welcome-pointer')!;
-  let installPrompt: InstallPrompt | null = null;
+  const appWindow = window as Window & { unieatsInstallPrompt?: InstallPrompt | null };
+  let installPrompt: InstallPrompt | null = appWindow.unieatsInstallPrompt ?? null;
   const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   const lang = () => document.documentElement.lang === 'de' ? 'de' : 'en';
   const kind = () => detectInstallKind(navigator.userAgent,
@@ -63,11 +65,16 @@ export function mountWelcomeTour(): void {
   const persist = (value: string) => { try { localStorage.setItem(WELCOME_KEY, value); } catch { /* storage blocked */ } };
 
   function close(): void {
-    persist('done');
+    if (!standaloneInstall) persist('done');
     step = null;
     root!.hidden = true;
     document.body.classList.remove('welcome-open');
-    previousFocus?.focus();
+    if (standaloneInstall) {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('install');
+      window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
+      document.querySelector<HTMLElement>('.install-entry')?.focus();
+    } else previousFocus?.focus();
   }
   function positionSettingsSpotlight(): void {
     if (step !== 'settings' || !settingsTarget) { settingsSpotlight.hidden = true; return; }
@@ -86,12 +93,17 @@ export function mountWelcomeTour(): void {
     const language = lang();
     const content = copy[language][step];
     root!.dataset.step = step;
+    root!.dataset.standalone = String(standaloneInstall);
     root!.dataset.anchor = step === 'install' ? guide[kind()].anchor : 'top';
-    root!.querySelector<HTMLElement>('[data-welcome-progress]')!.textContent = `${copy[language].progress} ${['install', 'personalise', 'settings', 'finish'].indexOf(step) + 1} / 4`;
-    root!.querySelector<HTMLElement>('[data-welcome-skip]')!.textContent = copy[language].skip;
+    const progress = root!.querySelector<HTMLElement>('[data-welcome-progress]')!;
+    progress.hidden = standaloneInstall;
+    progress.textContent = `${copy[language].progress} ${['install', 'personalise', 'settings', 'finish'].indexOf(step) + 1} / 4`;
+    const skip = root!.querySelector<HTMLElement>('[data-welcome-skip]')!;
+    skip.hidden = standaloneInstall;
+    skip.textContent = copy[language].skip;
     root!.querySelector<HTMLElement>('[data-welcome-title]')!.textContent = content.title;
     root!.querySelector<HTMLElement>('[data-welcome-description]')!.textContent = content.description;
-    next.textContent = content.next;
+    next.textContent = standaloneInstall ? copy[language].close : content.next;
     const installGuide = guide[kind()];
     guideText.hidden = step !== 'install';
     guideText.textContent = installGuide[language];
@@ -107,6 +119,7 @@ export function mountWelcomeTour(): void {
   }
   function advance(): void {
     if (!step) return;
+    if (standaloneInstall) { close(); return; }
     if (step === 'personalise') { persist('personalise'); window.location.assign('/onboarding'); return; }
     const following = nextWelcomeStep(step);
     if (following === 'done') { close(); return; }
@@ -122,16 +135,16 @@ export function mountWelcomeTour(): void {
     if (!installPrompt) return;
     const prompt = installPrompt;
     installPrompt = null;
+    appWindow.unieatsInstallPrompt = null;
     await prompt.prompt();
     await prompt.userChoice;
     render();
   });
-  window.addEventListener('beforeinstallprompt', event => {
-    event.preventDefault();
-    installPrompt = event as InstallPrompt;
+  window.addEventListener('unieats:install-ready', () => {
+    installPrompt = appWindow.unieatsInstallPrompt ?? null;
     render();
   });
-  window.addEventListener('appinstalled', render);
+  window.addEventListener('appinstalled', () => { installPrompt = null; render(); });
   document.addEventListener('languagechange', render);
   window.addEventListener('resize', positionSettingsSpotlight);
   window.addEventListener('scroll', positionSettingsSpotlight, { passive: true });
