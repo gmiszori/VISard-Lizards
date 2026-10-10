@@ -44,16 +44,28 @@ class MealControllerTests {
 				.andExpect(jsonPath("$['2026-09-28'][*].meal.id").isNotEmpty());
 	}
 
+	private static final String USER_A = "anon:11111111-1111-4111-8111-111111111111";
+	private static final String USER_B = "anon:22222222-2222-4222-8222-222222222222";
+
+	private static String rating(String userId, String rest) {
+		return "{\"userId\": \"" + userId + "\", " + rest + "}";
+	}
+
 	@Test
 	void ratingUpdatesAverageAndTagCounts() throws Exception {
 		String mealId = "polyterrasse.2026-10-06.lunch.0";
 		mockMvc.perform(post("/api/meals/" + mealId + "/ratings")
 						.contentType(MediaType.APPLICATION_JSON)
-						.content("{\"stars\": 5, \"tags\": [\"tasty\", \"worth-it\"]}"))
-				.andExpect(status().isCreated());
+						.content(rating(USER_A, "\"stars\": 5, \"tags\": [\"tasty\", \"worth-it\"]")))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.mealId").value(mealId))
+				.andExpect(jsonPath("$.mensaId").value("polyterrasse"))
+				.andExpect(jsonPath("$.mealDate").value("2026-10-06"))
+				.andExpect(jsonPath("$.stars").value(5))
+				.andExpect(jsonPath("$.ratedAt").isString());
 		mockMvc.perform(post("/api/meals/" + mealId + "/ratings")
 						.contentType(MediaType.APPLICATION_JSON)
-						.content("{\"stars\": 2}"))
+						.content(rating(USER_B, "\"stars\": 2")))
 				.andExpect(status().isCreated());
 		mockMvc.perform(get("/api/meals/" + mealId))
 				.andExpect(status().isOk())
@@ -63,10 +75,39 @@ class MealControllerTests {
 	}
 
 	@Test
+	void eachUserCanRateAMealOnce() throws Exception {
+		String mealId = "polyterrasse.2026-10-07.lunch.0";
+		mockMvc.perform(post("/api/meals/" + mealId + "/ratings")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(rating(USER_A, "\"stars\": 4")))
+				.andExpect(status().isCreated());
+		mockMvc.perform(post("/api/meals/" + mealId + "/ratings")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(rating(USER_A, "\"stars\": 1")))
+				.andExpect(status().isConflict())
+				.andExpect(jsonPath("$.detail").value("You already rated this."));
+		mockMvc.perform(get("/api/meals/" + mealId))
+				.andExpect(jsonPath("$.avgRating").value(4.0));
+	}
+
+	@Test
+	void ratingNeedsAValidUserId() throws Exception {
+		mockMvc.perform(post("/api/meals/" + MEAL_ID + "/ratings")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("{\"stars\": 4}"))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.detail").value("userId: must not be null"));
+		mockMvc.perform(post("/api/meals/" + MEAL_ID + "/ratings")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(rating("bob", "\"stars\": 4")))
+				.andExpect(status().isBadRequest());
+	}
+
+	@Test
 	void rejectsUnknownTag() throws Exception {
 		mockMvc.perform(post("/api/meals/" + MEAL_ID + "/ratings")
 						.contentType(MediaType.APPLICATION_JSON)
-						.content("{\"stars\": 4, \"tags\": [\"yummy\"]}"))
+						.content(rating(USER_A, "\"stars\": 4, \"tags\": [\"yummy\"]")))
 				.andExpect(status().isBadRequest());
 	}
 
@@ -74,7 +115,7 @@ class MealControllerTests {
 	void rejectsNullTag() throws Exception {
 		mockMvc.perform(post("/api/meals/" + MEAL_ID + "/ratings")
 						.contentType(MediaType.APPLICATION_JSON)
-						.content("{\"stars\": 4, \"tags\": [null]}"))
+						.content(rating(USER_A, "\"stars\": 4, \"tags\": [null]")))
 				.andExpect(status().isBadRequest());
 	}
 

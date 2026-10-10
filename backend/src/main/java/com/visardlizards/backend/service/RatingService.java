@@ -11,6 +11,7 @@ import java.util.TreeMap;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
+import com.visardlizards.backend.exception.ConflictException;
 import com.visardlizards.backend.model.domain.Rating;
 import com.visardlizards.backend.repository.RatingRepository;
 
@@ -38,6 +39,23 @@ public class RatingService {
 			throw new IllegalArgumentException("stars must be between 1 and 5, was " + stars);
 		}
 		ratingRepository.save(new Rating(subjectId, stars, List.copyOf(tags), clock.instant()));
+	}
+
+	/**
+	 * A user's rating, e.g. of a meal. Each user can rate each subject once.
+	 *
+	 * @throws ConflictException if this user already rated this subject
+	 */
+	public Rating addUserRating(String subjectId, String userId, int stars, Collection<String> tags) {
+		if (stars < 1 || stars > 5) {
+			throw new IllegalArgumentException("stars must be between 1 and 5, was " + stars);
+		}
+		if (ratingRepository.existsBySubjectIdAndUserId(subjectId, userId)) {
+			throw new ConflictException("You already rated this.");
+		}
+		Rating rating = new Rating(subjectId, stars, List.copyOf(tags), clock.instant(), userId);
+		ratingRepository.save(rating);
+		return rating;
 	}
 
 	/** Average rounded to one decimal, or null if there are no ratings yet. */

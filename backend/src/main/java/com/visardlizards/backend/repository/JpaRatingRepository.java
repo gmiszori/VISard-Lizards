@@ -18,13 +18,20 @@ public class JpaRatingRepository implements RatingRepository {
 
 	@Override
 	public void save(Rating rating) {
-		entities.save(new RatingEntity(rating.subjectId(), rating.stars(), rating.tags(), rating.createdAt()));
+		entities.saveAndFlush(new RatingEntity(rating.subjectId(), rating.stars(), rating.tags(), rating.createdAt(),
+				rating.userId()));
+	}
+
+	@Override
+	public boolean existsBySubjectIdAndUserId(String subjectId, String userId) {
+		return entities.existsBySubjectIdAndUserId(subjectId, userId);
 	}
 
 	@Override
 	public List<Rating> findBySubjectId(String subjectId) {
 		return entities.findBySubjectId(subjectId).stream()
-				.map(e -> new Rating(e.getSubjectId(), e.getStars(), List.copyOf(e.getTags()), e.getCreatedAt()))
+				.map(e -> new Rating(e.getSubjectId(), e.getStars(), List.copyOf(e.getTags()), e.getCreatedAt(),
+						e.getUserId()))
 				.toList();
 	}
 

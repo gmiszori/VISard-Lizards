@@ -10,4 +10,6 @@ interface RatingEntityRepository extends JpaRepository<RatingEntity, Long> {
 
 	List<RatingEntity> findBySubjectId(String subjectId);
 
+	boolean existsBySubjectIdAndUserId(String subjectId, String userId);
+
 }

@@ -17,6 +17,11 @@ class InMemoryRatingRepository implements RatingRepository {
 	}
 
 	@Override
+	public boolean existsBySubjectIdAndUserId(String subjectId, String userId) {
+		return ratings.stream().anyMatch(r -> r.subjectId().equals(subjectId) && userId.equals(r.userId()));
+	}
+
+	@Override
 	public List<Rating> findBySubjectId(String subjectId) {
 		return ratings.stream().filter(rating -> rating.subjectId().equals(subjectId)).toList();
 	}

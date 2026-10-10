@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import com.visardlizards.backend.exception.NotFoundException;
 import com.visardlizards.backend.model.domain.Meal;
 import com.visardlizards.backend.model.domain.Mensa;
+import com.visardlizards.backend.model.domain.Rating;
 import com.visardlizards.backend.repository.MensaRepository;
 
 @Service
@@ -61,14 +62,15 @@ public class MealService {
 				.orElseThrow(() -> new NotFoundException("Meal not found: " + id));
 	}
 
-	public void rateMeal(String id, int stars, List<String> tags) {
+	/** Saves a user's rating of a meal; each user can rate each meal once (ConflictException otherwise). */
+	public Rating rateMeal(String id, String userId, int stars, List<String> tags) {
 		for (String tag : tags) {
 			// Set.of(...).contains(null) throws, so check null first
 			if (tag == null || !MEAL_TAGS.contains(tag)) {
 				throw new IllegalArgumentException("Unknown tag: " + tag + ", allowed: " + MEAL_TAGS);
 			}
 		}
-		ratingService.addRating(getMeal(id).id(), stars, Set.copyOf(tags));
+		return ratingService.addUserRating(getMeal(id).id(), userId, stars, Set.copyOf(tags));
 	}
 
 	public @Nullable BigDecimal getAverageRating(String mealId) {

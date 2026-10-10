@@ -19,7 +19,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.visardlizards.backend.model.domain.Meal;
 import com.visardlizards.backend.model.domain.PriceCategory;
+import com.visardlizards.backend.model.domain.Rating;
 import com.visardlizards.backend.model.dto.MealDetailDTO;
+import com.visardlizards.backend.model.dto.MealRatingDTO;
 import com.visardlizards.backend.model.dto.MealRatingRequestDTO;
 import com.visardlizards.backend.service.MealService;
 import com.visardlizards.backend.service.MensaService;
@@ -95,20 +97,25 @@ public class MealController {
 	@PostMapping("/{id}/ratings")
 	@ResponseStatus(HttpStatus.CREATED)
 	@Operation(summary = "Rate a meal", description = """
-			Saves a user's rating of a meal: stars plus optional tags that say why. Each client (IP
-			address) can rate a meal once every 24 hours. The result shows up in `GET /api/meals/{id}`.
+			Saves a user's rating of a meal: 1-5 stars plus optional tags that say why. Users are identified
+			by the anonymous id the frontend keeps per device (`anon:` + UUID). Each user can rate each meal
+			once; a second rating returns 409. The result shows up in `GET /api/meals/{id}`.
 
 			Tags: `tasty`, `big-portion`, `small-portion`, `cold`, `too-salty`, `worth-it`.
 			A tag listed twice in one rating counts once.
 			""")
-	@ApiResponse(responseCode = "201", description = "Rating saved (no body)")
-	@ApiResponse(responseCode = "400", description = "Stars outside 1-5, unknown tag or invalid body")
+	@ApiResponse(responseCode = "201", description = "The saved rating, with the meal's mensa and date")
+	@ApiResponse(responseCode = "400", description = "Missing or invalid userId, stars outside 1-5, unknown tag or invalid body")
 	@ApiResponse(responseCode = "404", description = "Unknown meal")
-	@ApiResponse(responseCode = "429", description = "This client already rated it in the last 24 hours (see `Retry-After`)")
-	public void rateMeal(
+	@ApiResponse(responseCode = "409", description = "This user already rated this meal")
+	public MealRatingDTO rateMeal(
 			@Parameter(description = "Meal id, e.g. `polyterrasse.2026-10-06.lunch.2`") @PathVariable String id,
 			@Valid @RequestBody MealRatingRequestDTO rating) {
-		mealService.rateMeal(id, rating.stars(), rating.tags() == null ? List.of() : rating.tags());
+		Meal meal = mealService.getMeal(id);
+		Rating saved = mealService.rateMeal(id, rating.userId(), rating.stars(),
+				rating.tags() == null ? List.of() : rating.tags());
+		return new MealRatingDTO(meal.id(), meal.mensaId(), meal.date(), rating.userId(), saved.stars(), saved.tags(),
+				saved.createdAt());
 	}
 
 	private MealDetailDTO toDetail(Meal meal, PriceCategory priceCategory) {

@@ -11,4 +11,7 @@ public interface RatingRepository {
 
 	List<Rating> findBySubjectId(String subjectId);
 
+	/** Whether this user already rated this mensa or meal. */
+	boolean existsBySubjectIdAndUserId(String subjectId, String userId);
+
 }
