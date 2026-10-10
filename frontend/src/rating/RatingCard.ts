@@ -9,6 +9,8 @@ import { ratingText, translateRating, type RatingText } from './i18n';
 import { readVisits } from '../location/visits.ts';
 import { NEAR_ME_KEY } from '../location/near-me.ts';
 import { visitCandidates } from './visitCandidates.ts';
+import { readPreferences } from '../preferences/state.ts';
+import { canShowCanteen } from '../preferences/canteenVisibility.ts';
 
 interface MealOption { id: string; mensaId: string; date: string; name: string }
 interface CardData { mensas: MensaChoice[]; meals: MealOption[] }
@@ -41,6 +43,7 @@ export function mountRatingCard(): void {
     query('[data-rating-dismiss]').addEventListener('click', () => { root.hidden = true; });
     return;
   }
+  const visibleMensas = () => data.mensas.filter(mensa => canShowCanteen(mensa.mensaId, readPreferences(storage).priceTier));
   // The override and isolated simulator storage are removed from production bundles.
   const override = import.meta.env.DEV ? new URL(location.href).searchParams.get('ratingNow') : null;
   const simulated = Boolean(override && /(?:Z|[+-]\d{2}:\d{2})$/.test(override) && Number.isFinite(Date.parse(override)));
@@ -52,12 +55,13 @@ export function mountRatingCard(): void {
     storage.getItem(NEAR_ME_KEY) === '1' || visits.some(visit => (visit.source ?? 'location') === 'location');
   const candidates = () => {
     const visits = readVisits(storage);
-    const visited = visitCandidates(data.mensas, visits);
+    const available = visibleMensas();
+    const visited = visitCandidates(available, visits);
     if (!simulated && usesLocation(visits)) return visited;
     const profile = readOptional<Partial<Profile>>('campuseats-profile');
     const rawFavourites = readOptional<unknown>('campuseats-favourites');
     const favourites = Array.isArray(rawFavourites) ? rawFavourites.filter((id): id is string => typeof id === 'string') : [];
-    const preferred = mensaCandidates(data.mensas, profile, favourites);
+    const preferred = mensaCandidates(available, profile, favourites);
     const seen = new Set<string>();
     return [...visited, ...preferred].filter(choice => {
       const key = `${choice.date ?? ''}:${choice.mensaId}`;
@@ -227,10 +231,10 @@ export function mountRatingCard(): void {
     }
   }
   const select = query<HTMLSelectElement>('[data-rating-mensa-select]');
-  data.mensas.forEach(m => { const option = document.createElement('option'); option.value = m.mensaId; option.textContent = m.name; select.append(option); });
+  visibleMensas().forEach(m => { const option = document.createElement('option'); option.value = m.mensaId; option.textContent = m.name; select.append(option); });
   query('[data-rating-other]').addEventListener('click', () => { query('[data-rating-other-picker]').hidden = false; select.focus(); });
   query('[data-rating-mensa-confirm]').addEventListener('click', () => {
-    const choice = data.mensas.find(m => m.mensaId === select.value);
+    const choice = visibleMensas().find(m => m.mensaId === select.value);
     if (choice) chooseMensa(choice); else { setStatus('chooseError'); select.focus(); }
   });
   // "Nowhere today" on a guess question also pauses guess questions for three days.
