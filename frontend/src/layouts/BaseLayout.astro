@@ -29,6 +29,9 @@ const { title } = Astro.props;
     </script>
     <meta name="description" content="Find what's cooking at ETH and UZH campus canteens." />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- Installable app (home screen); on iPhone and iPad, push notifications need it. -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
     <title data-page-title={title}>{title} | UniEats</title>
   </head>
   <body>

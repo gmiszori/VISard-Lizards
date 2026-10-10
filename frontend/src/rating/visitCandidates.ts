@@ -12,7 +12,7 @@ export function visitCandidates(mensas: readonly MensaChoice[], visits: readonly
     const mensa = byId.get(visit.mensaId);
     if (!mensa) continue;
     const ready = readyAt(visit);
-    const choice: MensaChoice = { ...mensa, date: visit.date, ...(ready === null ? {} : { readyAt: ready }), source: visit.source ?? 'location' };
+    const choice: MensaChoice = { ...mensa, date: visit.date, ...(ready === null ? {} : { readyAt: ready }), source: visit.source ?? 'location', service: visit.service };
     const key = `${visit.date}:${visit.mensaId}`;
     const before = candidates.get(key);
     if (!before || (choice.readyAt ?? 0) < (before.readyAt ?? 0)) candidates.set(key, choice);

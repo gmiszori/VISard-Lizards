@@ -14,3 +14,8 @@ What I am building:
 
 I will NOT touch: pages/settings.astro, preferences/*, scripts/preferences.ts, layouts/BaseLayout.astro
 (another session is changing the overview layout there; uncommitted work in this checkout).
+
+Update (push shipped in 1e8bf8a; undo for ratings in 8e0599a). Next, small and non-breaking:
+  1. Settings: "Your ratings" list with Remove (new component, one line in pages/settings.astro)
+  2. Rating card says "How was dinner?" for dinner visits (rating/*)
+  3. public/manifest.webmanifest + <link rel="manifest"> in layouts/BaseLayout.astro head (installable, iOS push)

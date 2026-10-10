@@ -185,6 +185,10 @@ export function mountRatingCard(): void {
         list.append(button);
       });
       query('[data-rating-other-picker]').hidden = true;
+      // Only dinner visits: ask about dinner.
+      const dinner = next.kind === 'visit' && next.mensaChoices.every(choice => choice.service === 'dinner');
+      query('.meal-rating-eyebrow').dataset.ratingText = dinner ? 'eyebrowDinner' : 'eyebrow';
+      query('#meal-rating-title').dataset.ratingText = dinner ? 'titleDinner' : 'title';
       const question = query('[data-rating-step="mensa"] [data-rating-text^="question"]');
       question.dataset.ratingText = next.kind === 'guess' ? 'questionGuess' : 'question';
       const skip = query('[data-rating-skip]');
@@ -234,7 +238,7 @@ export function mountRatingCard(): void {
         await saveMealRating({ userId: anonymousUserId(), mealId: meal.id, mensaId: mensa.mensaId,
           rating: Number(button.dataset.ratingScore) as Stars, ratedAt: now().toISOString(), mealDate: prompt.date,
           // A mensa picked from the list or "Other mensa" without a visit is a guess.
-          source: mensa.source ?? 'guess' }, localStorage, ratingsKey,
+          source: mensa.source ?? 'guess', mealName: meal.name, mensaName: mensa.name }, localStorage, ratingsKey,
           simulated ? '' : API_URL);
       } catch (error) { if (error instanceof DuplicateMealRatingError) duplicate = true; else throw error; }
       store.resolve(prompt.date);
