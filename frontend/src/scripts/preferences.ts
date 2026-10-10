@@ -259,7 +259,7 @@ document.querySelector<HTMLInputElement>('#search-input')?.addEventListener('inp
       const result = await apiPost<{ ids: string[] }>('/api/search', { query, candidates }, API_URL, 15000);
       if (version !== searchVersion) return;
       aiMatchedIds = new Set(result.ids);
-      aiQuery = query.normalize('NFKC').toLocaleLowerCase();
+      aiQuery = query;
       applyPreferences();
       searchStatus('');
     } catch {

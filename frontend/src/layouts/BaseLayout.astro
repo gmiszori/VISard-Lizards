@@ -61,7 +61,7 @@ const { title, hideFooter = false } = Astro.props;
       <p class="offline-banner" data-offline-banner role="status" hidden>You are offline. Showing the last cached version.</p>
       <main class="main" id="main" tabindex="-1"><slot /></main>
       {!hideFooter && <footer class="footer">
-        <span>Made by students with ❤️ for students</span>
+        <span data-i18n="studentFooter">Made by students with ❤️ for students</span>
       </footer>}
       <SimulatedClockBanner />
     </div>
@@ -106,6 +106,8 @@ const { title, hideFooter = false } = Astro.props;
       Object.assign(translations.de, { devMode: 'Entwicklermodus', devModeDescription: 'Zeigt Diagnosen für Live-Daten, Standort, Speicher und Backend-Verbindung.', devTools: 'Entwicklerwerkzeuge' });
       Object.assign(translations.en, { viewMode: 'Overview layout', viewStandard: 'Standard', viewList: 'List' });
       Object.assign(translations.de, { viewMode: 'Übersichtsansicht', viewStandard: 'Standard', viewList: 'Liste' });
+      translations.en.studentFooter = 'Made by students with ❤️ for students';
+      translations.de.studentFooter = 'Von Studierenden für Studierende gemacht ❤️';
       translations.en.filtersHint = 'Choose one or more campus locations to include.';
       translations.de.filtersHint = 'Wähle einen oder mehrere Campus-Standorte aus.';
       // Storage can be unavailable (private mode, blocked cookies) or hold unexpected values: never let that stop this script.
@@ -148,7 +150,11 @@ const { title, hideFooter = false } = Astro.props;
       applyLanguage(language);
       setTheme(campusStorage.get('campuseats-theme'));
       colorScheme.addEventListener('change', () => {
-        if (themePreference === 'system') document.documentElement.dataset.theme = colorScheme.matches ? 'dark' : 'light';
+        if (themePreference === 'system') {
+          const dark = colorScheme.matches;
+          document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+          themeColor?.setAttribute('content', dark ? '#151c17' : '#f5f6f1');
+        }
       });
       document.addEventListener('themepreferencechange', event => setTheme(event.detail));
       if (languageSelect) languageSelect.addEventListener('change', () => applyLanguage(languageSelect.value));
