@@ -1,5 +1,6 @@
 import { API_URL, ApiError, apiGet, apiPost } from '../data/api';
-import { cooldownLeft, isOpenAt, occupancyOf, summarize, type CrowdLevel, type CrowdSummary, type LiveReport, type OpeningWindows } from './survey-logic';
+import { cooldownLeft, isOpenAt, LAST_REPORT_KEY, occupancyOf, summarize, type CrowdLevel, type CrowdSummary, type LiveReport, type OpeningWindows } from './survey-logic';
+import { addMockReports, CROWD_MOCK_KEY, liveMockReports, readCrowdMock, writeCrowdMock } from './survey-mock';
 
 /**
  * "How busy is it right now?" on the canteen page. Shown only while the mensa is open and a backend is
@@ -31,7 +32,6 @@ const copy = {
 };
 type Copy = typeof copy.en;
 const t = (): Copy => (document.documentElement.lang === 'de' ? copy.de : copy.en);
-const LAST_REPORT_KEY = 'campuseats-crowd-last-report';
 
 interface LiveInfo { temporarilyClosed: boolean; windows: OpeningWindows }
 interface CrowdResponse { live: LiveReport[] }
@@ -49,12 +49,15 @@ function rememberReport(mensaId: string, at: number) {
 export function mountCrowdSurvey(): void {
   const root = document.querySelector<HTMLElement>('[data-crowd-survey]');
   const mensaId = root?.dataset.mensaId;
-  if (!root || !mensaId || !API_URL) return;
+  if (!root || !mensaId) return;
+  // Without a backend the survey only runs on mock data from the developer tools (survey-mock.ts).
+  if (!API_URL && !readCrowdMock().enabled) return;
   const live = (JSON.parse(document.querySelector('#live-data')?.textContent || '{}') as Record<string, LiveInfo>)[mensaId];
   if (!live) return;
   const buttons = [...root.querySelectorAll<HTMLButtonElement>('[data-survey-level]')];
   const summaryEl = root.querySelector<HTMLElement>('[data-survey-summary]')!;
   const statusEl = root.querySelector<HTMLElement>('[data-survey-status]')!;
+  const mockBadge = root.querySelector<HTMLElement>('[data-survey-mock]');
   let reports: LiveReport[] = [];
   let summaryLoaded = false;
   let summaryFailed = false;
@@ -86,6 +89,7 @@ export function mountCrowdSurvey(): void {
     else if (status?.kind === 'error') statusEl.textContent = c.error;
     else if (wait > 0) statusEl.textContent = status?.kind === 'thanks' && wait > 4 * 60_000 ? c.thanks : c.cooldown(Math.ceil(wait / 60_000));
     else statusEl.textContent = '';
+    if (mockBadge) mockBadge.hidden = !readCrowdMock().enabled;
     updateCurrentCrowdBox(summary);
   }
 
@@ -115,7 +119,10 @@ export function mountCrowdSurvey(): void {
     if (loading) return;
     loading = true;
     try {
-      const response = await apiGet<CrowdResponse>(`/api/mensas/${encodeURIComponent(mensaId!)}/crowd`);
+      const mock = readCrowdMock();
+      const response = mock.enabled
+        ? { live: liveMockReports(mock, mensaId!, Date.now()) }
+        : await apiGet<CrowdResponse>(`/api/mensas/${encodeURIComponent(mensaId!)}/crowd`);
       if (!Array.isArray(response.live)) throw new Error('Invalid crowd response');
       reports = response.live;
       summaryLoaded = true;
@@ -135,7 +142,9 @@ export function mountCrowdSurvey(): void {
     buttons.forEach(b => b.setAttribute('aria-pressed', String(b === button)));
     renderTexts();
     try {
-      await apiPost(`/api/mensas/${encodeURIComponent(mensaId!)}/crowd-reports`, { level });
+      const mock = readCrowdMock();
+      if (mock.enabled) writeCrowdMock(addMockReports(mock, mensaId!, level, 1, Date.now()));
+      else await apiPost(`/api/mensas/${encodeURIComponent(mensaId!)}/crowd-reports`, { level });
       rememberReport(mensaId!, Date.now());
       status = { kind: 'thanks' };
     } catch (error) {
@@ -157,7 +166,8 @@ export function mountCrowdSurvey(): void {
   const now = () => (override && Number.isFinite(Date.parse(override)) ? new Date(override) : new Date());
 
   function refreshVisibility() {
-    const open = isOpenAt(live!.windows, live!.temporarilyClosed, now());
+    const mock = readCrowdMock();
+    const open = isOpenAt(live!.windows, live!.temporarilyClosed, now()) || (mock.enabled && mock.forceOpen);
     const wasHidden = root!.hidden;
     root!.hidden = !open;
     if (!open) {
@@ -171,6 +181,12 @@ export function mountCrowdSurvey(): void {
 
   buttons.forEach(button => button.addEventListener('click', () => report(Number(button.dataset.surveyLevel) as CrowdLevel, button)));
   document.addEventListener('languagechange', renderTexts);
+  // Mock changes from the developer tools in another tab.
+  window.addEventListener('storage', event => {
+    if (event.key !== CROWD_MOCK_KEY) return;
+    refreshVisibility();
+    if (!root.hidden) void loadSummary();
+  });
   refreshVisibility();
   setInterval(refreshVisibility, 60_000);
   setInterval(() => { if (!root.hidden) void loadSummary(); }, 2 * 60_000);

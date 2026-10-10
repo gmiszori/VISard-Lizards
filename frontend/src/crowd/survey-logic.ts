@@ -8,6 +8,8 @@ export const CROWD_LEVELS: readonly CrowdLevel[] = [1, 2, 3, 4, 5];
 
 /** The backend accepts one report per mensa and client every 5 minutes (app.rate-limit.crowd-report-window). */
 export const REPORT_COOLDOWN_MS = 5 * 60_000;
+/** Device storage of the last report time per mensa id (enforces the cooldown on this device). */
+export const LAST_REPORT_KEY = 'campuseats-crowd-last-report';
 export const LIVE_REPORT_WINDOW_MS = 30 * 60_000;
 
 export interface LiveReport { level: number; timestamp: string }

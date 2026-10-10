@@ -43,3 +43,12 @@ the normal opening/status renderer; a failed refresh says that current reports a
 A device can report a mensa once every 5 minutes, like the backend's per-IP limit; a `429` from the
 backend is treated as "already reported". Logic lives in `survey-logic.ts` (tested in `survey.test.ts`).
 In development, `?crowdNow=2026-10-12T12:00:00%2B02:00` shows the survey as if it were that time.
+
+### Testing the survey without a backend (developer tools)
+
+Settings → **Dev mode** shows the developer tools on the home page. Their **Crowd survey mock** section
+switches the survey on this device to mock reports (`survey-mock.ts`, stored under
+`campuseats-dev-crowd-mock`): pick a mensa, a level and a number of reports, add them, then open the
+canteen page. While the mock is on, the survey never calls the backend, its card shows "Mock data", and
+"Show the survey even when the mensa is closed" lets you test outside opening hours. "Reset report lock"
+clears the 5-minute device lock. The predicted crowd chart keeps using the backend.

@@ -4,6 +4,9 @@ import { formatDistance } from '../location/distance.ts';
 import { getPositionFix, LocationUnavailableError } from '../location/geolocation.ts';
 import { locateUser, type MensaPlace, type PositionFix, type UserLocation } from '../location/locate.ts';
 import { readVisits, VISITS_KEY } from '../location/visits.ts';
+import { mountCrowdMockPanel, renderCrowdMockPanel } from './crowd-mock-panel.ts';
+import { CROWD_MOCK_KEY } from '../crowd/survey-mock.ts';
+import { LAST_REPORT_KEY } from '../crowd/survey-logic.ts';
 
 type Weekday = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
 interface DevMensa {
@@ -228,6 +231,8 @@ function renderStorage(root: HTMLElement) {
     ['Near me', safeJson('campuseats-near-me')],
     ['Rating state', safeJson('campuseats-meal-rating-state')],
     ['Favourites', safeJson('campuseats-favourites')],
+    ['Crowd survey mock', safeJson(CROWD_MOCK_KEY)],
+    ['Crowd report lock', safeJson(LAST_REPORT_KEY)],
   ];
   root.replaceChildren(...blocks.map(([label, value]) => {
     const wrap = document.createElement('div');
@@ -264,6 +269,7 @@ function renderAll() {
   renderPosition(root.querySelector<HTMLElement>('[data-dev-position]')!, root.querySelector<HTMLElement>('[data-dev-nearest]')!);
   renderLiveTable(root.querySelector<HTMLElement>('[data-dev-live-table]')!, data);
   renderStorage(root.querySelector<HTMLElement>('[data-dev-storage]')!);
+  renderCrowdMockPanel();
 }
 
 async function readPosition() {
@@ -288,6 +294,7 @@ export function mountDevTools(): void {
   mounted = true;
   void checkPermission().then(renderAll);
   void pingBackend().then(renderAll);
+  mountCrowdMockPanel(renderAll);
   renderAll();
 
   document.querySelector('[data-dev-refresh]')?.addEventListener('click', () => {
