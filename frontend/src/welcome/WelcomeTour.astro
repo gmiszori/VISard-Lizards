@@ -1,5 +1,6 @@
 <div class="welcome-tour" data-welcome-tour hidden>
   <div class="welcome-backdrop"></div>
+  <span class="welcome-settings-spotlight" data-welcome-settings-spotlight aria-hidden="true" hidden></span>
   <span class="welcome-pointer" aria-hidden="true"></span>
   <section class="welcome-dialog" role="dialog" aria-modal="true" aria-labelledby="welcome-title" tabindex="-1" data-welcome-dialog>
     <div class="welcome-topline"><span data-welcome-progress></span><button type="button" class="welcome-skip" data-welcome-skip>Skip tour</button></div>
@@ -23,6 +24,7 @@
   .welcome-tour{position:fixed;inset:0;z-index:100;pointer-events:none}
   :global(body.welcome-open){overflow:hidden}
   .welcome-backdrop{position:absolute;inset:0;background:#10251b80;backdrop-filter:blur(2px);pointer-events:auto}
+  .welcome-settings-spotlight{position:absolute;z-index:1;display:flex;align-items:center;justify-content:center;border-radius:11px;background:var(--paper,#fff);color:var(--green,#17664f);font:700 12px 'DM Sans',sans-serif;box-shadow:0 0 0 4px #e1a33d,0 0 0 8px #fff;white-space:nowrap}
   .welcome-dialog{position:absolute;right:max(24px,env(safe-area-inset-right));top:96px;width:min(390px,calc(100vw - 32px));max-height:calc(100dvh - 116px);overflow:auto;background:var(--paper,#fff);color:var(--ink,#14241b);border:1px solid var(--line,#dce5df);border-radius:8px;box-shadow:0 22px 70px #071a1340;pointer-events:auto;animation:welcome-in .28s ease both}
   .welcome-dialog:focus{outline:none}
   .welcome-topline{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:19px 22px 0;color:var(--muted,#5b6a60);font-size:12px;font-weight:700}
@@ -42,13 +44,11 @@
   .welcome-tour[data-step="settings"] .welcome-dialog{top:132px}
   .welcome-pointer{display:none;position:absolute;top:52px;right:64px;color:#fff;font:700 34px/1 'DM Sans',sans-serif;text-shadow:0 2px 8px #10251b80}
   .welcome-tour[data-step="settings"] .welcome-pointer,.welcome-tour[data-step="install"] .welcome-pointer{display:block}
-  .welcome-tour[data-step="settings"] .welcome-pointer{top:90px}
+  .welcome-tour[data-step="settings"] .welcome-pointer{right:auto}
   .welcome-pointer::before{content:"↑"}
   .welcome-tour[data-step="install"][data-anchor="bottom"] .welcome-dialog{top:auto;bottom:max(24px,env(safe-area-inset-bottom));max-height:calc(100dvh - 48px)}
   .welcome-tour[data-step="install"][data-anchor="bottom"] .welcome-pointer{top:auto;bottom:2px;right:calc(50% - 10px)}
   .welcome-tour[data-step="install"][data-anchor="bottom"] .welcome-pointer::before{content:"↓"}
-  :global(.site-header:has(.tour-settings-highlight)){z-index:101}
-  :global(.tour-settings-highlight){position:relative;z-index:102!important;background:var(--paper,#fff)!important;box-shadow:0 0 0 5px #e1a33d,0 0 0 9px var(--paper,#fff);pointer-events:none}
   @media(max-width:600px){.welcome-dialog{top:calc(env(safe-area-inset-top) + 96px);right:16px}.welcome-tour[data-step="settings"] .welcome-dialog{top:calc(env(safe-area-inset-top) + 132px)}.welcome-content h2{font-size:21px}.welcome-image{height:145px}}
   @media(prefers-reduced-motion:reduce){.welcome-dialog,.welcome-tour[data-step="finish"] .welcome-dialog{animation:none}}
   @keyframes welcome-in{from{opacity:0;translate:0 8px}to{opacity:1;translate:0 0}}
