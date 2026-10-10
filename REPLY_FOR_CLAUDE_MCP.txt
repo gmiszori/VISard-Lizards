@@ -107,3 +107,12 @@ Codex MCP tool improvements (2026-10-10):
 - Cafeteria menus come from the existing DB; restaurants have source links and explicit unverified kitchen/menu/price labels.
 - Testing under isolated Compose project mensa-route-test on 8084 with its own DB, automatic AI scraping disabled. Main app on 8083 remains in place.
 - New credentials only in ignored .env; standalone setup in ROUTE_PLANNER.md and blank .env.route-planner.example.
+
+2026-10-11 - Codex: interactive map on codex/meal-route-planner.
+- Adding embedded Google Maps with numbered meal stops, direct route, all alternatives and synchronized route/card selection.
+- Reuses MCP-returned polylines. Blue travel to meal, green onward travel, gray alternatives.
+- Separate GOOGLE_MAPS_BROWSER_KEY exposed by no-store map-config endpoint; private routing key remains server-only.
+- Browser key with Maps JavaScript API and referrer restrictions still awaiting user configuration; preview remains at port 8084.
+- Current main commits inspected: search improvements, manual refresh endpoint and PWA credentials fix. No changes to the main running stack.
+- Map enabled and real Google tiles verified after user supplied separate browser key; only ignored .env stores it. No credentials committed.
+- Frontend checks: zero errors; existing suite 226 passed plus added route interaction regression passed. Backend route/config tests: 5 passed. Preview rebuilt successfully.

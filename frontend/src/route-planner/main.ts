@@ -1,4 +1,5 @@
 import { getPositionFix } from '../location/geolocation';
+import { MealRouteMap } from './map';
 
 const form = document.querySelector<HTMLFormElement>('#route-form')!;
 const input = (id: string) => document.querySelector<HTMLInputElement>(`#${id}`)!;
@@ -6,6 +7,14 @@ const status = document.querySelector<HTMLElement>('#planner-status')!;
 const results = document.querySelector<HTMLElement>('#route-results')!;
 const button = document.querySelector<HTMLButtonElement>('#plan-button')!;
 const section = document.querySelector<HTMLElement>('.planner-results')!;
+function selectCard(index: number) {
+  results.querySelectorAll<HTMLElement>('.route-option').forEach((card, i) => {
+    card.classList.toggle('is-selected', i === index);
+    card.querySelector('button')?.setAttribute('aria-pressed', String(i === index));
+  });
+}
+const routeMap = new MealRouteMap(selectCard);
+void routeMap.start();
 const localTime = (date: Date) => new Date(date.getTime() - date.getTimezoneOffset() * 60_000).toISOString().slice(0, 16);
 const initialDeparture = new Date(Date.now() + 5 * 60_000);
 if (initialDeparture.getHours() >= 14 || initialDeparture.getHours() < 8) {
@@ -23,10 +32,10 @@ fetch('/api/route-planner/status', { cache: 'no-store' }).then(async response =>
 }).catch(() => { document.querySelector('#planner-readiness')!.textContent = 'Could not reach the route planner backend.'; });
 document.querySelector('#use-location')!.addEventListener('click', async () => {
   status.textContent = 'Requesting your location…';
-  try { const fix = await getPositionFix(); input('origin').value = `${fix.lat},${fix.lng}`; status.textContent = 'Starting point set to your current location.'; }
+  try { const fix = await getPositionFix(); input('origin').value = `${fix.lat},${fix.lng}`; routeMap.locate(fix); status.textContent = 'Starting point set to your current location.'; }
   catch { status.textContent = 'Location unavailable. Please enter your starting point instead.'; }
 });
-type Leg = { departure: string; arrival: string; distanceMetres: number; directions: string[]; mapsUrl: string; provider?: { warnings?: string[] } };
+type Leg = { departure: string; arrival: string; distanceMetres: number; directions: string[]; mapsUrl: string; provider?: { warnings?: string[]; polyline?: string } };
 type Meal = { id: string; title: string; components: string[]; price?: { student?: number; staff?: number; external?: number } };
 type Place = { id: string; name: string; kind: string; sourceUrl: string; websiteUrl?: string; menuNote: string; hoursNote?: string; meals: Meal[]; attributions?: { provider: string; providerUri: string }[] };
 type Option = { place: Place; mealStart: string; mealEnd: string; arrival: string; spareMinutes: number; extraMinutes: number; outbound: Leg; onward: Leg };
@@ -50,6 +59,9 @@ function render(plan: Plan, explanation: string) {
   results.append(element('p', `${plan.checkedStops} stops checked · Direct route arrival ${time(plan.baseline.arrival)} · ${plan.mealMinutes}-minute meal break`));
   plan.options.forEach((option, index) => {
     const card = element('article'); card.className = 'route-option';
+    const show = element('button', `Show option ${index + 1} on map`); show.type = 'button'; show.className = 'show-route';
+    show.addEventListener('click', () => { routeMap.select(index); selectCard(index); document.querySelector('#route-map-panel')!.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+    card.append(show);
     card.append(element('p', index === 0 ? 'Earliest verified arrival' : 'Another option'), element('h3', option.place.name));
     card.append(element('p', `Eat ${time(option.mealStart)}–${time(option.mealEnd)}. Arrive ${time(option.arrival)}, ${option.spareMinutes} minutes before your deadline.`));
     card.append(element('p', `${option.extraMinutes} extra minutes compared with the direct journey, including your meal and waiting.`));
@@ -67,13 +79,14 @@ function render(plan: Plan, explanation: string) {
   const warnings = element('ul'); plan.warnings.forEach(warning => warnings.append(element('li', warning))); results.append(warnings);
   results.append(element('p', 'Route and restaurant information: Google Maps. Cafeteria menus: UniEats database.'));
   const raw = element('details'); raw.append(element('summary', 'View MCP tool result'), element('pre', JSON.stringify(plan, null, 2))); results.append(raw);
+  routeMap.setPlan(plan); selectCard(plan.options.length ? 0 : -1);
 }
 form.addEventListener('submit', async event => {
   event.preventDefault(); if (button.disabled) return;
   const departure = new Date(input('departure').value); const arrival = new Date(input('arrival').value);
   if (!(departure.getTime() < arrival.getTime())) { status.textContent = 'Arrival must be after departure.'; return; }
   const key = input('openai-key').value.trim(); input('openai-key').value = '';
-  button.disabled = true; section.setAttribute('aria-busy', 'true'); results.replaceChildren();
+  button.disabled = true; section.setAttribute('aria-busy', 'true'); results.replaceChildren(); routeMap.reset();
   const started = Date.now();
   const timer = window.setInterval(() => { status.textContent = `Planning with AI and MCP: checking restaurants, opening hours and travel legs… ${Math.floor((Date.now() - started) / 1000)}s`; }, 1000);
   status.textContent = 'Starting AI and MCP route planning…';

@@ -35,6 +35,13 @@ import '../route-planner/styles.css';
       <p id="planner-status" role="status" aria-live="polite"></p>
     </section>
     <section class="planner-results" aria-labelledby="result-title" aria-busy="false">
+      <div id="route-map-panel">
+        <div class="map-heading"><h2>Your route</h2><span id="route-map-selection" aria-live="polite">Routes will appear here after planning.</span></div>
+        <div id="route-map" aria-label="Interactive Google map of your journey and meal stops"></div>
+        <p id="route-map-status" role="status">Loading map…</p>
+        <div class="map-legend"><span><i class="outbound"></i> To meal stop</span><span><i class="onward"></i> To destination</span><span><i class="alternative"></i> Other options</span></div>
+        <div id="route-map-options" aria-label="Choose a route option"></div>
+      </div>
       <h2 id="result-title">Your options</h2>
       <div id="route-results"><div class="empty-result"><span aria-hidden="true">↗</span><h3>A little time for a good meal.</h3><p>Enter your journey to see meal stops, walking and transit directions, and how much time you’ll have before arrival.</p></div></div>
     </section>

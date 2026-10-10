@@ -21,6 +21,13 @@ public class RoutePlannerController {
     public ResponseEntity<JsonNode> status() {
         return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(service.status());
     }
+    /** Only the deliberately public, referrer-restricted browser credential is returned here. */
+    @GetMapping("/map-config")
+    public ResponseEntity<java.util.Map<String,String>> mapConfig(
+            @org.springframework.beans.factory.annotation.Value("${GOOGLE_MAPS_BROWSER_KEY:}") String browserKey,
+            @org.springframework.beans.factory.annotation.Value("${GOOGLE_MAPS_MAP_ID:DEMO_MAP_ID}") String mapId) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(java.util.Map.of("browserKey",browserKey,"mapId",mapId));
+    }
     @PostMapping("/plan")
     public ResponseEntity<JsonNode> plan(@RequestHeader(name="X-OpenAI-Key", defaultValue="") String key,
                                         @Valid @RequestBody Trip trip) {

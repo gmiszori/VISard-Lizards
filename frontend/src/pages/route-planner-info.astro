@@ -5,6 +5,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   <a href="/route-planner/">← Route planner</a>
   <h1>Route planner privacy and service terms</h1>
   <h2>Your journey data</h2>
+  <p>When the embedded map is configured, opening this page loads Google Maps in your browser. Google receives browser connection information, such as your IP address, and requests for the area displayed. Clicking “Use my location” also centers the map on the location you allow the browser to share.</p>
   <p>Clicking “Use my location” asks your browser for permission and fills the starting point. Submitting the form sends the starting point, destination, departure time, arrival deadline and meal duration to our backend. The backend forwards the journey to OpenAI for tool calling and explanation, and to Google Maps for routing and restaurant discovery.</p>
   <p>The entered OpenAI API key is used only to authenticate the two OpenAI requests for this plan. It is cleared from the form after submission and is not saved by this app in browser storage, the application database or application logs. It is not sent to Google Maps or the MCP server.</p>
   <p>Journey results are returned to the page for the current session; the route planner does not save a journey history or Google restaurant data in the application database. Other app features retain their existing storage behavior. OpenAI and Google process the data under their own policies.</p>
