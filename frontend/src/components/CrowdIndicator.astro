@@ -20,6 +20,11 @@ const labels = { low: 'Quiet', medium: 'Moderate', high: 'Busy', closed: 'Closed
   .crowd-indicator[data-occupancy=medium]{--crowd-color:#946000}
   .crowd-indicator[data-occupancy=high]{--crowd-color:#bb3832}
   .crowd-indicator[data-occupancy=closed]{--crowd-color:#69716d}
+  /* The colours above are only 3.2-3.9:1 on the near-black dark theme. The card badge keeps its white pill. */
+  :global(:root[data-theme="dark"]) .crowd-indicator:not(.crowd-indicator-card)[data-occupancy=low]{--crowd-color:#6fd39b}
+  :global(:root[data-theme="dark"]) .crowd-indicator:not(.crowd-indicator-card)[data-occupancy=medium]{--crowd-color:#e5b64d}
+  :global(:root[data-theme="dark"]) .crowd-indicator:not(.crowd-indicator-card)[data-occupancy=high]{--crowd-color:#ff8f86}
+  :global(:root[data-theme="dark"]) .crowd-indicator:not(.crowd-indicator-card)[data-occupancy=closed]{--crowd-color:#a3aca7}
   .crowd-indicator-card{padding:5px 8px;border-radius:8px;background:#fff;font-size:10px;line-height:1.2;box-shadow:0 1px 6px #0002}
   .crowd-indicator-card[data-occupancy=closed]{display:none}
   .crowd-meter{display:inline-flex;align-items:flex-end;gap:2px;height:13px}
