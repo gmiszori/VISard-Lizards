@@ -1,0 +1,14 @@
+Codex scheduled Discord session - 2026-10-10, Europe/Berlin
+Working window: approximately 05:39-06:09 (30 minutes).
+Source: Jona's VISard Lizard group message, 01:29, requesting regular commits,
+remote collaborator review, and a root TXT plan before starting.
+
+Plan: audit and harden the new crowd survey's current-status lifecycle.
+Observed issue: once real reports own the Current crowd box, expired/empty
+reports, request failures, and closing time can leave a stale live value there.
+Also review rejection feedback: a 429 must not claim that a report was accepted.
+Scope: frontend/src/crowd/survey*, small live-status integration if necessary,
+focused regression tests, crowd documentation, and this coordination note.
+No backend/API contract changes planned. Existing collaborator changes will
+be fetched/reviewed before pushes; no history rewrites. Other agents need not
+change their own plan files. No Discord replies will be sent.
