@@ -67,7 +67,7 @@ body{background:transparent;color:var(--ink)}.app-shell{max-width:1160px}.site-h
 .sticky-back-link:focus-visible{outline:3px solid #7eb594;outline-offset:3px}
 :root[data-theme="dark"] .sticky-back-link{background:#26775b;border-color:#26775b;color:#fff}
 :root[data-theme="dark"] .sticky-back-link:hover{background:#318868;border-color:#318868}
-@media(max-width:700px){:root{--site-header-height:66px}.app-shell{padding-top:0}}
+@media(max-width:700px){:root{--site-header-height:70px}.app-shell{padding-top:0}}
 .preference-icon>svg,.compact-icon>svg{display:block;width:22px;height:22px;overflow:visible}.preference-icon>svg path{fill:currentColor;stroke:currentColor;stroke-width:1.15;stroke-linecap:round;stroke-linejoin:round}.preference-icon>svg path+path{fill:none;stroke-width:1.5}.compact-icon>svg path{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.preference-vegan .preference-icon,.preference-vegetarian .preference-icon{color:#17664f}.preference-meat .preference-icon{color:#b85d20}:root[data-theme="dark"] .preference-vegan .preference-icon,:root[data-theme="dark"] .preference-vegetarian .preference-icon{color:#a4d4ad}:root[data-theme="dark"] .preference-meat .preference-icon{color:#ffc18b}
 .setting-option>.preference-icon,.setting-option>.compact-icon{display:grid;place-items:center;flex-direction:initial;gap:0}
 /* A day picked in the day picker that is not today: live status, current crowd and today's hours do not describe that day. */
