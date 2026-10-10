@@ -1,5 +1,13 @@
+import { canShowCanteen } from '../preferences/canteenVisibility.ts';
+
 export interface PickableMensa { id: string; campusId: string; hasMenu?: boolean; temporarilyClosed?: boolean }
 export interface CampusSelection { campus: string; campusSecondary: readonly string[] }
+
+export function eligibleRatingMensas<T extends PickableMensa>(mensas: readonly T[], profile: CampusSelection & { priceTier: string }): T[] {
+  const allowed = new Set([profile.campus, ...profile.campusSecondary]);
+  return mensas.filter(m => m.hasMenu === true && !m.temporarilyClosed && allowed.has(m.campusId) &&
+    canShowCanteen(m.id, profile.priceTier));
+}
 
 /** Callers with minimal {id, campusId} records prefilter availability. Full records
  * are also accepted, and unavailable records are rejected here defensively. */

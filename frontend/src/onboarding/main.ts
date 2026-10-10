@@ -2,6 +2,8 @@ import { saveProfile } from './api';
 import { createOnboardingStore } from './onboardingStore';
 import { pickTodaysDishOpenFirst } from './pickTodaysDish';
 import { steps, type Context, type OnboardingData } from './steps';
+import { eligibleRatingMensas } from './pickMensas';
+import { adjacentStepIndex, visibleStepIndices } from './navigation';
 import { t, translate } from './i18n';
 import { ONBOARDING_AUTO_START } from './config';
 import { appNow, zurichParts } from '../time/clock';
@@ -58,6 +60,8 @@ function initialise(root: HTMLElement) {
       advance() { guard(advance); },
     };
     const renders = flowSteps.map((step, i) => step.mount(sections[i]!, ctx));
+    const availableSteps = () => visibleStepIndices(flowSteps.map(step => step.id),
+      eligibleRatingMensas(data.mensas, store.state.profile).length > 0);
 
     function renderPayoff() {
       const p = store.state.profile;
@@ -85,15 +89,19 @@ function initialise(root: HTMLElement) {
       if (!completed) document.dispatchEvent(new CustomEvent('themepreferencechange', { detail: store.state.profile.theme }));
       flow.hidden = completed; payoff.hidden = !completed;
       if (completed) { renderPayoff(); return; }
+      const visible = availableSteps();
+      if (!visible.includes(store.state.step)) {
+        store.setStep(adjacentStepIndex(visible, store.state.step, 1) ?? visible.at(-1)!);
+      }
       const index = store.state.step;
       sections.forEach((section, i) => { section.hidden = i !== index; });
       renders.forEach(render => render());
-      progress.max = flowSteps.length; progress.value = index + 1;
-      const label = `${t('step')} ${index + 1} ${t('of')} ${flowSteps.length} · ${t(flowSteps[index]!.titleKey)}`;
+      progress.max = visible.length; progress.value = visible.indexOf(index) + 1;
+      const label = `${t('step')} ${progress.value} ${t('of')} ${visible.length} · ${t(flowSteps[index]!.titleKey)}`;
       root.querySelector<HTMLElement>('[data-progress-label]')!.textContent = label;
       progress.setAttribute('aria-label', label);
-      next.dataset.obI18n = index === flowSteps.length - 1 ? 'finish' : 'next';
-      next.textContent = t(index === flowSteps.length - 1 ? 'finish' : 'next');
+      next.dataset.obI18n = index === visible.at(-1) ? 'finish' : 'next';
+      next.textContent = t(index === visible.at(-1) ? 'finish' : 'next');
     }
     function move(step: number) {
       lastMoveAt = performance.now();
@@ -118,12 +126,14 @@ function initialise(root: HTMLElement) {
     }
     function advance() {
       if (!settled()) return;
-      if (store.state.step < flowSteps.length - 1) move(store.state.step + 1); else finish();
+      const nextStep = adjacentStepIndex(availableSteps(), store.state.step, 1);
+      if (nextStep === null) finish(); else move(nextStep);
     }
     next.addEventListener('click', () => guard(advance));
     root.querySelector('[data-back]')!.addEventListener('click', () => guard(() => {
       if (!settled()) return;
-      if (store.state.step > 0) move(store.state.step - 1);
+      const previousStep = adjacentStepIndex(availableSteps(), store.state.step, -1);
+      if (previousStep !== null) move(previousStep);
       else leaveOnboarding();
     }));
     skip.addEventListener('click', () => guard(() => {
@@ -134,7 +144,10 @@ function initialise(root: HTMLElement) {
     root.addEventListener('keydown', event => {
       // Native button, input and radio keys remain intact; Alt+arrows navigate steps.
       if (!event.altKey || completed) return;
-      if (event.key === 'ArrowLeft' && store.state.step > 0) { event.preventDefault(); guard(() => { if (settled()) move(store.state.step - 1); }); }
+      if (event.key === 'ArrowLeft') {
+        const previousStep = adjacentStepIndex(availableSteps(), store.state.step, -1);
+        if (previousStep !== null) { event.preventDefault(); guard(() => { if (settled()) move(previousStep); }); }
+      }
       if (event.key === 'ArrowRight') { event.preventDefault(); guard(advance); }
     });
     document.addEventListener('languagechange', () => guard(() => {
