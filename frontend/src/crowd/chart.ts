@@ -3,8 +3,8 @@ import { defaultCrowdDay } from './defaultDay';
 import { appNow, CLOCK_EVENT, zurichClock } from '../time/clock';
 
 const copy = {
-  en: { eyebrow: 'PLAN YOUR LUNCH', title: 'Predicted crowd', minutes: 'min', subtitle: 'Typical occupancy, every 15 minutes.', day: 'Day', quiet: 'Quiet', moderate: 'Moderate', busy: 'Busy', now: 'Now', empty: 'No prediction available for this day.', missing: 'No prediction for this interval', preview: 'Preview data · Illustrative occupancy, not a live forecast.', backend: 'Estimated occupancy · 15-minute intervals · Zürich time.', chart: 'Predicted occupancy by time', occupancy: 'predicted occupancy', hint: 'Tap a bar, or use the arrow keys, to see its time slot.' },
-  de: { eyebrow: 'PLANE DEIN MITTAGESSEN', title: 'Erwartete Auslastung', minutes: 'Min.', subtitle: 'Typische Auslastung im 15-Minuten-Takt.', day: 'Tag', quiet: 'Ruhig', moderate: 'Mäßig besucht', busy: 'Voll', now: 'Jetzt', empty: 'Für diesen Tag ist keine Prognose verfügbar.', missing: 'Keine Prognose für dieses Intervall', preview: 'Vorschaudaten · Beispielhafte Auslastung, keine Live-Prognose.', backend: 'Geschätzte Auslastung · 15-Minuten-Takt · Zürcher Zeit.', chart: 'Erwartete Auslastung nach Uhrzeit', occupancy: 'erwartete Auslastung', hint: 'Tippe auf einen Balken oder nutze die Pfeiltasten, um das Zeitfenster zu sehen.' },
+  en: { eyebrow: 'PLAN YOUR LUNCH', title: 'Predicted crowd', minutes: 'min', subtitle: 'Typical occupancy, every 15 minutes.', day: 'Day', quiet: 'Quiet', moderate: 'Moderate', busy: 'Busy', now: 'Now', empty: 'No prediction available for this day.', missing: 'No prediction for this interval', preview: 'Preview data · Illustrative occupancy, not a live forecast.', backend: 'Estimated occupancy · 15-minute intervals · Zürich time.', chart: 'Predicted occupancy by time', occupancy: 'predicted occupancy', hint: 'Tap a bar, or use the arrow keys, to see its time slot.', hintTouch: 'Tap a bar to see its time slot.' },
+  de: { eyebrow: 'PLANE DEIN MITTAGESSEN', title: 'Erwartete Auslastung', minutes: 'Min.', subtitle: 'Typische Auslastung im 15-Minuten-Takt.', day: 'Tag', quiet: 'Ruhig', moderate: 'Mäßig besucht', busy: 'Voll', now: 'Jetzt', empty: 'Für diesen Tag ist keine Prognose verfügbar.', missing: 'Keine Prognose für dieses Intervall', preview: 'Vorschaudaten · Beispielhafte Auslastung, keine Live-Prognose.', backend: 'Geschätzte Auslastung · 15-Minuten-Takt · Zürcher Zeit.', chart: 'Erwartete Auslastung nach Uhrzeit', occupancy: 'erwartete Auslastung', hint: 'Tippe auf einen Balken oder nutze die Pfeiltasten, um das Zeitfenster zu sehen.', hintTouch: 'Tippe auf einen Balken, um das Zeitfenster zu sehen.' },
 };
 type Key = keyof typeof copy.en;
 const language = () => document.documentElement.lang === 'de' ? 'de' : 'en';
@@ -75,7 +75,7 @@ function mountChart(root: HTMLElement) {
     root.querySelector('[data-crowd-source]')!.textContent = t(prediction.source === 'preview' ? 'preview' : 'backend');
     slots = slotsForDay(prediction, day);
     selected = -1;
-    if (readout) readout.textContent = t('hint');
+    if (readout) readout.textContent = t(window.matchMedia('(pointer: coarse)').matches ? 'hintTouch' : 'hint');
     const available = slots.some(slot => slot.occupancyPct !== null);
     root.querySelector<HTMLElement>('[data-crowd-content]')!.hidden = !available;
     root.querySelector<HTMLElement>('[data-crowd-empty]')!.hidden = available;
