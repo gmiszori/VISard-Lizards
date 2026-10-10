@@ -62,6 +62,7 @@ Services only see domain models through `MensaRepository` (implemented by `JpaMe
 | POST | [`/api/search`](#post-apisearch) | Match a search query to displayed canteens with OpenAI |
 | GET | [`/api/meals/{id}`](#get-apimealsid) | One meal with its ratings |
 | POST | [`/api/meals/{id}/ratings`](#post-apimealsidratings) | Rate a meal |
+| DELETE | [`/api/meals/{id}/ratings?userId=`](#delete-apimealsidratings) | Take back a meal rating |
 | GET | [`/api/push/public-key`](#push-notifications-for-starred-dishes) | VAPID key for Web Push |
 | PUT | [`/api/push/subscription`](#push-notifications-for-starred-dishes) | Subscribe, or update the starred dishes |
 | DELETE | [`/api/push/subscription`](#push-notifications-for-starred-dishes) | Unsubscribe |
@@ -364,6 +365,12 @@ Response `201` with the saved rating:
 `{"mealId": "...", "mensaId": "polyterrasse", "mealDate": "2026-10-06", "userId": "anon:...", "stars": 5, "tags": [], "ratedAt": "...", "source": "location"}`.
 Errors: `404` unknown meal, `400` missing or invalid `userId`, stars outside 1–5, unknown tag or
 source, or invalid body, `409` this user already rated this meal.
+
+### DELETE /api/meals/{id}/ratings
+
+Takes back a user's rating of a meal ("Undo" in the rating card): `DELETE /api/meals/{id}/ratings?userId=anon:...`.
+Afterwards `avgRating` and `tagCounts` no longer count it and the user can rate the meal again.
+Response `204`. Errors: `400` missing or invalid `userId`, `404` unknown meal or no rating of this user.
 
 ## Push notifications for starred dishes
 

@@ -2,6 +2,7 @@ package com.visardlizards.backend.controller;
 
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -100,6 +101,25 @@ class MealControllerTests {
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(rating(USER_A, "\"stars\": 4, \"source\": \"gps\"")))
 				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void aRatingCanBeTakenBackAndGivenAgain() throws Exception {
+		String mealId = "polyterrasse.2026-10-09.lunch.0";
+		mockMvc.perform(post("/api/meals/" + mealId + "/ratings").contentType(MediaType.APPLICATION_JSON)
+						.content(rating(USER_A, "\"stars\": 1")))
+				.andExpect(status().isCreated());
+		mockMvc.perform(delete("/api/meals/" + mealId + "/ratings").param("userId", USER_A))
+				.andExpect(status().isNoContent());
+		mockMvc.perform(get("/api/meals/" + mealId))
+				.andExpect(jsonPath("$.avgRating").doesNotExist());
+		mockMvc.perform(delete("/api/meals/" + mealId + "/ratings").param("userId", USER_A))
+				.andExpect(status().isNotFound());
+		mockMvc.perform(delete("/api/meals/" + mealId + "/ratings").param("userId", "bob"))
+				.andExpect(status().isBadRequest());
+		mockMvc.perform(post("/api/meals/" + mealId + "/ratings").contentType(MediaType.APPLICATION_JSON)
+						.content(rating(USER_A, "\"stars\": 4")))
+				.andExpect(status().isCreated());
 	}
 
 	@Test

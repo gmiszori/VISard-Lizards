@@ -53,5 +53,10 @@
 :root .app-shell .preference-vegan:has(input:checked){background:color-mix(in srgb,var(--green) 4%,transparent);border-color:color-mix(in srgb,var(--green) 25%,transparent);box-shadow:none}
 :root .app-shell .preference-vegan .preference-icon{background:color-mix(in srgb,var(--green) 7%,transparent)}
 :root .ob [data-chip-group=diet] .ob-chip[data-value=vegan][aria-pressed=true]{background:color-mix(in srgb,var(--green) 8%,transparent);color:var(--green);border-color:color-mix(in srgb,var(--green) 35%,transparent)}
+/* Carnivore uses the meat orange of the menus (.diet-meat in global.css). */
+:root .ob [data-chip-group=diet] .ob-chip[data-value=carnivore][aria-pressed=true]{background:#fff0df;color:#a84e12;border-color:#f4d1aa}
+:root .ob [data-chip-group=diet] .ob-chip[data-value=carnivore][aria-pressed=true] small{color:#a84e12}
+:root[data-theme=dark] .ob [data-chip-group=diet] .ob-chip[data-value=carnivore][aria-pressed=true]{background:#482d1b;color:#ffc18b;border-color:#80502b}
+:root[data-theme=dark] .ob [data-chip-group=diet] .ob-chip[data-value=carnivore][aria-pressed=true] small{color:#ffc18b}
 @media(max-width:900px){.app-shell>.site-header{grid-template-columns:minmax(0,1fr) auto;gap:10px;padding-block:12px}.header-account{grid-column:1/-1;grid-row:2;justify-self:center}.site-header>.brand{min-width:0}.header-account :is(a,button){min-height:44px}.ob [data-flow]{min-height:calc(100svh - 242px)}}
 @media(max-width:400px){.site-header>.brand{font-size:16px;gap:6px}.site-header .settings-link{padding-inline:7px}.site-header>.header-controls{gap:5px}.site-header .brand small{font-size:7px}.login-dialog{padding:26px 22px}.login-mark{margin-bottom:18px}}

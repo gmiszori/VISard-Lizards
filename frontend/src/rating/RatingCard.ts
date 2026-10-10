@@ -2,7 +2,7 @@ import { type MensaChoice, type RatingPrompt } from './getRatingPrompt.ts';
 import { appNow } from '../time/clock.ts';
 import { mensaCandidates, STATE_KEY, useRatingPrompt } from './useRatingPrompt.ts';
 import { loadMeals } from './mealSource.ts';
-import { anonymousUserId, DuplicateMealRatingError, RATINGS_KEY, saveMealRating, type Stars } from './saveMealRating.ts';
+import { anonymousUserId, DuplicateMealRatingError, RATINGS_KEY, saveMealRating, undoMealRating, type Stars } from './saveMealRating.ts';
 import { API_URL, apiGet, type BackendMealDetail } from '../data/api.ts';
 import type { Profile } from '../onboarding/profile';
 import { ratingText, translateRating, type RatingText } from './i18n';
@@ -82,19 +82,22 @@ export function mountRatingCard(): void {
     mensa = undefined;
     meal = undefined;
     if (closeTimer) clearTimeout(closeTimer);
+    query('[data-rating-undo]').hidden = true;
   }
   function step(name: 'mensa' | 'meal' | 'rate', focus = true) {
     root!.querySelectorAll<HTMLElement>('[data-rating-step]').forEach(el => { el.hidden = el.dataset.ratingStep !== name; });
     clearStatus();
     if (focus) query(name === 'mensa' ? '#meal-rating-title' : `[data-rating-${name === 'meal' ? 'meal' : 'rate'}-heading]`).focus();
   }
-  function feedback(message: RatingText) {
+  /** undoable: after a new rating, offer "Undo" and keep the card open a little longer. */
+  function feedback(message: RatingText, undoable = false) {
     closing = true;
     root!.querySelectorAll<HTMLElement>('[data-rating-step]').forEach(el => { el.hidden = true; });
     setStatus(message);
+    query('[data-rating-undo]').hidden = !undoable;
     status.tabIndex = -1;
     status.focus();
-    closeTimer = setTimeout(hide, 2200);
+    closeTimer = setTimeout(hide, undoable ? 8000 : 2200);
   }
   function resolve(dismissed: boolean) {
     if (!prompt) return;
@@ -235,10 +238,29 @@ export function mountRatingCard(): void {
           simulated ? '' : API_URL);
       } catch (error) { if (error instanceof DuplicateMealRatingError) duplicate = true; else throw error; }
       store.resolve(prompt.date);
-      feedback(duplicate ? 'duplicate' : simulated || !API_URL ? 'saved' : 'savedBackend');
+      feedback(duplicate ? 'duplicate' : simulated || !API_URL ? 'saved' : 'savedBackend', !duplicate);
     } catch { setStatus('saveError'); }
     finally { busy = false; root.querySelectorAll<HTMLButtonElement>('button').forEach(b => { b.disabled = false; }); }
   }));
+  // Undo: delete the rating, open the date again and go back to the stars of the same meal.
+  query<HTMLButtonElement>('[data-rating-undo]').addEventListener('click', async event => {
+    const undo = event.currentTarget as HTMLButtonElement;
+    if (!prompt || !meal || busy) return;
+    if (closeTimer) clearTimeout(closeTimer);
+    busy = true;
+    undo.disabled = true;
+    try {
+      await undoMealRating({ userId: anonymousUserId(), mealId: meal.id }, localStorage, ratingsKey, simulated ? '' : API_URL);
+      store.reopen(prompt.date);
+      closing = false;
+      undo.hidden = true;
+      step('rate');
+      setStatus('undone');
+    } catch {
+      setStatus('undoError');
+      closeTimer = setTimeout(hide, 8000);
+    } finally { busy = false; undo.disabled = false; }
+  });
   // The simulator controls live in the developer tools (dev/DevTools.astro).
   const dev = import.meta.env.DEV ? document.querySelector<HTMLElement>('[data-rating-dev]') : null;
   if (dev) {
