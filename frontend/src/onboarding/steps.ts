@@ -59,6 +59,7 @@ function mountTheme(root: HTMLElement, ctx: Context) {
     const theme = values[0] as Profile['theme'];
     ctx.update({ theme });
     document.documentElement.dataset.theme = theme;
+    try { localStorage.setItem('campuseats-theme', theme); } catch { /* the theme still applies for this visit */ }
   });
   return () => sync(root, 'theme', [ctx.store.state.profile.theme]);
 }
