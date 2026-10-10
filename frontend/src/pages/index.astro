@@ -56,7 +56,6 @@ const openCount = canteens.filter((canteen) => canteen.isOpen).length;
           button.setAttribute('aria-pressed', String(isFavourite));
           button.setAttribute('aria-label', isFavourite ? (document.documentElement.lang === 'de' ? 'Aus Favoriten entfernen' : 'Remove from favourites') : (document.documentElement.lang === 'de' ? 'Zu Favoriten hinzufügen' : 'Add to favourites'));
           button.classList.toggle('is-favourite', isFavourite);
-          button.querySelector('span')!.textContent = isFavourite ? '★' : '☆';
         }
         const hasMeals = card.querySelector('[data-meal-row]:not([hidden])') !== null;
         (isFavourite && hasMeals ? favouritesGrid : allGrid)?.append(card);
