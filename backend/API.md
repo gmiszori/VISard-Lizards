@@ -394,11 +394,6 @@ later menu does. Dish names match ignoring case and spacing. Subscriptions the p
   `{"delivered": true, "pushServiceStatus": 201}`; `404` without such a subscription; `429` more than once a
   minute per client.
 
-- `POST /api/push/run?forgetAnnounced=false` (internal, only with `INTERNAL_API_ENABLED=true`) runs the daily
-  job now and returns `{"sent": n}`. With `forgetAnnounced=true` every subscription first forgets what it was
-  told, so starred dishes on the current menus are announced again (for testing; developer tools, "Push
-  notifications").
-
 The notification payload (decrypted by the service worker `frontend/public/sw.js`) is
 `{"title", "body", "url", "tag": "starred-dishes"}`.
 
