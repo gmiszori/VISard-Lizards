@@ -7,12 +7,15 @@ const KEY = 'campuseats-onboarding';
 export function savedLanguage(): 'de' | 'en' {
   try { return localStorage.getItem('campuseats-language') === 'de' ? 'de' : 'en'; } catch { return 'en'; }
 }
+export function savedTheme(): 'light' | 'dark' {
+  try { return localStorage.getItem('campuseats-theme') === 'dark' ? 'dark' : 'light'; } catch { return 'light'; }
+}
 const strings = (value: unknown): value is string[] => Array.isArray(value) && value.every(v => typeof v === 'string');
 
 export function createOnboardingStore(campuses: CampusId[], stepCount: number, restart = false) {
   // This factory is called only by main.ts in the browser, never during SSR.
   const lang = savedLanguage();
-  const initial = defaults(campuses[0]!, lang);
+  const initial = defaults(campuses[0]!, lang, savedTheme());
   let state: Draft = { profile: initial, step: 0, picks: [], ratingScale: 5 };
   if (restart) { try { localStorage.removeItem(KEY); } catch { /* nothing saved to remove */ } }
   try {
@@ -28,6 +31,7 @@ export function createOnboardingStore(campuses: CampusId[], stepCount: number, r
       Array.isArray(p.mensaRatings) && p.mensaRatings.every(r => typeof r.mensaId === 'string' &&
         [1, 2, 3, 4, 5].includes(r.rating) && (saved.ratingScale === 5 || r.rating <= 3))) {
       state = { profile: { ...p,
+        theme: p.theme === 'dark' ? 'dark' : p.theme === 'light' ? 'light' : initial.theme,
         // Preserve the rest of a draft made before the diet choices were simplified.
         diet: DIETS.includes(p.diet) ? p.diet : 'omnivore',
         campusSecondary: [...new Set(p.campusSecondary.filter(id => campuses.includes(id) && id !== p.campus))],

@@ -54,6 +54,14 @@ function mountDiet(root: HTMLElement, ctx: Context) {
   mountChipSelect(root, ({ name, values }) => ctx.update(name === 'diet' ? { diet: values[0] as Profile['diet'] } : { hard: values as Profile['hard'] }));
   return () => { const p = ctx.store.state.profile; sync(root, 'diet', [p.diet]); sync(root, 'hard', p.hard); };
 }
+function mountTheme(root: HTMLElement, ctx: Context) {
+  mountChipSelect(root, ({ values }) => {
+    const theme = values[0] as Profile['theme'];
+    ctx.update({ theme });
+    document.documentElement.dataset.theme = theme;
+  });
+  return () => sync(root, 'theme', [ctx.store.state.profile.theme]);
+}
 function mountPrice(root: HTMLElement, ctx: Context) {
   const slider = root.querySelector<HTMLInputElement>('#ob-budget')!;
   mountChipSelect(root, ({ name, values }) => {
@@ -141,6 +149,7 @@ function mountRatings(root: HTMLElement, ctx: Context) {
 export const steps: Step[] = [
   { id: 'campus', titleKey: 'campusTitle', skippable: true, mount: mountCampus },
   { id: 'diet', titleKey: 'dietTitle', skippable: true, mount: mountDiet },
+  { id: 'theme', titleKey: 'themeTitle', skippable: true, mount: mountTheme },
   { id: 'price', titleKey: 'priceTitle', skippable: true, mount: mountPrice },
   { id: 'ratings', titleKey: 'ratingsTitle', skippable: true, mount: mountRatings },
 ];
@@ -150,6 +159,7 @@ export function skipStep(id: string, initial: Profile): Partial<Profile> {
   switch (id) {
     case 'campus': return { campus: initial.campus, campusSecondary: [], mensaRatings: [] };
     case 'diet': return { diet: initial.diet, hard: [] };
+    case 'theme': return { theme: initial.theme };
     case 'price': return { priceTier: initial.priceTier, maxPrice: null, priceMode: 'soft', priority: [...initial.priority] };
     case 'ratings': return { mensaRatings: [] };
     default: return {};

@@ -6,7 +6,6 @@ import StarredMealsSettings from '../components/StarredMealsSettings.astro';
 <BaseLayout title="Settings">
   <a href="/" class="detail-back" data-i18n="back">← All canteens</a>
   <section class="settings-intro">
-    <div class="settings-intro-icon" aria-hidden="true">⚙</div>
     <div><span class="eyebrow" data-i18n="settings">Settings</span>
       <h1 data-i18n="settingsTitle">Your settings</h1>
       <p data-i18n="settingsIntro">Choose which meals you want to see. Your choices are saved on this device.</p>
@@ -37,7 +36,7 @@ import StarredMealsSettings from '../components/StarredMealsSettings.astro';
       </select></label>
     </fieldset>
     <fieldset class="settings-group">
-      <legend data-i18n="foodPreferences">Food preferences</legend><span class="settings-group-mark" aria-hidden="true">✳</span>
+      <legend data-i18n="foodPreferences">Food preferences</legend>
       <p data-i18n="preferencesHint">Select every type of meal you want included.</p>
       <div class="preference-options">
         <label class="setting-option preference-option preference-vegan"><span class="preference-icon" aria-hidden="true">🌿</span><span class="setting-copy"><strong data-i18n="vegan">Vegan</strong><small data-i18n="plantBased">Plant-based</small></span><input type="checkbox" name="vegan" value="vegan" /></label>
@@ -46,7 +45,7 @@ import StarredMealsSettings from '../components/StarredMealsSettings.astro';
       </div>
     </fieldset>
     <fieldset class="settings-group">
-      <legend data-i18n="canteenFilters">Canteen filters</legend><span class="settings-group-mark" aria-hidden="true">⌖</span>
+      <legend data-i18n="canteenFilters">Canteen filters</legend>
       <p data-i18n="filtersHint">Choose one or more campus locations to include.</p>
       <div class="campus-options">
         <label class="setting-option compact-option"><span class="compact-icon" aria-hidden="true">⌂</span><span class="setting-copy"><strong data-i18n="zentrum">Zentrum</strong></span><input type="checkbox" name="locations" value="zentrum" /></label>
@@ -68,7 +67,7 @@ import StarredMealsSettings from '../components/StarredMealsSettings.astro';
       </div>
     </fieldset>
     <fieldset class="settings-group">
-      <legend data-i18n="devMode">Dev mode</legend><span class="settings-group-mark" aria-hidden="true">⌘</span>
+      <legend data-i18n="devMode">Dev mode</legend>
       <p data-i18n="devModeDescription">Show diagnostics for live data, location, storage and backend connectivity.</p>
       <label class="setting-option compact-option"><span class="compact-icon" aria-hidden="true">⌁</span><span class="setting-copy"><strong data-i18n="devTools">Developer tools</strong></span><input type="checkbox" name="devMode" value="true" /></label>
     </fieldset>

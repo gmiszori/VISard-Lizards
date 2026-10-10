@@ -41,7 +41,7 @@ const payload = {
       <header class="ob-progress-header">
         <span class="eyebrow"><span data-ob-i18n="intro">{t('intro')}</span></span>
         <p class="ob-progress-label" data-progress-label aria-live="polite" aria-atomic="true"></p>
-        <progress data-progress max="4" value="1" aria-label="Onboarding progress"></progress>
+        <progress data-progress max="5" value="1" aria-label="Onboarding progress"></progress>
       </header>
       <div class="ob-content">
         <section data-step="campus" hidden>
@@ -59,6 +59,11 @@ const payload = {
               notice: value === 'halal' || value === 'kosher' }))} />
             <p class="ob-note" data-ob-i18n="hardHint">{t('hardHint')}</p>
           </div>
+        </section>
+        <section data-step="theme" hidden>
+          <h1 tabindex="-1" data-ob-i18n="themeTitle">{t('themeTitle')}</h1>
+          <p class="ob-lead" data-ob-i18n="themeHint">{t('themeHint')}</p>
+          <ChipSelect name="theme" labelKey="themePreference" mode="single" options={keys(['lightTheme', 'darkTheme'])} />
         </section>
         <section data-step="price" hidden>
           <h1 tabindex="-1" data-ob-i18n="priceTitle">{t('priceTitle')}</h1>
