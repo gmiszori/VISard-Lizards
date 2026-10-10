@@ -1,10 +1,10 @@
 ---
 import '../crowd/predicted-crowd.css';
 import type { CrowdPrediction } from '../crowd/prediction';
-interface Props { prediction: CrowdPrediction }
-const { prediction } = Astro.props;
+interface Props { prediction: CrowdPrediction; serving?: Record<string, Array<{ service: string; from: number; to: number }>> }
+const { prediction, serving } = Astro.props;
 ---
-<section class="predicted-crowd" data-crowd-chart data-mensa-id={prediction.mensaId} aria-labelledby="predicted-crowd-title">
+<section class="predicted-crowd" data-crowd-chart data-mensa-id={prediction.mensaId} data-serving={serving ? JSON.stringify(serving) : undefined} aria-labelledby="predicted-crowd-title">
   <div class="crowd-heading">
     <div><span class="crowd-eyebrow" data-crowd-text="eyebrow">PLAN YOUR LUNCH</span><h2 id="predicted-crowd-title" data-crowd-text="title">Predicted crowd</h2></div>
     <span class="crowd-interval">15 <span data-crowd-text="minutes">min</span></span>
@@ -14,6 +14,7 @@ const { prediction } = Astro.props;
     <label class="crowd-day-control"><span class="visually-hidden" data-crowd-text="day">Day</span><select data-crowd-day aria-label="Day"></select></label>
   </div>
   <div data-crowd-content hidden>
+    <p class="crowd-tip" data-crowd-tip hidden></p>
     <div class="crowd-plot">
       <svg class="crowd-bars" viewBox="0 0 600 60" preserveAspectRatio="none" role="img" data-crowd-svg aria-label="Predicted occupancy by time">
         <g class="crowd-grid" aria-hidden="true"><line x1="0" x2="600" y1="59" y2="59"/></g>

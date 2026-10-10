@@ -3,7 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import MenuItem from '../../components/MenuItem.astro';
 import PredictedCrowd from '../../components/PredictedCrowd.astro';
 import LocationLink from '../../components/LocationLink.astro';
-import { CANTEENS, CROWD, LIVE_DATA } from '../../data/canteens';
+import { CANTEENS, CROWD, LIVE_DATA, MENSAS } from '../../data/canteens';
 import { loadAppData } from '../../data/app-data';
 import MenuDate from '../../components/MenuDate.astro';
 import { WEEKDAYS, type CrowdPrediction } from '../../crowd/prediction';
@@ -15,6 +15,10 @@ const { menuDate, today, canteens } = await loadAppData();
 const canteen = canteens.find((c) => c.id === Astro.params.id)!;
 const crowd = CROWD[canteen.id];
 const live = LIVE_DATA[canteen.id];
+// When meals are served per weekday (not when the building is open): the quiet-time tip stays inside these.
+const minutes = (time: string) => Number(time.slice(0, 2)) * 60 + Number(time.slice(3));
+const serving = Object.fromEntries(WEEKDAYS.map(day => [day,
+  (MENSAS.find(m => m.id === canteen.id)?.openingHours[day] ?? []).map(h => ({ service: h.service, from: minutes(h.open), to: minutes(h.close) }))]));
 const prediction: CrowdPrediction = {
   mensaId: canteen.id, intervalMinutes: 15, timeZone: 'Europe/Zurich', source: 'preview',
   byWeekday: Object.fromEntries(WEEKDAYS.map(day => [day,
@@ -29,7 +33,7 @@ const prediction: CrowdPrediction = {
   <a href="/" class="detail-back" data-i18n="back">← All canteens</a>
   <section class="detail-hero"><img src={canteen.imageUrl} alt="" /><div class="detail-overlay"><div><div class="detail-hero-title"><h1>{canteen.name}</h1><LocationLink mensaId={canteen.id} /></div><p>{canteen.campus} · {canteen.location} · ★ {canteen.rating !== null ? canteen.rating.toFixed(1) : <span title="No ratings yet">–</span>}</p></div><span data-live="status" data-live-id={canteen.id} class={`status ${canteen.isOpen ? 'open' : 'closed'}`}>● <span data-i18n={canteen.isOpen ? 'open' : 'closed'}>{canteen.isOpen ? 'Open now' : 'Closed'}</span></span></div></section>
   <div class="detail-info"><div class="info-box"><small data-i18n="hours">Opening hours</small><strong data-live="hours" data-live-id={canteen.id}>{canteen.hours}</strong></div><div class="info-box"><small data-i18n="crowd">Current crowd</small><strong data-live="crowd" data-live-id={canteen.id} data-i18n={canteen.isOpen ? canteen.occupancy : 'closed'}>{canteen.isOpen ? canteen.occupancy[0].toUpperCase() + canteen.occupancy.slice(1) : 'Closed'}</strong></div></div>
-  <PredictedCrowd prediction={prediction} />
+  <PredictedCrowd prediction={prediction} serving={serving} />
   <section><h2 class="menu-section-title"><MenuDate date={menuDate} today={today} variant="heading" /> <span class="count">· {canteen.menu.length} <span data-i18n="dishes">dishes</span></span></h2>
     {canteen.menu.length ? <><p class="allergen-notice" data-allergen-notice role="status" hidden></p><div class="menu-list" data-preference-list data-meal-list>{canteen.menu.map((item) => <MenuItem item={item} />)}</div><div class="empty-state preference-empty" data-no-preference-meals hidden data-i18n="noPreferenceMeals">No dishes match your food preferences.</div></> : <div class="empty-state" style="display:block" data-i18n="menuEmpty">No menu available today.</div>}
   </section>

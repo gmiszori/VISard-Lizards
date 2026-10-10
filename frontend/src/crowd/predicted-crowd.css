@@ -40,3 +40,5 @@
   .crowd-legend{gap:10px;font-size:10px}
 }
 @media(prefers-reduced-motion:reduce){.predicted-crowd *{transition:none!important;animation:none!important}}
+.crowd-tip{margin:0 0 10px;padding:8px 12px;border-radius:12px;background:var(--lime);color:var(--ink);font-size:13px;font-weight:600;line-height:1.4}
+:root[data-theme="dark"] .crowd-tip{background:#243b2c;color:var(--ink)}

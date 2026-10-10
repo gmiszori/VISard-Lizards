@@ -1,9 +1,10 @@
 import { formatTime, slotsForDay, WEEKDAYS, type CrowdPrediction, type CrowdSlot, type CrowdWeekday } from './prediction';
 import { defaultCrowdDay } from './defaultDay';
+import { quietestWindow, windowLabel, type ServingWindow } from './bestTime';
 
 const copy = {
-  en: { eyebrow: 'PLAN YOUR LUNCH', title: 'Predicted crowd', minutes: 'min', subtitle: 'Typical occupancy, every 15 minutes.', day: 'Day', quiet: 'Quiet', moderate: 'Moderate', busy: 'Busy', now: 'Now', empty: 'No prediction available for this day.', missing: 'No prediction for this interval', preview: 'Preview data · Illustrative occupancy, not a live forecast.', backend: 'Estimated occupancy · 15-minute intervals · Zürich time.', chart: 'Predicted occupancy by time', occupancy: 'predicted occupancy' },
-  de: { eyebrow: 'PLANE DEIN MITTAGESSEN', title: 'Erwartete Auslastung', minutes: 'Min.', subtitle: 'Typische Auslastung im 15-Minuten-Takt.', day: 'Tag', quiet: 'Ruhig', moderate: 'Mäßig besucht', busy: 'Voll', now: 'Jetzt', empty: 'Für diesen Tag ist keine Prognose verfügbar.', missing: 'Keine Prognose für dieses Intervall', preview: 'Vorschaudaten · Beispielhafte Auslastung, keine Live-Prognose.', backend: 'Geschätzte Auslastung · 15-Minuten-Takt · Zürcher Zeit.', chart: 'Erwartete Auslastung nach Uhrzeit', occupancy: 'erwartete Auslastung' },
+  en: { eyebrow: 'PLAN YOUR LUNCH', title: 'Predicted crowd', minutes: 'min', subtitle: 'Typical occupancy, every 15 minutes.', day: 'Day', quiet: 'Quiet', moderate: 'Moderate', busy: 'Busy', now: 'Now', empty: 'No prediction available for this day.', missing: 'No prediction for this interval', preview: 'Preview data · Illustrative occupancy, not a live forecast.', backend: 'Estimated occupancy · 15-minute intervals · Zürich time.', chart: 'Predicted occupancy by time', occupancy: 'predicted occupancy', tip: 'Quietest time to go' },
+  de: { eyebrow: 'PLANE DEIN MITTAGESSEN', title: 'Erwartete Auslastung', minutes: 'Min.', subtitle: 'Typische Auslastung im 15-Minuten-Takt.', day: 'Tag', quiet: 'Ruhig', moderate: 'Mäßig besucht', busy: 'Voll', now: 'Jetzt', empty: 'Für diesen Tag ist keine Prognose verfügbar.', missing: 'Keine Prognose für dieses Intervall', preview: 'Vorschaudaten · Beispielhafte Auslastung, keine Live-Prognose.', backend: 'Geschätzte Auslastung · 15-Minuten-Takt · Zürcher Zeit.', chart: 'Erwartete Auslastung nach Uhrzeit', occupancy: 'erwartete Auslastung', tip: 'Am ruhigsten' },
 };
 type Key = keyof typeof copy.en;
 const language = () => document.documentElement.lang === 'de' ? 'de' : 'en';
@@ -22,6 +23,9 @@ function mountChart(root: HTMLElement) {
   let prediction: CrowdPrediction;
   try { prediction = JSON.parse(root.querySelector('[data-crowd-data]')!.textContent!) as CrowdPrediction; }
   catch { return; }
+  // Meal service times per weekday, so the quiet-time tip never points after the kitchen has closed. Without them: no restriction.
+  let servingWindows: Partial<Record<CrowdWeekday, ServingWindow[]>> = {};
+  try { servingWindows = JSON.parse(root.dataset.serving ?? '{}'); } catch { /* no restriction */ }
   const daySelect = root.querySelector<HTMLSelectElement>('[data-crowd-day]')!;
   const bars = root.querySelector<SVGGElement>('[data-crowd-bars]')!;
   const svg = root.querySelector<SVGSVGElement>('[data-crowd-svg]')!;
@@ -56,6 +60,12 @@ function mountChart(root: HTMLElement) {
     root.querySelector<HTMLElement>('[data-crowd-content]')!.hidden = !available;
     root.querySelector<HTMLElement>('[data-crowd-empty]')!.hidden = available;
     if (!available) return;
+    const tip = root.querySelector<HTMLElement>('[data-crowd-tip]');
+    const quiet = quietestWindow(slots, servingWindows[day]);
+    if (tip) {
+      tip.hidden = quiet === null;
+      tip.textContent = quiet === null ? '' : `${t('tip')}: ${windowLabel(quiet)} · ${language() === 'de' ? `etwa ${quiet.occupancyPct} % ausgelastet` : `about ${quiet.occupancyPct}% full`}`;
+    }
     svg.setAttribute('aria-label', `${t('chart')} · ${weekdayName(day)} · ${slots.map(slot => `${formatTime(slot.startMinute)}: ${slot.occupancyPct === null ? t('missing') : `${slot.occupancyPct}%`}`).join(', ')}`);
     const width = 600 / slots.length;
     bars.replaceChildren(...slots.map((slot, i) => {
