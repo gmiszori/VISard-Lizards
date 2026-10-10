@@ -2,7 +2,7 @@ import type { Meal } from '../data/canteens';
 import type { Profile } from './profile.ts';
 
 export type ConstraintMeal = Pick<Meal, 'dietTag' | 'allergens' | 'originDetail' | 'components'>;
-const pork = /pork|schwein|speck|bacon|ham|schinken|salami|chorizo|wurst/i;
+const pork = /\b(?:pork|schwein\w*|speck\w*|bacon|ham|schinken\w*|salami|chorizo|\w*wurst)\b/i;
 
 export function matchesConstraints(meal: ConstraintMeal, profile: Pick<Profile, 'diet' | 'hard'>): boolean {
   if (profile.diet === 'vegan' && meal.dietTag !== 'vegan') return false;

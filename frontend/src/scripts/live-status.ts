@@ -28,7 +28,8 @@ function zurichNow(): { weekday: Weekday; minutes: number } {
 function stateOf(info: LiveInfo, now: { weekday: Weekday; minutes: number }) {
   const windows = info.windows[now.weekday] ?? [];
   const isOpen = !info.temporarilyClosed && windows.some(([from, to]) => now.minutes >= from && now.minutes < to);
-  const hours = info.temporarilyClosed ? 'Temporarily closed' : windows.length ? windows.map(([from, to]) => `${hhmm(from)} - ${hhmm(to)}`).join(' · ') : 'Closed today';
+  const german = document.documentElement.lang === 'de';
+  const hours = info.temporarilyClosed ? (german ? 'Vorübergehend geschlossen' : 'Temporarily closed') : windows.length ? windows.map(([from, to]) => `${hhmm(from)} - ${hhmm(to)}`).join(' · ') : (german ? 'Heute geschlossen' : 'Closed today');
   const crowd = info.crowd[now.weekday];
   const slot = crowd ? Math.floor((now.minutes - crowd.start) / 15) : -1;
   const pct = crowd && slot >= 0 ? (crowd.pct[slot] ?? 0) : 0;
@@ -85,4 +86,5 @@ function run() {
 }
 
 run();
+document.addEventListener('languagechange', refresh);
 setInterval(run, 60_000);

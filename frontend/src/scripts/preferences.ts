@@ -1,41 +1,6 @@
-type Preferences = {
-  vegan: boolean;
-  vegetarian: boolean;
-  meat: boolean;
-  compact: boolean;
-  locations: string[];
-  openOnly: boolean;
-  priceTier: 'student' | 'worker' | 'external';
-};
-
-const STORAGE_KEY = 'campuseats-preferences';
-const allLocations = ['zentrum', 'hoenggerberg', 'irchel'];
-// Older versions saved display labels; map them to the campus ids used now.
-const legacyLocations: Record<string, string> = { 'ETH Zentrum': 'zentrum', 'UZH Zentrum': 'zentrum', 'ETH Hönggerberg': 'hoenggerberg', 'UZH Irchel': 'irchel' };
-const defaults: Preferences = { vegan: true, vegetarian: true, meat: true, compact: false, locations: allLocations, openOnly: false, priceTier: 'student' };
-const isPriceTier = (value: unknown): value is Preferences['priceTier'] => value === 'student' || value === 'worker' || value === 'external';
-function profilePriceTier(): Preferences['priceTier'] {
-  try {
-    const profile = JSON.parse(localStorage.getItem('campuseats-profile') || '{}');
-    return isPriceTier(profile?.priceTier) ? profile.priceTier : 'student';
-  } catch { return 'student'; }
-}
-
-function readPreferences(): Preferences {
-  try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}') as Partial<Preferences> & { campus?: string };
-    const locations = Array.isArray(saved.locations)
-      ? saved.locations
-      : saved.campus && saved.campus !== 'all'
-        ? [saved.campus]
-        : allLocations;
-    return { ...defaults, ...saved, priceTier: isPriceTier(saved.priceTier) ? saved.priceTier : profilePriceTier(), locations: [...new Set(locations.map((location) => legacyLocations[location] ?? location))] };
-  } catch {
-    return defaults;
-  }
-}
-
-let preferences = readPreferences();
+import { isPriceTier, readPreferences, PREFERENCES_KEY, type Preferences } from '../preferences/state';
+let preferences: Preferences;
+try { preferences = readPreferences(); } catch { preferences = { vegan: true, vegetarian: true, meat: true, compact: false, openOnly: false, locations: ['zentrum', 'hoenggerberg', 'irchel'], priceTier: 'student' }; }
 
 function applyPreferences() {
   document.documentElement.dataset.density = preferences.compact ? 'compact' : 'standard';
@@ -68,12 +33,12 @@ function applyPreferences() {
     if (emptyMessage) emptyMessage.hidden = hasVisibleMeals;
   });
 
-  const query = document.querySelector<HTMLInputElement>('#search-input')?.value.trim().toLocaleLowerCase() ?? '';
+  const query = document.querySelector<HTMLInputElement>('#search-input')?.value.trim().normalize('NFKC').toLocaleLowerCase() ?? '';
   let visibleCanteens = 0;
   document.querySelectorAll<HTMLElement>('[data-canteen-card]').forEach((card) => {
     const matchesCampus = preferences.locations.includes(card.dataset.campusId ?? '');
     const matchesOpen = !preferences.openOnly || card.dataset.isOpen === 'true';
-    const searchText = `${card.dataset.name ?? ''} ${card.dataset.menu ?? ''}`.toLocaleLowerCase();
+    const searchText = `${card.dataset.name ?? ''} ${card.dataset.menu ?? ''}`.normalize('NFKC').toLocaleLowerCase();
     const matchesSearch = searchText.includes(query);
     card.hidden = !(matchesCampus && matchesOpen && matchesSearch);
     if (!card.hidden) visibleCanteens++;
@@ -112,19 +77,28 @@ document.querySelector<HTMLFormElement>('#preferences-form')?.addEventListener('
       preferences = { ...preferences, [input.name]: input.checked };
     }
   } else return;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences));
   applyPreferences();
-  showSavedState();
+  try { localStorage.setItem(PREFERENCES_KEY, JSON.stringify(preferences)); showSavedState(); }
+  catch { showSavedState(false); }
 });
 
 document.querySelector<HTMLInputElement>('#search-input')?.addEventListener('input', applyPreferences);
 document.addEventListener('languagechange', applyPreferences);
 
-function showSavedState() {
+function showSavedState(success = true) {
   const saved = document.querySelector<HTMLElement>('#settings-saved');
   if (!saved) return;
   saved.hidden = false;
-  saved.textContent = document.documentElement.lang === 'de' ? 'Gespeichert' : 'Saved';
+  saved.textContent = success ? (document.documentElement.lang === 'de' ? 'Gespeichert' : 'Saved') :
+    (document.documentElement.lang === 'de' ? 'Nur für diese Seite angewendet. Speichern nicht möglich.' : 'Applied for this page only. Could not save on this device.');
+  // Prevent a subsequent language switch from falsely announcing "Saved".
+  if (success) saved.dataset.i18n = 'settingsSaved'; else delete saved.dataset.i18n;
 }
+
+window.addEventListener('storage', event => {
+  if (event.key === PREFERENCES_KEY || event.key === 'campuseats-profile' || event.key === null) {
+    try { preferences = readPreferences(); applyPreferences(); } catch { /* Keep the current working preferences. */ }
+  }
+});
 
 applyPreferences();

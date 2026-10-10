@@ -1,13 +1,13 @@
 <div data-rating-step="mensa">
-  <p>Did you eat at one of these?</p>
+  <p data-rating-text="question">Did you eat at one of these?</p>
   <div class="meal-rating-options" data-rating-mensas></div>
   <div class="meal-rating-options">
-    <button type="button" data-rating-other>Other mensa</button>
-    <button type="button" data-rating-skip>No / skip</button>
+    <button type="button" data-rating-other data-rating-text="other">Other mensa</button>
+    <button type="button" data-rating-skip data-rating-text="skip">No / skip</button>
   </div>
   <div hidden data-rating-other-picker>
-    <label for="meal-rating-mensa">Choose a mensa</label>
-    <select id="meal-rating-mensa" data-rating-mensa-select><option value="">Choose a mensa…</option></select>
-    <button type="button" data-rating-mensa-confirm>Continue</button>
+    <label for="meal-rating-mensa" data-rating-text="choose">Choose a mensa</label>
+    <select id="meal-rating-mensa" data-rating-mensa-select><option value="" data-rating-text="placeholder">Choose a mensa…</option></select>
+    <button type="button" data-rating-mensa-confirm data-rating-text="continue">Continue</button>
   </div>
 </div>

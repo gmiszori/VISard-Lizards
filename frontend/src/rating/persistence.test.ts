@@ -71,3 +71,11 @@ test('with a backend: posts userId + stars, keeps a device copy with server valu
     assert.equal(JSON.parse(storage.getItem('ratings')!).length, 1);
   } finally { globalThis.fetch = original; }
 });
+test('first use and stale preferences suggest Polyterrasse and UZH Untere Mensa', () => {
+  const mensas = [{ mensaId: 'archimedes', name: 'Archimedes' }, { mensaId: 'uzh-untere-mensa', name: 'UZH Untere Mensa' }, { mensaId: 'polyterrasse', name: 'Polyterrasse' }];
+  for (const profile of [null, {}, { mensaRatings: [] }, { mensaRatings: [{ mensaId: 'removed', rating: 5 as const }] }, { mensaRatings: {} } as Partial<import('../onboarding/profile.ts').Profile>]) {
+    assert.deepEqual(mensaCandidates(mensas, profile, ['removed']).map(m => m.mensaId), ['polyterrasse', 'uzh-untere-mensa']);
+  }
+  assert.deepEqual(mensaCandidates(mensas, null, ['archimedes']).map(m => m.mensaId), ['archimedes']);
+  assert.deepEqual(mensaCandidates([], null, []), []);
+});

@@ -19,7 +19,7 @@ const { canteen } = Astro.props;
   <div class="card-body">
     <div class="menu-preview" data-preference-list data-meal-list>
       {canteen.menu.map((item) => <div class="dish-preview" data-diet={item.dietary} data-meal-row><div class="meal-preview-heading"><div class="dish"><a href={`/canteen/${canteen.id}`}>{item.name}<span class={`diet diet-${item.dietary}`} data-i18n={`diet_${item.dietary}`}>{item.dietary}</span></a></div><MealStar item={item} /></div><MealPrice item={item} compact /></div>)}
-      <p class="preference-empty" data-no-preference-meals hidden data-i18n="noPreferenceMeals">No dishes match your food preferences.</p>
+      <p class="preference-empty" data-no-preference-meals hidden data-i18n={canteen.menu.length ? 'noPreferenceMeals' : 'menuEmpty'}>{canteen.menu.length ? 'No dishes match your food preferences.' : 'No menu available today.'}</p>
     </div>
   </div>
   </div>

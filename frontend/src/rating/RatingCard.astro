@@ -6,15 +6,15 @@ import RatingButtons from './RatingButtons.astro';
 import './rating.css';
 // Only ship the fields this card needs, not the nutrition/crowd database.
 const data = {
-  mensas: MENSAS.map(m => ({ mensaId: m.id, name: m.name })),
+  mensas: MENSAS.map(m => ({ mensaId: m.id, name: m.institution === 'UZH' ? `UZH ${m.name}` : m.name })),
   meals: MEALS.map(m => ({ id: m.id, mensaId: m.mensaId, date: m.date, name: m.title })),
 };
 ---
 {import.meta.env.DEV && <div class="meal-rating-dev-shortcut"><button type="button" data-rating-open title="Preview meal rating">rate</button></div>}
 <section class="meal-rating-card" data-rating-card hidden aria-labelledby="meal-rating-title">
   <div class="meal-rating-header">
-    <div><p class="meal-rating-eyebrow">A little lunch feedback</p><h2 id="meal-rating-title" tabindex="-1">How was lunch?</h2><p data-rating-date></p></div>
-    <button type="button" class="meal-rating-dismiss" data-rating-dismiss aria-label="Dismiss meal rating">×</button>
+    <div><p class="meal-rating-eyebrow" data-rating-text="eyebrow">A little lunch feedback</p><h2 id="meal-rating-title" tabindex="-1" data-rating-text="title">How was lunch?</h2><p data-rating-date></p></div>
+    <button type="button" class="meal-rating-dismiss" data-rating-dismiss data-rating-aria="dismiss" aria-label="Dismiss meal rating">×</button>
   </div>
   <MensaChips /><MealPicker /><RatingButtons />
   <p role="status" aria-live="polite" aria-atomic="true" data-rating-status></p>

@@ -38,21 +38,24 @@ const { title } = Astro.props;
       translations.de.sampleMenus = 'Beispielmenüs: Das CampusEats-Backend ist nicht erreichbar.';
       translations.en.filtersHint = 'Choose one or more campus locations to include.';
       translations.de.filtersHint = 'Wähle einen oder mehrere Campus-Standorte aus.';
-      const applyLanguage = (lang) => {
+      const readSetting = (key) => { try { return localStorage.getItem(key); } catch { return null; } };
+      const writeSetting = (key, value) => { try { localStorage.setItem(key, value); } catch { /* Theme and language still work for this page. */ } };
+      const applyLanguage = (value) => {
+        const lang = value === 'de' ? 'de' : 'en';
         document.documentElement.lang = lang;
-        localStorage.setItem('campuseats-language', lang);
+        writeSetting('campuseats-language', lang);
         document.querySelectorAll('[data-i18n]').forEach(el => { const key = el.dataset.i18n; if (translations[lang][key]) el.textContent = translations[lang][key]; });
         document.querySelectorAll('[data-i18n-placeholder]').forEach(el => el.placeholder = translations[lang][el.dataset.i18nPlaceholder]);
         document.querySelectorAll('[data-i18n-aria]').forEach(el => el.setAttribute('aria-label', translations[lang][el.dataset.i18nAria]));
         document.dispatchEvent(new CustomEvent('languagechange', { detail: { lang, translations: translations[lang] } }));
       };
       const themeButton = document.querySelector('#theme-toggle');
-      const setTheme = (theme) => { document.documentElement.dataset.theme = theme; localStorage.setItem('campuseats-theme', theme); themeButton.textContent = theme === 'dark' ? '☀' : '☾'; themeButton.setAttribute('aria-label', translations[document.documentElement.lang][theme === 'dark' ? 'themeLight' : 'themeDark']); };
+      const setTheme = (value) => { const theme = value === 'dark' ? 'dark' : 'light'; document.documentElement.dataset.theme = theme; writeSetting('campuseats-theme', theme); themeButton.textContent = theme === 'dark' ? '☀' : '☾'; themeButton.setAttribute('aria-label', translations[document.documentElement.lang][theme === 'dark' ? 'themeLight' : 'themeDark']); };
       const languageSelect = document.querySelector('#language-select');
-      const language = localStorage.getItem('campuseats-language') || 'en';
+      const language = readSetting('campuseats-language') === 'de' ? 'de' : 'en';
       languageSelect.value = language;
       applyLanguage(language);
-      setTheme(localStorage.getItem('campuseats-theme') || 'light');
+      setTheme(readSetting('campuseats-theme'));
       languageSelect.addEventListener('change', () => { applyLanguage(languageSelect.value); setTheme(document.documentElement.dataset.theme); });
       themeButton.addEventListener('click', () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'));
     </script>

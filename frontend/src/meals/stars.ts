@@ -12,7 +12,12 @@ export function starName(name: string): string {
 /** Name matching lets the same dish return with different sides, dates, or locations. */
 export function matchesMeal(name: string, stars: string[]): boolean {
   const normalized = normalizedName(name);
-  return stars.some(saved => normalized.includes(normalizedName(saved)));
+  return stars.some(saved => {
+    const term = normalizedName(saved);
+    if (!term) return false;
+    const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return new RegExp(`(?:^|[^\\p{L}\\p{N}])${escaped}(?=$|[^\\p{L}\\p{N}])`, 'u').test(normalized);
+  });
 }
 
 function readProfile(): Record<string, unknown> {
