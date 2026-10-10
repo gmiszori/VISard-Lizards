@@ -49,14 +49,11 @@ From the repository root, configure any secrets in `.env` and start both service
 docker compose up --build -d
 ```
 
-The frontend is served by Caddy and proxies `/api` to the backend, which remains private on the
-Compose network. For a public server, point a DNS A/AAAA record at the server and set `DOMAIN` to
-that hostname in `.env`; Caddy will obtain and renew HTTPS certificates automatically. Ports 80 and
-443 (TCP and UDP) must be reachable. For a local HTTP demo, leave `DOMAIN` unset. Change `HTTP_PORT`
-or `HTTPS_PORT` if the host ports are already in use. The `backend-data` volume persists the H2
-database, and Caddy's data/config volumes persist certificate state. Set `CORS_ALLOWED_ORIGINS` to
-specific origins only if you need cross-origin API access; same-origin requests through Caddy do not
-need a broad CORS rule.
+The frontend is served by Caddy over plain HTTP on `0.0.0.0:8080` and proxies `/api` to the backend,
+which remains private on the Compose network. This matches the hackathon managed address, which
+forwards traffic to port 8080 and handles access control and TLS. The `backend-data` volume persists
+the H2 database. Set `CORS_ALLOWED_ORIGINS` to specific origins only if you need cross-origin API
+access; same-origin requests through Caddy do not need a broad CORS rule.
 
 The Astro site is statically generated in the image, so its initial menu snapshot is taken during
 the image build. Browser API calls use the frontend origin and reach the live backend through Caddy.

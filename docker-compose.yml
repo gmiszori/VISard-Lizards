@@ -25,16 +25,7 @@ services:
     depends_on:
       - backend
     ports:
-      - "${HTTP_PORT:-80}:80"
-      - "${HTTPS_PORT:-443}:443"
-      - "${HTTPS_PORT:-443}:443/udp"
-    environment:
-      - DOMAIN=${DOMAIN:-:80}
-    volumes:
-      - caddy-data:/data
-      - caddy-config:/config
+      - "8080:8080"
 
 volumes:
   backend-data:
-  caddy-data:
-  caddy-config:

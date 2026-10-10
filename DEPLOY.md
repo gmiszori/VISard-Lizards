@@ -2,25 +2,24 @@
 
 ## Docker demo on a server
 
-Copy `.env.example` to `.env`, set `DOMAIN` to a DNS hostname pointed at the server, and set
-`OPENAI_API_KEY` if AI search should be enabled. Allow inbound TCP ports 80 and 443 and UDP port
-443 in the server firewall. From the repository root, run:
+The hackathon managed address forwards plain HTTP to port 8080 on the VM. Copy `.env.example` to
+`.env`, set `OPENAI_API_KEY` if AI search should be enabled, and run from the repository root:
 
 ```sh
 docker compose up --build -d
 ```
 
-Caddy serves the frontend over HTTPS and renews its certificate automatically. Only Caddy publishes
-ports; the backend is reachable by Caddy over the private Compose network. The `backend-data` volume
-persists the H2 database and Caddy's volumes retain certificate state. Back up the database volume
-before replacing the server or removing volumes. Do not commit `.env`.
+Caddy serves the frontend over plain HTTP on `0.0.0.0:8080`; the backend is reachable only by Caddy
+over the private Compose network. The hackathon managed address handles access control and TLS, so
+no VM firewall rule or TLS configuration is needed. The `backend-data` volume persists the H2
+database. Back up this volume before replacing the server or removing volumes. Do not commit `.env`.
 
 The frontend is statically generated during the image build, so its initial menu is a snapshot and
 falls back to bundled sample data if the backend is not reachable while building. Browser features
 that call the API use the live backend through Caddy. Rebuild the frontend to refresh the initial
 menu snapshot. The dedicated meal scraper remains disabled unless its external connector is set up.
 
-For a local HTTP-only demo, use `DOMAIN=:80` and visit `http://localhost`.
+Open the managed address provided by the hackathon to access the demo.
 
 The GitHub Actions workflow in `.github/workflows/ci.yml` checks the Java backend and the Astro
 frontend on pushes to `main` and on pull requests. The optional `render.yaml` Blueprint defines a
