@@ -7,11 +7,10 @@
  * Elements opt in with data-live="status | hours | crowd | open-count" and
  * data-live-id="<canteen id>".
  */
-import { appNow, CLOCK_EVENT, zurichClock } from '../time/clock';
+import { appNow, CLOCK_EVENT, zurichClock, type Weekday } from '../time/clock';
 import { readPreferences } from '../preferences/state';
 import { canShowCanteen } from '../preferences/canteenVisibility';
 
-type Weekday = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
 interface LiveInfo {
   temporarilyClosed: boolean;
   windows: Record<Weekday, Array<[number, number]>>;

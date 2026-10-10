@@ -1,12 +1,10 @@
-import { appNow, CLOCK_EVENT, zurichParts } from '../time/clock';
+import { appNow, CLOCK_EVENT, minutesOfDay, zurichParts } from '../time/clock';
 
 type ServiceWindow = { service: 'lunch' | 'dinner'; open: string; close: string };
 
-const minuteOf = (value: string) => Number(value.slice(0, 2)) * 60 + Number(value.slice(3, 5));
-
 function zurichNow() {
   const { date, time } = zurichParts(appNow());
-  return { date, minute: minuteOf(time) };
+  return { date, minute: minutesOfDay(time) };
 }
 
 function translated(key: string) {
@@ -62,8 +60,8 @@ function refresh(announce = true) {
     let service = label.dataset.initialService;
     let time: string | undefined = label.dataset.initialTime || undefined;
     if (live) {
-      const chosen = windows.find(window => minuteOf(window.open) <= local.minute && local.minute < minuteOf(window.close))
-        ?? windows.find(window => minuteOf(window.open) > local.minute);
+      const chosen = windows.find(window => minutesOfDay(window.open) <= local.minute && local.minute < minutesOfDay(window.close))
+        ?? windows.find(window => minutesOfDay(window.open) > local.minute);
       service = chosen?.service ?? 'closed';
       time = chosen && range(chosen);
     }

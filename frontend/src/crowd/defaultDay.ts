@@ -3,7 +3,8 @@
  * opens on Monday (the next day with normal service). If that day has no prediction, the first
  * weekday that has one. Pure, so it can be tested without a browser.
  */
-export type Weekday = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
+import type { Weekday } from '../time/clock.ts';
+export type { Weekday };
 
 const ORDER: readonly Weekday[] = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
 

@@ -3,10 +3,11 @@
  * Levels are the backend's crowd report levels (backend/API.md, crowd-reports):
  * 1 empty, 2 quiet, 3 some queue, 4 busy, 5 packed.
  */
-import { zurichClock } from '../time/clock.ts';
+import { zurichClock, type Weekday } from '../time/clock.ts';
 
 // Kept here for the callers and tests of this module; the implementation lives in time/clock.ts.
 export { zurichClock };
+export type { Weekday };
 export type CrowdLevel = 1 | 2 | 3 | 4 | 5;
 
 /** The backend accepts one report per mensa and client every 5 minutes (app.rate-limit.crowd-report-window). */
@@ -57,7 +58,6 @@ export function cooldownLeft(lastReportedAt: number | null, now: number): number
   return Math.max(0, lastReportedAt + REPORT_COOLDOWN_MS - now);
 }
 
-export type Weekday = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
 /** Opening windows per weekday in minutes since midnight, as in #live-data (src/data/canteens.ts LIVE_DATA). */
 export type OpeningWindows = Partial<Record<Weekday, Array<[number, number]>>>;
 

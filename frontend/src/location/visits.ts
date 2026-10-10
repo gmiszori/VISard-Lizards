@@ -4,7 +4,8 @@
  * asks only once the meal is probably eaten (readyAt). Pure functions plus a small localStorage store.
  */
 
-export type Weekday = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
+import { minutesOfDay, zurichClock, zurichParts, type Weekday } from '../time/clock.ts';
+export type { Weekday };
 export interface ServiceWindow { service: 'lunch' | 'dinner'; open: string; close: string }
 export interface MensaHours {
   id: string;
@@ -36,18 +37,10 @@ export const EATING_MIN = 20;
 /** Queue wait when nothing is known about the crowd. */
 const DEFAULT_WAIT_MIN = 5;
 
-const WEEKDAYS: Weekday[] = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
-const formatter = new Intl.DateTimeFormat('en-GB', {
-  timeZone: 'Europe/Zurich', year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short',
-  hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
-});
-const toMin = (hhmm: string) => Number(hhmm.slice(0, 2)) * 60 + Number(hhmm.slice(3, 5));
-
 /** Date, weekday and minutes since midnight in Zurich, independent of the device timezone. */
 export function zurichNow(now: Date): { date: string; weekday: Weekday; minutes: number } {
-  const p = Object.fromEntries(formatter.formatToParts(now).map(part => [part.type, part.value]));
-  const weekday = WEEKDAYS[['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(p.weekday)];
-  return { date: `${p.year}-${p.month}-${p.day}`, weekday, minutes: Number(p.hour) * 60 + Number(p.minute) };
+  const { weekday, minutes } = zurichClock(now);
+  return { date: zurichParts(now).date, weekday, minutes };
 }
 
 /** Expected queue wait for a crowd survey level (1 empty ... 5 packed). */
@@ -83,7 +76,7 @@ export function visitsAt(atMensaIds: readonly string[], mensas: readonly MensaHo
     const mensa = mensas.find(m => m.id === id);
     if (!mensa || mensa.temporarilyClosed || mensa.closures.some(c => c.from <= date && date <= c.to)) return [];
     const window = (mensa.openingHours[weekday] ?? [])
-      .find(w => toMin(w.open) - GRACE_MIN <= minutes && minutes <= toMin(w.close) + GRACE_MIN);
+      .find(w => minutesOfDay(w.open) - GRACE_MIN <= minutes && minutes <= minutesOfDay(w.close) + GRACE_MIN);
     return window ? [{ mensaId: id, date, service: window.service, at: now.getTime(), waitMin: waitMin(id), source: 'location' as const }] : [];
   });
 }
