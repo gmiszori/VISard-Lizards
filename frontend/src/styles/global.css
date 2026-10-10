@@ -66,3 +66,4 @@ body{background:transparent;color:var(--ink)}.app-shell{max-width:1160px}.site-h
 .sticky-back-link:focus-visible{outline:3px solid #7eb594;outline-offset:3px}
 :root[data-theme="dark"] .sticky-back-link{background:#26775b;border-color:#26775b;color:#fff}
 :root[data-theme="dark"] .sticky-back-link:hover{background:#318868;border-color:#318868}
+@media(max-width:700px){.app-shell{padding-top:calc(env(safe-area-inset-top,0px) + 24px)}}
