@@ -21,9 +21,12 @@ function applyPreferences() {
   });
   document.querySelectorAll<HTMLSelectElement>('[data-price-tier]').forEach(select => select.value = preferences.priceTier);
 
+  const query = document.querySelector<HTMLInputElement>('#search-input')?.value ?? '';
   document.querySelectorAll<HTMLElement>('[data-diet]').forEach((meal) => {
     const diet = meal.dataset.diet as keyof Pick<Preferences, 'vegan' | 'vegetarian' | 'meat'>;
-    meal.hidden = !preferences[diet];
+    const card = meal.closest<HTMLElement>('[data-canteen-card]');
+    const matchesName = card && matchesQuery(card.dataset.name ?? '', query);
+    meal.hidden = !preferences[diet] || !!(card && !matchesName && !matchesQuery(meal.dataset.mealName ?? '', query));
   });
 
   document.querySelectorAll<HTMLElement>('[data-meal-group]').forEach(group => {
@@ -39,7 +42,6 @@ function applyPreferences() {
     if (emptyMessage) emptyMessage.hidden = hasVisibleMeals;
   });
 
-  const query = document.querySelector<HTMLInputElement>('#search-input')?.value ?? '';
   const campusChoice = document.querySelector<HTMLSelectElement>('#campus-select')?.value ?? 'preset';
   let visibleCanteens = 0;
   document.querySelectorAll<HTMLElement>('[data-canteen-card]').forEach((card) => {
@@ -49,7 +51,7 @@ function applyPreferences() {
       : card.dataset.campusId === campusChoice;
     const matchesOpen = !preferences.openOnly || card.dataset.isOpen === 'true';
     // Umlauts are optional: "zurich", "zuerich" and "Zürich" all find the same dishes.
-    const matchesSearch = matchesQuery(`${card.dataset.name ?? ''} ${card.dataset.menu ?? ''}`, query);
+    const matchesSearch = matchesQuery(card.dataset.name ?? '', query) || card.querySelector('[data-meal-row]:not([hidden])') !== null;
     card.hidden = !(matchesCampus && matchesOpen && matchesSearch);
     if (!card.hidden) visibleCanteens++;
   });

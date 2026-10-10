@@ -10,7 +10,7 @@ const { canteen } = Astro.props;
 const menuGroups = groupMenuByService(canteen.menu);
 const showServiceHeadings = menuGroups.some(group => group.service === 'lunch') && menuGroups.some(group => group.service === 'dinner');
 ---
-<article data-canteen-card data-canteen-id={canteen.id} data-campus={canteen.campus} data-campus-id={canteen.campusId} data-is-open={String(canteen.isOpen)} data-name={canteen.name} data-menu={canteen.menu.map((item) => item.name).join(' ')} class="canteen-card">
+<article data-canteen-card data-canteen-id={canteen.id} data-campus={canteen.campus} data-campus-id={canteen.campusId} data-is-open={String(canteen.isOpen)} data-name={canteen.name} class="canteen-card">
   <button class="favorite-toggle" type="button" data-favorite-toggle aria-pressed="false" aria-label="Add to favourites"><span aria-hidden="true">☆</span></button>
   <div class="canteen-card-link">
     <div class="card-image">
@@ -24,7 +24,7 @@ const showServiceHeadings = menuGroups.some(group => group.service === 'lunch') 
     <div class="menu-preview" data-preference-list data-meal-list>
       {menuGroups.map(group => <div class="meal-service-group" data-meal-group>
         {showServiceHeadings && group.service && <h4 class="meal-service-heading" data-i18n={group.service}>{group.service === 'dinner' ? 'Dinner' : 'Lunch'}</h4>}
-        {group.items.map((item) => <div class="dish-preview" data-diet={item.dietary} data-meal-row data-meal-id={item.id}><div class="meal-preview-heading"><div class="dish"><a href={`/canteen/${canteen.id}`}>{item.name}<span class={`diet diet-${item.dietary}`} data-i18n={`diet_${item.dietary}`}>{item.dietary}</span></a></div><MealStar item={item} /></div><MealServingTime item={item} /><MealPrice item={item} compact /></div>)}
+        {group.items.map((item) => <div class="dish-preview" data-diet={item.dietary} data-meal-row data-meal-id={item.id} data-meal-name={item.name}><div class="meal-preview-heading"><div class="dish"><a href={`/canteen/${canteen.id}`}>{item.name}<span class={`diet diet-${item.dietary}`} data-i18n={`diet_${item.dietary}`}>{item.dietary}</span></a></div><MealStar item={item} /></div><MealServingTime item={item} /><MealPrice item={item} compact /></div>)}
       </div>)}
       <p class="preference-empty" data-no-preference-meals hidden data-i18n={canteen.menu.length ? 'noPreferenceMeals' : 'menuEmpty'}>{canteen.menu.length ? 'No dishes match your food preferences.' : 'No menu available for this date.'}</p>
     </div>
@@ -45,7 +45,7 @@ const showServiceHeadings = menuGroups.some(group => group.service === 'lunch') 
   .canteen-card .card-body>.menu-preview{border-top:0;padding:0;margin:0}
   .canteen-card .meal-service-group>.dish-preview{border-top:0;margin-top:0;padding-block:0}
   .canteen-card .meal-service-group>.dish-preview:not([hidden])~.dish-preview:not([hidden]){border-top:1px solid var(--line);margin-top:10px;padding-top:10px}
-  .canteen-card .meal-service-group+.meal-service-group{border-top:1px solid var(--line);margin-top:13px;padding-top:10px}
+  .canteen-card .meal-service-group:not([hidden])~.meal-service-group:not([hidden]){border-top:1px solid var(--line);margin-top:13px;padding-top:10px}
   .canteen-card .meal-service-group[hidden]{display:none}
   .canteen-card .meal-service-heading{margin:0 0 8px;color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase}
   .canteen-card .meal-preview-heading{align-items:center}.canteen-card .meal-preview-heading>.dish{margin-top:0}
