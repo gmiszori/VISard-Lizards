@@ -35,7 +35,7 @@ public class PushController {
 	public record PublicKeyDTO(String publicKey) {
 	}
 
-	public record EndpointDTO(@NotBlank @Size(max = 1024) String endpoint) {
+	public record EndpointDTO(@NotBlank @Size(max = 4096) String endpoint) {
 	}
 
 	public record SubscriptionDTO(String endpoint, List<String> dishes, String language) {
