@@ -227,7 +227,7 @@ function renderStorage(root: HTMLElement) {
     ['Storage', canUseStorage()],
     ['Preferences', safeJson(PREFERENCES_KEY)],
     ['Visits', visits.length ? JSON.stringify(visits, null, 2) : '[]'],
-    ['Near me', safeJson('campuseats-near-me')],
+    ['Distance sorting', document.querySelector('[data-near-me-toggle]')?.getAttribute('aria-pressed') ?? 'not on this page'],
     ['Rating state', safeJson('campuseats-meal-rating-state')],
     ['Favourites', safeJson('campuseats-favourites')],
     ['Crowd survey mock', safeJson(CROWD_MOCK_KEY)],

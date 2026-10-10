@@ -17,7 +17,7 @@ function searchStatus(message: string) {
 let preferences: Preferences;
 try {
   preferences = readPreferences();
-} catch { preferences = { vegan: true, vegetarian: true, meat: true, viewMode: 'standard', openOnly: false, locations: [...ALL_CAMPUS_IDS], priceTier: 'student', devMode: false }; }
+} catch { preferences = { vegan: true, vegetarian: true, meat: true, viewMode: 'standard', openOnly: false, distanceDefault: false, locations: [...ALL_CAMPUS_IDS], priceTier: 'student', devMode: false }; }
 let showWithoutMenu = false;
 /** "Show all canteens" in the empty state also looks past "Only show open canteens" for this visit (Settings stay as they are). */
 let ignoreOpenOnly = false;

@@ -4,9 +4,10 @@ Finds where the user is, for the meal rating ("Did you eat at one of these?") an
 
 **Sort by distance** (`NearMe.astro`, `near-me.ts`, on the home page): a button that locates the user,
 sorts the canteen cards nearest first (canteens without meals stay last, like `scripts/meal-stars.ts`)
-and shows the distance on each card. The choice is kept in `campuseats-near-me`; when the browser has
-already granted location access, the next visit sorts again without a click. It never opens the
-permission prompt by itself. After each fix it dispatches `campuseats:user-located` with the
+and shows the distance on each card. The first click offers an optional `distanceDefault` setting
+in `campuseats-preferences`; the same setting is available under Canteen filters. Only that explicit
+opt-in sorts on future visits and may request browser location permission on page load. A one-off
+sort does not change the default. After each fix it dispatches `campuseats:user-located` with the
 `UserLocation` as `detail`.
 
 **Visits** (`visits.ts`): a fix at a mensa during one of its meal services (15 min grace) is saved in

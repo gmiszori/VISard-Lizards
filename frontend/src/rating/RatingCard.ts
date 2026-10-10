@@ -7,7 +7,6 @@ import { API_URL, apiGet, type BackendMealDetail } from '../data/api.ts';
 import type { Profile } from '../onboarding/profile';
 import { ratingText, translateRating, type RatingText } from './i18n';
 import { readVisits } from '../location/visits.ts';
-import { NEAR_ME_KEY } from '../location/near-me.ts';
 import { visitCandidates } from './visitCandidates.ts';
 import { readPreferences } from '../preferences/state.ts';
 import { canShowCanteen } from '../preferences/canteenVisibility.ts';
@@ -52,7 +51,7 @@ export function mountRatingCard(): void {
   const ratingsKey = `${RATINGS_KEY}${simulated ? ':dev' : ''}`;
   /** Users who never share their location get "Where did you eat today?" with suggestions instead. */
   const usesLocation = (visits: ReturnType<typeof readVisits>) =>
-    storage.getItem(NEAR_ME_KEY) === '1' || visits.some(visit => (visit.source ?? 'location') === 'location');
+    visits.some(visit => (visit.source ?? 'location') === 'location');
   const candidates = () => {
     const visits = readVisits(storage);
     const available = visibleMensas();

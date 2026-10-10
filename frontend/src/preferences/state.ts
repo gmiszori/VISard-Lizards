@@ -1,6 +1,6 @@
 export interface Preferences {
   vegan: boolean; vegetarian: boolean; meat: boolean; viewMode: 'standard' | 'compact' | 'list';
-  locations: string[]; openOnly: boolean; priceTier: 'student' | 'worker' | 'external';
+  locations: string[]; openOnly: boolean; distanceDefault: boolean; priceTier: 'student' | 'worker' | 'external';
   devMode: boolean;
 }
 export const PREFERENCES_KEY = 'campuseats-preferences';
@@ -24,7 +24,8 @@ export function normalizePreferences(value: unknown, profileTier: unknown = 'stu
   if (!diets.vegan && !diets.vegetarian && !diets.meat) { diets.vegan = true; diets.vegetarian = true; diets.meat = true; }
   return { ...diets,
     viewMode: isViewMode(saved.viewMode) ? saved.viewMode : bool('compact', false) ? 'compact' : 'standard',
-    openOnly: bool('openOnly', false), priceTier: isPriceTier(saved.priceTier) ? saved.priceTier : isPriceTier(profileTier) ? profileTier : 'student',
+    openOnly: bool('openOnly', false), distanceDefault: bool('distanceDefault', false),
+    priceTier: isPriceTier(saved.priceTier) ? saved.priceTier : isPriceTier(profileTier) ? profileTier : 'student',
     locations, devMode: bool('devMode', false) };
 }
 export function readPreferences(storage: Pick<Storage, 'getItem'> = localStorage): Preferences {
@@ -36,7 +37,10 @@ export function readPreferences(storage: Pick<Storage, 'getItem'> = localStorage
     const profileLocations = profile && typeof profile.campus === 'string'
       ? [profile.campus, ...(Array.isArray(profile.campusSecondary) ? profile.campusSecondary : [])]
       : undefined;
-    return normalizePreferences(saved, profile?.priceTier, profileLocations);
+    const preferences = normalizePreferences(saved, profile?.priceTier, profileLocations);
+    if (!(saved && typeof saved === 'object' && !Array.isArray(saved) && typeof (saved as Record<string, unknown>).distanceDefault === 'boolean') &&
+      storage.getItem('campuseats-near-me') === '1') preferences.distanceDefault = true;
+    return preferences;
   } catch { return normalizePreferences(null); }
 }
 export function readFavourites(storage: Pick<Storage, 'getItem'> = localStorage): string[] {
