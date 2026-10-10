@@ -106,3 +106,12 @@ export function pickSampleMenuDate(dates: readonly string[], today: string): str
   if (sorted.includes(today)) return today;
   return earlier[earlier.length - 1] ?? sorted[0] ?? today; // before all data: its first day, like the backend
 }
+
+/**
+ * Which Lunch / Dinner pill is preselected when the visitor has not chosen one. Dinner only when the page shows
+ * today's menu and lunch is over; any other day (the coming Monday on a weekend night, a day picked ahead) opens on
+ * lunch, which is what people plan for. `time` is Zurich `HH:MM`.
+ */
+export function defaultService(menuDate: string, today: string, time: string): 'lunch' | 'dinner' {
+  return menuDate === today && time >= '15:00' ? 'dinner' : 'lunch';
+}

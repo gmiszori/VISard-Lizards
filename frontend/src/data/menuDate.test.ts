@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { addDays, isIsoDate, isWeekend, latestToday, menuDateCandidates, nearestMenuDay, pickSampleMenuDate, weekdayIndex, wantedMenuDate } from './menuDate.ts';
+import { addDays, defaultService, isIsoDate, isWeekend, latestToday, menuDateCandidates, nearestMenuDay, pickSampleMenuDate, weekdayIndex, wantedMenuDate } from './menuDate.ts';
 
 // 2026-10-10 is a Saturday.
 test('weekday numbers and weekend detection', () => {
@@ -117,4 +117,15 @@ test('nearestMenuDay sends a weekend or out-of-range date to the next menu day, 
   assert.equal(nearestMenuDay('2026-01-01', days), '2026-10-07'); // before the data -> first day
   assert.equal(nearestMenuDay('2026-02-31', days), null); // not a real date
   assert.equal(nearestMenuDay('2026-10-10', []), null);
+});
+
+test('the default Lunch / Dinner pill follows the menu shown, not just the clock', () => {
+  // Saturday night 2026-10-10 shows Monday's menu: lunch, not Monday's dinner.
+  assert.equal(defaultService('2026-10-12', '2026-10-10', '21:30'), 'lunch');
+  assert.equal(defaultService('2026-10-12', '2026-10-10', '09:00'), 'lunch');
+  // A weekday's menu: lunch until 15:00, dinner after.
+  assert.equal(defaultService('2026-10-13', '2026-10-13', '14:59'), 'lunch');
+  assert.equal(defaultService('2026-10-13', '2026-10-13', '15:00'), 'dinner');
+  // Another day picked ahead in the evening still opens on lunch.
+  assert.equal(defaultService('2026-10-14', '2026-10-13', '19:00'), 'lunch');
 });

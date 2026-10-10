@@ -60,7 +60,7 @@ const shownDays = days.includes(menuDate) ? days : [...days, menuDate].sort();
 </script>
 <script>
   import { activeSimulatedClock, appNow, CLOCK_EVENT, zurichParts } from '../time/clock';
-  import { wantedMenuDate } from '../data/menuDate';
+  import { defaultService, wantedMenuDate } from '../data/menuDate';
 
   const SERVICE_KEY = 'campuseats-service-filter';
   const root = document.querySelector<HTMLElement>('[data-day-picker]');
@@ -77,7 +77,8 @@ const shownDays = days.includes(menuDate) ? days : [...days, menuDate].sort();
     root?.querySelectorAll<HTMLButtonElement>('[data-service-choice]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.serviceChoice === service)));
     document.dispatchEvent(new Event('campuseats:service-filter-changed'));
   }
-  const serviceByTime = () => zurichParts(appNow()).time < '15:00' ? 'lunch' : 'dinner';
+  // Not just the clock: Saturday night the page shows Monday's menu, which opens on Monday's lunch.
+  const serviceByTime = () => { const now = zurichParts(appNow()); return defaultService(root?.dataset.pickerDate ?? now.date, now.date, now.time); };
   let saved: string | null = null;
   try { saved = localStorage.getItem(SERVICE_KEY); } catch { /* storage blocked */ }
   const initialService = saved === null ? serviceByTime() : saved === 'lunch' || saved === 'dinner' || saved === '' ? saved : serviceByTime();
