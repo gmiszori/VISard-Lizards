@@ -17,6 +17,11 @@ function parse(iso: string): Date | null {
   return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === iso ? date : null;
 }
 
+/** True only for a real calendar date written as `YYYY-MM-DD` (rejects 2026-02-31 and 2026-13-01). */
+export function isIsoDate(value: unknown): value is string {
+  return typeof value === 'string' && parse(value) !== null;
+}
+
 /** 0 = Sunday ... 6 = Saturday, or null for an invalid date. */
 export function weekdayIndex(iso: string): number | null {
   return parse(iso)?.getUTCDay() ?? null;
