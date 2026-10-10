@@ -70,8 +70,10 @@ function initialise(root: HTMLElement) {
       root.scrollIntoView({ block: 'start', behavior: 'instant' });
     }
     function finish() {
-      saveProfile(store.state.profile);
+      const saved = saveProfile(store.state.profile);
       store.clear(); completed = true; refresh();
+      // If the device could not store the answers, say so instead of implying they were saved.
+      payoff.querySelector<HTMLElement>('[data-save-note]')!.hidden = saved;
       payoff.querySelector<HTMLElement>('h1')!.focus();
       root.scrollIntoView({ block: 'start', behavior: 'instant' });
     }
