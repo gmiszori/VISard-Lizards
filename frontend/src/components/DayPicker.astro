@@ -131,7 +131,7 @@ const shownDays = days.includes(menuDate) ? days : [...days, menuDate].sort();
 <style>
   .day-picker{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;margin:0 0 14px}
   .day-picker-days,.day-picker-services{display:flex;flex-wrap:wrap;gap:6px}
-  .day-picker a,.day-picker button{display:inline-flex;align-items:center;min-height:36px;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--ink);font:700 13px 'DM Sans',sans-serif;text-decoration:none;cursor:pointer;white-space:nowrap}
+  .day-picker a,.day-picker button{display:inline-flex;align-items:center;min-height:44px;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--ink);font:700 13px 'DM Sans',sans-serif;text-decoration:none;cursor:pointer;white-space:nowrap}
   .day-picker a:hover,.day-picker button:hover{border-color:var(--green)}
   .day-picker a.is-selected,.day-picker button[aria-pressed="true"]{background:var(--green);border-color:var(--green);color:var(--paper)}
   .day-picker a:focus-visible,.day-picker button:focus-visible{outline:3px solid color-mix(in srgb,var(--green) 45%,transparent);outline-offset:2px}
