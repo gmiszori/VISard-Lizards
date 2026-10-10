@@ -47,12 +47,12 @@ test('neither default exists: the first two mensas that serve meals', () => {
   assert.deepEqual(ids(mensaCandidates([m('x', 'X', false), m('y'), m('z'), m('w')], null, [])), ['y', 'z']);
 });
 
-test('an empty or broken mensa list gives no chips, and the prompt still offers Other / Skip', () => {
+test('an empty or broken mensa list gives no suggestions or prompt', () => {
   assert.deepEqual(mensaCandidates([], null, []), []);
   assert.deepEqual(mensaCandidates(undefined as never, null, []), []);
   assert.deepEqual(mensaCandidates([null, 5, { mensaId: 3 }, { name: 'x' }] as never, null, []), []);
   const prompt = getRatingPrompt(new Date('2026-10-09T14:00:00+02:00'), [], { resolvedDates: [], dismissedDates: [], promptedDays: {} });
-  assert.deepEqual(prompt, { date: '2026-10-09', mensaChoices: [] });
+  assert.equal(prompt, null);
 });
 
 test('corrupted profile and favourites never throw', () => {

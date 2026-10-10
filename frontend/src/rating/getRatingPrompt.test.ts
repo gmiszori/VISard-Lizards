@@ -33,7 +33,7 @@ test('deduplicates choices, excludes mismatched dates, max four', () => {
     ...[1, 2, 3, 4, 5].map(i => ({ mensaId: String(i), name: String(i) }))];
   assert.deepEqual(getRatingPrompt(at('14:00'), candidates, state())?.mensaChoices.map(m => m.mensaId), ['archimedes', '1', '2', '3']);
 });
-test('empty history still permits Other mensa and No / skip', () => assert.deepEqual(getRatingPrompt(at('14:00'), [], state())?.mensaChoices, []));
+test('no verified visit means no rating question', () => assert.equal(getRatingPrompt(at('14:00'), [], state()), null));
 test('uses Zurich rather than host timezone', () => assert.equal(getRatingPrompt(new Date('2026-10-09T11:30:00Z'), choices, state())?.date, '2026-10-09'));
 test('calendar subtraction handles DST changes and month/year boundaries', () => {
   for (const [now, target] of [['2026-03-29T08:59:00Z', '2026-03-28'], ['2026-10-25T09:59:00Z', '2026-10-24'], ['2027-01-01T09:59:00Z', '2026-12-31']]) {

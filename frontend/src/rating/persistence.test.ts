@@ -27,16 +27,19 @@ test('rejects invalid ratings and surfaces persistence failures', async () => {
 });
 test('state survives reload; morning resolution blocks a second afternoon prompt', () => {
   const storage = memoryStorage(); let now = new Date('2026-10-10T10:00:00+02:00');
-  const first = useRatingPrompt(() => now, [], storage, 'state');
+  const visited = [{ mensaId: 'archimedes', name: 'Archimedes', date: '2026-10-09' }];
+  const first = useRatingPrompt(() => now, visited, storage, 'state');
   const date = first.current()!.date; first.shown(date); first.resolve(date);
   now = new Date('2026-10-10T14:00:00+02:00');
-  assert.equal(useRatingPrompt(() => now, [], storage, 'state').current(), null);
+  assert.equal(useRatingPrompt(() => now, visited, storage, 'state').current(), null);
 });
 test('dismissal persists permanently and state failures do not resolve', () => {
   const storage = memoryStorage(); const now = () => new Date('2026-10-09T14:00:00+02:00');
-  const store = useRatingPrompt(now, [], storage, 'state');
+  const visited = [{ mensaId: 'archimedes', name: 'Archimedes', date: '2026-10-09' }];
+  const store = useRatingPrompt(now, visited, storage, 'state');
+  assert.equal(store.current()?.date, '2026-10-09');
   store.shown('2026-10-09'); store.resolve('2026-10-09', true);
-  assert.equal(useRatingPrompt(now, [], storage, 'state').current(), null);
+  assert.equal(useRatingPrompt(now, visited, storage, 'state').current(), null);
   assert.deepEqual(JSON.parse(storage.getItem('state')!).dismissedDates, ['2026-10-09']);
   storage.setItem('state', 'bad'); assert.throws(() => store.current());
   storage.setItem('state', JSON.stringify({ resolvedDates: [], dismissedDates: [], promptedDays: [] }));
