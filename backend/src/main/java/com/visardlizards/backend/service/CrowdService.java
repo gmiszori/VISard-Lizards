@@ -11,11 +11,15 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.TreeMap;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
 import com.visardlizards.backend.model.domain.CrowdHistogram;
 import com.visardlizards.backend.model.domain.CrowdReport;
+import com.visardlizards.backend.model.domain.Mensa;
+import com.visardlizards.backend.model.domain.ServiceHours;
 import com.visardlizards.backend.repository.CrowdReportRepository;
 
 /** Crowd reports ("how full is it?") and the popular-times histogram built from them. */
@@ -52,30 +56,55 @@ public class CrowdService {
 		return crowdReportRepository.findByMensaIdSince(mensaId, clock.instant().minus(LIVE_WINDOW));
 	}
 
-	/** Average level per weekday and hour, scaled to 0-100 (level 1 = 0, level 5 = 100). */
-	public CrowdHistogram getHistogram(String mensaId) {
-		List<CrowdReport> reports = crowdReportRepository.findByMensaId(mensaId);
+	/**
+	 * Average reported occupancy per weekday in 15-minute slots, scaled to 0-100 (level 1 = 0, level 5 = 100),
+	 * null for slots without reports.
+	 */
+	public CrowdHistogram getHistogram(Mensa mensa) {
+		List<CrowdReport> reports = crowdReportRepository.findByMensaId(mensa.id());
 		if (reports.size() < MIN_SAMPLE_SIZE) {
-			return new CrowdHistogram(mensaId, false, reports.size(), null);
+			return new CrowdHistogram(mensa.id(), false, reports.size(), null);
 		}
-		int[][] sum = new int[7][24];
-		int[][] count = new int[7][24];
+		// Per weekday: slot start minute -> {sum of occupancy, number of reports}. Slots inside the opening
+		// hours exist even without reports (value null), so the chart shows the whole service window.
+		List<Map<Integer, int[]>> slotsByDay = new ArrayList<>();
+		for (DayOfWeek day : DayOfWeek.values()) {
+			Map<Integer, int[]> slots = new TreeMap<>();
+			if (!mensa.temporarilyClosed()) {
+				for (ServiceHours window : mensa.openingHours().getOrDefault(weekdayKey(day), List.of())) {
+					int close = window.close().getHour() * 60 + window.close().getMinute();
+					for (int minute = slotStart(window.open().getHour() * 60 + window.open().getMinute());
+							minute < close; minute += CrowdHistogram.INTERVAL_MINUTES) {
+						slots.put(minute, new int[2]);
+					}
+				}
+			}
+			slotsByDay.add(slots);
+		}
 		for (CrowdReport report : reports) {
 			ZonedDateTime time = report.timestamp().atZone(ZONE);
-			int day = time.getDayOfWeek().ordinal();
-			sum[day][time.getHour()] += (report.level() - 1) * 25;
-			count[day][time.getHour()]++;
+			int[] slot = slotsByDay.get(time.getDayOfWeek().ordinal())
+					.computeIfAbsent(slotStart(time.getHour() * 60 + time.getMinute()), minute -> new int[2]);
+			slot[0] += (report.level() - 1) * 25;
+			slot[1]++;
 		}
-		Map<String, List<Integer>> byWeekday = new LinkedHashMap<>();
+		Map<String, Map<String, @Nullable Integer>> byWeekday = new LinkedHashMap<>();
 		for (DayOfWeek day : DayOfWeek.values()) {
-			List<Integer> hours = new ArrayList<>(24);
-			for (int hour = 0; hour < 24; hour++) {
-				int n = count[day.ordinal()][hour];
-				hours.add(n == 0 ? 0 : Math.round((float) sum[day.ordinal()][hour] / n));
-			}
-			byWeekday.put(day.getDisplayName(TextStyle.SHORT, Locale.ENGLISH).toLowerCase(Locale.ROOT), hours);
+			Map<String, @Nullable Integer> slots = new LinkedHashMap<>();
+			slotsByDay.get(day.ordinal()).forEach((minute, sumAndCount) -> slots.put(
+					String.format(Locale.ROOT, "%02d:%02d", minute / 60, minute % 60),
+					sumAndCount[1] == 0 ? null : Math.round((float) sumAndCount[0] / sumAndCount[1])));
+			byWeekday.put(weekdayKey(day), slots);
 		}
-		return new CrowdHistogram(mensaId, true, reports.size(), byWeekday);
+		return new CrowdHistogram(mensa.id(), true, reports.size(), byWeekday);
+	}
+
+	private static int slotStart(int minuteOfDay) {
+		return minuteOfDay - minuteOfDay % CrowdHistogram.INTERVAL_MINUTES;
+	}
+
+	private static String weekdayKey(DayOfWeek day) {
+		return day.getDisplayName(TextStyle.SHORT, Locale.ENGLISH).toLowerCase(Locale.ROOT);
 	}
 
 }

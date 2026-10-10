@@ -32,7 +32,10 @@ class MealControllerTests {
 				.andExpect(jsonPath("$.meal.id").value(MEAL_ID))
 				.andExpect(jsonPath("$.meal.name").value("Ground Meat with Horn-Shaped Noodles"))
 				.andExpect(jsonPath("$.meal.price.price").value(14.5))
-				.andExpect(jsonPath("$.meal.price.cat").value("external"));
+				.andExpect(jsonPath("$.meal.price.cat").value("external"))
+				.andExpect(jsonPath("$.meal.prices.student").value(8.5))
+				.andExpect(jsonPath("$.meal.prices.staff").value(10.5))
+				.andExpect(jsonPath("$.meal.prices.external").value(14.5));
 	}
 
 	@Test

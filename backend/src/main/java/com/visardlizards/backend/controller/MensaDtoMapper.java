@@ -25,6 +25,7 @@ import com.visardlizards.backend.model.dto.MensaDTO;
 import com.visardlizards.backend.model.dto.OpeningHoursDTO;
 import com.visardlizards.backend.model.dto.OpeningTimeDTO;
 import com.visardlizards.backend.model.dto.PriceDTO;
+import com.visardlizards.backend.model.dto.PricesDTO;
 
 /** Maps domain models to the DTOs sent to the frontend. */
 @Component
@@ -85,6 +86,8 @@ public class MensaDtoMapper {
 				meal.id(),
 				meal.title(),
 				new PriceDTO(price, priceCategory.name().toLowerCase(Locale.ROOT)),
+				meal.price() == null ? new PricesDTO(null, null, null)
+						: new PricesDTO(meal.price().student(), meal.price().staff(), meal.price().external()),
 				description,
 				meal.allergens(),
 				List.of(meal.dietTag(), meal.kind(), meal.service()),
