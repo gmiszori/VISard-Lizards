@@ -62,6 +62,10 @@ Services only see domain models through `MensaRepository` (implemented by `JpaMe
 | POST | [`/api/search`](#post-apisearch) | Match a search query to displayed canteens with OpenAI |
 | GET | [`/api/meals/{id}`](#get-apimealsid) | One meal with its ratings |
 | POST | [`/api/meals/{id}/ratings`](#post-apimealsidratings) | Rate a meal |
+| GET | [`/api/push/public-key`](#push-notifications-for-starred-dishes) | VAPID key for Web Push |
+| PUT | [`/api/push/subscription`](#push-notifications-for-starred-dishes) | Subscribe, or update the starred dishes |
+| DELETE | [`/api/push/subscription`](#push-notifications-for-starred-dishes) | Unsubscribe |
+| POST | [`/api/push/test`](#push-notifications-for-starred-dishes) | Send a test notification |
 
 ### Conventions
 
@@ -360,6 +364,36 @@ Response `201` with the saved rating:
 `{"mealId": "...", "mensaId": "polyterrasse", "mealDate": "2026-10-06", "userId": "anon:...", "stars": 5, "tags": [], "ratedAt": "...", "source": "location"}`.
 Errors: `404` unknown meal, `400` missing or invalid `userId`, stars outside 1–5, unknown tag or
 source, or invalid body, `409` this user already rated this meal.
+
+## Push notifications for starred dishes
+
+Web Push (RFC 8030/8291/8292, no third-party library): the browser subscribes with the server's VAPID key
+and sends the subscription with its starred dishes. Once a day (`app.push.cron`, default 09:30 Zurich) every
+subscription gets **at most one** notification listing the starred dishes that appear on a menu from today on
+that it was not told about yet ("Pad Thai is back on the menu", one line per dish and day with the mensas).
+A dish that is already on a menu when it is starred does not trigger a notification for those days; only a
+later menu does. Dish names match ignoring case and spacing. Subscriptions the push service reports as gone
+(404/410) are deleted.
+
+- `GET /api/push/public-key` → `{"publicKey": "BN..."}`: pass it as `applicationServerKey` to
+  `PushManager.subscribe()`.
+- `PUT /api/push/subscription` with `PushSubscription.toJSON()` plus dishes and language:
+  `{"endpoint": "https://fcm.googleapis.com/fcm/send/...", "keys": {"p256dh": "...", "auth": "..."}, "dishes": ["Pad Thai"], "language": "de"}`.
+  Creates the subscription or replaces its dishes. `200` with `{endpoint, dishes, language}`; `400` for an
+  endpoint outside the browsers' push services (Google, Mozilla, Microsoft, Apple), malformed keys or more
+  than 100 dishes.
+- `DELETE /api/push/subscription` with `{"endpoint": "..."}` → `204`, also for unknown endpoints.
+- `POST /api/push/test` with `{"endpoint": "..."}` sends "Notifications are on" → `200`
+  `{"delivered": true, "pushServiceStatus": 201}`; `404` without such a subscription; `429` more than once a
+  minute per client.
+
+The notification payload (decrypted by the service worker `frontend/public/sw.js`) is
+`{"title", "body", "url", "tag": "starred-dishes"}`.
+
+Configuration: `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` (base64url), else a key pair is generated once into
+`VAPID_KEY_FILE` (default `./data/vapid-keys.properties`; in Docker inside the `backend-data` volume). A new
+key pair invalidates every subscription. `PUSH_SUBJECT` (default `mailto:unieats@example.com`) is the contact
+the push services see; `PUSH_ENABLED=false` stops the daily job; `PUSH_CRON` changes its time.
 
 ## Raw upstream endpoints (optional)
 

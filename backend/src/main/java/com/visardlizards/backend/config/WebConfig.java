@@ -55,6 +55,8 @@ public class WebConfig implements WebMvcConfigurer {
 				.addPathPatterns("/api/mensas/*/crowd-reports");
 		registry.addInterceptor(new RateLimitInterceptor(Duration.ofSeconds(10), "search again", clock))
 				.addPathPatterns("/api/search");
+		registry.addInterceptor(new RateLimitInterceptor(Duration.ofMinutes(1), "send another test notification", clock))
+				.addPathPatterns("/api/push/test");
 	}
 
 }

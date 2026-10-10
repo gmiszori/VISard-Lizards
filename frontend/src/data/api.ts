@@ -45,7 +45,7 @@ export function retryAfterMs(header: string | null, now = Date.now()): number | 
   return Number.isFinite(timestamp) ? Math.max(0, timestamp - now) : undefined;
 }
 
-async function request<T>(method: 'GET' | 'POST', path: string, body: unknown, baseUrl: string, timeoutMs: number): Promise<T> {
+async function request<T>(method: 'GET' | 'POST' | 'PUT' | 'DELETE', path: string, body: unknown, baseUrl: string, timeoutMs: number): Promise<T> {
   if (!baseUrl) throw new ApiError(0, 'No backend configured (PUBLIC_API_URL is empty).');
   const response = await fetch(`${baseUrl}${path}`, {
     method,
@@ -58,6 +58,7 @@ async function request<T>(method: 'GET' | 'POST', path: string, body: unknown, b
     try { detail = ((await response.json()) as { detail?: string }).detail ?? detail; } catch { /* not a problem detail */ }
     throw new ApiError(response.status, detail, retryAfterMs(response.headers.get('Retry-After')));
   }
+  if (response.status === 204) return undefined as T;
   return response.json() as Promise<T>;
 }
 
@@ -65,6 +66,10 @@ export const apiGet = <T>(path: string, baseUrl = API_URL, timeoutMs = 5000) =>
   request<T>('GET', path, undefined, baseUrl, timeoutMs);
 export const apiPost = <T>(path: string, body: unknown, baseUrl = API_URL, timeoutMs = 8000) =>
   request<T>('POST', path, body, baseUrl, timeoutMs);
+export const apiPut = <T>(path: string, body: unknown, baseUrl = API_URL, timeoutMs = 8000) =>
+  request<T>('PUT', path, body, baseUrl, timeoutMs);
+export const apiDelete = (path: string, body: unknown, baseUrl = API_URL, timeoutMs = 8000) =>
+  request<void>('DELETE', path, body, baseUrl, timeoutMs);
 
 // ───────── Backend response shapes (subset the frontend uses) ─────────
 
