@@ -1,0 +1,111 @@
+---
+import { API_URL } from '../data/api';
+import { CAMPUSES, MENSAS } from '../data/canteens';
+import type { AppCanteen } from '../data/app-data';
+
+interface Props {
+  canteens: AppCanteen[];
+  source: 'backend' | 'sample';
+  sampleReason?: 'unreachable' | 'invalid';
+  menuDate: string;
+  today: string;
+}
+
+const { canteens, source, sampleReason, menuDate, today } = Astro.props;
+const canteenState = Object.fromEntries(canteens.map((canteen) => [canteen.id, {
+  menuCount: canteen.menu.length,
+  rating: canteen.rating,
+  initialOpen: canteen.isOpen,
+  occupancy: canteen.occupancy,
+}]));
+const devData = {
+  apiUrl: API_URL,
+  source,
+  sampleReason: sampleReason ?? null,
+  menuDate,
+  today,
+  campuses: Object.fromEntries(CAMPUSES.map((campus) => [campus.id, campus.name])),
+  mensas: MENSAS.map((mensa) => ({
+    id: mensa.id,
+    name: mensa.name,
+    institution: mensa.institution,
+    campusId: mensa.campusId,
+    hasMenu: mensa.hasMenu,
+    temporarilyClosed: mensa.temporarilyClosed,
+    coordinates: mensa.coordinates ? { lat: mensa.coordinates.lat, lng: mensa.coordinates.lng, source: mensa.coordinates.source } : null,
+    openingHours: mensa.openingHours,
+    closures: mensa.closures,
+    source: mensa.source,
+    state: canteenState[mensa.id] ?? null,
+  })),
+};
+---
+<section class="dev-tools" data-dev-tools hidden aria-labelledby="dev-tools-title">
+  <div class="dev-tools-head">
+    <div>
+      <span class="eyebrow">Developer tools</span>
+      <h2 id="dev-tools-title">Runtime status</h2>
+    </div>
+    <div class="dev-actions">
+      <button type="button" data-dev-refresh>Refresh</button>
+      <button type="button" data-dev-locate>Read position</button>
+      <button type="button" data-dev-clear-visits>Clear visits</button>
+    </div>
+  </div>
+  <div class="dev-summary" data-dev-summary></div>
+  <div class="dev-grid">
+    <section class="dev-panel" aria-labelledby="dev-backend-title">
+      <h3 id="dev-backend-title">Data and backend</h3>
+      <dl data-dev-backend></dl>
+    </section>
+    <section class="dev-panel" aria-labelledby="dev-position-title">
+      <h3 id="dev-position-title">Position</h3>
+      <dl data-dev-position></dl>
+      <ol class="dev-nearest" data-dev-nearest></ol>
+    </section>
+  </div>
+  <section class="dev-panel" aria-labelledby="dev-live-title">
+    <h3 id="dev-live-title">Mensa live accessibility</h3>
+    <div class="dev-table-wrap">
+      <table class="dev-table">
+        <thead><tr><th>Mensa</th><th>Campus</th><th>Now</th><th>Window</th><th>Menu</th><th>Live source</th><th>Distance</th></tr></thead>
+        <tbody data-dev-live-table></tbody>
+      </table>
+    </div>
+  </section>
+  <section class="dev-panel" aria-labelledby="dev-storage-title">
+    <h3 id="dev-storage-title">Device state</h3>
+    <div class="dev-storage" data-dev-storage></div>
+  </section>
+</section>
+<script type="application/json" data-dev-data is:inline set:html={JSON.stringify(devData).replace(/</g, '\\u003c')} />
+<script>
+  import { mountDevTools } from '../dev/dev-tools.ts';
+  mountDevTools();
+</script>
+<style>
+  .dev-tools{margin:20px 0 28px;padding:18px;border:1px solid color-mix(in srgb,var(--green) 24%,var(--line));border-radius:8px;background:color-mix(in srgb,var(--paper) 86%,var(--green) 6%);box-shadow:var(--shadow)}
+  .dev-tools[hidden]{display:none}
+  .dev-tools-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;margin-bottom:14px}
+  .dev-tools h2,.dev-tools h3{font-family:Manrope,sans-serif;margin:0;color:var(--ink)}
+  .dev-tools h2{font-size:22px}.dev-tools h3{font-size:14px;margin-bottom:10px}
+  .dev-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+  .dev-actions button{min-height:38px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);font:700 12px 'DM Sans',sans-serif;padding:8px 11px;cursor:pointer}
+  .dev-actions button:hover{border-color:var(--green);color:var(--green)}
+  .dev-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:12px}
+  .dev-summary span{display:block;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--paper);font-size:12px;line-height:1.35;min-width:0}
+  .dev-summary strong{display:block;font-size:17px;color:var(--green);margin-bottom:3px}
+  .dev-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+  .dev-panel{min-width:0;padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--paper)}
+  .dev-panel dl{display:grid;grid-template-columns:minmax(120px,auto) 1fr;gap:7px 12px;margin:0;font-size:12px}
+  .dev-panel dt{color:var(--muted);font-weight:700}.dev-panel dd{margin:0;overflow-wrap:anywhere}
+  .dev-nearest{margin:10px 0 0;padding-left:22px;font-size:12px;color:var(--muted);line-height:1.6}
+  .dev-table-wrap{overflow:auto;max-height:360px;border:1px solid var(--line);border-radius:8px}
+  .dev-table{width:100%;border-collapse:collapse;font-size:12px;min-width:760px}
+  .dev-table th,.dev-table td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+  .dev-table th{position:sticky;top:0;background:var(--paper);z-index:1;color:var(--muted);font-size:11px;text-transform:uppercase}
+  .dev-live-open{color:var(--green);font-weight:800}.dev-live-closed{color:var(--muted);font-weight:700}
+  .dev-storage{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;font-size:12px}
+  .dev-storage pre{margin:0;max-height:160px;overflow:auto;padding:10px;border:1px solid var(--line);border-radius:8px;background:color-mix(in srgb,var(--paper) 92%,var(--line));white-space:pre-wrap;overflow-wrap:anywhere}
+  @media(max-width:760px){.dev-tools-head,.dev-grid{display:block}.dev-actions{justify-content:flex-start;margin-top:10px}.dev-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.dev-panel{margin-bottom:12px}.dev-storage{grid-template-columns:1fr}}
+</style>

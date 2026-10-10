@@ -48,6 +48,11 @@ import StarredMealsSettings from '../components/StarredMealsSettings.astro';
       <p data-i18n="compactDescription">Show smaller canteen cards to fit more on the screen.</p>
       <label class="setting-option compact-option"><span class="compact-icon" aria-hidden="true">▦</span><span class="setting-copy"><strong data-i18n="compact">Compact</strong></span><input type="checkbox" name="compact" value="true" /></label>
     </fieldset>
+    <fieldset class="settings-group">
+      <legend data-i18n="devMode">Dev mode</legend><span class="settings-group-mark" aria-hidden="true">⌘</span>
+      <p data-i18n="devModeDescription">Show diagnostics for live data, location, storage and backend connectivity.</p>
+      <label class="setting-option compact-option"><span class="compact-icon" aria-hidden="true">⌁</span><span class="setting-copy"><strong data-i18n="devTools">Developer tools</strong></span><input type="checkbox" name="devMode" value="true" /></label>
+    </fieldset>
     <p class="settings-saved" id="settings-saved" aria-live="polite" data-i18n="settingsSaved" hidden>Saved</p>
   </form>
 </BaseLayout>

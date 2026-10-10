@@ -1,9 +1,10 @@
 import { isPriceTier, readPreferences, PREFERENCES_KEY, type Preferences } from '../preferences/state';
 let preferences: Preferences;
-try { preferences = readPreferences(); } catch { preferences = { vegan: true, vegetarian: true, meat: true, compact: false, openOnly: false, locations: ['zentrum', 'hoenggerberg', 'irchel'], priceTier: 'student' }; }
+try { preferences = readPreferences(); } catch { preferences = { vegan: true, vegetarian: true, meat: true, compact: false, openOnly: false, locations: ['zentrum', 'hoenggerberg', 'irchel'], priceTier: 'student', devMode: false }; }
 
 function applyPreferences() {
   document.documentElement.dataset.density = preferences.compact ? 'compact' : 'standard';
+  document.documentElement.dataset.devMode = String(preferences.devMode);
   document.querySelectorAll<HTMLElement>('[data-meal-price]').forEach(price => {
     const amount = price.querySelector<HTMLElement>('[data-price-amount]');
     const label = price.querySelector<HTMLElement>('[data-price-label]');

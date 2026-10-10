@@ -7,6 +7,7 @@ import StarredMealsToday from '../components/StarredMealsToday.astro';
 import { loadAppData } from '../data/app-data';
 import MenuDate from '../components/MenuDate.astro';
 import NearMe from '../location/NearMe.astro';
+import DevTools from '../dev/DevTools.astro';
 const { canteens, menuDate, today, source, sampleReason } = await loadAppData();
 const openCount = canteens.filter((canteen) => canteen.isOpen).length;
 ---
@@ -14,6 +15,7 @@ const openCount = canteens.filter((canteen) => canteen.isOpen).length;
   <div class="section-head" style="margin-top:0"><div><h2 data-i18n="campus">Campus canteens</h2></div><span class="count"><span data-live="open-count">{openCount}</span> <span data-i18n="openCount">open right now</span></span></div>
   <FilterBar />
   <NearMe />
+  <DevTools canteens={canteens} source={source} sampleReason={sampleReason} menuDate={menuDate} today={today} />
   <RatingCard />
   {source === 'sample' && (sampleReason === 'invalid'
     ? <p class="data-source-note" data-i18n="sampleMenusInvalid">Showing sample menus: the CampusEats backend sent data this page could not read.</p>
