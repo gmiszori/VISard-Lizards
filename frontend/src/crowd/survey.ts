@@ -112,6 +112,8 @@ export function mountCrowdSurvey(): void {
   function updateCurrentCrowdBox(summary: CrowdSummary | null) {
     const box = document.querySelector<HTMLElement>(`[data-live="crowd"][data-live-id="${CSS.escape(mensaId!)}"]`);
     if (!box) return;
+    const label = box.querySelector<HTMLElement>('[data-crowd-label]');
+    if (!label) return;
     if (!summary || root!.hidden) {
       if (box.dataset.crowdReported) {
         delete box.dataset.crowdReported;
@@ -125,8 +127,8 @@ export function mountCrowdSurvey(): void {
     box.dataset.crowdReported = 'true';
     box.dataset.occupancy = occupancyOf(summary.level);
     // The survey translates this label itself; without data-i18n the layout's translation leaves it alone.
-    delete box.dataset.i18n;
-    box.textContent = t()[`level${summary.level}` as keyof Copy] as string;
+    delete label.dataset.i18n;
+    label.textContent = t()[`level${summary.level}` as keyof Copy] as string;
     box.title = t().reports(summary.count);
   }
 

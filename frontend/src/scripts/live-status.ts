@@ -67,11 +67,15 @@ function refresh(): boolean {
       }
     } else if (el.dataset.live === 'hours' && el.textContent !== state.hours) {
       el.textContent = state.hours;
-    } else if (el.dataset.live === 'crowd' && !el.dataset.crowdReported && el.dataset.i18n !== state.occupancy) {
+    } else if (el.dataset.live === 'crowd' && !el.dataset.crowdReported) {
       // crowdReported: the crowd survey (src/crowd/survey.ts) shows real reports instead of the illustrative value.
-      el.dataset.i18n = state.occupancy;
-      el.textContent = state.occupancy[0].toUpperCase() + state.occupancy.slice(1);
-      changed = true;
+      const label = el.querySelector<HTMLElement>('[data-crowd-label]');
+      if (label && (el.dataset.occupancy !== state.occupancy || label.dataset.i18n !== state.occupancy)) {
+        el.dataset.occupancy = state.occupancy;
+        label.dataset.i18n = state.occupancy;
+        label.textContent = state.occupancy[0].toUpperCase() + state.occupancy.slice(1);
+        changed = true;
+      }
     }
   });
 
