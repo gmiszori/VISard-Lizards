@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { DuplicateMealRatingError, saveMealRating, type MealRating } from './saveMealRating.ts';
+import { anonymousUserId, DuplicateMealRatingError, saveMealRating, type MealRating } from './saveMealRating.ts';
 
 const rating: MealRating = { userId: 'anon:00000000-0000-4000-8000-000000000000', mealId: 'archimedes.2026-10-09.lunch.1', mensaId: 'archimedes', rating: 4, ratedAt: '2026-10-09T12:00:00Z', mealDate: '2026-10-09' };
 
@@ -36,4 +36,33 @@ test('F05: without a backend the same storage failures are still real failures',
 test('F05: server errors are still reported, and 409 still means already rated', async () => {
   await assert.rejects(withBackend(() => new Response('{"detail":"boom"}', { status: 500 }), () => saveMealRating(rating, memoryStorage(), 'ratings', 'http://backend')), /boom|500/);
   await assert.rejects(withBackend(() => new Response('{"detail":"dup"}', { status: 409 }), () => saveMealRating(rating, memoryStorage(), 'ratings', 'http://backend')), DuplicateMealRatingError);
+});
+
+const ANON = /^anon:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+test('F22: a valid stored anonymous id is kept', () => {
+  const storage = memoryStorage({ 'campuseats-rating-anon-id': rating.userId });
+  assert.equal(anonymousUserId(storage), rating.userId);
+  assert.equal(anonymousUserId(storage), rating.userId);
+});
+
+test('F22: a missing or malformed stored id is replaced by one the backend accepts, and then kept', () => {
+  for (const bad of ['', 'x', 'anon:', 'anon:123', 'user:00000000-0000-4000-8000-000000000000', ' anon:00000000-0000-4000-8000-000000000000', '{"a":1}', 'x'.repeat(5000)]) {
+    const storage = memoryStorage({ 'campuseats-rating-anon-id': bad });
+    const id = anonymousUserId(storage);
+    assert.match(id, ANON);
+    assert.equal(anonymousUserId(storage), id);
+    assert.equal(storage.getItem('campuseats-rating-anon-id'), id);
+  }
+  assert.match(anonymousUserId(memoryStorage()), ANON);
+});
+
+test('F22: blocked or full storage still gives a valid id, the same one within a visit', () => {
+  const blocked = { getItem() { throw new DOMException('denied', 'SecurityError'); }, setItem() { throw new DOMException('denied', 'SecurityError'); } } as unknown as Storage;
+  const first = anonymousUserId(blocked);
+  assert.match(first, ANON);
+  assert.equal(anonymousUserId(blocked), first);
+  const full = memoryStorage({}, true);
+  assert.match(anonymousUserId(full), ANON);
+  assert.match(anonymousUserId(() => { throw new DOMException('denied', 'SecurityError'); }), ANON);
 });

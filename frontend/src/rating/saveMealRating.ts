@@ -14,12 +14,19 @@ export class DuplicateMealRatingError extends Error {
   constructor() { super('This meal has already been rated.'); }
 }
 /** The anonymous id the backend identifies this device by: "anon:" + UUID (backend/API.md). */
-export function anonymousUserId(storage: Storage = localStorage): string {
+const ANON_ID = /^anon:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+let sessionId: string | undefined;
+/** The stored id if it has the format the backend accepts; a new one otherwise. Works when storage is blocked. */
+export function anonymousUserId(storage: Storage | (() => Storage) = () => localStorage): string {
   const key = 'campuseats-rating-anon-id';
-  const existing = storage.getItem(key);
-  if (existing) return existing;
-  const id = `anon:${crypto.randomUUID()}`;
-  storage.setItem(key, id);
+  let store: Storage | undefined;
+  try { store = typeof storage === 'function' ? storage() : storage; } catch { store = undefined; }
+  let existing: string | null = null;
+  try { existing = store?.getItem(key) ?? null; } catch { /* unreadable: make a new id */ }
+  if (existing && ANON_ID.test(existing)) return existing;
+  // Without usable storage the id lives for this visit only, but stays the same within it.
+  const id = sessionId ?? `anon:${crypto.randomUUID()}`;
+  try { store?.setItem(key, id); sessionId = undefined; } catch { sessionId = id; }
   return id;
 }
 
