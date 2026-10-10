@@ -1,0 +1,10 @@
+{$DOMAIN} {
+	root * /srv
+	encode zstd gzip
+
+	reverse_proxy /api/* backend:8080
+	reverse_proxy /swagger-ui* backend:8080
+	reverse_proxy /v3/api-docs* backend:8080
+
+	file_server
+}

@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY .mvn .mvn
 COPY mvnw pom.xml ./
-RUN chmod +x mvnw && ./mvnw dependency:go-offline -B || true
+RUN chmod +x mvnw && ./mvnw dependency:go-offline -B
 
 COPY src ./src
 COPY third-party ./third-party
@@ -15,6 +15,9 @@ WORKDIR /app
 
 EXPOSE 8080
 
+RUN useradd --system --uid 10001 --create-home appuser && mkdir -p /app/data && chown -R appuser:appuser /app
 COPY --from=build /app/target/*.jar app.jar
+RUN chown appuser:appuser app.jar
+USER appuser
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
