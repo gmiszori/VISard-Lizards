@@ -61,14 +61,28 @@ class ScrapedMenuRefreshServiceTests {
             .put("url","https://ethz.ch/en/campus/erleben/gastronomie-und-einkaufen/gastronomie/menueplaene/offerWeek.html?date=2026-10-12&id=16")
             .put("lastAttempt",java.time.Instant.now().toString()).set("result",mapper.createObjectNode()));
         try(var service=new TestClose(new ScrapedMenuRefreshService(ai,mapper,store,true,dir.resolve("unused.json").toString()))) {
-            assertEquals(ScrapedMenuRefreshService.RefreshStatus.STARTED,service.value.requestRefresh());
+            assertTrue(service.value.handleConsoleCommand(" r "));
             assertTrue(entered.await(5,java.util.concurrent.TimeUnit.SECONDS));
-            assertEquals(ScrapedMenuRefreshService.RefreshStatus.ALREADY_RUNNING,service.value.requestRefresh());
+            assertTrue(service.value.handleConsoleCommand("R"));
             release.countDown();
             verify(ai,timeout(5000).times(1)).retrieve("https://ethz.ch/en/campus/erleben/gastronomie-und-einkaufen/gastronomie/menueplaene/offerWeek.html?date=2026-10-12&id=16");
         } finally { release.countDown(); }
     }
     private record TestClose(ScrapedMenuRefreshService value) implements AutoCloseable { public void close() { value.close(); } }
+    @Test void consoleIgnoresOtherInputStopsAtEofAndHonorsConfiguration() throws Exception {
+        var ai=mock(ScraperAiClient.class); var mapper=JsonMapper.builder().build();
+        try(var service=new TestClose(new ScrapedMenuRefreshService(ai,mapper,memoryStore(),false,dir.resolve("console.json").toString()))) {
+            assertFalse(service.value.handleConsoleCommand("refresh"));
+            assertFalse(service.value.handleConsoleCommand(null));
+            assertTrue(service.value.handleConsoleCommand("r"));
+            service.value.readConsoleCommands(new java.io.BufferedReader(new java.io.StringReader("\nignore\nR\n")));
+        }
+        verifyNoInteractions(ai);
+        try(var service=new TestClose(new ScrapedMenuRefreshService(ai,mapper,memoryStore(),true,dir.resolve("nokey-console.json").toString()))) {
+            assertTrue(service.value.handleConsoleCommand("r"));
+        }
+        verify(ai,never()).retrieve(anyString());
+    }
     private static ScrapedMenuStore memoryStore() {
         var store=mock(ScrapedMenuStore.class);
         var rows=new java.util.concurrent.ConcurrentHashMap<String,tools.jackson.databind.JsonNode>();

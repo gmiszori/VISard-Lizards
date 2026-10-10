@@ -94,6 +94,18 @@ docker compose exec -T meal-scraper sh -c 'curl -fsS -X POST -H "Authorization: 
 ```
 
 The command uses the container's configured token; no key needs to be pasted into your shell.
+You can also attach to the backend terminal (PowerShell or Bash):
+
+```sh
+docker attach --sig-proxy=false $(docker compose ps -q backend)
+```
+
+Type `r` and press Enter to start the same full refresh. Press **Ctrl+P, then Ctrl+Q** to detach
+while leaving the backend running. Compose keeps backend stdin open and enables a terminal for
+this command; recreate the backend once after installing this change. When running Java directly
+in a terminal or IDE Run console, just type `r` and Enter there. The listener is a daemon and
+exits at EOF; set `MEAL_SCRAPER_CONSOLE_ENABLED=false` for noninteractive Java deployments.
+
 `{"status":"started"}` (HTTP 202) means the background batch was accepted. It refreshes all
 configured cafeterias even if today's cache is fresh, calls OpenAI using the backend key, and
 saves raw results and meal rows to the database. The 06:00 schedule stays unchanged. HTTP 409

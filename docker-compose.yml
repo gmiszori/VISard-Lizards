@@ -21,6 +21,8 @@ services:
       - MEAL_CONNECTOR_TOKEN=${MEAL_CONNECTOR_TOKEN:-local-compose-connector-token}
 
   backend:
+    stdin_open: true
+    tty: true
     build:
       context: ./backend
       dockerfile: Dockerfile
