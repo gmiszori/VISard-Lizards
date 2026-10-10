@@ -38,6 +38,15 @@ const EMPTY_MESSAGES = {
   },
 } as const;
 
+/**
+ * The meal service a card shows: the Lunch / Dinner pick of the day picker (unset = both services), except that
+ * a live service line saying "Closed" hides the dishes whatever was picked (components/ServiceLabel.astro).
+ */
+function cardService(card: Element | null | undefined, picked: string | undefined): string | undefined {
+  const live = card?.querySelector<HTMLElement>('[data-service-label][data-service-live="true"]')?.dataset.service;
+  return live === 'closed' ? 'closed' : picked || undefined;
+}
+
 function applyPreferences() {
   document.documentElement.dataset.density = preferences.viewMode;
   document.documentElement.dataset.devMode = String(preferences.devMode);
@@ -63,10 +72,9 @@ function applyPreferences() {
     const diet = meal.dataset.diet as keyof Pick<Preferences, 'vegan' | 'vegetarian' | 'meat'>;
     const card = meal.closest<HTMLElement>('[data-canteen-card]');
     const matchesName = card && matchesQuery(card.dataset.name ?? '', query);
-    const liveService = card?.querySelector<HTMLElement>('[data-service-label][data-service-live="true"]')?.dataset.service;
-    const effectiveService = liveService || service;
+    const effectiveService = cardService(card, service);
     const groupService = meal.closest<HTMLElement>('[data-meal-group]')?.dataset.service;
-    const otherService = liveService === 'closed' || (!!effectiveService && !!groupService && groupService !== effectiveService);
+    const otherService = effectiveService === 'closed' || (!!effectiveService && !!groupService && groupService !== effectiveService);
     meal.hidden = !preferences[diet] || otherService || !!(card && !matchesName && !matchesQuery(meal.dataset.mealName ?? '', query));
   });
 
@@ -107,8 +115,7 @@ function applyPreferences() {
     }
     if (emptyMessage) {
       const card = list.closest<HTMLElement>('[data-canteen-card]');
-      const liveService = card?.querySelector<HTMLElement>('[data-service-label][data-service-live="true"]')?.dataset.service;
-      const effectiveService = liveService || service;
+      const effectiveService = cardService(card, service);
       const hasDishForService = effectiveService === 'closed' ? false
         : !effectiveService || list.querySelector(`[data-meal-group][data-service="${effectiveService}"], [data-meal-group]:not([data-service])`) !== null;
       const hasAnyDish = list.querySelector('[data-meal-row]') !== null;
@@ -133,8 +140,7 @@ function applyPreferences() {
     const matchesSearch = aiMatchedIds && aiQuery === query
       ? aiMatchedIds.has(card.dataset.canteenId ?? '') : fallbackSearch;
     // With lunch or dinner picked, a canteen without that service counts as having no menu.
-    const liveService = card.querySelector<HTMLElement>('[data-service-label][data-service-live="true"]')?.dataset.service;
-    const effectiveService = liveService || service;
+    const effectiveService = cardService(card, service);
     const servesChoice = !effectiveService || (effectiveService !== 'closed' && card.querySelector(`[data-meal-group][data-service="${effectiveService}"], [data-meal-group]:not([data-service])`) !== null);
     const hasMenu = preferences.viewMode === 'list'
       ? card.querySelector('[data-meal-row]:not([hidden])') !== null
