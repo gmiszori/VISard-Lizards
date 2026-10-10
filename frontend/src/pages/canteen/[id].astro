@@ -40,7 +40,7 @@ const showServiceHeadings = menuGroups.some(group => group.service === 'lunch') 
   <div class="detail-info"><div class="info-box"><small data-i18n="hours">Opening hours</small><strong data-live="hours" data-live-id={canteen.id}>{canteen.hours}</strong></div><div class="info-box"><small data-i18n="crowd">Current crowd</small><strong><CrowdIndicator mensaId={canteen.id} occupancy={canteen.isOpen ? canteen.occupancy : 'closed'} /></strong></div></div>
   <CrowdSurvey mensaId={canteen.id} />
   <section><h2 class="menu-section-title"><MenuDate date={menuDate} today={today} variant="heading" /> <span class="count" data-dish-count data-total={canteen.menu.length}>· {canteen.menu.length} dishes</span></h2>
-    <DayPicker days={days} menuDate={menuDate} today={today} chosenDay={chosenDay} canteenId={canteen.id} />
+    <DayPicker days={days} menuDate={menuDate} chosenDay={chosenDay} canteenId={canteen.id} />
     {canteen.menu.length ? <><div class="menu-list" data-preference-list data-meal-list>{menuGroups.map(group => <div class="menu-service-group" data-meal-group data-service={group.service}>
       {showServiceHeadings && group.service && <h3 class="menu-service-heading" data-i18n={group.service}>{group.service === 'dinner' ? 'Dinner' : 'Lunch'}</h3>}
       {group.items.map(item => <MenuItem item={item} />)}

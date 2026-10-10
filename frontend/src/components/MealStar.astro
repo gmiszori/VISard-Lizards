@@ -1,11 +1,10 @@
 ---
-import { starName } from '../meals/stars';
 import type { MenuItem } from '../data/canteens';
 import '../meals/stars.css';
 interface Props { item: Pick<MenuItem, 'name' | 'dietary'> }
 const { item } = Astro.props;
 ---
-<button type="button" class="meal-star" data-meal-star data-meal-star-name={starName(item.name)}
+<button type="button" class="meal-star" data-meal-star
   data-meal-name={item.name} aria-pressed="false" aria-label={`Star meal: ${item.name}`}>
   <span aria-hidden="true">☆</span>
 </button>

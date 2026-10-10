@@ -30,7 +30,7 @@ const openCount = canteens.filter((canteen) => canteen.isOpen).length;
   </section>
   <div class="section-head all-canteens-heading"><div><h2 data-i18n="canteensTitle">Canteens</h2></div></div>
   <MenuDate date={menuDate} today={today} variant="note" />
-  <DayPicker days={days} menuDate={menuDate} today={today} chosenDay={chosenDay} />
+  <DayPicker days={days} menuDate={menuDate} chosenDay={chosenDay} />
   <div class="menu-list-controls"><div id="visible-count" class="count" role="status" aria-live="polite">{canteens.length} canteens</div><button id="no-menu-toggle" type="button" aria-pressed="false" hidden></button></div>
   <p id="favourites-status" role="status" hidden></p>
   <div id="canteen-grid" class="canteen-grid">{canteens.map((canteen) => <CanteenCard canteen={canteen} day={chosenDay ? menuDate : undefined} serviceDate={menuDate} liveService={menuDate === today} />)}</div>

@@ -12,7 +12,7 @@ const ranges = {
 };
 ---
 {section === 'exclusions' ? (
-  <div class="settings-subsection profile-meal-settings" data-profile-settings>
+  <div class="settings-subsection profile-meal-settings">
     <h3 data-ob-i18n="never">{t('never')}</h3>
     <div class="settings-hard-options">
       {HARD.map(value => <label class="settings-hard-option">
@@ -23,7 +23,7 @@ const ranges = {
     <p class="settings-profile-hint" data-ob-i18n="hardHint">{t('hardHint')}</p>
   </div>
  ) : (
-  <div class="settings-subsection profile-meal-settings" data-profile-settings>
+  <div class="settings-subsection profile-meal-settings">
     <h3 id="settings-budget-title" data-ob-i18n="budget">{t('budget')}</h3>
     <div class="settings-budget-range">
       <output data-profile-budget-value for="settings-budget" aria-live="polite"></output>

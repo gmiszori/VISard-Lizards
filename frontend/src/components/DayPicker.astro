@@ -8,18 +8,17 @@ interface Props {
   days: string[];
   /** The day shown on this page. */
   menuDate: string;
-  today: string;
   /** true on a day page (the visitor picked the day). */
   chosenDay: boolean;
   /** Set on a canteen page: day links stay on this canteen. */
   canteenId?: string;
 }
-const { days, menuDate, today, chosenDay, canteenId } = Astro.props;
+const { days, menuDate, chosenDay, canteenId } = Astro.props;
 const href = (day: string) => (canteenId ? `/canteen/${encodeURIComponent(canteenId)}/${day}` : `/day/${day}`);
 const label = (day: string) => new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', timeZone: 'UTC' }).format(new Date(`${day}T12:00:00Z`));
 const shownDays = days.includes(menuDate) ? days : [...days, menuDate].sort();
 ---
-<div class="day-picker" data-day-picker data-picker-date={menuDate} data-today={today} data-chosen-day={String(chosenDay)}
+<div class="day-picker" data-day-picker data-picker-date={menuDate} data-chosen-day={String(chosenDay)}
   data-days={JSON.stringify(days)} data-href-base={canteenId ? `/canteen/${encodeURIComponent(canteenId)}/` : '/day/'}>
   <nav class="day-picker-days" aria-label="Menu day" data-day-picker-nav>
     {shownDays.map(day => (
