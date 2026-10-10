@@ -157,6 +157,7 @@ export const steps: Step[] = [
   { id: 'theme', titleKey: 'themeTitle', skippable: true, mount: mountTheme },
   { id: 'price', titleKey: 'priceTitle', skippable: true, mount: mountPrice },
   { id: 'ratings', titleKey: 'ratingsTitle', skippable: true, mount: mountRatings },
+  { id: 'install', titleKey: 'installTitle', skippable: true, mount: () => () => {} },
 ];
 
 /** Skip resets this step to its documented defaults, including partially entered answers. */

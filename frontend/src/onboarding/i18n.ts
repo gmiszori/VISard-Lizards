@@ -1,5 +1,5 @@
 const en = {
-  replayOnboarding: 'Replay onboarding',
+  replayOnboarding: 'Edit personal preferences',
   languageTitle: 'Choose your language.', languageHint: 'You can change this any time in Settings.', languageLabel: 'Language',
   intro: 'A little about you. A better lunch.', saved: 'Your answers stay on this device. Every step is optional.',
   campusTitle: 'Where do you eat?', campusHint: 'Start with your usual campus. We’ll find your next favourite nearby.',
@@ -22,6 +22,11 @@ const en = {
   ratingsTitle: 'Know any of these spots?', ratingsHint: 'Tap a star to rate each mensa out of 5.',
   ratings: 'Your mensa ratings', outOfFiveStars: 'out of 5 stars', notRated: 'Not rated', notBeen: 'I haven’t been to any of these',
   ratingsEmpty: 'No eligible mensas here yet. You can continue.',
+  installTitle: 'Keep UniEats close.', installHint: 'Add this site to your iPhone Home Screen to open it like an app.',
+  installStepOne: 'Open this page in Safari and tap the Share button.',
+  installStepTwo: 'Scroll down and tap “Add to Home Screen”.',
+  installStepThree: 'Tap Add. UniEats will appear on your Home Screen.',
+  installSafariNote: 'This option is available in Safari on iPhone.',
   back: 'Back', skip: 'Skip', next: 'Continue', finish: 'Find my lunch', step: 'Step', of: 'of',
   payoffTitle: 'Today’s pick for you', payoffHint: 'A little less deciding. A little more lunch.', menuDate: 'Menu date',
   viewMensa: 'See this mensa', allMenus: 'Explore all menus', edit: 'Adjust my answers',
@@ -32,7 +37,7 @@ const en = {
 };
 export type Key = keyof typeof en;
 const de: Record<Key, string> = {
-  replayOnboarding: 'Onboarding erneut starten',
+  replayOnboarding: 'Persönliche Einstellungen ändern',
   languageTitle: 'Wähle deine Sprache.', languageHint: 'Du kannst sie jederzeit in den Einstellungen ändern.', languageLabel: 'Sprache',
   intro: 'Ein wenig über dich. Ein besseres Mittagessen.', saved: 'Deine Antworten bleiben auf diesem Gerät. Jeder Schritt ist optional.',
   campusTitle: 'Wo isst du?', campusHint: 'Wähle deinen üblichen Campus. Wir finden deinen nächsten Favoriten in der Nähe.',
@@ -55,6 +60,11 @@ const de: Record<Key, string> = {
   ratingsTitle: 'Kennst du diese Mensen?', ratingsHint: 'Tippe auf einen Stern und bewerte jede Mensa mit bis zu 5 Sternen.',
   ratings: 'Deine Mensabewertungen', outOfFiveStars: 'von 5 Sternen', notRated: 'Noch nicht bewertet', notBeen: 'Ich war noch in keiner dieser Mensen',
   ratingsEmpty: 'Hier gibt es noch keine verfügbaren Mensen. Du kannst fortfahren.',
+  installTitle: 'UniEats immer griffbereit.', installHint: 'Füge diese Website zum Home-Bildschirm deines iPhones hinzu und öffne sie wie eine App.',
+  installStepOne: 'Öffne diese Seite in Safari und tippe auf „Teilen“.',
+  installStepTwo: 'Scrolle nach unten und tippe auf „Zum Home-Bildschirm“.',
+  installStepThree: 'Tippe auf „Hinzufügen“. UniEats erscheint auf deinem Home-Bildschirm.',
+  installSafariNote: 'Diese Option ist in Safari auf dem iPhone verfügbar.',
   back: 'Zurück', skip: 'Überspringen', next: 'Weiter', finish: 'Mein Mittagessen finden', step: 'Schritt', of: 'von',
   payoffTitle: 'Dein heutiger Vorschlag', payoffHint: 'Weniger entscheiden. Mehr geniessen.', menuDate: 'Menüdatum',
   viewMensa: 'Diese Mensa ansehen', allMenus: 'Alle Menüs entdecken', edit: 'Antworten anpassen',
