@@ -12,6 +12,8 @@ function readOptional<T>(key: string): T | null {
 }
 
 export function mountRatingCard(): void {
+  // Browsers that block site data throw when localStorage is touched; the card then simply stays hidden.
+  try { void localStorage; } catch { return; }
   const root = document.querySelector<HTMLElement>('[data-rating-card]');
   const source = document.querySelector('[data-rating-data]');
   if (!root || !source) return;
