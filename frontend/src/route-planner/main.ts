@@ -52,7 +52,7 @@ function legDetails(label: string, leg: Leg) {
   const details = element('details'); details.append(element('summary', `${label}: ${time(leg.departure)} → ${time(leg.arrival)}`));
   const list = element('ol'); leg.directions.forEach(step => list.append(element('li', step))); details.append(list);
   for (const warning of leg.provider?.warnings ?? []) details.append(element('p', warning));
-  details.append(link('Open this leg in Google Maps ↗', leg.mapsUrl)); return details;
+  details.append(link('Open route provider ↗', leg.mapsUrl)); return details;
 }
 function render(plan: Plan, explanation: string) {
   results.replaceChildren(); results.append(element('p', explanation));
@@ -77,7 +77,7 @@ function render(plan: Plan, explanation: string) {
     card.append(legDetails('To your meal stop', option.outbound), legDetails('To your destination', option.onward)); results.append(card);
   });
   const warnings = element('ul'); plan.warnings.forEach(warning => warnings.append(element('li', warning))); results.append(warnings);
-  results.append(element('p', 'Route and restaurant information: Google Maps. Cafeteria menus: UniEats database.'));
+  results.append(element('p', 'OpenStreetMap contributors. Walking: FOSSGIS/OSRM. Transit: transport.opendata.ch. Cafeteria menus: UniEats database.'));
   const raw = element('details'); raw.append(element('summary', 'View MCP tool result'), element('pre', JSON.stringify(plan, null, 2))); results.append(raw);
   routeMap.setPlan(plan); selectCard(selectedOption(plan));
 }

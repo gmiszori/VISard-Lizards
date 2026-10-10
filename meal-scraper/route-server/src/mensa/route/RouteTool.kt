@@ -25,6 +25,8 @@ class RouteTool(private val maps: MapProvider) {
         require(maxStops in 1..8)
         val warnings = mutableListOf("Best among up to $maxStops checked stops within 1.5 km of the direct route, not a guarantee of a globally optimal route.",
             "Travel times are estimates. A five-minute arrival buffer is included; check live transport disruptions.")
+        warnings += baseline.evidence?.array("warnings")?.map { it.jsonPrimitive.content }.orEmpty()
+        warnings += "Restaurants with missing or uncertain OpenStreetMap opening hours are omitted."
         val cafeterias = request.array("cafeterias").mapNotNull { element ->
             val data = element.jsonObject
             val point = runCatching { coordinates(data.obj("location")) }.getOrNull() ?: return@mapNotNull null
@@ -34,15 +36,13 @@ class RouteTool(private val maps: MapProvider) {
         }.filter { corridorDistance(it.point, path) <= 1500 }.sortedBy { corridorDistance(it.point, path) }
         val restaurants = mutableListOf<Candidate>()
         val closedPlaces = request.array("closedPlaces").map { it.jsonObject }
-        // Places' routing summaries do not support transit. Sample the computed route instead,
-        // and verify each candidate with actual TRANSIT/WALK computeRoutes requests.
+        // Discover near the returned path, then verify both legs with the route provider.
         for (index in listOf(0, path.lastIndex / 2, path.lastIndex).distinct()) {
-            val places = try { maps.nearby(path[index]) } catch (ex: Exception) {
+            val places = try { maps.nearby(path[index], date) } catch (ex: Exception) {
                 warnings += "Restaurant discovery failed for one route area; only successfully retrieved places are considered."; continue
             }
             for (place in places) {
-                if (place.text("businessStatus") != "OPERATIONAL") continue
-                val name = place.obj("displayName").text("text")
+                val name = place.text("name")
                 if (Regex("bellavista|bistro\\s*hpi", RegexOption.IGNORE_CASE).containsMatchIn(name)) continue
                 val point = runCatching { coordinates(place.obj("location")) }.getOrNull() ?: continue
                 if (closedPlaces.any { closed ->
@@ -50,16 +50,16 @@ class RouteTool(private val maps: MapProvider) {
                         val b = normalized(closed.text("name")); a.contains(b) || b.contains(a)
                     }
                 }) continue
-                val windows = placeWindows(place, date)
+                val windows = place.array("windows").map { MealWindow(Instant.parse(it.jsonObject.text("open")), Instant.parse(it.jsonObject.text("close"))) }
                 if (windows.isEmpty() || corridorDistance(point, path) > 1500) continue
                 val data = buildJsonObject {
-                    put("id", "google:" + place.text("id")); put("name", name); put("kind", "restaurant")
-                    put("sourceUrl", place.text("googleMapsUri")); put("websiteUrl", place.text("websiteUri"))
+                    put("id", place.text("id")); put("name", name); put("kind", "restaurant")
+                    put("sourceUrl", place.text("sourceUrl")); put("websiteUrl", place.text("websiteUrl"))
                     put("priceLevel", place.text("priceLevel")); put("attributions", place.array("attributions"))
                     put("meals", JsonArray(emptyList())); put("menuNote", "Opening hours checked; kitchen hours, specific dishes and meal prices are not verified. Check the restaurant website.")
-                    put("hoursNote", if (place.containsKey("currentOpeningHours")) "Google Maps current opening hours" else "Google Maps regular opening hours; special closures not confirmed")
+                    put("hoursNote", place.text("hoursNote"))
                 }
-                // Prefer our menu-backed entry when the same venue is returned by Google.
+                // Prefer our menu-backed entry when the same venue is returned by OSM.
                 val duplicate = cafeterias.any { known ->
                     corridorDistance(point, listOf(known.point)) < 100 && normalized(name).let { a ->
                         val b = normalized(known.stop.name); a.contains(b) || b.contains(a)
@@ -96,7 +96,7 @@ class RouteTool(private val maps: MapProvider) {
                 put("onward", legJson(journey.onward, journey.stop.position, destination))
             } }))
             if (journeys.isEmpty()) warnings += "No checked stop fits a full meal break, published hours and the arrival deadline. Try departing earlier or changing the arrival time."
-            put("warnings", JsonArray(warnings.distinct().map { JsonPrimitive(it) })); put("attribution", "Google Maps")
+            put("warnings", JsonArray(warnings.distinct().map { JsonPrimitive(it) })); put("attribution", "© OpenStreetMap contributors · Walking routes: FOSSGIS/OSRM · Timetables: transport.opendata.ch")
         }
     }
 }
@@ -104,7 +104,7 @@ private fun normalized(name: String) = name.lowercase().replace(Regex("[^a-z0-9]
 fun legJson(leg: RouteLeg, origin: String, destination: String) = buildJsonObject {
     put("departure", leg.departure.toString()); put("arrival", leg.arrival.toString()); put("distanceMetres", leg.distanceMetres)
     put("directions", JsonArray(leg.directions.map { JsonPrimitive(it) })); put("provider", leg.evidence ?: buildJsonObject {})
-    val mode = if (leg.evidence?.text("mode") == "TRANSIT") "transit" else "walking"
-    fun encode(value: String) = URLEncoder.encode(value, Charsets.UTF_8)
-    put("mapsUrl", "https://www.google.com/maps/dir/?api=1&origin=${encode(origin)}&destination=${encode(destination)}&travelmode=$mode")
+    val from = leg.evidence?.text("originCoordinates")?.ifBlank { origin } ?: origin
+    val to = leg.evidence?.text("destinationCoordinates")?.ifBlank { destination } ?: destination
+    put("mapsUrl", if (leg.evidence?.text("mode") == "TRANSIT") "https://transport.opendata.ch/" else "https://www.openstreetmap.org/directions?engine=fossgis_osrm_foot&route=${URLEncoder.encode("$from;$to", Charsets.UTF_8)}")
 }

@@ -1,0 +1,35 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {openingWindows,encodePolyline,decodePolyline,transitLeg,cached,point} from './provider.mjs';
+
+test('Zurich hours preserve split shifts, date closures, unknown state and DST', () => {
+  const p=[47.37,8.54];
+  assert.deepEqual(openingWindows('Mo-Fr 11:00-14:00,18:00-22:00','2026-10-12',p),[
+    {open:'2026-10-12T09:00:00.000Z',close:'2026-10-12T12:00:00.000Z'},
+    {open:'2026-10-12T16:00:00.000Z',close:'2026-10-12T20:00:00.000Z'}]);
+  assert.deepEqual(openingWindows('Mo-Fr 11:00-14:00; Oct 12 off','2026-10-12',p),[]);
+  assert.deepEqual(openingWindows('unknown','2026-10-12',p),[]);
+  assert.deepEqual(openingWindows('Mo 11:00-14:00','2026-10-26',p),[{open:'2026-10-26T10:00:00.000Z',close:'2026-10-26T13:00:00.000Z'}]);
+});
+test('provider geometry round trips without invented vertices', () => {
+  const points=[[47.3782,8.5402],[47.3763,8.5477],[-12,-79]];
+  assert.deepEqual(decodePolyline(encodePolyline(points)),points);
+  assert.throws(()=>decodePolyline('??~'));
+  assert.throws(()=>point([Infinity,8]));
+});
+test('transit preserves schedules and labels stop geometry; impossible walking transfers rejected', async () => {
+  const stop=(name,time,type) => ({station:{name,coordinate:{x:47.37,y:8.54}},[type]:time});
+  const departure=stop('A','2026-10-12T09:00:00Z','departure'),arrival=stop('B','2026-10-12T09:10:00Z','arrival');
+  const connection={from:departure,to:arrival,sections:[{departure,arrival,journey:{category:'Tram',number:'6',passList:[]}}]};
+  const leg=await transitLeg(connection,Date.parse('2026-10-12T08:59:00Z'));
+  assert.equal(leg.provider.segments[0].geometryKind,'stop_sequence');assert.equal(leg.provider.distanceScope,'walking_only');
+  assert.equal(await transitLeg(connection,Date.parse('2026-10-12T09:01:00Z')),null);
+  connection.sections[0]={departure,arrival,walk:{duration:600}};
+  assert.equal(await transitLeg(connection,Date.parse('2026-10-12T08:59:00Z'),async()=>({duration:601.1,distance:900,geometry:'_p~iF~ps|U'})),null);
+});
+test('cache reuses data and does not cache failed requests', async () => {
+  let calls=0;const action=async()=>++calls;
+  assert.equal(await cached('test',10000,action),1);assert.equal(await cached('test',10000,action),1);
+  await assert.rejects(cached('failed',10000,async()=>{throw new Error('offline');}));
+  assert.equal(await cached('failed',10000,action),2);
+});

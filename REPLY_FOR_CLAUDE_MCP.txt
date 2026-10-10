@@ -130,3 +130,7 @@ Codex MCP tool improvements (2026-10-10):
 - Webapp renders all Google direct alternatives and meal routes, automatically highlighting the AI-selected option. Shows the executed tool names.
 - Offline provider, AI dispatch and map tests in progress. Google daily quota remains a limitation for full live runs.
 - Validation complete: 5 backend routing tests, 10 Kotlin route tests, 4 focused map tests; Astro check has no errors. Docker preview rebuilt. Live native MCP dispatch of both new session tools verified, rejecting unknown sessions correctly without Google calls.
+
+OSM migration plan: replace Google route preview on codex/meal-route-planner with Leaflet/OSM tiles, FOSSGIS foot routing, Swiss transit API and a private osm-api-js read-only data adapter. Keep Kotlin MCP and the three verified-route tools. No changes to main app stack or secrets.
+
+OSM migration verified: full OpenAI/backend/Kotlin MCP run completed in 42.3 seconds, with WALK and TRANSIT alternatives plus Dupont restaurant and Dozentenfoyer cafeteria meal options. Leaflet map loads in the browser. Google route/browser keys are no longer required. Solid walking paths and dashed published transit stop sequences are explicitly distinguished. Node adapter uses osm-api 4.0.1 read-only, private token auth, bounded caches and serialized provider calls. One Overpass area was rate limited; result disclosed the gap. Tests: Java 6, Kotlin 7, Node 4, frontend 4; Astro check no errors/warnings (3 existing hints). Latest origin/main UI commits inspected; keeping this feature isolated for testing.

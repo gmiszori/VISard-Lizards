@@ -9,12 +9,23 @@ services:
     init: true
     restart: unless-stopped
     environment:
-      - GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY:?Set GOOGLE_MAPS_API_KEY in root .env}
+      - OSM_DATA_URL=http://osm-data:8093
       - ROUTE_CONNECTOR_TOKEN=${ROUTE_CONNECTOR_TOKEN:?Set ROUTE_CONNECTOR_TOKEN in root .env}
+    depends_on:
+      osm-data:
+        condition: service_started
+  osm-data:
+    profiles: [route-planner]
+    build: ./meal-scraper/osm-data
+    restart: unless-stopped
+    init: true
+    environment:
+      - ROUTE_CONNECTOR_TOKEN=${ROUTE_CONNECTOR_TOKEN:?Set ROUTE_CONNECTOR_TOKEN in root .env}
+      - OSM_FOOT_URL=${OSM_FOOT_URL:-https://routing.openstreetmap.de/routed-foot}
+      - SWISS_TRANSPORT_URL=${SWISS_TRANSPORT_URL:-https://transport.opendata.ch/v1}
+      - OSM_OVERPASS_URL=${OSM_OVERPASS_URL:-https://overpass-api.de/api/interpreter}
   backend:
     environment:
-      - GOOGLE_MAPS_BROWSER_KEY=${GOOGLE_MAPS_BROWSER_KEY:-}
-      - GOOGLE_MAPS_MAP_ID=${GOOGLE_MAPS_MAP_ID:-DEMO_MAP_ID}
       - ROUTE_CONNECTOR_URL=http://route-planner:8092
       - ROUTE_CONNECTOR_TOKEN=${ROUTE_CONNECTOR_TOKEN:?Set ROUTE_CONNECTOR_TOKEN in root .env}
       - ROUTE_PLANNER_MODEL=${ROUTE_PLANNER_MODEL:-gpt-6-astra}

@@ -1,5 +1,5 @@
 export type Point = { lat: number; lng: number };
-/** Decode Google's returned route geometry; never replace a missing route with a straight line. */
+/** Decode provider polyline geometry; never replace a missing route with a straight line. */
 export function decodeRoute(encoded: string | undefined): Point[] {
   if (!encoded || encoded.length > 100_000) return [];
   const points: Point[] = []; let cursor = 0; let lat = 0; let lng = 0;

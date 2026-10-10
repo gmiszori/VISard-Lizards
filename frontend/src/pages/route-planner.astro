@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import '../route-planner/styles.css';
+import 'leaflet/dist/leaflet.css';
 ---
 <BaseLayout title="Meal route planner">
   <div class="planner-heading"><a href="/">← Cafeterias</a><span class="preview-tag">Branch preview</span></div>
@@ -29,7 +30,7 @@ import '../route-planner/styles.css';
         <label for="meal-minutes">Time to eat</label>
         <select id="meal-minutes"><option value="45">45 minutes</option><option value="60" selected>1 hour</option></select>
         <p class="field-note">Within the next seven days. Cafeterias and other restaurants are considered, with a five-minute arrival buffer.</p>
-        <p class="field-note">Planning sends your journey to OpenAI and Google Maps. <a href="/route-planner-info/">Privacy and service terms</a></p>
+        <p class="field-note">Planning sends your journey to OpenAI and OSM/Swiss transport services. <a href="/route-planner-info/">Privacy and service terms</a></p>
         <button id="plan-button" class="plan-button" type="submit" disabled>Find my meal stop <span aria-hidden="true">→</span></button>
       </form>
       <p id="planner-status" role="status" aria-live="polite"></p>
@@ -37,9 +38,9 @@ import '../route-planner/styles.css';
     <section class="planner-results" aria-labelledby="result-title" aria-busy="false">
       <div id="route-map-panel">
         <div class="map-heading"><h2>Your route</h2><span id="route-map-selection" aria-live="polite">Routes will appear here after planning.</span></div>
-        <div id="route-map" aria-label="Interactive Google map of your journey and meal stops"></div>
+        <div id="route-map" aria-label="Interactive OpenStreetMap map of your journey and meal stops"></div>
         <p id="route-map-status" role="status">Loading map…</p>
-        <div class="map-legend"><span><i class="outbound"></i> To meal stop</span><span><i class="onward"></i> To destination</span><span><i class="alternative"></i> Other options</span></div>
+        <div class="map-legend"><span><i class="outbound"></i> To meal stop</span><span><i class="onward"></i> To destination</span><span><i class="alternative"></i> Other options</span><span>Dashed: transit stops</span></div>
         <div id="route-map-options" aria-label="Choose a route option"></div>
       </div>
       <h2 id="result-title">Your options</h2>
