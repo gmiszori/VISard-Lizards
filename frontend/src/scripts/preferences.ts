@@ -259,14 +259,12 @@ document.querySelector<HTMLInputElement>('#search-input')?.addEventListener('inp
       const result = await apiPost<{ ids: string[] }>('/api/search', { query, candidates }, API_URL, 15000);
       if (version !== searchVersion) return;
       aiMatchedIds = new Set(result.ids);
-      aiQuery = query.normalize('NFKC').toLocaleLowerCase();
+      aiQuery = query;
       applyPreferences();
       searchStatus('');
     } catch {
       if (version !== searchVersion) return;
-      searchStatus(document.documentElement.lang === 'de'
-        ? 'KI-Suche nicht verfügbar. Textsuche wird angezeigt.'
-        : 'AI search unavailable. Showing text matches.');
+      searchStatus('');
     }
   }, 650);
 });
