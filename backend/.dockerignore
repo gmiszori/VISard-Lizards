@@ -4,3 +4,9 @@ data/
 .git/
 .vscode/
 .idea/
+.DS_Store
+.env
+.env.*
+*.mv.db
+*.trace.db
+*.lock.db

@@ -78,9 +78,13 @@ Services only see domain models through `MensaRepository` (implemented by `JpaMe
   Unknown ids return 404; invalid parameters or bodies return 400. For an invalid body, `detail` names
   the field, e.g. `"stars: must be less than or equal to 5"`.
 - **Spam protection:** a client (IP address) can rate each mensa once per 24 hours and report each
-  mensa once per 5 minutes; otherwise `430 Too Many Requests` with a `Retry-After` header (seconds).
+  mensa once per 5 minutes; otherwise `429 Too Many Requests` with a `Retry-After` header (seconds).
   Windows: `app.rate-limit.*` in `application.properties`. Meal ratings are limited per user instead:
-  one rating per anonymous user id and meal (`409` otherwise).
+  one rating per anonymous user id and meal (`409` otherwise). OpenAI-backed `POST /api/search` is
+  limited to one request per IP every 10 seconds.
+- **Operational endpoints:** generic data CRUD, cache management, and manual ETH/UZH import endpoints
+  are disabled unless `INTERNAL_API_ENABLED=true`. Do not enable them on a public deployment without
+  placing them behind authentication or a private network.
 - CORS is open for the Astro dev server (`http://localhost:4321`), see `app.cors.allowed-origins`.
 - **Frontend:** the Astro app in `frontend/` uses `/api/meta`, `/api/meals`, `/api/mensas`,
   `/api/mensas/{id}/crowd`, `POST /api/search` and `POST /api/meals/{id}/ratings` (see `frontend/README.md`).

@@ -14,6 +14,18 @@ over the private Compose network. The hackathon managed address handles access c
 no VM firewall rule or TLS configuration is needed. The `backend-data` volume persists the H2
 database. Back up this volume before replacing the server or removing volumes. Do not commit `.env`.
 
+The Caddy proxy trusts client-IP forwarding headers from private proxy ranges by default. If the
+hackathon ingress uses public source addresses, set `CADDY_TRUSTED_PROXY_RANGES` in `.env` to the
+documented ingress CIDR(s), separated by spaces. Trust only proxy address ranges; do not use `0.0.0.0/0`.
+Rate limits rely on these forwarded client addresses.
+
+Caddy limits request bodies to 2 MB and adds `nosniff`, frame-denial, referrer, and permissions
+headers to responses.
+
+Generic data CRUD, cache-management, and manual menu-sync endpoints are disabled by default. Do not
+set `INTERNAL_API_ENABLED=true` on a publicly reachable deployment unless those routes are protected
+by authentication or restricted to a private network.
+
 The frontend is statically generated during the image build, so its initial menu is a snapshot and
 falls back to bundled sample data if the backend is not reachable while building. Browser features
 that call the API use the live backend through Caddy. Rebuild the frontend to refresh the initial

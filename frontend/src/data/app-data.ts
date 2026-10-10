@@ -143,7 +143,7 @@ async function fetchAppData(date?: string): Promise<AppData> {
   } catch (error) {
     // Invalid JSON (SyntaxError) and wrongly shaped data (DataError) mean the backend answered but cannot be used; anything else is unreachable.
     const invalid = error instanceof DataError || error instanceof SyntaxError;
-    console.warn(`[campuseats] Backend at ${API_URL} ${invalid ? 'sent data this page cannot read' : 'is not reachable'}, showing the built-in sample menus: ${(error as Error).message}`);
+    console.warn(`[campuseats] Backend ${invalid ? 'sent data this page cannot read' : 'is not reachable'}, showing the built-in sample menus.`);
     return sampleData(invalid ? 'invalid' : 'unreachable', date);
   }
 }

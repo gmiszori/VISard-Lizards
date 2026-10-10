@@ -15,10 +15,9 @@ type Store = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
 export function saveProfile(profile: Profile): boolean {
   let saved = true;
   try { writeProfile(profile, localStorage, starredMeals()); }
-  catch (error) { saved = false; console.warn('CampusEats could not save your profile on this device:', (error as Error).message); }
+  catch { saved = false; console.warn('CampusEats could not save the profile on this device.'); }
   const select = document.querySelector<HTMLSelectElement>('#language-select');
   if (select) { select.value = profile.lang; select.dispatchEvent(new Event('change', { bubbles: true })); }
-  console.info('CampusEats profile', JSON.stringify(profile, null, 2));
   return saved;
 }
 

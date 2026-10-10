@@ -106,7 +106,7 @@ const { title } = Astro.props;
       languageSelect.addEventListener('change', () => { applyLanguage(languageSelect.value); setTheme(document.documentElement.dataset.theme); });
       themeButton.addEventListener('click', () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'));
     </script>
-    <script type="application/json" id="live-data" is:inline set:html={JSON.stringify(LIVE_DATA).replace(/</g, '\u003c')} />
+    <script type="application/json" id="live-data" is:inline set:html={JSON.stringify(LIVE_DATA).replace(/</g, '\\u003c')} />
     <script>
       import '../scripts/live-status';
       import '../scripts/preferences';
