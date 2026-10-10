@@ -56,27 +56,27 @@ const devData = {
   <div class="dev-tools-body" id="dev-tools-body" data-dev-tools-body>
   <div class="dev-summary" data-dev-summary></div>
   <div class="dev-grid">
-    <section class="dev-panel" aria-labelledby="dev-backend-title">
-      <h3 id="dev-backend-title">Data and backend</h3>
+    <details class="dev-panel" data-dev-section="dev-backend-title" open>
+      <summary><h3 id="dev-backend-title">Data and backend</h3></summary>
       <dl data-dev-backend></dl>
-    </section>
-    <section class="dev-panel" aria-labelledby="dev-position-title">
-      <h3 id="dev-position-title">Position</h3>
+    </details>
+    <details class="dev-panel" data-dev-section="dev-position-title" open>
+      <summary><h3 id="dev-position-title">Position</h3></summary>
       <dl data-dev-position></dl>
       <ol class="dev-nearest" data-dev-nearest></ol>
-    </section>
+    </details>
   </div>
-  <section class="dev-panel" aria-labelledby="dev-live-title">
-    <h3 id="dev-live-title">Mensa live accessibility</h3>
+  <details class="dev-panel" data-dev-section="dev-live-title" open>
+    <summary><h3 id="dev-live-title">Mensa live accessibility</h3></summary>
     <div class="dev-table-wrap">
       <table class="dev-table">
         <thead><tr><th>Mensa</th><th>Campus</th><th>Now</th><th>Window</th><th>Menu</th><th>Configured source</th><th>Distance</th></tr></thead>
         <tbody data-dev-live-table></tbody>
       </table>
     </div>
-  </section>
-  <section class="dev-panel dev-clock" data-dev-clock aria-labelledby="dev-clock-title">
-    <h3 id="dev-clock-title">Simulated time</h3>
+  </details>
+  <details class="dev-panel dev-clock" data-dev-clock data-dev-section="dev-clock-title" open>
+    <summary><h3 id="dev-clock-title">Simulated time</h3></summary>
     <p class="dev-hint">Set the app's date and time (Zurich) to test weekdays and service hours, e.g. on a weekend. Affects the menu day, open/closed, opening hours, the crowd chart and survey and the rating prompt. Only while Dev mode is on; a banner shows it on every page.</p>
     <p class="dev-clock-current" data-dev-clock-current></p>
     <div class="dev-clock-form">
@@ -95,9 +95,9 @@ const devData = {
       <button type="button" data-dev-clock-reset>Use real time</button>
     </div>
     <p class="dev-crowd-status" data-dev-clock-status role="status" aria-live="polite"></p>
-  </section>
-  <section class="dev-panel dev-crowd-mock" data-dev-crowd-mock aria-labelledby="dev-crowd-title">
-    <h3 id="dev-crowd-title">Crowd survey mock</h3>
+  </details>
+  <details class="dev-panel dev-crowd-mock" data-dev-crowd-mock data-dev-section="dev-crowd-title" open>
+    <summary><h3 id="dev-crowd-title">Crowd survey mock</h3></summary>
     <p class="dev-hint">Test "How busy is it right now?" without the backend. While the mock is on, canteen pages on this device read and write these reports instead of the backend, and the survey card says "Mock data".</p>
     <div class="dev-crowd-toggles">
       <label><input type="checkbox" id="dev-crowd-enabled" data-dev-crowd-enabled /> Use mock crowd data</label>
@@ -119,11 +119,22 @@ const devData = {
     </div>
     <p class="dev-crowd-status" data-dev-crowd-status role="status" aria-live="polite"></p>
     <ul class="dev-crowd-list" data-dev-crowd-list></ul>
-  </section>
-  <section class="dev-panel" aria-labelledby="dev-storage-title">
-    <h3 id="dev-storage-title">Device state</h3>
+  </details>
+  {import.meta.env.DEV && <details class="dev-panel dev-rating" data-rating-dev data-dev-section="dev-rating-title" open>
+    <summary><h3 id="dev-rating-title">Meal-rating prompt</h3></summary>
+    <p class="dev-hint">Preview the "How was lunch?" card with the bundled menus. The simulation keeps its ratings and prompt state apart from normal use. Development builds only.</p>
+    <div class="dev-actions dev-rating-actions">
+      <button type="button" data-rating-open>Open rating prompt</button>
+      <button type="button" data-rating-reset>Reset simulated ratings</button>
+    </div>
+    <label class="dev-rating-now" for="rating-now">Now (ISO timestamp with timezone, Europe/Zurich rules)<input id="rating-now" type="text" placeholder="2026-10-09T13:30:00+02:00" /></label>
+    <div class="dev-actions dev-rating-actions"><button type="button" data-rating-clock>Apply time</button></div>
+    <p class="dev-crowd-status" data-rating-dev-status role="status"></p>
+  </details>}
+  <details class="dev-panel" data-dev-section="dev-storage-title" open>
+    <summary><h3 id="dev-storage-title">Device state</h3></summary>
     <div class="dev-storage" data-dev-storage></div>
-  </section>
+  </details>
   </div>
 </section>
 <script type="application/json" data-dev-data is:inline set:html={JSON.stringify(devData).replace(/</g, '\\u003c')} />
@@ -147,6 +158,16 @@ const devData = {
   .dev-summary strong{display:block;font-size:17px;color:var(--green);margin-bottom:3px}
   .dev-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
   .dev-panel{min-width:0;padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--paper)}
+  .dev-panel>summary{display:flex;align-items:center;gap:8px;cursor:pointer;list-style:none;margin:-4px 0 0}
+  .dev-panel>summary::-webkit-details-marker{display:none}
+  .dev-panel>summary::before{content:'▸';color:var(--green);font-size:12px;transition:transform .15s}
+  .dev-panel[open]>summary::before{transform:rotate(90deg)}
+  .dev-panel>summary h3{margin:0}
+  .dev-panel[open]>summary{margin-bottom:10px}
+  .dev-panel:not([open]){padding-block:10px}
+  .dev-rating-now{display:grid;gap:6px;margin:10px 0 0;font-size:12px;font-weight:700;color:var(--muted)}
+  .dev-rating-now input{min-height:38px;border:1px solid var(--line);border-radius:8px;padding:6px 10px;font:inherit;color:var(--ink);background:var(--paper)}
+  .dev-rating-actions{justify-content:flex-start;margin-top:8px}
   .dev-panel dl{display:grid;grid-template-columns:minmax(120px,auto) 1fr;gap:7px 12px;margin:0;font-size:12px}
   .dev-panel dt{color:var(--muted);font-weight:700}.dev-panel dd{margin:0;overflow-wrap:anywhere}
   .dev-nearest{margin:10px 0 0;padding-left:22px;font-size:12px;color:var(--muted);line-height:1.6}

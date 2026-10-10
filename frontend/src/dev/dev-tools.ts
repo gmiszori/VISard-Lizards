@@ -314,10 +314,28 @@ function mountCollapse() {
   });
 }
 
+const CLOSED_SECTIONS_KEY = 'campuseats-dev-sections-closed';
+
+/** Each section folds on its own (<details>); the closed ones are remembered on the device. */
+function mountSections() {
+  let closed: string[] = [];
+  try { closed = JSON.parse(localStorage.getItem(CLOSED_SECTIONS_KEY) ?? '[]'); } catch { /* storage blocked */ }
+  if (!Array.isArray(closed)) closed = [];
+  document.querySelectorAll<HTMLDetailsElement>('[data-dev-tools] details[data-dev-section]').forEach(section => {
+    const id = section.dataset.devSection!;
+    section.open = !closed.includes(id);
+    section.addEventListener('toggle', () => {
+      closed = section.open ? closed.filter(other => other !== id) : [...new Set([...closed, id])];
+      try { localStorage.setItem(CLOSED_SECTIONS_KEY, JSON.stringify(closed)); } catch { /* storage blocked */ }
+    });
+  });
+}
+
 export function mountDevTools(): void {
   if (mounted) return;
   mounted = true;
   mountCollapse();
+  mountSections();
   void checkPermission().then(renderAll);
   void pingBackend().then(renderAll);
   mountCrowdMockPanel(renderAll);

@@ -211,13 +211,14 @@ export function mountRatingCard(): void {
     } catch { setStatus('saveError'); }
     finally { busy = false; root.querySelectorAll<HTMLButtonElement>('button').forEach(b => { b.disabled = false; }); }
   }));
-  if (import.meta.env.DEV) {
-    const dev = document.querySelector<HTMLElement>('[data-rating-dev]')!;
+  // The simulator controls live in the developer tools (dev/DevTools.astro).
+  const dev = import.meta.env.DEV ? document.querySelector<HTMLElement>('[data-rating-dev]') : null;
+  if (dev) {
     const input = dev.querySelector<HTMLInputElement>('#rating-now')!;
     const devStatus = dev.querySelector<HTMLElement>('[data-rating-dev-status]')!;
     input.value = override ?? now().toISOString();
     devStatus.textContent = simulated ? 'Simulation active. Ratings and prompt state are isolated from normal use.' : 'Using the real clock. Apply a timestamp to enter isolated simulation.';
-    document.querySelector('[data-rating-open]')!.addEventListener('click', () => {
+    dev.querySelector('[data-rating-open]')!.addEventListener('click', () => {
       try {
         // Open a fresh prompt with real fixture menus, keeping any simulated ratings.
         const date = data.meals.reduce((latest, option) => option.date > latest ? option.date : latest, '') || new Date().toISOString().slice(0, 10);

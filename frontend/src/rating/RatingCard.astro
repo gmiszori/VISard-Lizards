@@ -11,7 +11,6 @@ const data = {
   meals: MEALS.map(m => ({ id: m.id, mensaId: m.mensaId, date: m.date, name: m.title })),
 };
 ---
-{import.meta.env.DEV && <div class="meal-rating-dev-shortcut"><button type="button" data-rating-open title="Preview meal rating">rate</button></div>}
 <section class="meal-rating-card" data-rating-card hidden aria-labelledby="meal-rating-title">
   <div class="meal-rating-header">
     <div><p class="meal-rating-eyebrow" data-rating-text="eyebrow">A little lunch feedback</p><h2 id="meal-rating-title" tabindex="-1" data-rating-text="title">How was lunch?</h2><p data-rating-date></p></div>
@@ -20,14 +19,6 @@ const data = {
   <MensaChips /><MealPicker /><RatingButtons />
   <p role="status" aria-live="polite" aria-atomic="true" data-rating-status></p>
 </section>
-{import.meta.env.DEV && <details class="meal-rating-dev" data-rating-dev>
-  <summary>Meal-rating simulator · development only</summary>
-  <label for="rating-now">Now (ISO timestamp with timezone, Europe/Zurich rules)</label>
-  <input id="rating-now" type="text" placeholder="2026-10-09T13:30:00+02:00" />
-  <button type="button" data-rating-clock>Apply time</button>
-  <button type="button" data-rating-reset>Reset simulated ratings</button>
-  <p data-rating-dev-status role="status"></p>
-</details>}
 <script type="application/json" data-rating-data set:html={JSON.stringify(data).replace(/</g, '\\u003c')} />
 <script>
   import { mountRatingCard } from './RatingCard';
