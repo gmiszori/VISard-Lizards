@@ -112,7 +112,12 @@ const payload = {
       </footer>
     </div>
     <section class="ob-payoff" data-payoff hidden>
-      <span class="ob-payoff-mark" aria-hidden="true">✳</span>
+      <span class="ob-payoff-mark" aria-hidden="true">
+        <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+          <circle cx="24" cy="15" r="2" />
+          <path d="M10 32c0-8 6.3-14 14-14s14 6 14 14H10ZM7 36h34M39 8v6m-3-3h6" />
+        </svg>
+      </span>
       <h1 tabindex="-1" data-ob-i18n="payoffTitle">{t('payoffTitle')}</h1>
       <p class="ob-lead" data-ob-i18n="payoffHint">{t('payoffHint')}</p>
       <p class="ob-note"><MenuDate date={menuDate} today={app.today} variant="heading" /></p>
