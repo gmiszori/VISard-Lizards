@@ -251,6 +251,8 @@ export const createRealtimeVoiceSession = (params: {
   activeCampusId: string | null;
   priceCategory: 'STUDENT' | 'STAFF' | 'EXTERNAL';
   appLanguage: 'en' | 'de';
+  /** The app's Zurich local time ("YYYY-MM-DDTHH:mm"), simulated in dev mode. */
+  now?: string | null;
 }, baseUrl = API_URL): Promise<RealtimeVoiceSession> =>
   apiPost<RealtimeVoiceSession>('/api/voice/realtime-session', params, baseUrl, 15000);
 
@@ -261,6 +263,8 @@ export const searchHybridMeals = (
     campusId?: string | null;
     campusIds?: string[] | null;
     date?: string | null;
+    /** The app's Zurich date that "today" and "tomorrow" resolve against, simulated in dev mode. */
+    today?: string | null;
     priceCategory?: 'STUDENT' | 'STAFF' | 'EXTERNAL';
     appLanguage?: 'en' | 'de';
     userLat?: number | null;

@@ -12,6 +12,7 @@ import { RealtimeVoiceConnection, type RealtimeVoiceStatus } from '../search/rea
 import { readProfileSettings } from '../onboarding/profileSettings';
 import { backendMealConstraints, matchesMenuExclusions } from '../preferences/menuConstraints';
 import { hasDietConflict, normalizeAllergens } from '../data/allergens';
+import { appNow, zurichParts } from '../time/clock';
 import type { ConstraintMeal } from '../onboarding/constraints';
 function savedExclusions() {
   try { return readProfileSettings().hard ?? []; } catch { return []; }
@@ -470,6 +471,7 @@ document.querySelector<HTMLInputElement>('#search-input')?.addEventListener('inp
         // GPS gives us context for explicit "here" requests; it must not narrow every voice query.
         mensaId,
         date,
+        today: zurichParts(appNow()).date,
         userLat: userCoords?.lat ?? null,
         userLng: userCoords?.lng ?? null,
         campusId,
@@ -585,6 +587,7 @@ voiceSearchButton?.addEventListener('click', () => {
               campusId: activeCampusFilter(),
               campusIds: activeCampusScope(),
               date: explicitDate ? null : document.querySelector<HTMLElement>('[data-day-picker]')?.dataset.pickerDate ?? null,
+              today: zurichParts(appNow()).date,
               userLat: userCoords?.lat ?? null,
               userLng: userCoords?.lng ?? null,
               priceCategory: priceCategory(),
@@ -629,8 +632,11 @@ voiceSearchButton?.addEventListener('click', () => {
               isFavouriteVenue: venue?.isFavourite ?? false,
             };
           });
+          const now = zurichParts(appNow());
           return {
             userRequest: query,
+            // The app's clock (simulated in dev mode) decides "today" and "open now", not the model's.
+            currentZurichTime: { date: now.date, weekday: now.weekday, time: now.time },
             appliedCriteria: response.criteria,
             totalMealMatches: response.totalMatches,
             mealOptions,
@@ -652,6 +658,7 @@ voiceSearchButton?.addEventListener('click', () => {
           activeCampusId,
           priceCategory: priceCategory(),
           appLanguage: document.documentElement.lang === 'de' ? 'de' : 'en',
+          now: (({ date, time }) => `${date}T${time}`)(zurichParts(appNow())),
         }, API_URL);
         const connection = await RealtimeVoiceConnection.connect(session.clientSecret, session.instructions, callbacks);
         realtimeVoice = connection;

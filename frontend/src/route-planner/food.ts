@@ -1,4 +1,5 @@
 import { menuLink } from './menus';
+import { routeJob } from './jobs';
 function node<K extends keyof HTMLElementTagNameMap>(tag:K,text='') {const el=document.createElement(tag);el.textContent=text;return el;}
 let queue:Promise<void>=Promise.resolve();
 export function mealFood(place:{name:string;cuisine?:string;venueType?:string;sourceUrl?:string;websiteUrl?:string},planId:string|undefined,index:number,key:()=>string) {
@@ -13,8 +14,7 @@ export function mealFood(place:{name:string;cuisine?:string;venueType?:string;so
       status.textContent='Searching the web for food types…';
       try {
         const query=new URLSearchParams({planId:planId!,optionIndex:String(index)});
-        const response=await fetch(`/api/route-planner/food?${query}`,{method:'POST',headers:{'X-OpenAI-Key':key()},cache:'no-store',signal:AbortSignal.timeout(95_000)});
-        const data=await response.json();if(!response.ok) throw new Error(data.detail||'Food search failed.');
+        const data=await routeJob<{status:string;description?:string;sources?:{url:string;title?:string}[]}>(`/api/route-planner/food/jobs?${query}`,{method:'POST',headers:{'X-OpenAI-Key':key()}},180_000);
         status.textContent=data.description||'Food types could not be verified.';sources.replaceChildren();
         for(const source of data.sources||[]) {
           const url=menuLink(source.url);if(!url) continue;

@@ -6,6 +6,7 @@ import { attachCalendar } from './calendar';
 import { attachMealRange } from './meal-range';
 import { mealFood as mealMenu } from './food';
 import { journeyTiming, type JourneyTiming } from './timing';
+import { routeJob } from './jobs';
 
 const form = document.querySelector<HTMLFormElement>('#route-form')!;
 const input = (id: string) => document.querySelector<HTMLInputElement>(`#${id}`)!;
@@ -109,9 +110,8 @@ form.addEventListener('submit', async event => {
   const timer = window.setInterval(() => { status.textContent = `Planning with AI and MCP: checking restaurants, opening hours and travel legs… ${Math.floor((Date.now() - started) / 1000)}s`; }, 1000);
   status.textContent = 'Starting AI and MCP route planning…';
   try {
-    const response = await fetch('/api/route-planner/plan', { method: 'POST', cache: 'no-store', signal: AbortSignal.timeout(300_000),
+    const data = await routeJob<{plan:Plan;explanation:string;planId?:string}>('/api/route-planner/plan/jobs', { method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-OpenAI-Key': key }, body: JSON.stringify({ origin: originLocation.value(input('origin').value), destination: destinationLocation.value(input('destination').value), departureTime: departure.toISOString(), arrivalTime: arrival.toISOString(), ...mealRange(),modes }) });
-    const data = await response.json(); if (!response.ok) throw new Error(data.detail ?? 'Route planning failed. Check backend configuration.');
     render(data.plan, data.explanation,data.planId); status.textContent = `Finished in ${Math.round((Date.now() - started) / 1000)} seconds.`;
   } catch (error) { status.textContent = error instanceof Error ? error.message : 'Could not plan the journey.'; }
   finally { clearInterval(timer); button.disabled = false; section.setAttribute('aria-busy', 'false'); }

@@ -1,6 +1,7 @@
 package com.visardlizards.backend.controller;
 
 import com.visardlizards.backend.service.RoutePlannerService;
+import com.visardlizards.backend.service.RoutePlannerJobs;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import java.time.Instant;
@@ -27,9 +28,10 @@ public class RoutePlannerController {
         }
     }
     private final RoutePlannerService service;
+    private final RoutePlannerJobs jobs;
     private final String browserKey;
-    public RoutePlannerController(RoutePlannerService service, @Value("${GOOGLE_MAPS_BROWSER_KEY:}") String browserKey) {
-        this.service = service; this.browserKey = browserKey;
+    public RoutePlannerController(RoutePlannerService service, RoutePlannerJobs jobs, @Value("${GOOGLE_MAPS_BROWSER_KEY:}") String browserKey) {
+        this.service = service; this.jobs = jobs; this.browserKey = browserKey;
     }
     @GetMapping("/status")
     public ResponseEntity<JsonNode> status() {
@@ -44,6 +46,21 @@ public class RoutePlannerController {
     public ResponseEntity<JsonNode> plan(@RequestHeader(name="X-OpenAI-Key", defaultValue="") String key,
                                         @Valid @RequestBody Trip trip) {
         return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(service.plan(trip, key));
+    }
+    @PostMapping("/plan/jobs")
+    public ResponseEntity<JsonNode> startPlan(@RequestHeader(name="X-OpenAI-Key", defaultValue="") String key,
+                                            @Valid @RequestBody Trip trip) {
+        service.validate(trip, key);
+        return ResponseEntity.accepted().cacheControl(CacheControl.noStore()).body(jobs.start(() -> service.plan(trip,key)));
+    }
+    @GetMapping("/jobs/{jobId}")
+    public ResponseEntity<JsonNode> job(@PathVariable String jobId) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(jobs.status(jobId));
+    }
+    @PostMapping("/food/jobs")
+    public ResponseEntity<JsonNode> startFood(@RequestParam String planId,@RequestParam int optionIndex,
+            @RequestHeader(name="X-OpenAI-Key", defaultValue="") String key) {
+        return ResponseEntity.accepted().cacheControl(CacheControl.noStore()).body(jobs.start(() -> service.food(planId,optionIndex,key)));
     }
     @GetMapping("/locations")
     public ResponseEntity<JsonNode> locations(@RequestParam String query) {
