@@ -1,5 +1,9 @@
 // @ts-check
+import { existsSync } from 'node:fs';
 import { defineConfig } from 'astro/config';
+
+const localEnv = new URL('.env.local', import.meta.url);
+if (existsSync(localEnv)) process.loadEnvFile(localEnv);
 
 export default defineConfig({
   vite: {
