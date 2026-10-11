@@ -30,3 +30,11 @@ test('train trip numbers use station corridors while service line references rem
   assert.equal(transitGeometryQuery({category:'IC',number:'3'},stops).kind,'osm_transit_path');
   assert.equal(transitGeometryQuery({category:'EC',number:'1;out'},stops),null);
 });
+
+test('a nearby parallel corridor outside the mode tolerance is not treated as the service path',()=> {
+  const a=[47.37,8.5],b=[47.38,8.51];
+  const shifted=relation([[[47.3708,8.5],[47.3808,8.51]]]);
+  assert.equal(matchTransitGeometry([shifted],[a,b],'tram'),null);
+  const rail=relation([[[47.372,8.5],[47.382,8.51]]]);
+  assert.equal(matchTransitGeometry([rail],[a,b],'train'),null);
+});

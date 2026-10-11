@@ -38,12 +38,7 @@ export function journeyTimeline(label: string,leg: JourneyLeg,from: string,to: s
     travel.append(info);block.append(travel,stop(step.arrival,index===steps.length-1 ? to : step.to || to,step.arrivalPlatform));timeline.append(block);cursor=step.arrival;
   });
   panel.append(timeline);
-  const details=node('details','','journey-extra');details.append(node('summary','Directions and service notes'));
-  // Street-by-street instructions remain available without overwhelming the timetable.
-  for(const direction of leg.directions) details.append(node('p',direction));
-  for(const warning of leg.provider?.warnings || []) details.append(node('p',warning));
-  try {const url=new URL(leg.mapsUrl);if(url.protocol==='https:') {const a=node('a','Route provider ↗');a.href=url.href;a.target='_blank';a.rel='noopener noreferrer';details.append(a);}} catch {}
-  panel.append(details);return panel;
+  return panel;
 }
 export function mealBreak(from: string,to: string,place: string) {
   const pause=node('div','','journey-meal-break');pause.append(node('strong',`Meal break · ${minutesBetween(from,to)} min`),node('span',`${clock(from)}–${clock(to)} · ${place}`));return pause;

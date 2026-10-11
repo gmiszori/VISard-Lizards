@@ -46,7 +46,7 @@ export function matchTransitGeometry(relations,stops,mode,preferShortest=false) 
   let best;
   for(const relation of relations || []) for(const chain of relationChains(relation)) {
     const matches=stops.map(stop=>project(stop,chain));
-    if(matches.some(hit=>hit.distance>(mode==='train' ? 500 : 180))) continue;
+    if(matches.some(hit=>hit.distance>(mode==='train' ? 150 : mode==='tram' ? 45 : 65))) continue;
     const direction=matches.at(-1).position>=matches[0].position ? 1 : -1;
     if(matches.some((hit,i)=>i>0 && direction*(hit.position-matches[i-1].position)<-.001)) continue;
     const first=direction===1 ? matches[0] : matches.at(-1),last=direction===1 ? matches.at(-1) : matches[0];
@@ -75,7 +75,9 @@ export function transitGeometryQuery(journey,stops) {
       query:`[out:json][timeout:7];relation[type=route][route=train](${from})->.board;relation.board(${to});out geom;`};
   }
   const service=transitReference(journey);if(!service) return null;
+  if(stops.length<2 || !stops.every(p=>p.length===2 && p.every(Number.isFinite))) return null;
+  const bbox=[Math.min(...stops.map(p=>p[0]))-.015,Math.min(...stops.map(p=>p[1]))-.02,Math.max(...stops.map(p=>p[0]))+.015,Math.max(...stops.map(p=>p[1]))+.02].map(n=>n.toFixed(4)).join(',');
   const ref=service.ref.replace(/([A-Z]+)(\d)/,'$1 ?$2');
-  return {...service,kind:'osm_transit_path',key:`${service.mode}:${service.ref}`,
-    query:`[out:json][timeout:7];relation[type=route][route=${service.mode}][ref~"^${ref}$"](47.1,8.2,47.7,8.9);out geom;`};
+  return {...service,kind:'osm_transit_path',key:`${service.mode}:${service.ref}:${bbox}`,
+    query:`[out:json][timeout:7];relation[type=route][route=${service.mode}][ref~"^${ref}$"](${bbox});out geom;`};
 }

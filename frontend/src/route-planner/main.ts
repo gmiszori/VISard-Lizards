@@ -55,12 +55,6 @@ type Option = { place: Place; mealStart: string; mealEnd: string; arrival: strin
 type Plan = { baseline: Leg; directRoutes?: Leg[]; selectedOptionIndex?: number; options: Option[]; checkedStops: number; mealMinutes: number; warnings: string[] };
 const time = (value: string) => new Intl.DateTimeFormat(undefined, { timeZone: 'Europe/Zurich', hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' }).format(new Date(value));
 function element<K extends keyof HTMLElementTagNameMap>(tag: K, text = '') { const el = document.createElement(tag); el.textContent = text; return el; }
-function link(label: string, url: string) {
-  const anchor = element('a', label);
-  try { const parsed = new URL(url); if (parsed.protocol !== 'https:') return element('span', label); anchor.href = parsed.href; anchor.target = '_blank'; anchor.rel = 'noopener noreferrer'; }
-  catch { return element('span', label); }
-  return anchor;
-}
 function render(plan: Plan, explanation: string) {
   results.replaceChildren(); results.append(element('p', explanation));
   results.append(element('p', `${plan.checkedStops} stops checked · Direct route arrival ${time(plan.baseline.arrival)} · ${plan.mealMinutes}-minute meal break`));
@@ -75,17 +69,7 @@ function render(plan: Plan, explanation: string) {
     card.append(journeyTimeline('To your meal stop',option.outbound,input('origin').value,option.place.name),
       mealBreak(option.mealStart,option.mealEnd,option.place.name),
       journeyTimeline('To your destination',option.onward,option.place.name,input('destination').value));
-    const menu=element('details');menu.className='venue-details';menu.append(element('summary','Meals and venue information'));
-    option.place.meals.forEach(meal => {
-      const prices = Object.entries(meal.price ?? {}).filter(([, price]) => price != null).map(([group, price]) => `${group}: CHF ${price}`).join(' · ');
-      menu.append(element('p', `${meal.title}${meal.components.length ? ' — ' + meal.components.join(', ') : ''}${prices ? ' · ' + prices : ''}`));
-    });
-    menu.append(element('p', option.place.menuNote));
-    if (option.place.hoursNote) menu.append(element('p', option.place.hoursNote));
-    if (option.place.sourceUrl) menu.append(link('Source ↗', option.place.sourceUrl));
-    if (option.place.websiteUrl) menu.append(element('span', ' · '), link('Restaurant website ↗', option.place.websiteUrl));
-    for (const attribution of option.place.attributions ?? []) menu.append(element('p', attribution.provider), link('Data source', attribution.providerUri));
-    card.append(menu); results.append(card);
+    results.append(card);
   });
   if(!plan.options.length) results.append(journeyTimeline('To your destination',plan.baseline,input('origin').value,input('destination').value));
   const warnings = element('ul'); plan.warnings.forEach(warning => warnings.append(element('li', warning))); results.append(warnings);

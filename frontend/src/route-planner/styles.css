@@ -23,5 +23,5 @@
 .journey-duration{font-size:.8rem;opacity:.8}.journey-direction{display:block;font-size:.8rem;opacity:.8;margin-top:.3rem}
 .journey-segment+.journey-segment{margin-top:1rem}.journey-wait{margin:.8rem 0 .8rem calc(74px + 1.2rem);font-size:.78rem;color:var(--ink);opacity:.75}
 .journey-meal-break{display:flex;flex-wrap:wrap;justify-content:space-between;gap:.4rem;padding:1rem;border:1px solid #52734677;border-radius:10px;background:#52734618;font-size:.9rem}.journey-meal-break span{font-size:.8rem}
-.route-option .journey-extra{margin:0;padding:.8rem 1rem;border-top:1px solid var(--line)}.journey-extra summary{font-size:.8rem;opacity:.8}.journey-extra p{font-size:.8rem;line-height:1.6}.venue-details summary{font-size:.9rem}
+
 @media(max-width:440px){.route-option{padding:1rem}.journey-heading{align-items:start;flex-direction:column}.journey-stop{grid-template-columns:46px 16px minmax(0,1fr);gap:.4rem}.journey-travel{grid-template-columns:16px minmax(0,1fr);margin-left:calc(46px + .4rem);gap:.4rem}.journey-travel:before{left:7px}.journey-wait{margin-left:calc(62px + .8rem)}}

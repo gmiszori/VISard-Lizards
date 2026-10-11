@@ -82,6 +82,15 @@ export class MealRouteMap {
   }
   select(index: number) {
     this.selected = index;
+    if(this.plan) {
+      const legs=index===-2 ? [this.plan.baseline,...(this.plan.directRoutes?.slice(1)||[]),...this.plan.options.flatMap(o=>[o.outbound,o.onward])]
+        : index===-1 ? [this.plan.baseline] : index<-2 ? [this.plan.directRoutes?.[-index-2]].filter(Boolean)
+        : this.plan.options[index] ? [this.plan.options[index].outbound,this.plan.options[index].onward] : [];
+      const segments=legs.flatMap(leg=>leg?.provider?.segments || []);
+      this.message.textContent='Dashed: public transport. Solid: walking.'
+        +(segments.some(s=>s.geometryKind==='stop_sequence') ? ' Some transit paths are unavailable and omitted from the map; the timetable still shows these connections.' : '')
+        +(segments.some(s=>s.geometryKind==='osm_rail_corridor') ? ' Train paths are approximate OSM rail corridors, not confirmed tracks for this service.' : '');
+    }
     this.controls.querySelectorAll<HTMLButtonElement>('button').forEach(chip => chip.setAttribute('aria-pressed', String(Number(chip.dataset.option) === index)));
     const title = index === -2 ? 'All checked meal-route options' : index === -1 ? 'Direct route without a meal stop' : index < -2 ? 'Direct alternative without a meal stop' : this.plan?.options[index]?.place.name;
     document.querySelector('#route-map-selection')!.textContent = title ?? 'Route';
@@ -115,6 +124,8 @@ export class MealRouteMap {
     const addLine = (leg: MappableLeg, index: number, part: number) => {
       const segments = leg.provider?.segments ?? [{polyline: leg.provider?.polyline ?? '', geometryKind: leg.provider?.mode==='TRANSIT' ? 'stop_sequence' : 'street_path'}];
       for (const segment of segments) {
+        // Stop coordinates are not a track/road shape. Never draw straight chords as transit paths.
+        if(segment.geometryKind==='stop_sequence') continue;
         const path = decodeRoute(segment.polyline); if (path.length < 2) continue;
         const line = new google.maps.Polyline({ map: this.map, path, clickable: true });
         line.addListener('click', () => { this.select(index); this.onSelect(index); });

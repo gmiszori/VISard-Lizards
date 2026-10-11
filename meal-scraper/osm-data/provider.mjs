@@ -8,6 +8,7 @@ const agent = 'UniEatsMealRoutes/1.0 (https://github.com/gmiszori/VISard-Lizards
 OSM.configure({userAgent: agent});
 const foot = process.env.OSM_FOOT_URL || 'https://routing.openstreetmap.de/routed-foot';
 const transport = process.env.SWISS_TRANSPORT_URL || 'https://transport.opendata.ch/v1';
+const transitGeometryUrl=process.env.OSM_TRANSIT_GEOMETRY_URL || 'https://overpass.osm.ch/api/interpreter';
 const overpass = process.env.OSM_OVERPASS_URL || 'https://overpass-api.de/api/interpreter';
 const cache = new Map();
 const lastCall = new Map();
@@ -151,7 +152,7 @@ export async function transitShape(journey,stops) {
     // Sanitized service references or published station bounds; never device coordinates.
     const data=await cached(`transit-shape:${service.key}`,86400000,()=>{
       if((shapeCooldown.get(service.key)||0)>Date.now()) throw new Error('Transit geometry lookup is cooling down.');
-      return request(overpass,{method:'POST',
+      return request(transitGeometryUrl,{method:'POST',
       headers:{'Content-Type':'application/x-www-form-urlencoded'},
       body:query({data:service.query})},8000);});
     const match=matchTransitGeometry(data.elements,stops,service.mode,service.kind==='osm_rail_corridor');
@@ -208,7 +209,7 @@ export async function transitLeg(connection, earliest, walking = walk, shape = t
   const geometry = paths.flatMap(p => decodePolyline(p.polyline));
   return {departure: iso(start), arrival: iso(Math.max(end,cursor)), distanceMetres: distance, directions,
     provider: {mode: 'TRANSIT', itinerary, polyline: encodePolyline(geometry), segments: paths, geometryKind: 'mixed', distanceScope:'walking_only',
-      warnings: [...(paths.some(p=>p.geometryKind==='stop_sequence') ? ['Some transit sections have no matched service path; their geometry connects published stops only.'] : []),
+      warnings: [...(paths.some(p=>p.geometryKind==='stop_sequence') ? ['Some transit paths could not be matched and are omitted from the map; their timetable connections remain available.'] : []),
         ...(paths.some(p=>p.geometryKind==='osm_transit_path') ? ['Transit paths follow matched OpenStreetMap service ways; diversions and platform tracks may differ.'] : []),
         ...(paths.some(p=>p.geometryKind==='osm_rail_corridor') ? ['Rail geometry follows an inferred OSM corridor through the published stations; the exact train track is not confirmed.'] : []),
         'Transit distance is not supplied.']}};
