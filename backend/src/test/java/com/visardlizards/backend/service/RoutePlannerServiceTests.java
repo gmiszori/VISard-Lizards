@@ -21,6 +21,18 @@ class RoutePlannerServiceTests {
     private final MensaRepository repository=mock(MensaRepository.class);
     private final Clock clock=Clock.fixed(Instant.parse("2026-10-10T20:00:00Z"),ZoneOffset.UTC);
     private Trip trip() { return new Trip("Zürich HB","ETH Zentrum",Instant.parse("2026-10-12T09:00:00Z"),Instant.parse("2026-10-12T12:00:00Z"),60); }
+    @Test void journeyTimingIncludesInitialWaitMealTransferWaitAndDeadlineSlack() {
+        var plan=mapper.readTree("""
+            {"options":[{"mealStart":"2026-10-12T09:20:00Z","mealEnd":"2026-10-12T10:20:00Z","arrival":"2026-10-12T10:40:00Z",
+            "outbound":{"departure":"2026-10-12T09:05:00Z","arrival":"2026-10-12T09:20:00Z","provider":{"itinerary":[
+            {"departure":"2026-10-12T09:05:00Z","arrival":"2026-10-12T09:10:00Z"},{"departure":"2026-10-12T09:15:00Z","arrival":"2026-10-12T09:20:00Z"}]}},
+            "onward":{"departure":"2026-10-12T10:30:00Z","arrival":"2026-10-12T10:40:00Z"}}]}
+            """);
+        service(RestClient.create()).addTiming(plan,trip());var timing=plan.path("options").get(0).path("timing");
+        assertEquals(6000,timing.path("totalSeconds").asLong());assertEquals(1200,timing.path("travelSeconds").asLong());
+        assertEquals(3600,timing.path("mealSeconds").asLong());assertEquals(1200,timing.path("waitingSeconds").asLong());
+        assertEquals(4800,timing.path("spareSeconds").asLong());
+    }
     @Test void mealRangeRelaysToMcpAndRejectsInvalidBounds() {
         var base=trip();var service=service(RestClient.create());
         var range=new Trip(base.origin(),base.destination(),base.departureTime(),base.arrivalTime(),5,List.of("TRANSIT"),120);

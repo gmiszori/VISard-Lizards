@@ -10,7 +10,7 @@ Set `ROUTE_CONNECTOR_TOKEN` (a random secret of at least 16 characters) in ignor
 docker compose -p mensa-route-test -f docker-compose.yml -f compose.route-planner.yaml --profile route-planner up --build -d
 ```
 
-Open http://localhost:8084/route-planner/. A working OpenAI key enables AI route selection and explanation; unavailable/invalid keys fall back to verified backend-ranked results. The API also accepts requests without an OpenAI key. This isolated stack has a separate database and leaves the main app on 8083 available. The automatic meal scraper is disabled in this preview.
+Open http://localhost:8084/route-planner/. A working OpenAI key enables AI route selection and explanation; unavailable/invalid keys fall back to verified backend-ranked results. The API also accepts requests without an OpenAI key. This isolated stack has a separate database and leaves the main app on 8083 available. The scheduled all-venue meal refresh is disabled in this preview; the private scraper MCP is enabled for on-demand route-stop menus.
 
 The first startup automatically downloads the Swiss OSM extract and builds a private pedestrian OSRM graph. Allow several minutes and enough disk/RAM for preprocessing. The graph and restaurant catalog use named Docker volumes; ordinary rebuilds reuse them. No routing-provider API key is required.
 
@@ -113,3 +113,18 @@ Matched OJP shapes use `ojp_transit_path` and remain dashed on the Google displa
 The route form has independent Walk and Public transport buttons. Public transport is selected initially; activate both to compare both sets of route alternatives. The API accepts `modes: ["WALK"]`, `["TRANSIT"]`, or both. Empty/unsupported selections are rejected before provider calls; omitted modes preserve the legacy both-mode behavior. The selected modes stay authoritative through the Java trip context, Kotlin session and every meal leg. Public transport still needs pedestrian access/transfer paths and the candidate walking matrix, but does not request complete walking-only alternatives when Walk is off.
 
 Map controls, meal markers and route clicks select the matching details below. Only All options displays every meal/direct journey. Approaches to meal stops stay blue; onward and direct alternatives use distinct greens. Starting point/destination use large circular dots instead of letter pins.
+
+
+## Meal menus and journey times
+
+The route profile also starts the existing `meal-scraper` HTTP connector and its dedicated Kotlin MCP server. Selecting a meal option calls same-origin `GET /api/route-planner/menu?planId=...&optionIndex=...`; `planId` is returned by `/plan` and expires after 30 minutes. Only server-held verified options can choose the venue URL and Zurich meal date. The browser cannot submit a scrape URL. Database dishes appear immediately; website dishes, prices, allergens and source links replace them when available. Other restaurants use their OSM website URL. Stops without a published website/menu show an explicit missing-data message.
+
+The backend invokes `scrape_meals` through the authenticated private connector. That tool discovers and reads linked HTML/PDF menus itself. No additional OpenAI call or OpenAI key is needed for extraction. Full raw MCP evidence is cached in the existing scraped-menu database table under a separate `route-menu.` namespace: six hours for completed lookups, fifteen minutes for failures. Canonical cafeteria menu rows are not overwritten by these date-specific requests. Responses filter to the selected date/time, keep undated recurring dishes, exclude duplicates and suppress meals during source-backed closures. Repeated selections and replanning reuse persisted evidence.
+
+Each route now includes timing in seconds: total elapsed time from the requested departure, travel (walking and vehicle movement), meal, waiting (including initial/transfer/onward waits), and slack before the deadline. The displayed rounded components sum to the total. Menu requests are serialized and do not delay the route result. The form's dual slider specifies a 5–120 minute meal range; the planner verifies the minimum and seeks a longer feasible break within opening hours and the arrival buffer.
+
+ETH English API entries whose dish name is `novalue` are resolved against the corresponding German menu, preserving the date, section, serving times, prices and source evidence. Unresolved placeholders remain excluded from route menu cards.
+
+Other restaurant cards use their published website and linked menus even when dishes have no serving schedule. Their menu response removes dish dates and serving times, applies no meal-time/day restriction, and deduplicates dishes; the card shows a general website menu. Cafeteria cards continue filtering to the planned meal date/time. Closure notices still apply to the journey date.
+
+Restaurant menu discovery follows a linked HTML menu page to its PDFs, bounded to six fetched menu sources. French carte links are included, beverage/wine links are excluded, and priced text PDFs with food sections are supported beyond the original Food/Snacks layout. Published price variants remain separate; currency is retained only where stated.

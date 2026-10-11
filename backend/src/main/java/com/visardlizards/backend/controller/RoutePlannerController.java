@@ -49,4 +49,8 @@ public class RoutePlannerController {
     public ResponseEntity<JsonNode> locations(@RequestParam String query) {
         return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(service.locations(query));
     }
+    @GetMapping("/menu")
+    public ResponseEntity<JsonNode> menu(@RequestParam @Size(max=36) String planId,@RequestParam int optionIndex) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(service.menu(planId,optionIndex));
+    }
 }

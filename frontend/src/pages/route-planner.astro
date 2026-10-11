@@ -37,10 +37,7 @@ import '../route-planner/styles.css';
             <input id="meal-minutes" type="range" min="5" max="120" step="5" value="45" aria-label="Minimum meal time" />
             <input id="meal-max-minutes" type="range" min="5" max="120" step="5" value="60" aria-label="Maximum meal time" />
           </div><div class="meal-range-scale" aria-hidden="true"><span>5 min</span><span>2 hours</span></div>
-          <p class="field-note">Choose your minimum and maximum break. We allow as much meal time as fits the opening hours and arrival deadline.</p>
         </fieldset>
-        <p class="field-note">Within the next seven days. Cafeterias and other restaurants are considered, with a five-minute arrival buffer.</p>
-        <p class="field-note">Planning sends your journey to OpenAI and OSM/Swiss transport services. <a href="/route-planner-info/">Privacy and service terms</a></p>
         <button id="plan-button" class="plan-button" type="submit" disabled>Find my meal stop <span aria-hidden="true">→</span></button>
       </form>
       <p id="planner-status" role="status" aria-live="polite"></p>

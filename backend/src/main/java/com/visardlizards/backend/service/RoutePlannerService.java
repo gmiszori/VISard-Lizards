@@ -24,6 +24,7 @@ public class RoutePlannerService {
     private final Clock clock;
     private final RestClient client;
     private RestClient aiClient;
+    private RouteMenuService menus;
     private final String url, token, model;
     private final Map<String,String> sources = new HashMap<>();
     private final Semaphore busy = new Semaphore(1);
@@ -32,9 +33,10 @@ public class RoutePlannerService {
     public RoutePlannerService(JsonMapper mapper, MensaRepository repository, Clock clock,
             @Value("${app.route-planner.connector-url:http://127.0.0.1:8092}") String url,
             @Value("${app.route-planner.connector-token:}") String token,
-            @Value("${app.route-planner.model:gpt-6-astra}") String model) {
+            @Value("${app.route-planner.model:gpt-6-astra}") String model, RouteMenuService menus) {
         this(mapper, repository, clock, url, token, model, createClient());
         this.aiClient=createClient(Duration.ofSeconds(45));
+        this.menus=menus;
     }
     RoutePlannerService(JsonMapper mapper, MensaRepository repository, Clock clock, String url, String token, String model, RestClient client) {
         this.mapper=mapper; this.repository=repository; this.clock=clock; this.url=url.replaceAll("/+$", ""); this.token=token; this.model=model; this.client=client;
@@ -71,6 +73,10 @@ public class RoutePlannerService {
         catch(RuntimeException exception) {
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,"Location suggestions unavailable. Enter a full address or coordinates.");
         }
+    }
+    public JsonNode menu(String planId,int optionIndex) {
+        if(menus==null) throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,"Menu scraper is unavailable.");
+        return menus.menu(planId,optionIndex);
     }
     void validate(Trip trip, String key) {
         if(trip.mealMinutes()<5 || trip.mealMaxMinutes()>120 || trip.mealMaxMinutes()<trip.mealMinutes())
@@ -179,6 +185,8 @@ public class RoutePlannerService {
                 ((ObjectNode)plan).set("warnings",warnings);explanation=warning+" "+explanation;
             }
             var result=mapper.createObjectNode().put("explanation",explanation).put("aiAvailable",warning.isBlank());
+            addTiming(plan,trip);
+            if(menus!=null) result.put("planId",menus.register(plan));
             result.set("plan",plan);result.set("toolCalls",calls);return result;
         } catch(RestClientResponseException ex) {
             String code="";
@@ -193,6 +201,30 @@ public class RoutePlannerService {
         } catch(RuntimeException ex) {
             throw new ResponseStatusException(HttpStatus.BAD_GATEWAY,"Route planning failed or timed out. Check the route MCP connector and API configuration.",ex);
         } finally { busy.release(); }
+    }
+    void addTiming(JsonNode plan,Trip trip) {
+        for(JsonNode option:plan.path("options")) {
+            if(option.has("mealStart") && option.has("mealEnd") && option.has("arrival")) {
+                long meal=Duration.between(Instant.parse(option.path("mealStart").asText()),Instant.parse(option.path("mealEnd").asText())).getSeconds();
+                long travel=travelSeconds(option.path("outbound"))+travelSeconds(option.path("onward"));
+                ((ObjectNode)option).set("timing",timing(trip,Instant.parse(option.path("arrival").asText()),meal,travel));
+            }
+        }
+        var legs=new ArrayList<JsonNode>();legs.add(plan.path("baseline"));for(JsonNode leg:plan.path("directRoutes")) legs.add(leg);
+        for(JsonNode leg:legs) if(leg.has("arrival")) ((ObjectNode)leg).set("timing",timing(trip,Instant.parse(leg.path("arrival").asText()),0,travelSeconds(leg)));
+    }
+    private ObjectNode timing(Trip trip,Instant arrival,long meal,long travel) {
+        long total=Math.max(0,Duration.between(trip.departureTime(),arrival).getSeconds());
+        return mapper.createObjectNode().put("totalSeconds",total).put("travelSeconds",travel).put("mealSeconds",meal)
+            .put("waitingSeconds",Math.max(0,total-travel-meal)).put("spareSeconds",Duration.between(arrival,trip.arrivalTime()).getSeconds());
+    }
+    private long travelSeconds(JsonNode leg) {
+        long elapsed=Math.max(0,Duration.between(Instant.parse(leg.path("departure").asText()),Instant.parse(leg.path("arrival").asText())).getSeconds());
+        var steps=leg.path("provider").path("itinerary");
+        if(!steps.isArray() || steps.isEmpty()) return elapsed;
+        long seconds=0;
+        for(JsonNode step:steps) seconds+=Math.max(0,Duration.between(Instant.parse(step.path("departure").asText()),Instant.parse(step.path("arrival").asText())).getSeconds());
+        return Math.min(elapsed,seconds);
     }
     private String aiWarning(RuntimeException failure) {
         if(failure instanceof ResponseStatusException status && status.getReason()!=null)

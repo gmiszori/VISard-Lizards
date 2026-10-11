@@ -4,6 +4,7 @@ export type JourneyStep = {
 };
 export type JourneyLeg = {
   departure: string; arrival: string; distanceMetres: number; directions: string[]; mapsUrl: string;
+  timing?: import('./timing').JourneyTiming;
   provider?: {mode?: string; warnings?: string[]; polyline?: string; itinerary?: JourneyStep[]};
 };
 const clock = (value: string) => new Intl.DateTimeFormat('en-GB', {timeZone:'Europe/Zurich',hour:'2-digit',minute:'2-digit'}).format(new Date(value));

@@ -1,6 +1,8 @@
 # Isolated branch test stack: separate project name, ports, and database volume.
 # docker compose -p mensa-route-test -f docker-compose.yml -f compose.route-planner.yaml --profile route-planner up --build -d
 services:
+  meal-scraper:
+    profiles: [scraper, route-planner]
   osrm-download:
     profiles: [route-planner]
     image: alpine:3.22
@@ -81,6 +83,8 @@ services:
       - MEAL_SCRAPER_ENABLED=false
     depends_on:
       route-planner:
+        condition: service_started
+      meal-scraper:
         condition: service_started
   frontend:
     ports: !override
