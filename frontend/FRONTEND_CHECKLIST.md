@@ -1,6 +1,6 @@
 # CampusEats comprehensive frontend regression checklist
 
-Snapshot: after `origin/main` 200539c and `origin/feature/connect-backend` 2abbf54 were merged, 2026-10-10. Read `FRONTEND_AUDIT.md` for the 64-item implementation backlog and the limited set of checks already executed.
+Manual regression cases for deployment validation. This checklist is not evidence that each case has been executed; record results for the release being tested.
 
 This inventory covers every current frontend feature plus cross-feature durability and the new API integration. It is exhaustive for the identified scope, not proof that arbitrary future inputs are safe. **Unchecked means execution/evidence is still required**, including cases partially covered by unit tests. Record PASS/FAIL/BLOCKED/NOT RUN/NOT APPLICABLE per ID, environment, actual result and evidence; never check off an entire group after one smoke test. Extend this inventory when a new surface or state is discovered.
 
@@ -327,4 +327,4 @@ Use isolated test-origin storage, disposable backend fixtures and deterministic 
 
 ## Release gate
 
-Do not call the complete frontend production-ready merely because static checks pass. Close or explicitly accept P1 findings in `FRONTEND_AUDIT.md`; verify live API and phone operation; execute the relevant matrix; account for every case above; provide unresolved decisions, mocks and blocked cases with owners. New findings expand this checklist.
+Do not call the complete frontend production-ready merely because static checks pass. Verify live API and phone operation, execute the relevant matrix, and record unresolved decisions, mocks and blocked cases with owners. New findings expand this checklist.

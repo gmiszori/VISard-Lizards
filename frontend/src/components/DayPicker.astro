@@ -32,7 +32,7 @@ const shownDays = days.includes(menuDate) ? days : [...days, menuDate].sort();
     <button type="button" data-service-choice="dinner" aria-pressed="false" data-i18n="dinner">Dinner</button>
   </div>
 </div>
-<p class="price-category-note"><span data-price-category>Student prices</span> · <a href="/settings" data-i18n="changePriceCategory">Change</a></p>
+<p class="price-category-note"><span data-price-category>Student prices</span><span aria-hidden="true">·</span><a href="/settings" data-i18n="changePriceCategory">Change</a></p>
 <script is:inline>
   // Switching the day loads another page. Keep the picker where it was on screen instead of jumping to the
   // top: runs while the page is still loading, right after the picker exists (the click saved its position).
@@ -147,7 +147,7 @@ const shownDays = days.includes(menuDate) ? days : [...days, menuDate].sort();
   document.addEventListener('languagechange', renderDays);
   document.addEventListener(CLOCK_EVENT, () => { renderDays(); markOtherDay(); followSimulatedDay(); });
 </script>
-<style>.price-category-note{margin:0 0 16px;color:var(--muted);font-size:12px}.price-category-note a{display:inline-flex;align-items:center;min-width:44px;min-height:44px;margin-block:-13px;vertical-align:middle;color:var(--green);text-decoration:underline;text-underline-offset:3px}</style>
+<style>.price-category-note{display:flex;align-items:center;gap:6px;margin:0 0 16px;color:var(--muted);font-size:12px;line-height:1.5}.price-category-note a{display:inline-flex;align-items:center;min-width:44px;min-height:44px;margin-block:-13px;color:var(--green);text-decoration:underline;text-underline-offset:3px}</style>
 <style>
   .day-picker{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;margin:0 0 14px}
   .day-picker-days{display:flex;flex-wrap:wrap;gap:6px}
