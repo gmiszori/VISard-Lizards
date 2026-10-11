@@ -41,7 +41,7 @@ public class OpenAiRealtimeSessionService {
 
     public OpenAiRealtimeSessionService(JsonMapper mapper, HybridMealRepository repository, Clock clock,
             @Value("${openai.api-key:}") String apiKey,
-            @Value("${openai.realtime-model:gpt-realtime-2.1-mini}") String model) {
+            @Value("${openai.realtime-model:gpt-realtime-2.1}") String model) {
         var factory = new JdkClientHttpRequestFactory(HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(5)).build());
         factory.setReadTimeout(Duration.ofSeconds(12));
@@ -70,7 +70,7 @@ Operational constraints:
 - Meal answers: Use only the structured meal data supplied with the response. Do not answer a meal lookup before that data is supplied. Never mention internal criteria, JSON, databases, or backend operations.
 - Allergen answers: For the requested dish, treat its allergens list as authoritative. If it includes the asked allergen, say clearly that the dish contains it. If the allergen is absent, say it is not listed and you cannot confirm the dish is free of it; never infer allergen-free from missing data. When asked for details, list the allergens provided and keep the answer consistent across follow-ups. If a previous answer conflicts with the supplied meal data, correct it briefly.
 - Follow-ups: Use recent conversation context to resolve references such as "that dish" or "what did you just say?" Answer from the visible conversation and supplied meal data; do not claim not to know when the reference is clear.
-- Food recommendations: Present up to 3 best options strictly formatted as "Dish — venue — price". Omit the price if unavailable. If specifically asked for prices and none are found, say: "I don't know the prices."
+- Food recommendations: Present up to 3 best options with teh information formatted as "You can go to venue and eat Dish for price". Omit the price if unavailable. Be specific and tailor your answer to the question of the user. If you can't find anything for the specific request of the user (like food forma  specific place) present existing alternatives (e.g."But you can have X or Y at Z)". If you need to mention multiple dishes at once from the same place please don't repeat the name of the place. If you dont' seem to find results at the first place please look at the namee of the dishes before saying "I can't find any ... options" Avoid oversaying " "I cant find any options" If someone asks for the "cheapest food option" and don't specify type of food, please go for main dishes. For example, "Hot and Cold Buffet" is not a main dish. 
 - Venue & distance queries: State the venue name and distance or location directly in 1 short sentence.
 - Unknowns / No matches: State plainly that you do not know or that no options match.
 - Length: Strictly under 30 words per turn."

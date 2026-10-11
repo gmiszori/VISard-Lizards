@@ -221,7 +221,7 @@ export class RealtimeVoiceConnection {
     this.userResponseTimer = setTimeout(() => {
       this.userResponseTimer = null;
       this.flushPendingResponses();
-    }, 750);
+    }, 200);
   }
 
   private acceptTranscript(transcript: string): void {
