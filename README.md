@@ -192,9 +192,9 @@ Caddy serves HTTP on port 8080, proxies `/api/*`, `/swagger-ui*` and `/v3/api-do
 
 Updates: run the chosen `docker compose ... up --build -d` command again, preserving volumes. Container startup ordering is not full dependency health checking: routing services use `service_started`, while graph jobs must complete successfully. Allow startup time and verify actual route/menu calls.
 
-**Frontend startup caveat:** the entrypoint's failure branch logs that it will serve bundled samples, but the current Dockerfile does not copy the image-build `dist` into `/srv`. If the startup wait/build fails on a fresh container, `/srv` may remain empty and Caddy can return 404 instead of that advertised fallback. Investigate the startup logs and restore API/build readiness before relying on deployment success.
+**Frontend startup fallback:** the image pre-populates `/srv` with bundled pages. If backend readiness or the startup build fails, Caddy serves those pages instead of an empty site. Inspect startup logs and restore API readiness before relying on live menus; browser API features still require a healthy backend.
 
-**AI voice assistant (Beta) caveat:** the current Caddy `Permissions-Policy` sets `microphone=()`, so microphone-based voice features are unavailable through this proxy until deployment policy is intentionally changed. This does not affect ordinary menu or route browsing.
+**AI voice assistant (Beta):** Caddy permits microphone access for this site only (`microphone=(self)`). HTTPS (or localhost), browser support and explicit user permission are still required.
 
 ### Render Blueprint (API + static site only)
 
@@ -206,7 +206,7 @@ Important limitations of the checked-in Blueprint:
 
 - It does not provision route MCP, the OSM adapter, OSRM, or the meal scraper, nor their connector URLs/secrets. The full route planner/optional scraper require separate infrastructure and backend configuration.
 - The backend is free-plan with no persistent disk configured. H2 data and generated VAPID keys can disappear on restart/redeploy; ratings, crowd reports and subscriptions are not durable. Sleeping services can delay browser calls and builds.
-- `NODE_VERSION=22.12.0` conflicts with the frontend's declared minimum **22.13.0**; select a compatible Node version before expecting a reproducible build.
+- The frontend uses Node **22.13.0**, matching its declared minimum; use that version or a newer compatible release for local builds.
 - Static HTML and dated routes only refresh on frontend rebuild. The readiness check fails the build when the API remains unreachable, but `/api/meta` readiness alone does not prove live menus have fully imported.
 - Paid keys, optional integrations, production push contact, durable storage and public-origin settings require explicit deployment configuration; they are not supplied by this Blueprint.
 
@@ -235,7 +235,7 @@ docker compose config --quiet
 
 After packaging the Kotlin server/connector, `(cd meal-scraper && python3 scripts/smoke.py)` verifies real stdio/HTTP round trips; `--live` additionally fetches a real menu and depends on the upstream website. It is separate from the deterministic unit tests.
 
-`.github/workflows/ci.yml` runs backend tests, Kotlin tests, frontend tests/check/build and a Linux Docker MCP/frontend integration smoke check on main pushes and pull requests. The Node adapter's `npm test` is available locally but is **not explicitly run by that workflow**. Current Compose dependencies can make the integration job download/build the full Swiss OSRM graph; account for its resources and 20-minute job timeout. Unit tests do not establish that external providers, paid accounts or production deployment work.
+`.github/workflows/ci.yml` runs backend tests, Kotlin tests, Node adapter tests, frontend tests/check/build and a Linux Docker MCP/frontend integration smoke check on main pushes and pull requests. The smoke job initializes its database volume and starts only the three services it exercises, without downloading the Swiss OSRM graph. Routing requires a separate full-stack deployment check with the prepared graph and reachable providers. Unit tests do not establish that external providers, paid accounts or production deployment work.
 
 ## Source provenance
 

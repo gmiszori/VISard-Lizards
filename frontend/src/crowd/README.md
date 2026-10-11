@@ -4,7 +4,7 @@ The canteen detail page shows a small, orientative weekday histogram (about 60 p
 
 The current data comes from the existing synthetic `CROWD` module and is visibly labelled **Preview data**. Opening windows exclude closed hours; temporarily closed mensas have no preview prediction. On the detail page, a small adapter in `src/pages/canteen/[id].astro` loads `GET /api/mensas/{id}/crowd` and dispatches the backend prediction (`source: 'backend'`) once the backend has enough reports (`histogram.sufficient`); until then the preview stays, labelled as such.
 
-## Backend handoff
+## Backend contract
 
 `CrowdPrediction` in `prediction.ts` is the frontend contract:
 

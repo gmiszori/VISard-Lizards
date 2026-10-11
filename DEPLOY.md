@@ -27,10 +27,12 @@ Generic data CRUD, cache-management, and manual menu-sync endpoints are disabled
 set `INTERNAL_API_ENABLED=true` on a publicly reachable deployment unless those routes are protected
 by authentication or restricted to a private network.
 
-The frontend is statically generated during the image build, so its initial menu is a snapshot and
-falls back to bundled sample data if the backend is not reachable while building. Browser features
-that call the API use the live backend through Caddy. Rebuild the frontend to refresh the initial
-menu snapshot. The Kotlin scraper and its HTTP connector are built from `meal-scraper/` and deployed
+The frontend image contains bundled static pages in Caddy's `/srv`. On startup it waits for the
+backend and rebuilds the pages with current API data. If readiness or building fails, the bundled
+pages remain available. Recreate/restart the frontend to refresh the initial menu snapshot;
+browser API features use the live backend through Caddy and still require backend readiness.
+Caddy permits same-origin microphone access for voice search; HTTPS (or localhost) and explicit
+browser permission are required. The Kotlin scraper and its HTTP connector are built from `meal-scraper/` and deployed
 as the private `meal-scraper` service. No separate repository checkout, Windows process, or
 `host.docker.internal` connection is needed on Linux.
 
