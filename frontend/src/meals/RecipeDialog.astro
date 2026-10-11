@@ -157,7 +157,7 @@
     servingsInput.value = '2';
     translate();
     dialog.showModal();
-    void generate();
+    generateButton.focus();
   });
   dialog.querySelector<HTMLButtonElement>('[data-recipe-close]')!.addEventListener('click', () => dialog.close());
   dialog.addEventListener('close', () => { requestId++; loading = false; generateButton.disabled = false; servingsInput.disabled = false; });
@@ -186,7 +186,7 @@
   .recipe-disclaimer{margin:14px 0;color:var(--muted);font-size:13px;line-height:1.5}
   .recipe-controls{display:flex;align-items:center;gap:10px;padding:14px 0;border-block:1px solid var(--line)}
   .recipe-controls label{font-size:13px;font-weight:700}.recipe-controls input{width:62px;min-height:40px;padding:4px 8px;border:1px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink);font:600 15px 'DM Sans',sans-serif}
-  .recipe-controls button,.recipe-result-actions button{min-height:40px;padding:8px 14px;border:0;border-radius:6px;background:var(--green);color:white;font:700 13px 'DM Sans',sans-serif;cursor:pointer}
+  .recipe-controls button,.recipe-result-actions button{min-height:40px;padding:8px 14px;border:0;border-radius:6px;background:var(--green);color:var(--paper);font:700 13px 'DM Sans',sans-serif;cursor:pointer}
   .recipe-controls button{margin-left:auto}.recipe-controls button:disabled{opacity:.6;cursor:wait}
   .recipe-status{min-height:18px;margin:14px 0;color:var(--muted);font-size:13px;line-height:1.5}
   .recipe-status:empty{min-height:0;margin:0}
