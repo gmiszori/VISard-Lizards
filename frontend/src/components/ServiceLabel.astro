@@ -1,0 +1,17 @@
+---
+import { MENSAS, type Service } from '../data/canteens';
+import { currentServiceLine, serviceWindowsForDate } from '../data/menu-display';
+interface Props { mensaId: string; date: string; live?: boolean }
+const { mensaId, date, live = false } = Astro.props;
+const windows = serviceWindowsForDate(MENSAS.find(mensa => mensa.id === mensaId), date);
+const line = currentServiceLine(windows, date);
+const serviceName = (service: Service | 'closed') => service === 'lunch' ? 'Lunch' : service === 'dinner' ? 'Dinner' : 'Closed';
+---
+<span class="current-service-label" data-service-label data-service={line.service} data-service-live={String(live)} data-service-date={date} data-service-windows={JSON.stringify(windows)}>
+  <span data-service-name data-i18n={line.service === 'closed' ? 'closed' : line.service}>{serviceName(line.service)}</span>
+  {line.service !== 'closed' && <span data-service-time>{line.time}</span>}
+</span>
+<style>
+  .current-service-label{display:inline-flex;align-items:center;gap:8px}
+  .current-service-label [data-service-time]{color:var(--muted);font-weight:600;text-transform:none;white-space:nowrap}
+</style>

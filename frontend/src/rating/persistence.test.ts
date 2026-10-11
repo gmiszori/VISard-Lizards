@@ -25,17 +25,17 @@ test('rejects invalid ratings and surfaces persistence failures', async () => {
   storage.setItem('ratings', '[]'); storage.setItem = () => { throw new Error('Quota exceeded'); };
   await assert.rejects(saveMealRating(rating, storage, 'ratings'), /Quota/);
 });
-test('state survives reload; morning resolution blocks a second afternoon prompt', () => {
-  const storage = memoryStorage(); let now = new Date('2026-10-10T10:00:00+02:00');
-  const visited = [{ mensaId: 'archimedes', name: 'Archimedes', date: '2026-10-09' }];
+test('state survives reload; resolving a same-day prompt prevents another', () => {
+  const storage = memoryStorage(); let now = new Date('2026-10-09T13:00:00+02:00');
+  const visited = [{ mensaId: 'archimedes', name: 'Archimedes', date: '2026-10-09', readyAt: new Date('2026-10-09T12:40:00+02:00').getTime() }];
   const first = useRatingPrompt(() => now, visited, storage, 'state');
   const date = first.current()!.date; first.shown(date); first.resolve(date);
-  now = new Date('2026-10-10T14:00:00+02:00');
+  now = new Date('2026-10-09T14:00:00+02:00');
   assert.equal(useRatingPrompt(() => now, visited, storage, 'state').current(), null);
 });
 test('dismissal persists permanently and state failures do not resolve', () => {
   const storage = memoryStorage(); const now = () => new Date('2026-10-09T14:00:00+02:00');
-  const visited = [{ mensaId: 'archimedes', name: 'Archimedes', date: '2026-10-09' }];
+  const visited = [{ mensaId: 'archimedes', name: 'Archimedes', date: '2026-10-09', readyAt: new Date('2026-10-09T12:40:00+02:00').getTime() }];
   const store = useRatingPrompt(now, visited, storage, 'state');
   assert.equal(store.current()?.date, '2026-10-09');
   store.shown('2026-10-09'); store.resolve('2026-10-09', true);

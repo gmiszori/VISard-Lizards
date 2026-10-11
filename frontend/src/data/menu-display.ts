@@ -1,6 +1,9 @@
 import type { Mensa, MenuItem, Service, Weekday } from './canteens.ts';
+import { cuisineForDish, type CuisineCategory } from './cuisine.ts';
+import { minutesOfDay, zurichParts } from '../time/clock.ts';
 
 export type DisplayMenuItem = MenuItem & {
+  cuisine?: CuisineCategory;
   servingWindows?: Array<{ open: string; close: string }>;
   /** Live menus only (the sample menus lack them): the exact diet class (fish stays fish) and the allergen ids. */
   dietTag?: 'vegan' | 'vegetarian' | 'meat' | 'fish';
@@ -8,6 +11,35 @@ export type DisplayMenuItem = MenuItem & {
   /** Set when the price is not for a plate, e.g. '100 g' at by-weight buffets (priceUnits.ts). */
   priceUnit?: string;
 };
+
+export type ServiceWindow = { service: Service; open: string; close: string };
+export type CurrentServiceLine = { service: Service | 'closed'; time: string };
+
+export function serviceWindowsForDate(mensa: Mensa | undefined, date: string): ServiceWindow[] {
+  const weekday = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'][new Date(`${date}T12:00:00Z`).getUTCDay()] as Weekday;
+  const closed = !mensa || mensa.temporarilyClosed || mensa.closures.some(c => c.from <= date && date <= c.to);
+  return closed || !mensa ? [] : [...(mensa.openingHours[weekday] ?? [])].sort((a, b) => a.open.localeCompare(b.open));
+}
+
+function zurichDateAndMinute(now = new Date()): { date: string; minute: number } {
+  const { date, time } = zurichParts(now);
+  return { date, minute: minutesOfDay(time) };
+}
+
+export function currentServiceLine(windows: readonly ServiceWindow[], date: string, now = new Date()): CurrentServiceLine {
+  const sorted = [...windows].sort((a, b) => a.open.localeCompare(b.open));
+  const local = zurichDateAndMinute(now);
+  if (date !== local.date) {
+    const first = sorted[0];
+    return first ? { service: first.service, time: `${first.open}–${first.close}` } : { service: 'closed', time: 'Closed' };
+  }
+  const active = sorted.find(window => minutesOfDay(window.open) <= local.minute && local.minute < minutesOfDay(window.close));
+  const next = sorted.find(window => minutesOfDay(window.open) > local.minute);
+  const chosen = active ?? next;
+  return chosen
+    ? { service: chosen.service, time: `${chosen.open}–${chosen.close}` }
+    : { service: 'closed', time: 'Closed' };
+}
 
 export function groupMenuByService<T extends Pick<MenuItem, 'service'>>(menu: T[]): Array<{ service: Service | undefined; items: T[] }> {
   return (['lunch', 'dinner', undefined] as const)
@@ -22,9 +54,7 @@ export function compareMealServiceAndKind(a: { classification: readonly string[]
 
 /** Match meal-service hours to the menu date, never today's building opening hours. */
 export function prepareMenu<T extends MenuItem>(menu: T[], mensa: Mensa | undefined, date: string): Array<T & DisplayMenuItem> {
-  const weekday = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'][new Date(`${date}T12:00:00Z`).getUTCDay()] as Weekday;
-  const closed = !mensa || mensa.temporarilyClosed || mensa.closures.some(c => c.from <= date && date <= c.to);
-  const hours = closed ? [] : mensa.openingHours[weekday] ?? [];
+  const hours = serviceWindowsForDate(mensa, date);
   const seen = new Set<string>();
   return menu.filter(item => {
     if (seen.has(item.id)) return false;
@@ -32,6 +62,7 @@ export function prepareMenu<T extends MenuItem>(menu: T[], mensa: Mensa | undefi
     return true;
   }).map(item => ({
     ...item,
+    cuisine: cuisineForDish(item.id, item.name, item.description),
     servingWindows: Array.from(new Map(hours.filter(h => h.service === item.service)
       .map(h => [`${h.open}-${h.close}`, { open: h.open, close: h.close }])).values()),
   }));

@@ -87,17 +87,6 @@ class StarredMealPushServiceTests {
 	}
 
 	@Test
-	void forgetAnnouncedAnnouncesCurrentMenusAgain() {
-		meals.add(meal("Pad Thai", MONDAY));
-		service.subscribe(ENDPOINT, P256DH, AUTH, "en", List.of("Pad Thai"));
-		assertThat(service.notifyStarredMeals()).isZero();
-
-		service.forgetAnnounced();
-
-		assertThat(service.notifyStarredMeals()).isEqualTo(1);
-	}
-
-	@Test
 	void aDishBackOnANewMenuIsAnnouncedOnce() {
 		service.subscribe(ENDPOINT, P256DH, AUTH, "en", List.of("pad  thai"));
 		meals.add(meal("Pad Thai", MONDAY.plusDays(2)));

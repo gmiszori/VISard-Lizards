@@ -1,5 +1,6 @@
 import type { Profile } from './profile.ts';
 import { readStarredMeals } from '../meals/stars.ts';
+import { clearProfileSettingsOverrides } from './profileSettings.ts';
 
 const PROFILE_KEY = 'campuseats-profile';
 const PREFERENCES_KEY = 'campuseats-preferences';
@@ -17,7 +18,8 @@ export function saveProfile(profile: Profile): boolean {
   let saved = true;
   try { writeProfile(profile, localStorage, starredMeals()); }
   catch { saved = false; console.warn('UniEats could not save the profile on this device.'); }
-  document.documentElement.dataset.theme = profile.theme;
+  if (saved) clearProfileSettingsOverrides();
+  document.dispatchEvent(new CustomEvent('themepreferencechange', { detail: profile.theme }));
   const select = document.querySelector<HTMLSelectElement>('#language-select');
   if (select) { select.value = profile.lang; select.dispatchEvent(new Event('change', { bubbles: true })); }
   return saved;

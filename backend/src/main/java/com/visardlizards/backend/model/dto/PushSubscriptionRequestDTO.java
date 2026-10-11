@@ -15,7 +15,8 @@ import jakarta.validation.constraints.Size;
 public record PushSubscriptionRequestDTO(
 		@Schema(description = "The subscription's endpoint at the browser's push service",
 				example = "https://fcm.googleapis.com/fcm/send/c1KrmpTuRm0:APA91bG...")
-		@NotBlank @Size(max = 1024) String endpoint,
+		// Apple Web Push endpoints can be substantially longer than 1 KB.
+		@NotBlank @Size(max = 4096) String endpoint,
 		@NotNull @Valid Keys keys,
 		@Schema(description = "Starred dish names, as shown in the app", example = "[\"Pad Thai\", \"Vegetable Stroganoff\"]")
 		@NotNull @Size(max = 100) List<@NotBlank @Size(max = 200) String> dishes,

@@ -43,7 +43,7 @@ takes the menus of build time; rebuild to refresh them (the backend imports new 
 
 ## Docker demo deployment
 
-From the repository root, configure any secrets in `.env` and start both services:
+From the repository root, start the stack:
 
 ```sh
 docker compose up --build -d
@@ -55,10 +55,14 @@ forwards traffic to port 8080 and handles access control and TLS. The `backend-d
 the H2 database. Set `CORS_ALLOWED_ORIGINS` to specific origins only if you need cross-origin API
 access; same-origin requests through Caddy do not need a broad CORS rule.
 
+Add `.env` only for optional OpenAI search or scraper settings. Scraping is disabled by default, and
+the scraper service is excluded from the normal stack. To enable it, set a connector token and
+`MEAL_SCRAPER_ENABLED=true`, then start with `docker compose --profile scraper up --build -d`.
+
 The Astro site is statically generated in the image, so its initial menu snapshot is taken during
 the image build. Browser API calls use the frontend origin and reach the live backend through Caddy.
-The separate menu scraper is off by default because it requires a separately deployed connector;
-enable it with `MEAL_SCRAPER_ENABLED=true` after setting its connector URL and token.
+The bundled menu scraper is optional and off by default; enable it with the `scraper` Compose profile,
+`MEAL_SCRAPER_ENABLED=true`, and a connector token.
 
 ## Commands
 

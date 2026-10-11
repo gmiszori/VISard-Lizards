@@ -1,25 +1,25 @@
 /**
  * "Sort by distance" on the home page: locates the user, sorts the canteen cards nearest first, shows
- * the distance on each card and records mensa visits (visits.ts). The choice is remembered; when the
- * browser already granted location access, the next visit sorts again without asking.
+ * the distance on each card and records mensa visits (visits.ts). Automatic sorting is an explicit
+ * device preference; one-off sorting does not enable it.
  */
 import { formatDistance } from './distance.ts';
 import { locateUserNow, LocationUnavailableError, type LocationError } from './geolocation.ts';
 import type { MensaPlace, UserLocation } from './locate.ts';
 import { recordVisits, visitsAt, waitForOccupancy, type MensaHours } from './visits.ts';
 import { appNow } from '../time/clock.ts';
+import { readPreferences } from '../preferences/state.ts';
+import { distancePromptSeen, markDistancePromptSeen, saveDistanceDefault } from './near-me-preference.ts';
 
-export const NEAR_ME_KEY = 'campuseats-near-me';
-
-interface NearMeData { places: MensaPlace[]; hours: MensaHours[]; campusNames: Record<string, string> }
+interface NearMeData { places: MensaPlace[]; hours: MensaHours[] }
 
 const TEXT = {
   en: {
     label: 'Sort by distance',
-    locating: 'Finding your location…',
-    at: (mensa: string, campus: string) => `You are at ${mensa} (${campus}). Canteens sorted by distance.`,
-    campus: (campus: string, mensa: string, distance: string) => `You are on campus ${campus}. Nearest: ${mensa}, ${distance}.`,
-    away: (mensa: string, distance: string) => `Nearest canteen: ${mensa}, ${distance}.`,
+    dialogTitle: 'Sort by distance',
+    dialogBody: 'Use your location to put nearby canteens first. It stays on this device.',
+    rememberLabel: 'Do this automatically when I open the overview',
+    cancel: 'Cancel', confirm: 'Use my location',
     errors: {
       denied: 'Location access is blocked. Allow it in your browser’s site settings to sort by distance.',
       unsupported: 'This browser cannot share your location.',
@@ -29,10 +29,10 @@ const TEXT = {
   },
   de: {
     label: 'Nach Entfernung sortieren',
-    locating: 'Standort wird ermittelt…',
-    at: (mensa: string, campus: string) => `Du bist in ${mensa} (${campus}). Mensen nach Entfernung sortiert.`,
-    campus: (campus: string, mensa: string, distance: string) => `Du bist auf dem Campus ${campus}. Am nächsten: ${mensa}, ${distance}.`,
-    away: (mensa: string, distance: string) => `Nächste Mensa: ${mensa}, ${distance}.`,
+    dialogTitle: 'Nach Entfernung sortieren',
+    dialogBody: 'Mit deinem Standort stehen nahe Mensen zuerst. Er bleibt auf diesem Gerät.',
+    rememberLabel: 'Beim Öffnen der Übersicht automatisch sortieren',
+    cancel: 'Abbrechen', confirm: 'Standort verwenden',
     errors: {
       denied: 'Der Standortzugriff ist blockiert. Erlaube ihn in den Website-Einstellungen des Browsers.',
       unsupported: 'Dieser Browser kann deinen Standort nicht teilen.',
@@ -44,13 +44,6 @@ const TEXT = {
 const lang = () => (document.documentElement.lang === 'de' ? 'de' : 'en');
 const text = () => TEXT[lang()];
 
-function readPreference(): boolean {
-  try { return localStorage.getItem(NEAR_ME_KEY) === '1'; } catch { return false; }
-}
-function writePreference(on: boolean) {
-  try { if (on) localStorage.setItem(NEAR_ME_KEY, '1'); else localStorage.removeItem(NEAR_ME_KEY); } catch { /* not stored */ }
-}
-
 export function mountNearMe(): void {
   const root = document.querySelector<HTMLElement>('[data-near-me]');
   const source = document.querySelector('[data-near-me-data]');
@@ -58,6 +51,9 @@ export function mountNearMe(): void {
   const data = JSON.parse(source.textContent ?? '{}') as NearMeData;
   const button = root.querySelector<HTMLButtonElement>('[data-near-me-toggle]')!;
   const status = root.querySelector<HTMLElement>('[data-near-me-status]')!;
+  const dialogCopy = [...root.querySelectorAll<HTMLElement>('[data-near-me-copy]')];
+  const dialog = root.querySelector<HTMLDialogElement>('[data-near-me-dialog]');
+  const remember = root.querySelector<HTMLInputElement>('[data-near-me-remember]');
   const cards = [...document.querySelectorAll<HTMLElement>('[data-canteen-card]')];
   const originalOrder = new Map(cards.map((card, index) => [card, index]));
   let location: UserLocation | null = null;
@@ -97,14 +93,9 @@ export function mountNearMe(): void {
     if (location) sortByDistance();
     button.setAttribute('aria-pressed', String(Boolean(location)));
     button.querySelector('[data-near-me-label]')!.textContent = text().label;
-  }
-  function describe(found: UserLocation): () => string {
-    const campusName = (id: string) => data.campusNames[id] ?? id;
-    const nearest = found.nearby[0];
-    const here = found.nearby.find(m => m.id === found.atMensaIds[0]);
-    if (here) return () => text().at(found.atMensaIds.map(id => found.nearby.find(m => m.id === id)!.name).join(' / '), campusName(here.campus));
-    if (found.campus && nearest) return () => text().campus(campusName(found.campus!), nearest.name, formatDistance(nearest.distanceM, lang()));
-    return () => (nearest ? text().away(nearest.name, formatDistance(nearest.distanceM, lang())) : '');
+    dialogCopy.forEach(element => {
+      element.textContent = text()[element.dataset.nearMeCopy as 'dialogTitle' | 'dialogBody' | 'rememberLabel' | 'cancel' | 'confirm'];
+    });
   }
   function captureVisit(found: UserLocation) {
     const now = appNow();
@@ -116,20 +107,19 @@ export function mountNearMe(): void {
   async function locate() {
     const id = ++requestId;
     button.disabled = true;
-    show(() => text().locating);
+    show(null);
     try {
       const found = await locateUserNow(data.places);
       if (id !== requestId) return;
       location = found;
-      writePreference(true);
       captureVisit(found);
-      show(describe(found));
+      show(null);
     } catch (error) {
       if (id !== requestId) return;
       location = null;
       document.dispatchEvent(new Event('campuseats:user-unlocated'));
       const reason = error instanceof LocationUnavailableError ? error.reason : 'unavailable';
-      if (reason === 'denied') writePreference(false);
+      if (reason === 'denied') saveDistanceDefault(false);
       show(() => text().errors[reason]);
     } finally {
       if (id === requestId) { button.disabled = false; render(); }
@@ -139,7 +129,6 @@ export function mountNearMe(): void {
     requestId++;
     location = null;
     document.dispatchEvent(new Event('campuseats:user-unlocated'));
-    writePreference(false);
     show(null);
     render();
     // Back to the page's own order: restore the markup order, then let meal-stars.ts rank it again.
@@ -147,7 +136,22 @@ export function mountNearMe(): void {
     document.dispatchEvent(new Event('campuseats:canteen-favourites-changed'));
   }
 
-  button.addEventListener('click', () => (location ? turnOff() : locate()));
+  button.addEventListener('click', () => {
+    if (location) { turnOff(); return; }
+    if (!distancePromptSeen() && dialog?.showModal) {
+      if (remember) remember.checked = readPreferences().distanceDefault;
+      dialog.showModal();
+      return;
+    }
+    void locate();
+  });
+  root.querySelector('[data-near-me-cancel]')?.addEventListener('click', () => dialog?.close());
+  root.querySelector('[data-near-me-confirm]')?.addEventListener('click', () => {
+    saveDistanceDefault(remember?.checked ?? false);
+    markDistancePromptSeen();
+    dialog?.close();
+    void locate();
+  });
   // The home page re-appends cards when favourites or preferences change; keep the distance order.
   document.addEventListener('campuseats:canteen-favourites-changed', resortLater);
   document.addEventListener('campuseats:preferences-applied', resortLater);
@@ -155,11 +159,12 @@ export function mountNearMe(): void {
 
   render();
   // A granted permission can capture a meal visit without enabling distance sorting.
-  if (navigator.permissions) {
+  if (readPreferences().distanceDefault) {
+    void locate();
+  } else if (navigator.permissions) {
     navigator.permissions.query({ name: 'geolocation' })
       .then(permission => {
         if (permission.state !== 'granted') return;
-        if (readPreference()) { void locate(); return; }
         const id = requestId;
         void locateUserNow(data.places)
           .then(found => { if (id === requestId) captureVisit(found); })

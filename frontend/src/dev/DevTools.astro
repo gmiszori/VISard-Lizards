@@ -50,6 +50,7 @@ const devData = {
       <button type="button" data-dev-refresh>Refresh</button>
       <button type="button" data-dev-locate>Read position</button>
       <button type="button" data-dev-clear-visits>Clear visits</button>
+      <button type="button" data-dev-reset-user>Reset as new user</button>
       <button type="button" data-dev-collapse aria-expanded="true" aria-controls="dev-tools-body">Collapse</button>
     </div>
   </div>
@@ -131,17 +132,6 @@ const devData = {
     <div class="dev-actions dev-rating-actions"><button type="button" data-rating-clock>Apply time</button></div>
     <p class="dev-crowd-status" data-rating-dev-status role="status"></p>
   </details>}
-  <details class="dev-panel dev-push" data-dev-push data-dev-section="dev-push-title" open>
-    <summary><h3 id="dev-push-title">Push notifications</h3></summary>
-    <p class="dev-hint">Starred dishes "back on the menu". Switch it on in Settings first. "Run daily check" runs the 09:30 job now; "Announce current menus again" makes every subscription forget what it was told, so starred dishes on today's menus are sent (needs INTERNAL_API_ENABLED=true on the backend). The backend log shows each push service answer.</p>
-    <p class="dev-clock-current" data-dev-push-state></p>
-    <div class="dev-actions dev-rating-actions">
-      <button type="button" data-dev-push-test>Send test notification</button>
-      <button type="button" data-dev-push-run>Run daily check</button>
-      <button type="button" data-dev-push-run-again>Announce current menus again</button>
-    </div>
-    <p class="dev-crowd-status" data-dev-push-status role="status" aria-live="polite"></p>
-  </details>
   <details class="dev-panel" data-dev-section="dev-storage-title" open>
     <summary><h3 id="dev-storage-title">Device state</h3></summary>
     <div class="dev-storage" data-dev-storage></div>

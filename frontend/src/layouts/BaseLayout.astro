@@ -1,25 +1,28 @@
 ---
 import '../styles/global.css';
+import '../styles/selects.css';
 import '../styles/touch-targets.css';
 import '../styles/list-view.css';
 import SimulatedClockBanner from '../time/SimulatedClockBanner.astro';
-import HeaderAccount from '../onboarding/components/HeaderAccount.astro';
 import { LIVE_DATA } from '../data/canteens';
-interface Props { title: string }
-const { title } = Astro.props;
+interface Props { title: string; hideFooter?: boolean }
+const { title, hideFooter = false } = Astro.props;
 ---
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#f5f6f1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#f5f6f1" data-theme-color />
     <script is:inline>
       // Apply the saved theme and language before the page is painted, so dark-theme users do not see a white flash
       // while the rest of the page loads. The full handling stays in the script at the end of the body.
       try {
-        if (location.pathname === '/' && localStorage.getItem('campuseats-profile') === null) location.replace('/onboarding');
-        if (localStorage.getItem('campuseats-theme') === 'dark') document.documentElement.dataset.theme = 'dark';
+        const theme = localStorage.getItem('campuseats-theme') ?? 'system';
+        const dark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (dark) document.documentElement.dataset.theme = 'dark';
+        const themeColor = document.querySelector('meta[data-theme-color]');
+        if (themeColor) themeColor.setAttribute('content', dark ? '#151c17' : '#f5f6f1');
         if (localStorage.getItem('campuseats-language') === 'de') document.documentElement.lang = 'de';
         const savedPreferences = JSON.parse(localStorage.getItem('campuseats-preferences') || '{}');
         document.documentElement.dataset.density = ['standard', 'compact', 'list'].includes(savedPreferences?.viewMode)
@@ -27,31 +30,48 @@ const { title } = Astro.props;
         document.documentElement.dataset.devMode = String(savedPreferences?.devMode === true);
       } catch (error) { /* storage blocked: the defaults apply */ }
     </script>
+    <!-- Until the saved settings are applied (scripts/preferences.ts, onboarding/main.ts), what depends on them stays
+         invisible (visibility, so nothing moves): no flash of default prices, of all canteens, of unchecked switches or of
+         buttons of an empty onboarding step. The timer is the safety net if a script fails. -->
+    <style is:inline>html:not([data-ui-ready]) :is(#canteen-grid,#favourites-grid,.menu-list,.settings-form,.ob-actions){visibility:hidden}</style>
+    <noscript><style>html:not([data-ui-ready]) :is(#canteen-grid,#favourites-grid,.menu-list,.settings-form,.ob-actions){visibility:visible}</style></noscript>
+    <script is:inline>setTimeout(function () { document.documentElement.setAttribute('data-ui-ready', ''); }, 2500);</script>
     <meta name="description" content="Find what's cooking at ETH and UZH campus canteens." />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <!-- Installable app (home screen); on iPhone and iPad, push notifications need it. -->
-    <link rel="manifest" href="/manifest.webmanifest" />
-    <link rel="apple-touch-icon" href="/favicon.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" crossorigin="use-credentials" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <script is:inline>
+      window.addEventListener('beforeinstallprompt', function (event) {
+        event.preventDefault();
+        window.unieatsInstallPrompt = event;
+        window.dispatchEvent(new Event('unieats:install-ready'));
+      });
+      window.addEventListener('appinstalled', function () { window.unieatsInstallPrompt = null; });
+    </script>
     <title data-page-title={title}>{title} | UniEats</title>
   </head>
   <body>
     <a class="skip-link" href="#main" data-i18n="skipToContent">Skip to content</a>
     <div class="app-shell">
       <header class="site-header">
-        <a class="brand" href="/" aria-label="UniEats home"><span class="brand-mark">✳</span><span>UniEats</span></a>
-        <HeaderAccount />
-        <div class="header-controls"><a class="settings-link" href="/settings" data-i18n="settings">Settings</a></div>
+        <a class="brand" href="/" aria-label="UniEats home"><span class="brand-mark" aria-hidden="true">U</span><span>UniEats</span></a>
+        <div class="header-controls"><a class="settings-link" href="/settings" data-tour-settings-target data-i18n="settings">Settings</a></div>
       </header>
+      <p class="offline-banner" data-offline-banner role="status" hidden>You are offline. Showing the last cached version.</p>
       <main class="main" id="main" tabindex="-1"><slot /></main>
+      {!hideFooter && <footer class="footer">
+        <span data-i18n="studentFooter">Made by students with ❤️ for students</span>
+      </footer>}
       <SimulatedClockBanner />
     </div>
     <script is:inline>
       const translations = {
-        en: { tagline:'YOUR CAMPUS, SERVED', footerMade:'Made for hungry minds.', footerSample:'Sample menus · Zürich', campus:'Campus canteens', campusSub:'Fresh picks from around Zürich', openCount:'open right now', search:'Search canteens or dishes', all:'All spots', allCanteens:'All canteens', favourites:'Your favourites', favouriteAdd:'Add to favourites', favouriteRemove:'Remove from favourites', settings:'Settings', settingsTitle:'Your settings', settingsIntro:'Choose which meals you want to see. Your choices are saved on this device.', foodPreferences:'Food preferences', vegan:'Vegan', vegetarian:'Vegetarian', meat:'Meat', preferencesHint:'Select every type of meal you want included.', plantBased:'Plant-based', meatFree:'Meat-free', meatDishes:'Including meat dishes', canteenFilters:'Canteen filters', filtersHint:'Choose which campus locations to include.', location:'Campus location', allCampuses:'All campuses', zentrum:'Zentrum', hoenggerberg:'Hönggerberg', irchel:'Irchel', openOnly:'Only show open canteens', noPreferenceMeals:'No dishes match your food preferences.', compactMode:'Compact mode', compactDescription:'Show smaller canteen cards to fit more on the screen.', compact:'Compact', settingsSaved:'Saved', openFilter:'Open now', today:'On the menu today', open:'Open now', closed:'Closed', back:'← All canteens', hours:'Opening hours', lunch:'Lunch',allMeals:'All', dinner:'Dinner', servingTimeUnknown:'Serving time unavailable', crowd:'Current crowd', todayMenu:'Today’s menu', dishes:'dishes', empty:'No canteens match your search. Try another dish or campus.', menuEmpty:'No menu available for this date.', contains:'Contains', noAllergens:'No listed allergens', student:'Student', worker:'Worker', external:'External', themeLight:'Switch to light theme', themeDark:'Switch to dark theme', low:'Quiet', medium:'Moderate', high:'Busy', diet_vegan:'Vegan', diet_vegetarian:'Vegetarian', diet_meat:'Meat', category_daily_special:'Daily Special', category_classic:'Classic', category_side:'Side' },
-        de: { tagline:'DEIN CAMPUS, DEIN ESSEN', footerMade:'Für hungrige Köpfe gemacht.', footerSample:'Beispielmenüs · Zürich', campus:'Mensen auf dem Campus', campusSub:'Frische Auswahl aus Zürich', openCount:'jetzt geöffnet', search:'Mensen oder Gerichte suchen', all:'Alle Mensen', allCanteens:'Alle Mensen', favourites:'Deine Favoriten', favouriteAdd:'Zu Favoriten hinzufügen', favouriteRemove:'Aus Favoriten entfernen', settings:'Einstellungen', settingsTitle:'Deine Einstellungen', settingsIntro:'Wähle, welche Gerichte du sehen möchtest. Deine Auswahl wird auf diesem Gerät gespeichert.', foodPreferences:'Essenspräferenzen', vegan:'Vegan', vegetarian:'Vegetarisch', meat:'Fleisch', preferencesHint:'Wähle alle Essensarten aus, die angezeigt werden sollen.', plantBased:'Pflanzlich', meatFree:'Fleischlos', meatDishes:'Mit Fleisch', canteenFilters:'Mensenfilter', filtersHint:'Wähle die Campus-Standorte aus, die angezeigt werden sollen.', location:'Campus-Standort', allCampuses:'Alle Standorte', zentrum:'Zentrum', hoenggerberg:'Hönggerberg', irchel:'Irchel', openOnly:'Nur geöffnete Mensen anzeigen', noPreferenceMeals:'Keine Gerichte entsprechen deinen Essenspräferenzen.', compactMode:'Kompakte Ansicht', compactDescription:'Zeigt kleinere Mensen-Karten, damit mehr auf den Bildschirm passt.', compact:'Kompakt', settingsSaved:'Gespeichert', openFilter:'Jetzt geöffnet', today:'Heute auf dem Menü', open:'Geöffnet', closed:'Geschlossen', back:'← Alle Mensen', hours:'Öffnungszeiten', lunch:'Mittagessen',allMeals:'Alle', dinner:'Abendessen', servingTimeUnknown:'Essenszeit nicht verfügbar', crowd:'Aktuelle Auslastung', todayMenu:'Heutiges Menü', dishes:'Gerichte', empty:'Keine Mensen gefunden. Suche ein anderes Gericht oder einen anderen Campus.', menuEmpty:'Für dieses Datum ist kein Menü verfügbar.', contains:'Enthält', noAllergens:'Keine Allergene angegeben', student:'Studierende', worker:'Mitarbeitende', external:'Externe', themeLight:'Helles Design aktivieren', themeDark:'Dunkles Design aktivieren', low:'Ruhig', medium:'Mässig', high:'Viel los', diet_vegan:'Vegan', diet_vegetarian:'Vegetarisch', diet_meat:'Fleisch', category_daily_special:'Tagesmenü', category_classic:'Klassiker', category_side:'Beilage' }
+        en: { campus:'Campus canteens', openCount:'open right now', search:'Search canteens or dishes', all:'All spots', favourites:'Your favourites', settings:'Settings', settingsTitle:'Your settings', settingsIntro:'Choose which meals you want to see. Your choices are saved on this device.', foodPreferences:'Food preferences', vegan:'Vegan', vegetarian:'Vegetarian', meat:'Meat', preferencesHint:'Select every type of meal you want included.', plantBased:'Plant-based', meatFree:'Meat-free', meatDishes:'Including meat dishes', canteenFilters:'Canteen filters', filtersHint:'Choose which campus locations to include.', location:'Campus location', zentrum:'Zentrum', hoenggerberg:'Hönggerberg', irchel:'Irchel', openOnly:'Only show open canteens', noPreferenceMeals:'No dishes match your food preferences.', noDishesAvailable:'No dishes available', compact:'Compact', settingsSaved:'Saved', today:'On the menu today', open:'Open now', closed:'Closed', back:'← All canteens', hours:'Opening hours', lunch:'Lunch',allMeals:'All', dinner:'Dinner', servingTimeUnknown:'Serving time unavailable', crowd:'Current crowd', todayMenu:'Today’s menu', dishes:'dishes', empty:'No canteens match your search. Try another dish or campus.', contains:'Contains', noAllergens:'Allergen information unavailable. Ask the canteen before ordering.', student:'Student', worker:'Staff', external:'External', low:'Quiet', medium:'Moderate', high:'Busy', diet_vegan:'Vegan', diet_vegetarian:'Vegetarian', diet_meat:'Meat', category_daily_special:'Daily Special', category_classic:'Classic', category_side:'Side' },
+        de: { campus:'Mensen auf dem Campus', openCount:'jetzt geöffnet', search:'Mensen oder Gerichte suchen', all:'Alle Mensen', favourites:'Deine Favoriten', settings:'Einstellungen', settingsTitle:'Deine Einstellungen', settingsIntro:'Wähle, welche Gerichte du sehen möchtest. Deine Auswahl wird auf diesem Gerät gespeichert.', foodPreferences:'Essenspräferenzen', vegan:'Vegan', vegetarian:'Vegetarisch', meat:'Fleisch', preferencesHint:'Wähle alle Essensarten aus, die angezeigt werden sollen.', plantBased:'Pflanzlich', meatFree:'Fleischlos', meatDishes:'Mit Fleisch', canteenFilters:'Mensenfilter', filtersHint:'Wähle die Campus-Standorte aus, die angezeigt werden sollen.', location:'Campus-Standort', zentrum:'Zentrum', hoenggerberg:'Hönggerberg', irchel:'Irchel', openOnly:'Nur geöffnete Mensen anzeigen', noPreferenceMeals:'Keine Gerichte entsprechen deinen Essenspräferenzen.', noDishesAvailable:'Keine Gerichte verfügbar', compact:'Kompakt', settingsSaved:'Gespeichert', today:'Heute auf dem Menü', open:'Geöffnet', closed:'Geschlossen', back:'← Alle Mensen', hours:'Öffnungszeiten', lunch:'Mittagessen',allMeals:'Alle', dinner:'Abendessen', servingTimeUnknown:'Essenszeit nicht verfügbar', crowd:'Aktuelle Auslastung', todayMenu:'Heutiges Menü', dishes:'Gerichte', empty:'Keine Mensen gefunden. Suche ein anderes Gericht oder einen anderen Campus.', contains:'Enthält', noAllergens:'Allergeninformationen nicht verfügbar. Frage vor der Bestellung bei der Mensa nach.', student:'Studierende', worker:'Mitarbeitende', external:'Externe', low:'Ruhig', medium:'Mässig', high:'Viel los', diet_vegan:'Vegan', diet_vegetarian:'Vegetarisch', diet_meat:'Fleisch', category_daily_special:'Tagesmenü', category_classic:'Klassiker', category_side:'Beilage' }
       };
-      Object.assign(translations.en, { priceCategory: 'Price category', priceCategoryHint: 'Show only your selected price on every dish. Student is the default.', yourPrice: 'Your price' });
-      Object.assign(translations.de, { priceCategory: 'Preiskategorie', priceCategoryHint: 'Zeige bei jedem Gericht nur deinen gewählten Preis. Standard ist der Studierendenpreis.', yourPrice: 'Dein Preis' });
+      Object.assign(translations.en, { priceCategory: 'Price & budget', priceCategoryHint: 'Show only your selected price on every dish. Student is the default.', yourPrice: 'Your price' });
+      Object.assign(translations.de, { priceCategory: 'Preis & Budget', priceCategoryHint: 'Zeige bei jedem Gericht nur deinen gewählten Preis. Standard ist der Studierendenpreis.', yourPrice: 'Dein Preis' });
       Object.assign(translations.en, { searchMode: 'Search mode', searchModeHint: 'Typed queries use word matching. Spoken queries can use AI intent parsing and semantic ranking.', aiSearch: 'AI voice assistant', aiSearchHint: 'When enabled, OpenAI Realtime listens, searches the menu, and answers aloud. Typed queries always use word matching.', aiMatches: 'AI voice dish matches', aiMatchesHint: 'These are the top spoken-query dish matches, ranked across all canteens.', aiMenuHint: 'The ranked voice results above show individual dish matches across all canteens. Below, those same matches are grouped by canteen.', voiceSearch: 'Talk to the voice assistant', voiceListening: 'Listening… say what you are looking for.', voiceUnsupported: 'Voice search is not supported in this browser.', voicePermission: 'Allow microphone access to search by voice.', voiceNoSpeech: 'No speech was heard. Try again.', voiceMicError: 'Microphone access failed. Check browser permissions and try again.' });
       Object.assign(translations.de, { searchMode: 'Suchmodus', searchModeHint: 'Getippte Anfragen nutzen den Wortabgleich. Gesprochene Anfragen können KI-Intent-Erkennung und semantisches Ranking nutzen.', aiSearch: 'KI-Sprachassistent', aiSearchHint: 'Wenn aktiviert, hört OpenAI Realtime zu, sucht im Menü und antwortet laut. Getippte Anfragen verwenden immer den Wortabgleich.', aiMatches: 'KI-Treffer aus der Sprachsuche', aiMatchesHint: 'Die besten Treffer zur gesprochenen Anfrage, sortiert über alle Mensen.', aiMenuHint: 'Oben stehen einzelne Treffer aus der Sprachsuche nach Rangfolge. Darunter sind dieselben Gerichte nach Mensa gruppiert.', voiceSearch: 'Mit Sprachassistent sprechen', voiceListening: 'Höre zu … Sag, wonach du suchst.', voiceUnsupported: 'Dieser Browser unterstützt keine Sprachsuche.', voicePermission: 'Erlaube den Mikrofonzugriff für die Sprachsuche.', voiceNoSpeech: 'Keine Sprache erkannt. Bitte versuche es erneut.', voiceMicError: 'Mikrofonzugriff fehlgeschlagen. Prüfe die Browserberechtigungen.' });
       translations.en.notFoundTitle = 'This page does not exist';
@@ -72,20 +92,24 @@ const { title } = Astro.props;
       Object.assign(translations.de, { mapLink: 'Standort' });
       Object.assign(translations.en, { backToTop: 'Back to top' });
       Object.assign(translations.de, { backToTop: 'Zurück nach oben' });
-      Object.assign(translations.en, { noRatingsYet: 'No ratings yet' });
-      Object.assign(translations.de, { noRatingsYet: 'Noch keine Bewertungen' });
       Object.assign(translations.en, { canteensTitle: 'Canteens' });
       Object.assign(translations.de, { canteensTitle: 'Mensen' });
       Object.assign(translations.en, { sampleMenusInvalid: 'Showing sample menus: the UniEats backend sent data this page could not read.' });
       Object.assign(translations.de, { sampleMenusInvalid: 'Beispielmenüs: Das UniEats-Backend hat Daten gesendet, die diese Seite nicht lesen konnte.' });
-      Object.assign(translations.en, { appearance: 'Appearance', themeLabel: 'Theme', languageLabel: 'Language', english: 'English', german: 'German', lightTheme: 'Light', darkTheme: 'Dark' });
-      Object.assign(translations.de, { appearance: 'Darstellung', themeLabel: 'Design', languageLabel: 'Sprache', english: 'Englisch', german: 'Deutsch', lightTheme: 'Hell', darkTheme: 'Dunkel' });
+      Object.assign(translations.en, { appearance: 'Appearance', themeLabel: 'Theme', languageLabel: 'Language', english: 'English', german: 'German', systemTheme: 'System', lightTheme: 'Light', darkTheme: 'Dark' });
+      Object.assign(translations.de, { appearance: 'Darstellung', themeLabel: 'Design', languageLabel: 'Sprache', english: 'Englisch', german: 'Deutsch', systemTheme: 'System', lightTheme: 'Hell', darkTheme: 'Dunkel' });
+      translations.en.installApp = 'Install UniEats';
+      translations.de.installApp = 'UniEats installieren';
       Object.assign(translations.en, { menuFor: 'Menu for', menusFor: 'Menus for' });
       Object.assign(translations.de, { menuFor: 'Menü für', menusFor: 'Menüs für' });
       Object.assign(translations.en, { devMode: 'Dev mode', devModeDescription: 'Show diagnostics for live data, location, storage and backend connectivity.', devTools: 'Developer tools' });
       Object.assign(translations.de, { devMode: 'Entwicklermodus', devModeDescription: 'Zeigt Diagnosen für Live-Daten, Standort, Speicher und Backend-Verbindung.', devTools: 'Entwicklerwerkzeuge' });
       Object.assign(translations.en, { viewMode: 'Overview layout', viewStandard: 'Standard', viewList: 'List' });
       Object.assign(translations.de, { viewMode: 'Übersichtsansicht', viewStandard: 'Standard', viewList: 'Liste' });
+      Object.assign(translations.en, { distanceDefault: 'Sort by distance automatically', distanceDefaultHint: 'When you open the overview. Your location stays on this device.' });
+      Object.assign(translations.de, { distanceDefault: 'Automatisch nach Entfernung sortieren', distanceDefaultHint: 'Beim Öffnen der Übersicht. Dein Standort bleibt auf diesem Gerät.' });
+      translations.en.studentFooter = 'Made by students with ❤️ for students';
+      translations.de.studentFooter = 'Von Studierenden für Studierende gemacht ❤️';
       translations.en.filtersHint = 'Choose one or more campus locations to include.';
       translations.de.filtersHint = 'Wähle einen oder mehrere Campus-Standorte aus.';
       // Storage can be unavailable (private mode, blocked cookies) or hold unexpected values: never let that stop this script.
@@ -111,20 +135,109 @@ const { title } = Astro.props;
         document.dispatchEvent(new CustomEvent('languagechange', { detail: { lang, translations: translations[lang] } }));
       };
       const themeSelect = document.querySelector('#theme-select');
-      const setTheme = (requested) => { const theme = requested === 'dark' ? 'dark' : 'light'; document.documentElement.dataset.theme = theme; campusStorage.set('campuseats-theme', theme); if (themeSelect) themeSelect.value = theme; };
+      const colorScheme = window.matchMedia('(prefers-color-scheme: dark)');
+      const themeColor = document.querySelector('meta[data-theme-color]');
+      let themePreference = 'system';
+      const setTheme = (requested) => {
+        themePreference = requested === 'dark' || requested === 'light' || requested === 'system' ? requested : 'system';
+        const dark = themePreference === 'dark' || (themePreference === 'system' && colorScheme.matches);
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+        themeColor?.setAttribute('content', dark ? '#151c17' : '#f5f6f1');
+        campusStorage.set('campuseats-theme', themePreference);
+        if (themeSelect) themeSelect.value = themePreference;
+      };
       const languageSelect = document.querySelector('#language-select');
       const language = knownLanguage(campusStorage.get('campuseats-language'));
       if (languageSelect) languageSelect.value = language;
       applyLanguage(language);
       setTheme(campusStorage.get('campuseats-theme'));
+      colorScheme.addEventListener('change', () => {
+        if (themePreference === 'system') {
+          const dark = colorScheme.matches;
+          document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+          themeColor?.setAttribute('content', dark ? '#151c17' : '#f5f6f1');
+        }
+      });
+      document.addEventListener('themepreferencechange', event => setTheme(event.detail));
       if (languageSelect) languageSelect.addEventListener('change', () => applyLanguage(languageSelect.value));
       if (themeSelect) themeSelect.addEventListener('change', () => setTheme(themeSelect.value));
+    </script>
+    <script is:inline>
+      const OFFLINE_VISIT_KEY = 'campuseats-has-visited';
+      const offlineBanner = document.querySelector('[data-offline-banner]');
+      const offlineMessage = () => document.documentElement.lang === 'de'
+        ? 'Du bist offline. Es wird die zuletzt gespeicherte Version angezeigt.'
+        : 'You are offline. Showing the last cached version.';
+      const wasOpenedBefore = () => {
+        try { return localStorage.getItem(OFFLINE_VISIT_KEY) === '1'; } catch { return false; }
+      };
+      const updateOfflineBanner = () => {
+        if (!offlineBanner) return;
+        const show = !navigator.onLine && wasOpenedBefore();
+        offlineBanner.hidden = !show;
+        if (show) offlineBanner.textContent = offlineMessage();
+      };
+      const collectInternalLinks = () => {
+        const links = new Set([location.pathname + location.search, '/']);
+        document.querySelectorAll('a[href]').forEach((anchor) => {
+          const href = anchor.getAttribute('href');
+          if (!href) return;
+          try {
+            const url = new URL(href, location.origin);
+            if (url.origin === location.origin && !url.pathname.startsWith('/api/')) links.add(url.pathname + url.search);
+          } catch { /* ignore malformed href */ }
+        });
+        return [...links];
+      };
+      const warmOfflineCache = async () => {
+        try {
+          const registration = await navigator.serviceWorker.ready;
+          const worker = registration.active ?? navigator.serviceWorker.controller;
+          if (!worker) return;
+          worker.postMessage({ type: 'CACHE_URLS', urls: collectInternalLinks() });
+        } catch { /* service worker not ready */ }
+      };
+      if ('serviceWorker' in navigator && window.isSecureContext) {
+        window.addEventListener('load', () => {
+          void (async () => {
+            try { await navigator.serviceWorker.register('/sw.js', { scope: '/' }); } catch { return; }
+            await warmOfflineCache();
+          })();
+        }, { once: true });
+      }
+      try { localStorage.setItem(OFFLINE_VISIT_KEY, '1'); } catch { /* storage blocked */ }
+      window.addEventListener('online', updateOfflineBanner);
+      window.addEventListener('offline', updateOfflineBanner);
+      document.addEventListener('languagechange', updateOfflineBanner);
+      updateOfflineBanner();
     </script>
     <script type="application/json" id="live-data" is:inline set:html={JSON.stringify(LIVE_DATA).replace(/</g, '\\u003c')} />
     <script>
       import '../scripts/live-status';
       import '../scripts/preferences';
       import '../scripts/meal-stars';
+      import '../scripts/service-label';
     </script>
+    <style>
+      .offline-banner {
+        position: sticky;
+        top: var(--site-header-height, 82px);
+        z-index: 39;
+        margin: 0;
+        padding: 10px 14px;
+        border: 1px solid #d98b2b;
+        border-radius: 12px;
+        background: #fff3dc;
+        color: #6f3d07;
+        font-size: 13px;
+        font-weight: 600;
+      }
+      :root[data-theme="dark"] .offline-banner {
+        border-color: #b3772e;
+        background: #3a2b19;
+        color: #ffd69f;
+      }
+      .offline-banner[hidden] { display: none; }
+    </style>
   </body>
 </html>

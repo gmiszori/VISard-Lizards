@@ -3,9 +3,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import OnboardingEntry from '../onboarding/components/OnboardingEntry.astro';
 import StarredMealsSettings from '../components/StarredMealsSettings.astro';
 import YourRatings from '../components/YourRatings.astro';
+import ProfileMealSettings from '../components/ProfileMealSettings.astro';
+import WelcomeTour from '../welcome/WelcomeTour.astro';
 ---
 <BaseLayout title="Settings">
-  <a href="/" class="detail-back sticky-back-link" data-i18n="back">← All canteens</a>
+  <WelcomeTour />
+  <a href="/" class="detail-back sticky-back-link settings-back-link" data-i18n="back">← All canteens</a>
   <section class="settings-intro">
     <div><span class="eyebrow" data-i18n="settings">Settings</span>
       <h1 data-i18n="settingsTitle">Your settings</h1>
@@ -19,6 +22,7 @@ import YourRatings from '../components/YourRatings.astro';
       <label class="appearance-control" for="theme-select">
         <span data-i18n="themeLabel">Theme</span>
         <select id="theme-select" data-i18n-aria="themeLabel" aria-label="Theme">
+          <option value="system" data-i18n="systemTheme">System</option>
           <option value="light" data-i18n="lightTheme">Light</option>
           <option value="dark" data-i18n="darkTheme">Dark</option>
         </select>
@@ -30,6 +34,7 @@ import YourRatings from '../components/YourRatings.astro';
           <option value="de" data-i18n="german">German</option>
         </select>
       </label>
+      <button type="button" class="install-entry" data-install-open aria-haspopup="dialog" data-i18n="installApp">Install UniEats</button>
     </fieldset>
     <StarredMealsSettings />
     <YourRatings />
@@ -41,36 +46,40 @@ import YourRatings from '../components/YourRatings.astro';
       <label class="setting-option compact-option"><span class="compact-icon" aria-hidden="true">✳</span><span class="setting-copy"><strong data-i18n="aiSearch">AI for voice search</strong><small data-i18n="aiSearchHint">When enabled, OpenAI Realtime listens, searches the menu, and answers aloud. Typed queries always use word matching.</small></span><input type="checkbox" name="useAiVoiceSearch" value="true" /></label>
     </fieldset>
     <fieldset class="settings-group price-category">
-      <legend data-i18n="priceCategory">Price category</legend>
+      <legend data-i18n="priceCategory">Price &amp; budget</legend>
       <p data-i18n="priceCategoryHint">Show only your selected price on every dish. Student is the default.</p>
       <label class="select-option"><span data-i18n="yourPrice">Your price</span><select name="priceTier" data-price-tier>
         <option value="student" data-i18n="student">Student</option>
-        <option value="worker" data-i18n="worker">Worker</option>
+        <option value="worker" data-i18n="worker">Staff</option>
         <option value="external" data-i18n="external">External</option>
       </select></label>
+      <ProfileMealSettings section="budget" />
     </fieldset>
     <fieldset class="settings-group">
       <legend data-i18n="foodPreferences">Food preferences</legend>
       <p data-i18n="preferencesHint">Select every type of meal you want included.</p>
       <div class="preference-options">
-        <label class="setting-option preference-option preference-vegan"><span class="preference-icon" aria-hidden="true">🌿</span><span class="setting-copy"><strong data-i18n="vegan">Vegan</strong><small data-i18n="plantBased">Plant-based</small></span><input type="checkbox" name="vegan" value="vegan" /></label>
-        <label class="setting-option preference-option preference-vegetarian"><span class="preference-icon" aria-hidden="true">🥬</span><span class="setting-copy"><strong data-i18n="vegetarian">Vegetarian</strong><small data-i18n="meatFree">Meat-free</small></span><input type="checkbox" name="vegetarian" value="vegetarian" /></label>
-        <label class="setting-option preference-option preference-meat"><span class="preference-icon" aria-hidden="true">🍗</span><span class="setting-copy"><strong data-i18n="meat">Meat</strong><small data-i18n="meatDishes">Including meat dishes</small></span><input type="checkbox" name="meat" value="meat" /></label>
+        <label class="setting-option preference-option preference-vegan"><span class="preference-icon" aria-hidden="true" style="display:inline-flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24"><path d="M20.5 3.5C12 3.5 5.5 6.5 5.5 13a5.5 5.5 0 0 0 5.5 5.5c6.5 0 9.5-6.5 9.5-15Z"/><path d="M3.5 21c3.5-6 7.5-9.5 13-13"/></svg></span><span class="setting-copy"><strong data-i18n="vegan">Vegan</strong><small data-i18n="plantBased">Plant-based</small></span><input type="checkbox" name="vegan" value="vegan" /></label>
+        <label class="setting-option preference-option preference-vegetarian"><span class="preference-icon" aria-hidden="true" style="display:inline-flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24"><path d="M20.5 3.5C12 3.5 5.5 6.5 5.5 13a5.5 5.5 0 0 0 5.5 5.5c6.5 0 9.5-6.5 9.5-15Z"/><path d="M3.5 21c3.5-6 7.5-9.5 13-13"/></svg></span><span class="setting-copy"><strong data-i18n="vegetarian">Vegetarian</strong><small data-i18n="meatFree">Meat-free</small></span><input type="checkbox" name="vegetarian" value="vegetarian" /></label>
+        <label class="setting-option preference-option preference-meat"><span class="preference-icon" aria-hidden="true" style="display:inline-flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24"><path d="M13.8 4.8a5.2 5.2 0 0 1 3.7 8.9l-2.3 2.3a5.4 5.4 0 0 1-4.4 1.5l-1 1a2 2 0 1 1-2.8-2.8l1-1A5.4 5.4 0 0 1 9.5 10l2.3-2.3a5.2 5.2 0 0 1 2-1.3Z"/><path d="M12.4 8.8c1.1-.4 2.4-.2 3.1.6.8.8 1 2 .6 3.1M7 17.2c.6-.6 1.6-.6 2.2 0s.6 1.6 0 2.2-1.6.6-2.2 0-.6-1.6 0-2.2Z"/></svg></span><span class="setting-copy"><strong data-i18n="meat">Meat</strong><small data-i18n="meatDishes">Including meat dishes</small></span><input type="checkbox" name="meat" value="meat" /></label>
       </div>
+      <ProfileMealSettings section="exclusions" />
     </fieldset>
     <fieldset class="settings-group">
       <legend data-i18n="canteenFilters">Canteen filters</legend>
       <p data-i18n="filtersHint">Choose one or more campus locations to include.</p>
+      <button type="button" class="campus-toggle-all" data-campus-toggle-all>Select all</button>
       <div class="campus-options">
-        <label class="setting-option compact-option"><span class="compact-icon" aria-hidden="true">⌂</span><span class="setting-copy"><strong data-i18n="zentrum">Zentrum</strong></span><input type="checkbox" name="locations" value="zentrum" /></label>
-        <label class="setting-option compact-option"><span class="compact-icon" aria-hidden="true">⌂</span><span class="setting-copy"><strong data-i18n="hoenggerberg">Hönggerberg</strong></span><input type="checkbox" name="locations" value="hoenggerberg" /></label>
-        <label class="setting-option compact-option"><span class="compact-icon" aria-hidden="true">⌂</span><span class="setting-copy"><strong data-i18n="irchel">Irchel</strong></span><input type="checkbox" name="locations" value="irchel" /></label>
-        <label class="setting-option compact-option"><span class="compact-icon" aria-hidden="true">⌂</span><span class="setting-copy"><strong>Oerlikon</strong></span><input type="checkbox" name="locations" value="oerlikon" /></label>
-        <label class="setting-option compact-option"><span class="compact-icon" aria-hidden="true">⌂</span><span class="setting-copy"><strong>Basel</strong></span><input type="checkbox" name="locations" value="basel" /></label>
-        <label class="setting-option compact-option"><span class="compact-icon" aria-hidden="true">⌂</span><span class="setting-copy"><strong>Toni-Areal</strong></span><input type="checkbox" name="locations" value="toni-areal" /></label>
-        <label class="setting-option compact-option"><span class="compact-icon" aria-hidden="true">⌂</span><span class="setting-copy"><strong>Europaallee</strong></span><input type="checkbox" name="locations" value="europaallee" /></label>
+        <label class="setting-option compact-option"><span class="compact-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m4.5 10 7.5-7 7.5 7v10h-15V10Z"/></svg></span><span class="setting-copy"><strong data-i18n="zentrum">Zentrum</strong></span><input type="checkbox" name="locations" value="zentrum" /></label>
+        <label class="setting-option compact-option"><span class="compact-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m4.5 10 7.5-7 7.5 7v10h-15V10Z"/></svg></span><span class="setting-copy"><strong data-i18n="hoenggerberg">Hönggerberg</strong></span><input type="checkbox" name="locations" value="hoenggerberg" /></label>
+        <label class="setting-option compact-option"><span class="compact-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m4.5 10 7.5-7 7.5 7v10h-15V10Z"/></svg></span><span class="setting-copy"><strong data-i18n="irchel">Irchel</strong></span><input type="checkbox" name="locations" value="irchel" /></label>
+        <label class="setting-option compact-option"><span class="compact-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m4.5 10 7.5-7 7.5 7v10h-15V10Z"/></svg></span><span class="setting-copy"><strong>Oerlikon</strong></span><input type="checkbox" name="locations" value="oerlikon" /></label>
+        <label class="setting-option compact-option"><span class="compact-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m4.5 10 7.5-7 7.5 7v10h-15V10Z"/></svg></span><span class="setting-copy"><strong>Basel</strong></span><input type="checkbox" name="locations" value="basel" /></label>
+        <label class="setting-option compact-option"><span class="compact-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m4.5 10 7.5-7 7.5 7v10h-15V10Z"/></svg></span><span class="setting-copy"><strong>Toni-Areal</strong></span><input type="checkbox" name="locations" value="toni-areal" /></label>
+        <label class="setting-option compact-option"><span class="compact-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m4.5 10 7.5-7 7.5 7v10h-15V10Z"/></svg></span><span class="setting-copy"><strong>Europaallee</strong></span><input type="checkbox" name="locations" value="europaallee" /></label>
       </div>
-      <label class="setting-option compact-option open-only-option"><span class="compact-icon" aria-hidden="true">◷</span><span class="setting-copy"><strong data-i18n="openOnly">Only show open canteens</strong></span><input type="checkbox" name="openOnly" value="true" /></label>
+      <label class="setting-option compact-option open-only-option"><span class="compact-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16Z"/><path d="M12 8v4h3"/></svg></span><span class="setting-copy"><strong data-i18n="openOnly">Only show open canteens</strong></span><input type="checkbox" name="openOnly" value="true" /></label>
+      <label class="setting-option compact-option"><span class="compact-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg></span><span class="setting-copy"><strong data-i18n="distanceDefault">Sort by distance automatically</strong><small data-i18n="distanceDefaultHint">When you open the overview. Your location stays on this device.</small></span><input type="checkbox" name="distanceDefault" value="true" /></label>
     </fieldset>
     <fieldset class="settings-group">
       <legend data-i18n="viewMode">Overview layout</legend>
@@ -83,28 +92,68 @@ import YourRatings from '../components/YourRatings.astro';
     <fieldset class="settings-group">
       <legend data-i18n="devMode">Dev mode</legend>
       <p data-i18n="devModeDescription">Show diagnostics for live data, location, storage and backend connectivity.</p>
-      <label class="setting-option compact-option"><span class="compact-icon" aria-hidden="true">⌁</span><span class="setting-copy"><strong data-i18n="devTools">Developer tools</strong></span><input type="checkbox" name="devMode" value="true" /></label>
+      <label class="setting-option compact-option"><span class="compact-icon dev-tools-icon" aria-hidden="true">&lt;/&gt;</span><span class="setting-copy"><strong data-i18n="devTools">Developer tools</strong></span><input type="checkbox" name="devMode" value="true" /></label>
     </fieldset>
     <p class="settings-saved" id="settings-saved" aria-live="polite" data-i18n="settingsSaved" hidden>Saved</p>
   </form>
+  <script>
+    import { mountProfileMealSettings } from '../scripts/profile-meal-settings';
+    mountProfileMealSettings();
+    // "Select all" / "Deselect all" for the campus locations. Each changed checkbox fires the form's
+    // normal change event, so scripts/preferences.ts saves it exactly like a single click.
+    const toggleAll = document.querySelector<HTMLButtonElement>('[data-campus-toggle-all]');
+    const campuses = () => [...document.querySelectorAll<HTMLInputElement>('.campus-options input[name="locations"]')];
+    const allChecked = () => campuses().every(input => input.checked);
+    function renderToggleAll() {
+      if (!toggleAll) return;
+      const de = document.documentElement.lang === 'de';
+      const all = allChecked();
+      toggleAll.textContent = all ? (de ? 'Alle abwählen' : 'Deselect all') : (de ? 'Alle auswählen' : 'Select all');
+      toggleAll.setAttribute('aria-label', all
+        ? (de ? 'Alle Campus-Standorte abwählen' : 'Deselect all campus locations')
+        : (de ? 'Alle Campus-Standorte auswählen' : 'Select all campus locations'));
+    }
+    toggleAll?.addEventListener('click', () => {
+      const select = !allChecked();
+      campuses().filter(input => input.checked !== select).forEach(input => {
+        input.checked = select;
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+      renderToggleAll();
+    });
+    document.querySelector('.campus-options')?.addEventListener('change', renderToggleAll);
+    document.addEventListener('campuseats:preferences-applied', renderToggleAll);
+    document.addEventListener('languagechange', renderToggleAll);
+    renderToggleAll();
+  </script>
 </BaseLayout>
 <style>
-  .settings-intro{max-width:820px}
-  .settings-sections{display:grid;gap:14px;max-width:820px;margin:0 0 14px}
+  .settings-intro,.settings-sections,.settings-form{width:100%;max-width:none}
+  .settings-sections{display:grid;gap:14px;margin:0 0 14px}
+  .settings-sections :global(.starred-meals-settings){width:100%;max-width:none;margin-bottom:0}
   .settings-sections :global(.onboarding-restart){justify-self:start;margin:0;min-height:44px;padding:10px 15px;border-color:var(--line);background:var(--paper);color:var(--green);font-size:13px;transition:background .18s,border-color .18s,transform .18s}
   .settings-sections :global(.onboarding-restart:hover){background:#edf4ed;border-color:#b9d0bf;transform:translateY(-1px)}
   .appearance-settings{padding-bottom:17px}
-  .appearance-control{display:flex;align-items:center;justify-content:space-between;gap:18px;min-height:44px;color:var(--muted);font-size:13px;font-weight:600}
-  .appearance-control select{min-width:150px;height:42px;padding:0 38px 0 13px;border:1px solid var(--line);border-radius:11px;background:var(--paper);color:var(--ink);font:600 13px 'DM Sans',sans-serif}
+  .campus-toggle-all{margin:0 0 12px;min-height:44px;padding:8px 14px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--green);font:700 13px 'DM Sans',sans-serif;cursor:pointer}
+  .campus-toggle-all:hover{border-color:var(--green)}
+  .campus-toggle-all:focus-visible{outline:3px solid #7eb594;outline-offset:2px}
+  .appearance-control{position:relative;display:flex;align-items:center;justify-content:space-between;gap:18px;min-height:44px;color:var(--muted);font-size:13px;font-weight:600}
+  .appearance-control:focus-within{z-index:1}
+  .appearance-control select{min-width:150px;height:44px;padding:0 38px 0 13px;border:1px solid var(--line);border-radius:11px;background:var(--paper);color:var(--ink);font:600 13px 'DM Sans',sans-serif}
   .appearance-control select:focus-visible{outline:3px solid #7eb594;outline-offset:2px}
+  .install-entry{display:inline-flex;align-items:center;min-height:44px;margin-top:12px;padding:9px 14px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--green);font-size:13px;font-weight:700}
+  .install-entry:hover{border-color:var(--green)}
+  .install-entry:focus-visible{outline:3px solid #7eb594;outline-offset:2px}
   :global(:root[data-theme="dark"] .settings-sections .onboarding-restart:hover){background:#141b16;border-color:#3e5c46}
   .price-category .select-option{margin:0;padding:0;border:0;min-height:44px;font-size:13px;font-weight:700}
   .price-category select{min-height:44px;min-width:140px}
+  .dev-tools-icon{font:700 14px ui-monospace,SFMono-Regular,Consolas,monospace}
   .view-mode-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;max-width:450px;border:1px solid var(--line);border-radius:8px;overflow:hidden}
   .view-mode-option{position:relative;min-width:0;cursor:pointer}
   .view-mode-option+ .view-mode-option{border-left:1px solid var(--line)}
   .view-mode-option input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}
   .view-mode-option span{display:grid;place-items:center;min-height:44px;padding:0 8px;background:var(--paper);color:var(--ink);font-size:13px;font-weight:700}
   .view-mode-option input:checked+span{background:var(--green);color:white}
+  :global(:root[data-theme="dark"]) .view-mode-option input:checked+span{color:var(--paper)}
   .view-mode-option input:focus-visible+span{outline:3px solid #7eb594;outline-offset:-3px}
 </style>

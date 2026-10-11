@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { MENSAS } from '../data/canteens.ts';
 import { distanceM, locateUser, type MensaPlace, type PositionFix } from './locate.ts';
-import { getPositionFix, LocationUnavailableError, mensaPlaces } from './geolocation.ts';
+import { getPositionFix, locateUserNow, LocationUnavailableError } from './geolocation.ts';
 
 // The same coordinates GET /api/mensas returns (both come from mensa-db.json).
 const places: MensaPlace[] = MENSAS.flatMap(m => m.coordinates
@@ -94,9 +94,11 @@ test('getPositionFix maps the Geolocation API', async () => {
   await assert.rejects(getPositionFix(undefined), (e: unknown) => e instanceof LocationUnavailableError && e.reason === 'unsupported');
 });
 
-test('mensaPlaces skips mensas without coordinates', () => {
-  assert.deepEqual(mensaPlaces([
-    { id: 'a', title: 'A', campus: 'Irchel', coordinates: { lat: 1, lng: 2 }, avgRating: null },
-    { id: 'b', title: 'B', campus: 'Irchel', coordinates: null, avgRating: 4 },
-  ]), [{ id: 'a', name: 'A', campus: 'Irchel', lat: 1, lng: 2 }]);
+test('nearest uses supplied cafeteria coordinates and needs no backend data', async () => {
+  const poly = places.find(place => place.id === 'polyterrasse')!;
+  const result = await locateUserNow(places, fakeGeolocation({
+    coords: { latitude: poly.lat, longitude: poly.lng, accuracy: 20 },
+  }));
+  assert.equal(result.nearby[0].id, 'polyterrasse');
+  assert.equal(result.campus, 'zentrum');
 });

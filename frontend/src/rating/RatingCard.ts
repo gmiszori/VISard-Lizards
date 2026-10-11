@@ -1,4 +1,4 @@
-import { type MensaChoice, type RatingPrompt } from './getRatingPrompt.ts';
+import { zurichTime, type MensaChoice, type RatingPrompt } from './getRatingPrompt.ts';
 import { appNow } from '../time/clock.ts';
 import { mensaCandidates, STATE_KEY, useRatingPrompt } from './useRatingPrompt.ts';
 import { loadMeals } from './mealSource.ts';
@@ -7,8 +7,9 @@ import { API_URL, apiGet, type BackendMealDetail } from '../data/api.ts';
 import type { Profile } from '../onboarding/profile';
 import { ratingText, translateRating, type RatingText } from './i18n';
 import { readVisits } from '../location/visits.ts';
-import { NEAR_ME_KEY } from '../location/near-me.ts';
 import { visitCandidates } from './visitCandidates.ts';
+import { readPreferences } from '../preferences/state.ts';
+import { canShowCanteen } from '../preferences/canteenVisibility.ts';
 
 interface MealOption { id: string; mensaId: string; date: string; name: string }
 interface CardData { mensas: MensaChoice[]; meals: MealOption[] }
@@ -41,6 +42,7 @@ export function mountRatingCard(): void {
     query('[data-rating-dismiss]').addEventListener('click', () => { root.hidden = true; });
     return;
   }
+  const visibleMensas = () => data.mensas.filter(mensa => canShowCanteen(mensa.mensaId, readPreferences(storage).priceTier));
   // The override and isolated simulator storage are removed from production bundles.
   const override = import.meta.env.DEV ? new URL(location.href).searchParams.get('ratingNow') : null;
   const simulated = Boolean(override && /(?:Z|[+-]\d{2}:\d{2})$/.test(override) && Number.isFinite(Date.parse(override)));
@@ -49,15 +51,16 @@ export function mountRatingCard(): void {
   const ratingsKey = `${RATINGS_KEY}${simulated ? ':dev' : ''}`;
   /** Users who never share their location get "Where did you eat today?" with suggestions instead. */
   const usesLocation = (visits: ReturnType<typeof readVisits>) =>
-    storage.getItem(NEAR_ME_KEY) === '1' || visits.some(visit => (visit.source ?? 'location') === 'location');
+    visits.some(visit => (visit.source ?? 'location') === 'location');
   const candidates = () => {
     const visits = readVisits(storage);
-    const visited = visitCandidates(data.mensas, visits);
+    const available = visibleMensas();
+    const visited = visitCandidates(available, visits);
     if (!simulated && usesLocation(visits)) return visited;
     const profile = readOptional<Partial<Profile>>('campuseats-profile');
     const rawFavourites = readOptional<unknown>('campuseats-favourites');
     const favourites = Array.isArray(rawFavourites) ? rawFavourites.filter((id): id is string => typeof id === 'string') : [];
-    const preferred = mensaCandidates(data.mensas, profile, favourites);
+    const preferred = mensaCandidates(available, profile, favourites);
     const seen = new Set<string>();
     return [...visited, ...preferred].filter(choice => {
       const key = `${choice.date ?? ''}:${choice.mensaId}`;
@@ -160,9 +163,30 @@ export function mountRatingCard(): void {
     });
     step('meal', !skipped);
   }
+  /** Whether today has a menu: true / false, or undefined while it is loading. */
+  const menuChecks = new Map<string, 'pending' | 'yes' | 'no'>();
+  function hadMenu(date: string): boolean | undefined {
+    const known = menuChecks.get(date);
+    if (known === 'yes') return true;
+    if (known === 'no') return false;
+    if (known === 'pending') return undefined;
+    menuChecks.set(date, 'pending');
+    // If the menus cannot be loaded we do not know: treat the day as served, so nothing changes (choosing a mensa reports the problem).
+    void mealsOn(date).then(list => { menuChecks.set(date, list.length ? 'yes' : 'no'); }, () => { menuChecks.set(date, 'yes'); }).then(() => refresh());
+    return undefined;
+  }
+  /** No question on days without a menu. Never fall back to a previous day. */
+  function chooseDayToAskAbout(): 'ok' | 'wait' | 'none' {
+    if (store.current()?.kind === 'visit') return 'ok';
+    const today = zurichTime(now()).date;
+    const todayServed = hadMenu(today);
+    if (todayServed === undefined) return 'wait';
+    return todayServed ? 'ok' : 'none';
+  }
   function refresh() {
     if (busy || closing) return;
     try {
+      if (chooseDayToAskAbout() !== 'ok') { hide(); prompt = null; return; }
       const next = store.current();
       if (!next) { hide(); prompt = null; return; }
       store.shown(next.date);
@@ -206,10 +230,10 @@ export function mountRatingCard(): void {
     }
   }
   const select = query<HTMLSelectElement>('[data-rating-mensa-select]');
-  data.mensas.forEach(m => { const option = document.createElement('option'); option.value = m.mensaId; option.textContent = m.name; select.append(option); });
+  visibleMensas().forEach(m => { const option = document.createElement('option'); option.value = m.mensaId; option.textContent = m.name; select.append(option); });
   query('[data-rating-other]').addEventListener('click', () => { query('[data-rating-other-picker]').hidden = false; select.focus(); });
   query('[data-rating-mensa-confirm]').addEventListener('click', () => {
-    const choice = data.mensas.find(m => m.mensaId === select.value);
+    const choice = visibleMensas().find(m => m.mensaId === select.value);
     if (choice) chooseMensa(choice); else { setStatus('chooseError'); select.focus(); }
   });
   // "Nowhere today" on a guess question also pauses guess questions for three days.

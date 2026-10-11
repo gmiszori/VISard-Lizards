@@ -19,6 +19,7 @@ let noticeTimer: ReturnType<typeof setTimeout> | undefined;
 
 function rank(a: HTMLElement, b: HTMLElement) {
   return Number(a.dataset.mealsAvailable === 'false') - Number(b.dataset.mealsAvailable === 'false') ||
+    Number(a.dataset.mealPriceMissing === 'true') - Number(b.dataset.mealPriceMissing === 'true') ||
     Number(b.dataset.mealStarred === 'true' && !b.hidden) - Number(a.dataset.mealStarred === 'true' && !a.hidden) ||
     (originalOrder.get(a) ?? 0) - (originalOrder.get(b) ?? 0);
 }
@@ -55,7 +56,11 @@ function render() {
       const location = document.createElement('a');
       location.className = 'starred-today-location';
       location.href = `/canteen/${encodeURIComponent(card.dataset.canteenId!)}`;
-      location.textContent = `${card.dataset.name} ↗`;
+      location.textContent = card.dataset.name ?? '';
+      const arrow = document.createElement('span');
+      arrow.setAttribute('aria-hidden', 'true');
+      arrow.textContent = '\u2197\uFE0E';
+      location.append(' ', arrow);
       article.append(location);
       return article;
     }));

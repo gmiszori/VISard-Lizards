@@ -11,7 +11,7 @@ class TestWebsiteTest {
         val connection = object : ToolConnection {
             override fun isReady() = true
             override fun definitions() = listOf(ModelTool("scrape_meals", "Meals", buildJsonObject {}))
-            override suspend fun call(tool: String, url: String) = buildJsonObject { put("meals", JsonArray(emptyList())) }
+            override suspend fun call(tool: String, url: String, date: java.time.LocalDate?) = buildJsonObject { put("meals", JsonArray(emptyList())) }
         }
         HttpConnector(InetSocketAddress("127.0.0.1", 0), connection, "test-token").use { server ->
             server.start()
@@ -20,7 +20,7 @@ class TestWebsiteTest {
             val catalog = client.send(HttpRequest.newBuilder(URI("$origin/api/mensas")).build(), HttpResponse.BodyHandlers.ofString())
             assertEquals(200, catalog.statusCode())
             val locations = Json.parseToJsonElement(catalog.body()).jsonObject["locations"]!!.jsonArray
-            assertEquals(11, locations.size)
+            assertEquals(22, locations.size)
             assertTrue(locations.any { it.jsonObject["name"]!!.jsonPrimitive.content == "Irchel Bar" })
             for ((path, contentType) in listOf("/" to "text/html", "/app.js" to "text/javascript", "/client.mjs" to "text/javascript", "/styles.css" to "text/css")) {
                 val response = client.send(HttpRequest.newBuilder(URI("$origin$path")).build(), HttpResponse.BodyHandlers.ofString())

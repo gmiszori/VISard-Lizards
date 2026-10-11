@@ -16,7 +16,7 @@ import tools.jackson.databind.json.JsonMapper;
 public class ScraperAiClient {
     private static final Set<String> TOOLS = Set.of("discover_menu_sources", "scrape_meals", "read_menu_source");
     private static final String INSTRUCTIONS = """
-        Retrieve meals available today or next in Europe/Zurich, with prices and source references.
+        Retrieve meals available today and next weeks in Europe/Zurich, with prices and source references.
         First discover_menu_sources on the supplied venue URL, then choose returned links for the same venue.
         Prefer daily/weekly menus; inspect labelled catering PDFs if no daily menu exists, but label them as catering.
         Never guess URLs or select another venue's menu. Then scrape_meals on the selected source, or the
@@ -33,7 +33,7 @@ public class ScraperAiClient {
     private final String key, model, relayUrl, relayToken;
     @org.springframework.beans.factory.annotation.Autowired
     public ScraperAiClient(JsonMapper mapper, @Value("${openai.api-key:}") String key,
-            @Value("${app.scraper.model:gpt-4.1-mini}") String model,
+            @Value("${app.scraper.model:gpt-6-astra}") String model,
             @Value("${app.scraper.connector-url:http://127.0.0.1:8091}") String relayUrl,
             @Value("${app.scraper.connector-token:}") String relayToken) {
         this(mapper, key, model, relayUrl, relayToken, createClient());
@@ -56,17 +56,27 @@ public class ScraperAiClient {
         return mapper.readTree(request.retrieve().body(String.class));
     }
     public JsonNode retrieve(String url) {
+        return retrieve(url, java.time.LocalDate.now(java.time.ZoneId.of("Europe/Zurich")));
+    }
+    public JsonNode retrieve(String url, java.time.LocalDate date) {
+        var today = java.time.LocalDate.now(java.time.ZoneId.of("Europe/Zurich"));
+        var from = date.isBefore(today) ? today : date;
         if (!configured()) throw new IllegalStateException("Backend OpenAI key is not configured.");
         JsonNode tools = relay("/api/ai/tools", null).path("tools");
         if (!tools.isArray() || tools.size()!=3) throw new IllegalStateException("Scraper tools unavailable.");
         for (JsonNode tool: tools) if (!TOOLS.contains(tool.path("name").asText())) throw new IllegalStateException("Unexpected tool.");
         var input=mapper.createArrayNode();
-        input.add(mapper.createObjectNode().put("role","user").put("content","Restaurant URL: " + url));
+        input.add(mapper.createObjectNode().put("role","user").put("content","Restaurant URL: " + url + "\nEarliest meal date: " + from));
         var results=mapper.createArrayNode();
         boolean scraped=false; int count=0;
         for(int round=0; round<6; round++) {
             var body=mapper.createObjectNode().put("model",model).put("store",false).put("parallel_tool_calls",false)
-                .put("instructions",INSTRUCTIONS).put("max_output_tokens",2000);
+                .put("instructions",INSTRUCTIONS + "\nUse date=" + from + " in every tool call. Exclude meals before this date; retain undated recurring meals.").put("max_output_tokens",2000);
+            if(model.equals("gpt-6-astra") || model.startsWith("gpt-6-astra-") || model.equals("gpt-5-mini") || model.startsWith("gpt-5-mini-")) {
+                // Reasoning tokens share the output budget with tool arguments and the final explanation.
+                body.put("max_output_tokens",8000);
+                body.set("reasoning",mapper.createObjectNode().put("effort","low"));
+            }
             body.set("tools",tools); body.set("input",input);
             if(round==0) body.set("tool_choice",mapper.createObjectNode().put("type","function").put("name","discover_menu_sources"));
             else body.put("tool_choice",scraped ? "auto" : "required");
@@ -81,7 +91,12 @@ public class ScraperAiClient {
                     String name=item.path("name").asText();
                     // The connector validates URLs, schema and tool names through its dedicated MCP client.
                     var call=mapper.createObjectNode().put("call_id",item.path("call_id").asText()).put("name",name);
-                    call.set("arguments",item.path("arguments"));
+                    JsonNode parsed = item.path("arguments").isTextual() ? mapper.readTree(item.path("arguments").asText()) : item.path("arguments");
+                    if (!(parsed instanceof tools.jackson.databind.node.ObjectNode)) throw new IllegalStateException("Tool arguments must be an object.");
+                    var arguments = ((tools.jackson.databind.node.ObjectNode) parsed).deepCopy();
+                    // Enforce the backend cutoff even if the model omits or changes it.
+                    arguments.put("date", from.toString());
+                    call.set("arguments", arguments);
                     JsonNode output=relay("/api/ai/tools/call",call);
                     if(!"function_call_output".equals(output.path("type").asText()) || !item.path("call_id").asText().equals(output.path("call_id").asText())) throw new IllegalStateException("Invalid tool output.");
                     JsonNode data=mapper.readTree(output.path("output").asText());

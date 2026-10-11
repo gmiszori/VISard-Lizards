@@ -3,7 +3,7 @@
  * The service worker public/sw.js shows them. Nothing is subscribed without the user's explicit yes
  * (the opt-in in optin.ts or the switch in Settings); the browser's own permission prompt comes after that.
  */
-import { API_URL, apiDelete, apiGet, apiPost, apiPut } from '../data/api.ts';
+import { API_URL, ApiError, apiDelete, apiGet, apiPost, apiPut } from '../data/api.ts';
 import { readStarredMeals } from '../meals/stars.ts';
 
 /** { asked: true } once the opt-in was shown, so it is never shown again. */
@@ -15,6 +15,34 @@ export const PUSH_EVENT = 'campuseats:push-changed';
 
 /** unsupported: browser cannot; no-backend: no API; denied: blocked in the browser; off; on. */
 export type PushState = 'unsupported' | 'no-backend' | 'denied' | 'off' | 'on';
+
+export class PushWorkerUnavailableError extends Error {
+  constructor() { super('The notification service worker did not become active.'); }
+}
+
+export class PushSubscriptionUnavailableError extends Error {
+  constructor() { super('The browser push service did not respond.'); }
+}
+
+export class PushPermissionUnavailableError extends Error {
+  constructor() { super('The browser did not finish the notification permission request.'); }
+}
+
+async function withTimeout<T>(operation: Promise<T>, error: Error, timeoutMs: number): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([operation, new Promise<never>((_, reject) => {
+      timer = setTimeout(() => reject(error), timeoutMs);
+    })]);
+  } finally { clearTimeout(timer); }
+}
+
+export const waitForWorkerReady = <T>(operation: Promise<T>, timeoutMs = 15000): Promise<T> =>
+  withTimeout(operation, new PushWorkerUnavailableError(), timeoutMs);
+export const waitForSubscriptionReady = <T>(operation: Promise<T>, timeoutMs = 15000): Promise<T> =>
+  withTimeout(operation, new PushSubscriptionUnavailableError(), timeoutMs);
+export const waitForPermission = <T>(operation: Promise<T>, timeoutMs = 30000): Promise<T> =>
+  withTimeout(operation, new PushPermissionUnavailableError(), timeoutMs);
 
 /** base64url (as the backend sends the VAPID key) to bytes for applicationServerKey. */
 export function base64UrlToBytes(value: string): Uint8Array<ArrayBuffer> {
@@ -49,8 +77,8 @@ export function markAsked(): void {
 }
 
 async function currentSubscription(): Promise<PushSubscription | null> {
-  const registration = await navigator.serviceWorker.getRegistration('/');
-  return (await registration?.pushManager.getSubscription()) ?? null;
+  const registration = await waitForWorkerReady(navigator.serviceWorker.getRegistration('/'));
+  return registration ? await waitForSubscriptionReady(registration.pushManager.getSubscription()) : null;
 }
 
 export async function pushState(): Promise<PushState> {
@@ -77,19 +105,19 @@ async function send(subscription: PushSubscription): Promise<void> {
 export async function enablePush(): Promise<PushState> {
   if (!pushSupported()) return 'unsupported';
   if (!API_URL) return 'no-backend';
-  const permission = await Notification.requestPermission();
+  const permission = await waitForPermission(Notification.requestPermission());
   if (permission !== 'granted') return permission === 'denied' ? 'denied' : 'off';
-  const registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
-  await navigator.serviceWorker.ready;
+  const registration = await waitForWorkerReady(navigator.serviceWorker.register('/sw.js', { scope: '/' }));
+  await waitForWorkerReady(navigator.serviceWorker.ready);
   const { publicKey } = await apiGet<{ publicKey: string }>('/api/push/public-key');
   const key = base64UrlToBytes(publicKey);
-  let subscription = await registration.pushManager.getSubscription();
+  let subscription = await waitForSubscriptionReady(registration.pushManager.getSubscription());
   // A subscription made with another server key (e.g. a reset backend) cannot receive our messages.
   if (subscription && !sameBytes(subscription.options.applicationServerKey, key)) {
-    await subscription.unsubscribe();
+    await waitForSubscriptionReady(subscription.unsubscribe());
     subscription = null;
   }
-  subscription ??= await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key });
+  subscription ??= await waitForSubscriptionReady(registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key }));
   await send(subscription);
   document.dispatchEvent(new Event(PUSH_EVENT));
   return 'on';
@@ -100,7 +128,7 @@ export async function disablePush(): Promise<PushState> {
   if (subscription) {
     // Delete on the server first: if that fails the user can try again, nothing is left behind.
     if (API_URL) await apiDelete('/api/push/subscription', { endpoint: subscription.endpoint });
-    await subscription.unsubscribe();
+    await waitForSubscriptionReady(subscription.unsubscribe());
   }
   try { storage()?.removeItem(SYNCED_KEY); } catch { /* ignore */ }
   document.dispatchEvent(new Event(PUSH_EVENT));
@@ -117,10 +145,21 @@ export async function syncStarredDishes(): Promise<void> {
   await send(subscription);
 }
 
-/** "Notifications are on" to this browser. */
+/** "Notifications are on" to this browser. Re-sync once when the backend forgot this subscription. */
 export async function sendTestPush(): Promise<boolean> {
   const subscription = await currentSubscription();
   if (!subscription) return false;
-  const result = await apiPost<{ delivered: boolean }>('/api/push/test', { endpoint: subscription.endpoint });
-  return result.delivered;
+  await send(subscription);
+  try {
+    const result = await apiPost<{ delivered: boolean }>('/api/push/test', { endpoint: subscription.endpoint });
+    return result.delivered;
+  } catch (error) {
+    // A restart, restore or cleanup can drop the row server-side while the browser still has a valid subscription.
+    if (error instanceof ApiError && error.status === 404) {
+      await send(subscription);
+      const retry = await apiPost<{ delivered: boolean }>('/api/push/test', { endpoint: subscription.endpoint });
+      return retry.delivered;
+    }
+    throw error;
+  }
 }

@@ -13,7 +13,7 @@ class AiHttpTest {
             var calls = 0
             override fun isReady() = true
             override fun definitions() = listOf(ModelTool("scrape_meals", "Meals", buildJsonObject {}))
-            override suspend fun call(tool: String, url: String): JsonObject {
+            override suspend fun call(tool: String, url: String, date: java.time.LocalDate?): JsonObject {
                 calls++; return buildJsonObject { put("status", "meals_found") }
             }
         }
@@ -43,7 +43,7 @@ class AiHttpTest {
     @Test fun missingContentTypeAndUnavailableMcpAreReported() {
         val connection = object : ToolConnection {
             override fun isReady() = false
-            override suspend fun call(tool: String, url: String): JsonObject = error("Should not be called")
+            override suspend fun call(tool: String, url: String, date: java.time.LocalDate?): JsonObject = error("Should not be called")
         }
         HttpConnector(InetSocketAddress("127.0.0.1", 0), connection).use { server ->
             server.start()

@@ -2,7 +2,12 @@ package mensa
 
 import kotlinx.serialization.Serializable
 
-@Serializable data class MensaLocation(val id: String, val name: String, val url: String)
+@Serializable data class MensaLocation(
+    val id: String,
+    val name: String,
+    val url: String,
+    val additionalUrls: List<String> = emptyList(),
+)
 
 /** Official location pages; menu links are discovered at request time. */
 object MensaSources {
@@ -18,6 +23,22 @@ object MensaSources {
         MensaLocation("polysnack", "Polysnack", "https://ethz.ch/de/campus/erleben/gastronomie-und-einkaufen/gastronomie/restaurants-und-cafeterias/zentrum/polysnack.html"),
         MensaLocation("raemi-59", "Rämi 59", "https://www.zfv.ch/de/essen-gehen/raemi-59"),
         MensaLocation("untere-mensa", "Untere Mensa", "https://www.zfv.ch/de/essen-gehen/untere-mensa-uzh"),
+        MensaLocation("bistro-tonino", "Bistro Tonino", "https://www.zfv.ch/de/essen-gehen/bistro-tonino"),
+        MensaLocation("zhaw-lagerstrasse", "ZHAW Cafeteria Lagerstrasse & Sihlhof", "https://www.zfv.ch/de/essen-gehen/bistro-sihlhof",
+            listOf("https://www.zhaw.ch/de/studium/waehrend-des-studiums/verpflegung")),
+        MensaLocation("molki", "Mensa Molki", "https://www.zfv.ch/de/essen-gehen/gastronomie-im-toni-areal"),
+        MensaLocation("phzh", "Mensa PHZH", "https://www.zfv.ch/de/essen-gehen/mensa-paedagogische-hochschule-zuerich"),
+        MensaLocation("botanischer-garten", "Cafeteria Botanischer Garten", "https://www.zfv.ch/de/essen-gehen/cafeteria-uzh-botanischer-garten"),
+        MensaLocation("uniturm", "Restaurant UniTurm & Cafeteria Rämi 74", "https://www.zfv.ch/de/essen-gehen/uzh-insieme-raemi74",
+            listOf("https://www.zfv.ch/de/essen-gehen/restaurant-uniturm")),
+        MensaLocation("the-yard", "The YARD & Cafeteria Brunnenhof", "https://www.zfv.ch/de/essen-gehen/yard",
+            listOf("https://www.mensa.uzh.ch/de/Standorte-und-Verpflegung/Brunnenhof.html")),
+        MensaLocation("cityport", "Cityport Mensa", "https://www.zfv.ch/de/essen-gehen/cafeteria-uzh-cityport"),
+        MensaLocation("bim11", "BIM11", "https://www.zfv.ch/de/essen-gehen/mensa-bim11"),
+        MensaLocation("science-lounge", "Science Lounge", "https://www.zfv.ch/de/essen-gehen/eth-zuerich-science-lounge"),
+        MensaLocation("zwei-grad", "Zwei Grad Bistro", "https://ethz.ch/de/campus/erleben/gastronomie-und-einkaufen/gastronomie/restaurants-und-cafeterias/zentrum/zwei-grad-bistro.html"),
     )
-    val toolHint: String get() = " Known Zürich sources: " + locations.joinToString("; ") { "${it.name}: ${it.url}" }
+    val toolHint: String get() = " Known cafeteria sources: " + locations.joinToString("; ") {
+        "${it.name}: ${(listOf(it.url) + it.additionalUrls).joinToString(", ")}"
+    } + ". Science Lounge is in Basel."
 }

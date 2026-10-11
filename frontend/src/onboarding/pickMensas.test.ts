@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { pickMensas } from './pickMensas.ts';
+import { eligibleRatingMensas, pickMensas } from './pickMensas.ts';
 
 const mensas = [
   { id: 'low', campusId: 'home', hasMenu: true }, { id: 'high', campusId: 'home', hasMenu: true },
@@ -39,4 +39,12 @@ test('over 2000 seeded draws low-count home is clearly preferred', () => {
   const hits: Record<string, number> = { low: 0, high: 0 };
   for (let i = 0; i < 2000; i++) for (const m of pickMensas(mensas, counts, campus, rng, 1)) hits[m.id] = (hits[m.id] ?? 0) + 1;
   assert.ok(hits.low! > hits.high! * 10, JSON.stringify(hits));
+});
+test('rating candidates exclude campuses without an available menu and student-only Dozentenfoyer', () => {
+  assert.deepEqual(eligibleRatingMensas(mensas, { ...campus, priceTier: 'student' }).map(m => m.id),
+    ['low', 'high', 'secondary', 'extra']);
+  assert.deepEqual(eligibleRatingMensas([{ id: 'dozentenfoyer', campusId: 'home', hasMenu: true }],
+    { ...campus, priceTier: 'student' }), []);
+  assert.equal(eligibleRatingMensas([{ id: 'dozentenfoyer', campusId: 'home', hasMenu: true }],
+    { ...campus, priceTier: 'worker' }).length, 1);
 });

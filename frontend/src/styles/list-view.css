@@ -3,7 +3,8 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 0;
-  max-width: 480px;
+  width: 100%;
+  max-width: 100%;
 }
 
 :root[data-density="list"] .canteen-card,
@@ -49,7 +50,7 @@
 }
 
 :root[data-density="list"] :is(#canteen-grid, #favourites-grid) .canteen-card .canteen-photo-caption .card-title {
-  font-size: 12px;
+  font-size: 15px;
   line-height: 1.35;
   font-weight: 700;
 }
@@ -65,15 +66,21 @@
 }
 
 :root[data-density="list"] .canteen-card .favorite-toggle {
-  top: 4px;
-  right: 0;
-  width: 44px;
-  height: 44px;
+  position: static;
+  display: grid;
+  place-items: center;
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  margin: 0;
+  padding: 0;
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: 9px;
   background: var(--paper);
   box-shadow: none;
-  font-size: 18px;
+  font-size: 19px;
+  line-height: 1;
+  pointer-events: auto;
 }
 
 :root[data-density="list"] .canteen-card .distance-chip {
@@ -104,6 +111,9 @@
 :root[data-density="list"] .canteen-card .meal-service-heading {
   margin: 2px 0;
   font-size: 10px;
+}
+.canteen-card .meal-service-heading .meal-service-time {
+  color: var(--muted);
 }
 
 :root[data-density="list"] :is(#canteen-grid, #favourites-grid) .canteen-card .dish-preview,
@@ -155,7 +165,7 @@
 @media (min-width: 701px) {
   :root[data-density="list"] :is(#canteen-grid, #favourites-grid) .canteen-card .dish-preview,
   :root[data-density="list"] :is(#canteen-grid, #favourites-grid) .canteen-card .dish-preview:not([hidden]) ~ .dish-preview:not([hidden]) {
-    grid-template-columns: minmax(0, 270px) 120px 44px;
+    grid-template-columns: minmax(0, 1fr) 120px 44px;
     justify-content: start;
     column-gap: 10px;
   }
@@ -163,7 +173,6 @@
   :root[data-density="list"] .canteen-card .meal-preview-heading .dish { grid-column: 1; }
   :root[data-density="list"] .canteen-card .meal-price { grid-column: 2; grid-row: 1; }
   :root[data-density="list"] .canteen-card .meal-preview-heading .meal-star { grid-column: 3; grid-row: 1; }
-  :root[data-density="list"] .canteen-card .favorite-toggle { right: 26px; }
 }
 
 @media (max-width: 700px) {
@@ -186,33 +195,67 @@
 }
 
 :root[data-density="compact"] article.canteen-card[data-canteen-card] {
-  display: flow-root;
+  display: block;
 }
 :root[data-density="compact"] article.canteen-card[data-canteen-card] .canteen-card-link {
   display: block;
-  clear: both;
 }
-:root[data-density="compact"] article.canteen-card[data-canteen-card] > .favorite-toggle {
-  position: static;
-  float: right;
+:root[data-density="compact"] article.canteen-card[data-canteen-card] .favorite-toggle {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  float: none;
   width: 44px;
   height: 44px;
-  margin: 8px 8px 0;
+  margin: 0;
 }
 :root[data-density="compact"] article.canteen-card[data-canteen-card] .card-image {
-  display: block;
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr) auto;
+  grid-template-rows: auto;
+  align-items: start;
+  column-gap: 10px;
   height: auto;
   min-height: 0;
-  padding: 12px 54px 0 12px;
+  padding: 12px 54px 4px 12px;
   background: transparent;
 }
 :root[data-density="compact"] article.canteen-card[data-canteen-card] .canteen-image-link {
+  position: relative;
+  inset: auto;
+  display: block;
+  grid-column: 1;
+  grid-row: 1;
+  width: 58px;
+  height: 58px;
+  overflow: hidden;
+  border-radius: 9px;
+  background: var(--line);
+}
+:root[data-density="compact"] article.canteen-card[data-canteen-card] .canteen-image-link[hidden] {
   display: none;
+}
+:root[data-density="compact"] article.canteen-card[data-canteen-card][data-has-photo="false"] .card-image {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+:root[data-density="compact"] article.canteen-card[data-canteen-card][data-has-photo="false"] .canteen-photo-caption {
+  grid-column: 1;
+}
+:root[data-density="compact"] article.canteen-card[data-canteen-card][data-has-photo="false"] .rating {
+  grid-column: 2;
+}
+:root[data-density="compact"] article.canteen-card[data-canteen-card] .canteen-image-link > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 :root[data-density="compact"] article.canteen-card[data-canteen-card] .canteen-photo-caption {
   position: static;
   inset: auto;
   display: block;
+  grid-column: 2;
+  grid-row: 1;
   width: auto;
   padding: 0;
   background: none;
@@ -220,31 +263,60 @@
   pointer-events: auto;
 }
 :root[data-density="compact"] article.canteen-card[data-canteen-card] .canteen-photo-title {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 :root[data-density="compact"] article.canteen-card[data-canteen-card] .card-title {
   font-size: 15px;
 }
 :root[data-density="compact"] article.canteen-card[data-canteen-card] .campus {
   color: var(--muted);
+  margin-top: 2px;
+  line-height: 1.3;
 }
 :root[data-density="compact"] article.canteen-card[data-canteen-card] .status {
   position: static;
   display: block;
   width: max-content;
   min-height: 0;
-  margin: 7px 0 0;
+  margin: 0;
+}
+:root[data-density="compact"] article.canteen-card[data-canteen-card] .mensa-location-link {
+  min-height: 0;
+  min-width: 0;
+  padding: 0;
 }
 :root[data-density="compact"] article.canteen-card[data-canteen-card] .rating {
   position: static;
   display: block;
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+  align-self: start;
   width: max-content;
-  margin: 6px 0 0;
+  margin: 1px 0 0;
   box-shadow: none;
 }
 :root[data-density="compact"] article.canteen-card[data-canteen-card] .card-body {
   min-width: 0;
-  padding: 10px 12px 12px;
+  padding: 8px 12px 10px;
+  border-top: 1px solid var(--line);
+}
+:root[data-density="compact"] article.canteen-card[data-canteen-card] .meal-service-heading {
+  margin-bottom: 6px;
+}
+:root[data-density="compact"] article.canteen-card[data-canteen-card] .meal-price-compact {
+  margin-top: 4px;
+}
+:root[data-density="compact"] article.canteen-card[data-canteen-card] .meal-service-group > .dish-preview:not([hidden]) ~ .dish-preview:not([hidden]) {
+  margin-top: 7px;
+  padding-top: 7px;
+}
+:root[data-density="compact"] article.canteen-card[data-canteen-card] .meal-service-group[data-service="lunch"] > .dish-preview .meal-service-time,
+:root[data-density="compact"] article.canteen-card[data-canteen-card] .meal-service-group[data-service="dinner"] > .dish-preview .meal-service-time {
+  display: none;
 }
 @media (max-width: 700px) {
   :root .canteen-card .canteen-photo-title .status { position: absolute; top: 8px; left: 8px; right: auto; }

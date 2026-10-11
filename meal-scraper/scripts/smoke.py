@@ -91,6 +91,9 @@ try:
     tools = request('tools/list', {})['tools']
     assert {tool['name'] for tool in tools} == expected_tools
     assert all(tool['annotations']['readOnlyHint'] for tool in tools)
+    assert all('date' in tool['inputSchema']['properties'] for tool in tools)
+    invalid_date = request('tools/call', {'name': 'scrape_meals', 'arguments': {'url': 'https://example.org', 'date': '2026-02-30'}})
+    assert invalid_date.get('isError'), invalid_date
     invalid = request('tools/call', {'name': 'scrape_meals', 'arguments': {'url': 'https://127.0.0.1'}})
     assert invalid.get('isError'), invalid
     print('PASS real MCP initialization, tool discovery, readonly hints and unsafe URL rejection')

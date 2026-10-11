@@ -9,13 +9,15 @@ class AiToolRelayTest {
     private class Connection : ToolConnection {
         val calls = mutableListOf<Pair<String, String>>()
         var fail = false
+        var requestedDate: java.time.LocalDate? = null
         override fun isReady() = true
         override fun definitions() = listOf(ModelTool("scrape_meals", "Scrape meals", buildJsonObject {
             put("type", "object"); put("additionalProperties", false)
             put("required", JsonArray(listOf(JsonPrimitive("url"))))
             put("properties", buildJsonObject { put("url", buildJsonObject { put("type", "string") }) })
         }))
-        override suspend fun call(tool: String, url: String): JsonObject {
+        override suspend fun call(tool: String, url: String, date: java.time.LocalDate?): JsonObject {
+            requestedDate = date
             calls += tool to url
             if (fail) throw ToolFailure(buildJsonObject { put("error", "Source is unavailable") })
             return buildJsonObject { put("status", "meals_found"); put("meals", JsonArray(emptyList())) }
@@ -23,6 +25,15 @@ class AiToolRelayTest {
     }
     private fun body(arguments: JsonElement = buildJsonObject { put("url", "https://bqm-bar.ch/de") }) = buildJsonObject {
         put("name", "scrape_meals"); put("call_id", "call_123"); put("arguments", arguments)
+    }
+    @Test fun suppliedDateReachesMcp() = runBlocking {
+        val connection = Connection()
+        AiToolRelay(connection).execute(body(buildJsonObject { put("url", "https://bqm-bar.ch/de"); put("date", "2026-10-19") }))
+        assertEquals(java.time.LocalDate.parse("2026-10-19"), connection.requestedDate)
+        assertFailsWith<IllegalArgumentException> {
+            AiToolRelay(connection).execute(body(buildJsonObject { put("url", "https://bqm-bar.ch/de"); put("date", "2026-02-30") }))
+        }
+        Unit
     }
     @Test fun definitionsAreOpenAiResponsesFunctionsFromMcp() {
         val tools = AiToolRelay(Connection()).definitions()["tools"]!!.jsonArray

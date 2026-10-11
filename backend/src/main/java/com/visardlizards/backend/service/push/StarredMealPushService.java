@@ -141,14 +141,6 @@ public class StarredMealPushService {
 		}
 	}
 
-	/** For testing: every subscription forgets which occurrences it was told about, so the next run announces them. */
-	public void forgetAnnounced() {
-		for (PushSubscriptionEntity entity : subscriptions.findAll()) {
-			entity.getNotified().clear();
-			subscriptions.save(entity);
-		}
-	}
-
 	/** One notification per subscription with new occurrences of its starred dishes. Returns how many were sent. */
 	public int notifyStarredMeals() {
 		List<PushSubscriptionEntity> all = subscriptions.findAll();

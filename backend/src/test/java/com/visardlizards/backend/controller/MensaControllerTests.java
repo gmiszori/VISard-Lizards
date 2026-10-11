@@ -24,7 +24,7 @@ class MensaControllerTests {
 	void listsAllMensas() throws Exception {
 		mockMvc.perform(get("/api/mensas"))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.length()").value(39))
+				.andExpect(jsonPath("$.length()").value(37))
 				.andExpect(jsonPath("$[0].title").value("Alumni quattro Lounge"))
 				.andExpect(jsonPath("$[?(@.id == 'archimedes')].title").value("Archimedes"))
 				.andExpect(jsonPath("$[?(@.id == 'archimedes')].location").value("Gloriastrasse 37/39, 8092 Zürich"))

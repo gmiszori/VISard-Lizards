@@ -7,9 +7,9 @@ export interface Profile {
   lang: 'de' | 'en';
   campus: CampusId;
   campusSecondary: CampusId[];
-  theme: 'light' | 'dark';
+  theme: 'light' | 'dark' | 'system';
   diet: 'omnivore' | 'flexitarian' | 'pescetarian' | 'vegetarian' | 'vegan' | 'carnivore';
-  hard: ('no_pork' | 'halal' | 'kosher' | 'lactose_free' | 'gluten_free' | 'nut_free')[];
+  hard: ('no_pork' | 'lactose_free' | 'gluten_free' | 'nut_free')[];
   soft: string[];
   dislikes: string[];
   priority: ('taste' | 'price' | 'speed' | 'health')[];
@@ -22,11 +22,11 @@ export interface Profile {
   starredMeals?: string[];
 }
 export const DIETS: Profile['diet'][] = ['omnivore', 'vegan', 'vegetarian', 'carnivore'];
-export const HARD: Profile['hard'] = ['no_pork', 'halal', 'kosher', 'lactose_free', 'gluten_free', 'nut_free'];
+export const HARD: Profile['hard'] = ['no_pork', 'lactose_free', 'gluten_free', 'nut_free'];
 export const PRIORITIES: Profile['priority'] = ['taste', 'price', 'speed', 'health'];
 export const TIERS: Profile['priceTier'][] = ['student', 'worker', 'external'];
 
-export function defaults(campus: CampusId, lang: Profile['lang'] = 'en', theme: Profile['theme'] = 'light'): Profile {
+export function defaults(campus: CampusId, lang: Profile['lang'] = 'en', theme: Profile['theme'] = 'system'): Profile {
   return { v: 1, lang, campus, campusSecondary: [], theme, diet: 'omnivore', hard: [], soft: [], dislikes: [],
     priority: [...PRIORITIES], priceTier: 'student', maxPrice: null, priceMode: 'soft',
     lunchTime: null, notifyDaily: false, mensaRatings: [] };

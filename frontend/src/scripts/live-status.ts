@@ -7,9 +7,10 @@
  * Elements opt in with data-live="status | hours | crowd | open-count" and
  * data-live-id="<canteen id>".
  */
-import { appNow, CLOCK_EVENT } from '../time/clock';
+import { appNow, CLOCK_EVENT, zurichClock, type Weekday } from '../time/clock';
+import { readPreferences } from '../preferences/state';
+import { canShowCanteen } from '../preferences/canteenVisibility';
 
-type Weekday = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
 interface LiveInfo {
   temporarilyClosed: boolean;
   windows: Record<Weekday, Array<[number, number]>>;
@@ -17,15 +18,9 @@ interface LiveInfo {
 }
 
 const data = JSON.parse(document.querySelector('#live-data')?.textContent || '{}') as Record<string, LiveInfo>;
-const WEEKDAYS: Weekday[] = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 const hhmm = (min: number) => `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
 
-function zurichNow(): { weekday: Weekday; minutes: number } {
-  const parts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Zurich', weekday: 'short', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(appNow());
-  const get = (type: string) => parts.find((part) => part.type === type)?.value ?? '';
-  const weekday = WEEKDAYS.find((day) => day === get('weekday').toLowerCase().slice(0, 3)) ?? 'mon';
-  return { weekday, minutes: (Number(get('hour')) % 24) * 60 + Number(get('minute')) };
-}
+const zurichNow = () => zurichClock(appNow());
 
 function stateOf(info: LiveInfo, now: { weekday: Weekday; minutes: number }) {
   const windows = info.windows[now.weekday] ?? [];
@@ -65,7 +60,7 @@ function refresh(): boolean {
       if (card) card.dataset.isOpen = String(state.isOpen);
       if (!seen.has(id)) {
         seen.add(id);
-        if (state.isOpen) openCount++;
+        if (state.isOpen && canShowCanteen(id, readPreferences().priceTier)) openCount++;
       }
     } else if (el.dataset.live === 'hours' && el.textContent !== state.hours) {
       el.textContent = state.hours;

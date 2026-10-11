@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { addDays, isIsoDate, isWeekend, menuDateCandidates, pickSampleMenuDate, weekdayIndex, wantedMenuDate } from './menuDate.ts';
+import { addDays, defaultService, isIsoDate, isWeekend, latestToday, menuDateCandidates, menuDateNotice, nearestMenuDay, pickSampleMenuDate, requestedMenuDate, weekdayIndex, wantedMenuDate } from './menuDate.ts';
 
 // 2026-10-10 is a Saturday.
 test('weekday numbers and weekend detection', () => {
@@ -97,4 +97,61 @@ test('selectableMenuDays: weekdays from the wanted day up to the data, plus the 
   // a shown day before the range (backend fallback) is included
   assert.deepEqual(selectableMenuDays('2026-10-10', '2026-10-09', '2026-10-09'), ['2026-10-09']);
   assert.equal(selectableMenuDays('2026-10-12', '2026-10-12', '2026-12-31', 3).length, 3);
+});
+
+test('latestToday never goes back to an older backend date', () => {
+  assert.equal(latestToday('2026-10-07', '2026-10-10'), '2026-10-10'); // backend lags: the real date wins
+  assert.equal(latestToday('2026-10-12', '2026-10-10'), '2026-10-12'); // backend ahead (e.g. its next service day): kept
+  assert.equal(latestToday('2026-10-10', '2026-10-10'), '2026-10-10');
+  assert.equal(latestToday('garbage', '2026-10-10'), '2026-10-10');
+  assert.equal(latestToday('2026-10-07', 'garbage'), '2026-10-07');
+  // a Saturday with a lagging backend now asks for Monday's menu, not Wednesday's
+  assert.equal(wantedMenuDate(latestToday('2026-10-07', '2026-10-10')), '2026-10-12');
+});
+
+test('nearestMenuDay sends a weekend or out-of-range date to the next menu day, else the last one', () => {
+  const days = ['2026-10-07', '2026-10-08', '2026-10-09', '2026-10-12'];
+  assert.equal(nearestMenuDay('2026-10-10', days), '2026-10-12'); // Saturday -> Monday
+  assert.equal(nearestMenuDay('2026-10-11', days), '2026-10-12'); // Sunday -> Monday
+  assert.equal(nearestMenuDay('2026-10-13', days), '2026-10-12'); // after the data -> last day
+  assert.equal(nearestMenuDay('2026-01-01', days), '2026-10-07'); // before the data -> first day
+  assert.equal(nearestMenuDay('2026-02-31', days), null); // not a real date
+  assert.equal(nearestMenuDay('2026-10-10', []), null);
+});
+
+test('the default Lunch / Dinner pill follows the menu shown, not just the clock', () => {
+  // Saturday night 2026-10-10 shows Monday's menu: lunch, not Monday's dinner.
+  assert.equal(defaultService('2026-10-12', '2026-10-10', '21:30'), 'lunch');
+  assert.equal(defaultService('2026-10-12', '2026-10-10', '09:00'), 'lunch');
+  // A weekday's menu: lunch until 15:00, dinner after.
+  assert.equal(defaultService('2026-10-13', '2026-10-13', '14:59'), 'lunch');
+  assert.equal(defaultService('2026-10-13', '2026-10-13', '15:00'), 'dinner');
+  // Another day picked ahead in the evening still opens on lunch.
+  assert.equal(defaultService('2026-10-14', '2026-10-13', '19:00'), 'lunch');
+});
+
+test('replacement menu notices name the requested and shown dates and explain weekends', () => {
+  assert.match(menuDateNotice('2026-10-11', '2026-10-12')!,
+    /^No weekend menu is available for Sunday,? 11 October 2026\. Showing Monday,? 12 October 2026\.$/);
+  for (const requested of ['2026-01-01', '2027-01-01']) {
+    const message = menuDateNotice(requested, '2026-10-12')!;
+    assert.match(message, /No menu is available/);
+    assert.match(message, /January/);
+    assert.match(message, /Showing Monday,? 12 October 2026/);
+  }
+  assert.match(menuDateNotice('2026-10-11', '2026-10-12', 'de')!, /kein Wochenendmenü.*Montag/);
+  for (const date of ['2026-10-12', 'invalid', '2026-02-31']) {
+    assert.equal(menuDateNotice(date, '2026-10-12'), null);
+  }
+  assert.equal(menuDateNotice('2026-10-11', 'invalid'), null);
+});
+
+test('date notices follow explicit links and validate redirect context before using it', () => {
+  assert.equal(requestedMenuDate('/', '', '2026-10-11'), '2026-10-11');
+  assert.equal(requestedMenuDate('/day/2026-10-12', '', '2026-10-11'), '2026-10-12');
+  assert.equal(requestedMenuDate('/canteen/uzh-obere-mensa/2026-10-12/', '', '2026-10-11'), '2026-10-12');
+  assert.equal(requestedMenuDate('/day/2026-10-12', '?requestedDate=2026-10-10', '2026-10-11'), '2026-10-10');
+  for (const requested of ['wrong', '2026-02-31', '<script>']) {
+    assert.equal(requestedMenuDate('/day/2026-10-12', `?requestedDate=${encodeURIComponent(requested)}`, '2026-10-11'), '2026-10-12');
+  }
 });

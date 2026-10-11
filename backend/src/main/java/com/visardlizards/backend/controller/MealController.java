@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -128,7 +129,8 @@ public class MealController {
 	@ResponseStatus(HttpStatus.CREATED)
 	@Operation(summary = "Rate a meal", description = """
 			Saves a user's rating of a meal: 1-5 stars plus optional tags that say why. Users are identified
-			by the anonymous id the frontend keeps per device (`anon:` + UUID). Each user can rate each meal
+			by the trusted `X-User-Id` header set by the reverse proxy when present; otherwise the anonymous id
+			in the request is used for local development. Each user can rate each meal
 			once; a second rating returns 409. The result shows up in `GET /api/meals/{id}`.
 
 			Tags: `tasty`, `big-portion`, `small-portion`, `cold`, `too-salty`, `worth-it`.
@@ -144,18 +146,21 @@ public class MealController {
 	@ApiResponse(responseCode = "409", description = "This user already rated this meal")
 	public MealRatingDTO rateMeal(
 			@Parameter(description = "Meal id, e.g. `polyterrasse.2026-10-06.lunch.2`") @PathVariable String id,
+			@RequestHeader(name = "X-User-Id", required = false) @Nullable String trustedUserId,
 			@Valid @RequestBody MealRatingRequestDTO rating) {
 		Meal meal = mealService.getMeal(id);
-		Rating saved = mealService.rateMeal(id, rating.userId(), rating.stars(),
+		String userId = resolveUserId(trustedUserId, rating.userId());
+		Rating saved = mealService.rateMeal(id, userId, rating.stars(),
 				rating.tags() == null ? List.of() : rating.tags(), rating.source());
-		return new MealRatingDTO(meal.id(), meal.mensaId(), meal.date(), rating.userId(), saved.stars(), saved.tags(),
+		return new MealRatingDTO(meal.id(), meal.mensaId(), meal.date(), userId, saved.stars(), saved.tags(),
 				saved.createdAt(), saved.source());
 	}
 
 	@DeleteMapping("/{id}/ratings")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@Operation(summary = "Take back a meal rating", description = """
-			Deletes this user's rating of the meal ("undo"), so `avgRating` and `tagCounts` no longer count it and
+			Deletes this user's rating of the meal ("undo"). The trusted `X-User-Id` header set by the reverse proxy
+			takes precedence over the request parameter, so `avgRating` and `tagCounts` no longer count it and
 			the user can rate the meal again.
 			""")
 	@ApiResponse(responseCode = "204", description = "Deleted")
@@ -163,9 +168,19 @@ public class MealController {
 	@ApiResponse(responseCode = "404", description = "Unknown meal, or this user has not rated it")
 	public void unrateMeal(
 			@Parameter(description = "Meal id, e.g. `polyterrasse.2026-10-06.lunch.2`") @PathVariable String id,
+			@RequestHeader(name = "X-User-Id", required = false) @Nullable String trustedUserId,
 			@Parameter(description = "The anonymous user id the rating was saved with (`anon:` + UUID)")
 			@RequestParam @Pattern(regexp = "anon:[0-9a-fA-F-]{36}", message = "must be \"anon:\" followed by a UUID") String userId) {
-		mealService.unrateMeal(id, userId);
+		mealService.unrateMeal(id, resolveUserId(trustedUserId, userId));
+	}
+
+	private String resolveUserId(@Nullable String trustedUserId, String fallbackUserId) {
+		if (trustedUserId == null) return fallbackUserId;
+		String userId = trustedUserId.trim();
+		if (userId.isEmpty() || userId.length() > 80) {
+			throw new IllegalArgumentException("Invalid X-User-Id header");
+		}
+		return userId;
 	}
 
 	private MealDetailDTO toDetail(Meal meal, PriceCategory priceCategory) {

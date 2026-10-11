@@ -28,10 +28,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: docker compose config --quiet
-      - run: docker compose up --build -d backend meal-scraper
+      - run: docker compose up --build -d backend meal-scraper frontend
       - name: Verify real MCP tools and private backend connection
         run: |
-          docker compose exec -T meal-scraper sh -c 'curl -fsS -H "Authorization: Bearer $MEAL_CONNECTOR_TOKEN" http://127.0.0.1:8091/api/ai/tools' > /tmp/mcp-tools.json
+          # The scraper needs a few seconds to start listening after "up -d"; retry like the backend check below.
+          for attempt in $(seq 1 60); do
+            if docker compose exec -T meal-scraper sh -c 'curl -fsS -H "Authorization: Bearer $MEAL_CONNECTOR_TOKEN" http://127.0.0.1:8091/api/ai/tools' > /tmp/mcp-tools.json; then
+              break
+            fi
+            sleep 2
+          done
           python3 -c 'import json; assert {t["name"] for t in json.load(open("/tmp/mcp-tools.json"))["tools"]} == {"scrape_meals", "discover_menu_sources", "read_menu_source"}'
           for attempt in $(seq 1 60); do
             if docker compose exec -T meal-scraper curl -fsS http://backend:8080/api/health; then
@@ -41,8 +47,24 @@ jobs:
             sleep 2
           done
           exit 1
+      - name: Verify frontend and proxied backend health
+        run: |
+          for attempt in $(seq 1 60); do
+            if curl -fsS http://localhost:8080/ > /tmp/frontend.html; then
+              break
+            fi
+            sleep 2
+          done
+          grep -q 'Campus canteens' /tmp/frontend.html
+          for attempt in $(seq 1 60); do
+            if curl -fsS http://localhost:8080/api/health > /tmp/frontend-api-health.json; then
+              break
+            fi
+            sleep 2
+          done
+          grep -Eq '"status"[[:space:]]*:[[:space:]]*"UP"' /tmp/frontend-api-health.json
       - if: always()
-        run: docker compose logs --tail=100 backend meal-scraper
+        run: docker compose logs --tail=100 backend meal-scraper frontend
       - if: always()
         run: docker compose down
 
@@ -74,7 +96,7 @@ jobs:
           version: 11.25.0
       - uses: actions/setup-node@v4
         with:
-          node-version: '22.12.0'
+          node-version: '22.13.0'
           cache: pnpm
           cache-dependency-path: frontend/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile

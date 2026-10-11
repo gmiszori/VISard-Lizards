@@ -1,5 +1,5 @@
 ---
-import { CAMPUSES, MENSAS } from '../data/canteens';
+import { MENSAS } from '../data/canteens';
 import type { MensaPlace } from './locate';
 import type { MensaHours } from './visits';
 
@@ -7,15 +7,20 @@ import type { MensaHours } from './visits';
 const places: MensaPlace[] = MENSAS.flatMap((m) => m.coordinates
   ? [{ id: m.id, name: m.name, campus: m.campusId, lat: m.coordinates.lat, lng: m.coordinates.lng }] : []);
 const hours: MensaHours[] = MENSAS.map(({ id, temporarilyClosed, openingHours, closures }) => ({ id, temporarilyClosed, openingHours, closures }));
-const campusNames = Object.fromEntries(CAMPUSES.map((c) => [c.id, c.name]));
 ---
 <div class="near-me" data-near-me>
   <button class="filter-btn near-me-toggle" type="button" data-near-me-toggle aria-pressed="false">
     <span aria-hidden="true">📍</span> <span data-near-me-label>Sort by distance</span>
   </button>
   <p class="near-me-status" data-near-me-status role="status" aria-live="polite" hidden></p>
+  <dialog class="near-me-dialog" data-near-me-dialog aria-labelledby="near-me-dialog-title" aria-describedby="near-me-dialog-copy">
+    <h2 id="near-me-dialog-title" data-near-me-copy="dialogTitle">Sort by distance</h2>
+    <p id="near-me-dialog-copy" data-near-me-copy="dialogBody">Use your location to put nearby canteens first. It stays on this device.</p>
+    <label class="near-me-remember"><input type="checkbox" data-near-me-remember /><span data-near-me-copy="rememberLabel">Do this automatically when I open the overview</span></label>
+    <div class="near-me-dialog-actions"><button type="button" data-near-me-cancel data-near-me-copy="cancel">Cancel</button><button type="button" data-near-me-confirm data-near-me-copy="confirm">Use my location</button></div>
+  </dialog>
 </div>
-<script type="application/json" data-near-me-data is:inline set:html={JSON.stringify({ places, hours, campusNames }).replace(/</g, '\\u003c')} />
+<script type="application/json" data-near-me-data is:inline set:html={JSON.stringify({ places, hours }).replace(/</g, '\\u003c')} />
 <script>
   import { mountNearMe } from './near-me.ts';
   mountNearMe();
@@ -23,7 +28,18 @@ const campusNames = Object.fromEntries(CAMPUSES.map((c) => [c.id, c.name]));
 <style>
   .near-me{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 14px}
   .near-me-toggle[aria-pressed=true]{background:var(--green);border-color:var(--green);color:#fff}
+  :global(:root[data-theme="dark"]) .near-me-toggle[aria-pressed=true]{background:#26775b;border-color:#26775b;color:#fff}
   .near-me-toggle:disabled{opacity:.6;cursor:progress}
   .near-me-status{margin:0;color:var(--muted);font-size:13px;flex:1 1 220px}
-  :global(.distance-chip){border-radius:100px;padding:4px 8px;background:#ffffff2e;color:inherit;font-size:10px;font-weight:700;white-space:nowrap;backdrop-filter:blur(4px)}
+  :global(.distance-chip){border-radius:100px;padding:4px 8px;background:#fffffff0;color:#245c43;font-size:10px;font-weight:700;white-space:nowrap}
+  .near-me-dialog{width:min(420px,calc(100vw - 32px));max-width:none;margin:auto;padding:22px;border:1px solid var(--line);border-radius:12px;background:var(--paper);color:var(--ink);box-shadow:0 18px 50px #0003}
+  .near-me-dialog::backdrop{background:#0b1f18a8}
+  .near-me-dialog h2{margin:0 0 8px;font:800 19px Manrope,sans-serif}
+  .near-me-dialog p{margin:0 0 16px;color:var(--muted);font-size:13px;line-height:1.5}
+  .near-me-remember{display:flex;align-items:flex-start;gap:10px;font-size:13px;line-height:1.4;cursor:pointer}
+  .near-me-remember input{width:18px;height:18px;margin:0;flex:0 0 18px;accent-color:var(--green)}
+  .near-me-dialog-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
+  .near-me-dialog-actions button{min-height:44px;padding:8px 13px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);font:700 13px 'DM Sans',sans-serif;cursor:pointer}
+  .near-me-dialog-actions [data-near-me-confirm]{border-color:var(--green);background:var(--green);color:white}
+  .near-me-dialog button:focus-visible,.near-me-remember input:focus-visible{outline:3px solid #7eb594;outline-offset:2px}
 </style>

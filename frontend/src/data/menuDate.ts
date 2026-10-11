@@ -37,6 +37,17 @@ export function addDays(iso: string, days: number): string | null {
   return date ? new Date(date.getTime() + days * DAY_MS).toISOString().slice(0, 10) : null;
 }
 
+/**
+ * "Today" for choosing the menu day: the later of the backend's date and the real date. A backend whose clock or
+ * data import lags behind (it reported Wednesday on a Saturday) must not make three-day-old menus "today's menu".
+ * Anything that is not a real date is ignored; if neither is valid the backend's value is returned unchanged.
+ */
+export function latestToday(backendToday: string, realToday: string): string {
+  if (!parse(realToday)) return backendToday;
+  if (!parse(backendToday)) return realToday;
+  return backendToday >= realToday ? backendToday : realToday;
+}
+
 /** Today on weekdays, the next Monday on Saturday and Sunday. Invalid input is returned unchanged. */
 export function wantedMenuDate(today: string): string {
   const day = weekdayIndex(today);
@@ -63,6 +74,39 @@ export function selectableMenuDays(today: string, menuDate: string, dataTo: stri
 }
 
 /**
+ * Where to send a visitor who asked for `date` (a link, a bookmark) when there is no page for it, e.g. a weekend:
+ * the next day that has menus, else the last one before. Null when the date is not a real date or no day exists.
+ */
+export function nearestMenuDay(date: string, days: readonly string[]): string | null {
+  if (!parse(date)) return null;
+  const sorted = [...new Set(days)].filter(day => parse(day) !== null).sort();
+  return sorted.find(day => day >= date) ?? sorted[sorted.length - 1] ?? null;
+}
+
+/** Preserve the date from an unavailable link; otherwise use the picked day or today's date. */
+export function requestedMenuDate(pathname: string, search: string, today: string): string {
+  const requested = new URLSearchParams(search).get('requestedDate');
+  const picked = /^\/(?:day|canteen\/[^/]+)\/(\d{4}-\d{2}-\d{2})\/?$/.exec(pathname)?.[1];
+  return isIsoDate(requested) ? requested : isIsoDate(picked) ? picked : today;
+}
+
+/** A different menu day must be explained, including when a weekend has no menu. */
+export function menuDateNotice(requested: string, shown: string, language: 'en' | 'de' = 'en'): string | null {
+  if (!isIsoDate(requested) || !isIsoDate(shown) || requested === shown) return null;
+  const format = new Intl.DateTimeFormat(language === 'de' ? 'de-CH' : 'en-GB', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC',
+  });
+  const from = format.format(new Date(`${requested}T12:00:00Z`));
+  const to = format.format(new Date(`${shown}T12:00:00Z`));
+  if (language === 'de') return isWeekend(requested)
+    ? `Für ${from} ist kein Wochenendmenü verfügbar. Wir zeigen ${to}.`
+    : `Für ${from} ist kein Menü verfügbar. Wir zeigen ${to}.`;
+  return isWeekend(requested)
+    ? `No weekend menu is available for ${from}. Showing ${to}.`
+    : `No menu is available for ${from}. Showing ${to}.`;
+}
+
+/**
  * Dates to try in order: the wanted day, then the backend's suggestion (no duplicates).
  * The first one with meals wins; if none has meals the last one is shown (an honest empty menu).
  */
@@ -84,4 +128,13 @@ export function pickSampleMenuDate(dates: readonly string[], today: string): str
   }
   if (sorted.includes(today)) return today;
   return earlier[earlier.length - 1] ?? sorted[0] ?? today; // before all data: its first day, like the backend
+}
+
+/**
+ * Which Lunch / Dinner pill is preselected when the visitor has not chosen one. Dinner only when the page shows
+ * today's menu and lunch is over; any other day (the coming Monday on a weekend night, a day picked ahead) opens on
+ * lunch, which is what people plan for. `time` is Zurich `HH:MM`.
+ */
+export function defaultService(menuDate: string, today: string, time: string): 'lunch' | 'dinner' {
+  return menuDate === today && time >= '15:00' ? 'dinner' : 'lunch';
 }

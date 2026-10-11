@@ -8,18 +8,17 @@ interface Props {
   days: string[];
   /** The day shown on this page. */
   menuDate: string;
-  today: string;
   /** true on a day page (the visitor picked the day). */
   chosenDay: boolean;
   /** Set on a canteen page: day links stay on this canteen. */
   canteenId?: string;
 }
-const { days, menuDate, today, chosenDay, canteenId } = Astro.props;
+const { days, menuDate, chosenDay, canteenId } = Astro.props;
 const href = (day: string) => (canteenId ? `/canteen/${encodeURIComponent(canteenId)}/${day}` : `/day/${day}`);
 const label = (day: string) => new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', timeZone: 'UTC' }).format(new Date(`${day}T12:00:00Z`));
 const shownDays = days.includes(menuDate) ? days : [...days, menuDate].sort();
 ---
-<div class="day-picker" data-day-picker data-picker-date={menuDate} data-today={today} data-chosen-day={String(chosenDay)}
+<div class="day-picker" data-day-picker data-picker-date={menuDate} data-chosen-day={String(chosenDay)}
   data-days={JSON.stringify(days)} data-href-base={canteenId ? `/canteen/${encodeURIComponent(canteenId)}/` : '/day/'}>
   <nav class="day-picker-days" aria-label="Menu day" data-day-picker-nav>
     {shownDays.map(day => (
@@ -61,10 +60,15 @@ const shownDays = days.includes(menuDate) ? days : [...days, menuDate].sort();
 </script>
 <script>
   import { activeSimulatedClock, appNow, CLOCK_EVENT, zurichParts } from '../time/clock';
-  import { wantedMenuDate } from '../data/menuDate';
+  import { defaultService, wantedMenuDate } from '../data/menuDate';
 
   const SERVICE_KEY = 'campuseats-service-filter';
   const root = document.querySelector<HTMLElement>('[data-day-picker]');
+  const daysNav = root?.querySelector<HTMLElement>('[data-day-picker-nav]');
+  const updateScrollHint = () => daysNav?.classList.toggle('has-more-days',
+    daysNav.scrollWidth - daysNav.clientWidth - daysNav.scrollLeft > 2);
+  daysNav?.addEventListener('scroll', updateScrollHint, { passive: true });
+  window.addEventListener('resize', updateScrollHint);
 
   // Lunch / dinner filter: an attribute on <html>; scripts/preferences.ts hides the other service's meals.
   function applyService(service: string) {
@@ -73,9 +77,12 @@ const shownDays = days.includes(menuDate) ? days : [...days, menuDate].sort();
     root?.querySelectorAll<HTMLButtonElement>('[data-service-choice]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.serviceChoice === service)));
     document.dispatchEvent(new Event('campuseats:service-filter-changed'));
   }
-  let saved = '';
-  try { saved = localStorage.getItem(SERVICE_KEY) ?? ''; } catch { /* storage blocked */ }
-  applyService(saved === 'lunch' || saved === 'dinner' ? saved : '');
+  // Not just the clock: Saturday night the page shows Monday's menu, which opens on Monday's lunch.
+  const serviceByTime = () => { const now = zurichParts(appNow()); return defaultService(root?.dataset.pickerDate ?? now.date, now.date, now.time); };
+  let saved: string | null = null;
+  try { saved = localStorage.getItem(SERVICE_KEY); } catch { /* storage blocked */ }
+  const initialService = saved === null ? serviceByTime() : saved === 'lunch' || saved === 'dinner' || saved === '' ? saved : serviceByTime();
+  applyService(initialService);
   root?.querySelectorAll<HTMLButtonElement>('[data-service-choice]').forEach(button => button.addEventListener('click', () => {
     const service = button.dataset.serviceChoice ?? '';
     try { localStorage.setItem(SERVICE_KEY, service); } catch { /* storage blocked */ }
@@ -86,7 +93,8 @@ const shownDays = days.includes(menuDate) ? days : [...days, menuDate].sort();
   function renderDays() {
     if (!root) return;
     const de = document.documentElement.lang === 'de';
-    const today = root.dataset.today;
+    // The real date (not the date the page was built for), so a pill is only "Today" when it is.
+    const today = zurichParts(appNow()).date;
     root.querySelectorAll<HTMLAnchorElement>('[data-day]').forEach(link => {
       const day = link.dataset.day!;
       link.textContent = day === today ? (de ? 'Heute' : 'Today')
@@ -94,6 +102,7 @@ const shownDays = days.includes(menuDate) ? days : [...days, menuDate].sort();
     });
     root.querySelector('[data-day-picker-nav]')?.setAttribute('aria-label', de ? 'Menütag' : 'Menu day');
     root.querySelector('[data-service-filter-group]')?.setAttribute('aria-label', de ? 'Mahlzeit' : 'Meal service');
+    updateScrollHint();
   }
 
   // Simulated time (developer tools): the default pages follow its menu day.
@@ -113,19 +122,28 @@ const shownDays = days.includes(menuDate) ? days : [...days, menuDate].sort();
     } catch { /* storage blocked */ }
   }));
 
+  // On a day the visitor picked that is not today, live status ("Closed" right now), the current crowd and today's hours say nothing
+  // about that day: hide them (CSS: [data-other-day] in styles/global.css).
+  function markOtherDay() {
+    if (!root) return;
+    const other = root.dataset.chosenDay === 'true' && root.dataset.pickerDate !== zurichParts(appNow()).date;
+    document.documentElement.toggleAttribute('data-other-day', other);
+  }
+
   renderDays();
+  markOtherDay();
   followSimulatedDay();
   document.addEventListener('languagechange', renderDays);
-  document.addEventListener(CLOCK_EVENT, followSimulatedDay);
+  document.addEventListener(CLOCK_EVENT, () => { renderDays(); markOtherDay(); followSimulatedDay(); });
 </script>
 <style>
   .day-picker{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;margin:0 0 14px}
   .day-picker-days,.day-picker-services{display:flex;flex-wrap:wrap;gap:6px}
-  .day-picker a,.day-picker button{display:inline-flex;align-items:center;min-height:36px;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--ink);font:700 13px 'DM Sans',sans-serif;text-decoration:none;cursor:pointer;white-space:nowrap}
+  .day-picker a,.day-picker button{display:inline-flex;align-items:center;min-height:44px;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--ink);font:700 13px 'DM Sans',sans-serif;text-decoration:none;cursor:pointer;white-space:nowrap}
   .day-picker a:hover,.day-picker button:hover{border-color:var(--green)}
   .day-picker a.is-selected,.day-picker button[aria-pressed="true"]{background:var(--green);border-color:var(--green);color:var(--paper)}
   .day-picker a:focus-visible,.day-picker button:focus-visible{outline:3px solid color-mix(in srgb,var(--green) 45%,transparent);outline-offset:2px}
   /* Page changes (day, canteen) cross-fade instead of flashing white, where the browser supports it. */
   @media (prefers-reduced-motion: no-preference) { @view-transition { navigation: auto; } }
-  @media(max-width:520px){.day-picker{gap:8px}.day-picker-days{flex-wrap:nowrap;overflow-x:auto;max-width:100%;padding-bottom:2px}}
+  @media(max-width:520px){.day-picker{gap:8px}.day-picker-days{flex-wrap:nowrap;overflow-x:auto;width:100%;min-width:0;padding-bottom:2px}.day-picker-days.has-more-days{mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent);-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent)}}
 </style>

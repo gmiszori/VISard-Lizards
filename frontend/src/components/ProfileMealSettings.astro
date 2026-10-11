@@ -1,0 +1,78 @@
+---
+import { HARD } from '../onboarding/profile';
+import { t, type Key } from '../onboarding/i18n';
+import { MEALS } from '../data/canteens';
+import { priceRange } from '../onboarding/priceRange';
+type Props = { section: 'exclusions' | 'budget' };
+const { section } = Astro.props;
+const ranges = {
+  student: priceRange(MEALS, 'student'),
+  worker: priceRange(MEALS, 'worker'),
+  external: priceRange(MEALS, 'external'),
+};
+---
+{section === 'exclusions' ? (
+  <div class="settings-subsection profile-meal-settings">
+    <h3 data-ob-i18n="never">{t('never')}</h3>
+    <div class="settings-hard-options">
+      {HARD.map(value => <label class="settings-hard-option">
+        <input type="checkbox" data-profile-hard value={value} />
+        <span data-ob-i18n={value as Key}>{t(value as Key)}</span>
+      </label>)}
+    </div>
+    <p class="settings-profile-hint" data-ob-i18n="hardHint">{t('hardHint')}</p>
+  </div>
+ ) : (
+  <div class="settings-subsection profile-meal-settings">
+    <h3 id="settings-budget-title" data-ob-i18n="budget">{t('budget')}</h3>
+    <div class="settings-budget-range">
+      <output data-profile-budget-value for="settings-budget" aria-live="polite"></output>
+      <input id="settings-budget" type="range" min="0" max="120" step="0.5" value="120" data-profile-budget
+        data-range-student-min={ranges.student.min} data-range-student-max={ranges.student.max + 0.5}
+        data-range-worker-min={ranges.worker.min} data-range-worker-max={ranges.worker.max + 0.5}
+        data-range-external-min={ranges.external.min} data-range-external-max={ranges.external.max + 0.5}
+        aria-labelledby="settings-budget-title" aria-describedby="settings-budget-hint" />
+      <div class="settings-budget-ends"><span data-profile-budget-min>CHF 0.00</span><span data-ob-i18n="noLimit">{t('noLimit')}</span></div>
+      <p class="settings-profile-hint" id="settings-budget-hint" data-ob-i18n="budgetHint">{t('budgetHint')}</p>
+    </div>
+    <div class="settings-price-mode">
+      <span class="settings-price-mode-label" data-ob-i18n="priceMode">{t('priceMode')}</span>
+      <div class="settings-price-mode-options" role="radiogroup" data-ob-aria="priceMode" aria-label={t('priceMode')}>
+        <label><input type="radio" name="profile-price-mode" value="soft" /><span data-ob-i18n="soft">{t('soft')}</span></label>
+        <label><input type="radio" name="profile-price-mode" value="hard" /><span data-ob-i18n="hard">{t('hard')}</span></label>
+      </div>
+    </div>
+  </div>
+)}
+
+<style>
+  .settings-subsection{margin-top:18px;padding-top:17px;border-top:1px solid var(--line)}
+  .settings-subsection h3{margin:0 0 11px;color:var(--ink);font:700 14px Manrope,sans-serif}
+  .settings-hard-options{display:flex;flex-wrap:wrap;gap:8px}
+  .settings-hard-option{position:relative;box-sizing:border-box;display:flex;align-items:center;min-width:0;min-height:44px;padding:8px 12px;border:1px solid var(--line);border-radius:13px;background:var(--paper);color:var(--ink);font-size:13px;line-height:1.35;cursor:pointer}
+  .settings-hard-option input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
+  .settings-hard-option small{color:var(--muted);font-size:10px;pointer-events:none}
+  .settings-hard-option:has(input:checked){border-color:#bd4450;background:#fff0f1;color:#9b2430}
+  :global(:root[data-theme="dark"]) .settings-hard-option:has(input:checked){border-color:#b95b65;background:#30191d;color:#ffb3b9}
+  .settings-hard-option:has(input:focus-visible){outline:3px solid #7eb594;outline-offset:2px}
+  .settings-profile-hint{margin:12px 0 0!important;color:var(--muted);font-size:11px;line-height:1.5}
+  .settings-budget-range{padding:0;border:0;background:transparent}
+  .settings-budget-range output{display:block;margin:0 0 4px;color:var(--green);font:800 21px Manrope,sans-serif}
+  .settings-budget-range input[type=range]{appearance:none;-webkit-appearance:none;width:100%;height:44px;margin:0;padding:0;border:0;background:transparent;accent-color:var(--green);cursor:pointer;touch-action:none}
+  .settings-budget-range input[type=range]:focus-visible{outline:3px solid #7eb594;outline-offset:3px}
+  .settings-budget-range input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:8px;background:linear-gradient(to right,var(--green) var(--budget-fill,100%),var(--line) var(--budget-fill,100%))}
+  .settings-budget-range input[type=range]::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;box-sizing:border-box;width:24px;height:24px;margin-top:-9px;border:3px solid var(--paper);border-radius:50%;background:var(--green);box-shadow:var(--shadow)}
+  .settings-budget-range input[type=range]::-moz-range-track{height:6px;border-radius:8px;background:linear-gradient(to right,var(--green) var(--budget-fill,100%),var(--line) var(--budget-fill,100%))}
+  .settings-budget-range input[type=range]::-moz-range-thumb{box-sizing:border-box;width:24px;height:24px;border:3px solid var(--paper);border-radius:50%;background:var(--green);box-shadow:var(--shadow)}
+  .settings-budget-ends{display:flex;justify-content:space-between;color:var(--muted);font-size:11px}
+  .settings-price-mode{display:grid;gap:8px;margin-top:14px}
+  .settings-price-mode-label{font:700 14px Manrope,sans-serif}
+  .settings-price-mode-options{display:flex;flex-wrap:wrap;gap:8px}
+  .settings-price-mode-options label{position:relative;cursor:pointer}
+  .settings-price-mode-options input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
+  .settings-price-mode-options span{display:flex;align-items:center;min-height:44px;padding:0 14px;border:1px solid var(--line);border-radius:12px;background:var(--paper);color:var(--ink);font-size:13px}
+  .settings-price-mode-options input:checked+span{border-color:var(--green);background:var(--lime);color:var(--green);font-weight:700;box-shadow:0 0 0 2px color-mix(in srgb,var(--green) 14%,transparent)}
+  .settings-price-mode-options input:focus-visible+span{outline:3px solid #7eb594;outline-offset:2px}
+  :global(:root[data-theme="dark"]) .settings-price-mode-options input:checked+span{background:var(--green);color:var(--paper);box-shadow:0 0 0 2px color-mix(in srgb,var(--green) 28%,transparent)}
+  @media(max-width:700px){.settings-subsection{margin-top:15px;padding-top:15px}.settings-hard-option{flex:1 1 auto}}
+</style>

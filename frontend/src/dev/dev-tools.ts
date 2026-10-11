@@ -5,13 +5,11 @@ import { getPositionFix, LocationUnavailableError } from '../location/geolocatio
 import { locateUser, type MensaPlace, type PositionFix, type UserLocation } from '../location/locate.ts';
 import { readVisits, VISITS_KEY } from '../location/visits.ts';
 import { mountCrowdMockPanel, renderCrowdMockPanel } from './crowd-mock-panel.ts';
-import { appNow, CLOCK_EVENT } from '../time/clock.ts';
+import { appNow, CLOCK_EVENT, minutesOfDay, type Weekday } from '../time/clock.ts';
 import { mountClockPanel, renderClockPanel } from './clock-panel.ts';
-import { mountPushPanel } from './push-panel.ts';
 import { CROWD_MOCK_KEY } from '../crowd/survey-mock.ts';
 import { LAST_REPORT_KEY } from '../crowd/survey-logic.ts';
 
-type Weekday = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
 interface DevMensa {
   id: string;
   name: string;
@@ -35,8 +33,6 @@ interface DevData {
   mensas: DevMensa[];
 }
 
-const WEEKDAYS: Weekday[] = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
-const toMin = (hhmm: string) => Number(hhmm.slice(0, 2)) * 60 + Number(hhmm.slice(3, 5));
 
 let mounted = false;
 let lastFix: PositionFix | null = null;
@@ -62,7 +58,7 @@ function zurichNow(now = appNow()): { date: string; weekday: Weekday; minutes: n
     hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23',
   }).formatToParts(now);
   const get = (type: string) => parts.find((part) => part.type === type)?.value ?? '';
-  const weekday = WEEKDAYS.find((day) => day === get('weekday').toLowerCase().slice(0, 3)) ?? 'mon';
+  const weekday = get('weekday').toLowerCase().slice(0, 3) as Weekday;
   const minutes = Number(get('hour')) * 60 + Number(get('minute'));
   return { date: `${get('year')}-${get('month')}-${get('day')}`, weekday, minutes, label: `${get('year')}-${get('month')}-${get('day')} ${get('hour')}:${get('minute')}:${get('second')}` };
 }
@@ -70,9 +66,9 @@ function zurichNow(now = appNow()): { date: string; weekday: Weekday; minutes: n
 function liveState(mensa: DevMensa, now = zurichNow()) {
   const closedByDate = mensa.closures.some(closure => closure.from <= now.date && now.date <= closure.to);
   const windows = mensa.openingHours[now.weekday] ?? [];
-  const active = windows.find(window => toMin(window.open) <= now.minutes && now.minutes < toMin(window.close));
+  const active = windows.find(window => minutesOfDay(window.open) <= now.minutes && now.minutes < minutesOfDay(window.close));
   const isOpen = !mensa.temporarilyClosed && !closedByDate && Boolean(active);
-  const next = windows.find(window => toMin(window.open) > now.minutes);
+  const next = windows.find(window => minutesOfDay(window.open) > now.minutes);
   const windowText = active ? `${active.service} ${active.open}-${active.close}` : next ? `next ${next.service} ${next.open}-${next.close}` : windows.length ? windows.map(w => `${w.service} ${w.open}-${w.close}`).join(', ') : 'closed today';
   return { isOpen, windowText, closedByDate };
 }
@@ -231,7 +227,7 @@ function renderStorage(root: HTMLElement) {
     ['Storage', canUseStorage()],
     ['Preferences', safeJson(PREFERENCES_KEY)],
     ['Visits', visits.length ? JSON.stringify(visits, null, 2) : '[]'],
-    ['Near me', safeJson('campuseats-near-me')],
+    ['Distance sorting', document.querySelector('[data-near-me-toggle]')?.getAttribute('aria-pressed') ?? 'not on this page'],
     ['Rating state', safeJson('campuseats-meal-rating-state')],
     ['Favourites', safeJson('campuseats-favourites')],
     ['Crowd survey mock', safeJson(CROWD_MOCK_KEY)],
@@ -340,7 +336,6 @@ export function mountDevTools(): void {
   void checkPermission().then(renderAll);
   void pingBackend().then(renderAll);
   mountCrowdMockPanel(renderAll);
-  mountPushPanel();
   mountClockPanel(renderAll);
   document.addEventListener(CLOCK_EVENT, renderAll);
   renderAll();
@@ -353,6 +348,20 @@ export function mountDevTools(): void {
   document.querySelector('[data-dev-clear-visits]')?.addEventListener('click', () => {
     try { localStorage.removeItem(VISITS_KEY); } catch { /* ignore */ }
     renderAll();
+  });
+  document.querySelector<HTMLButtonElement>('[data-dev-reset-user]')?.addEventListener('click', async event => {
+    if (!window.confirm('Reset all UniEats data on this device and reload as a new user? Browser permissions remain unchanged.')) return;
+    const button = event.currentTarget as HTMLButtonElement;
+    button.disabled = true;
+    button.textContent = 'Resetting…';
+    try {
+      const { resetAsNewUser } = await import('../welcome/resetUser');
+      await resetAsNewUser();
+    } catch {
+      button.disabled = false;
+      button.textContent = 'Reset as new user';
+      window.alert('Reset failed. Your device data was not fully cleared.');
+    }
   });
   document.addEventListener('campuseats:preferences-applied', renderAll);
   document.addEventListener('campuseats:canteen-favourites-changed', renderAll);

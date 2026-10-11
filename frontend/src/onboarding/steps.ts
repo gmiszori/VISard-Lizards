@@ -3,7 +3,7 @@ import { syncChipSelect, mountChipSelect } from './chipSelect';
 import { mountRankList, renderRankList } from './rankList';
 import { mountBudgetSlider } from './budgetSlider';
 import { t, translate, type Key } from './i18n';
-import { pickMensas } from './pickMensas';
+import { eligibleRatingMensas, pickMensas } from './pickMensas';
 import type { MensaRating, Profile } from './profile';
 import type { OnboardingStore } from './onboardingStore';
 import type { RecommendationMeal, RecommendationMensa } from './pickTodaysDish';
@@ -24,7 +24,7 @@ export interface Context {
   /** Go to the next step, or finish on the last one (like the Next/Finish button). */
   advance(): void;
 }
-interface Step { id: string; titleKey: Key; skippable: boolean; mount(root: HTMLElement, ctx: Context): () => void }
+interface Step { id: string; titleKey: Key; mount(root: HTMLElement, ctx: Context): () => void }
 
 const sync = (root: HTMLElement, name: string, values: string[]) => {
   const group = root.querySelector<HTMLElement>(`[data-chip-group="${name}"]`);
@@ -63,8 +63,6 @@ function mountTheme(root: HTMLElement, ctx: Context) {
   mountChipSelect(root, ({ values }) => {
     const theme = values[0] as Profile['theme'];
     ctx.update({ theme });
-    document.documentElement.dataset.theme = theme;
-    try { localStorage.setItem('campuseats-theme', theme); } catch { /* the theme still applies for this visit */ }
   });
   return () => sync(root, 'theme', [ctx.store.state.profile.theme]);
 }
@@ -105,16 +103,16 @@ function mountRatings(root: HTMLElement, ctx: Context) {
   let rendered = '';
   mountChipSelect(rows, ({ name, values }) => {
     const mensaId = name.slice('rating:'.length);
-    ctx.update({ mensaRatings: [...ctx.store.state.profile.mensaRatings.filter(r => r.mensaId !== mensaId),
-      { mensaId, rating: Number(values[0]) as MensaRating }] });
+    const others = ctx.store.state.profile.mensaRatings.filter(r => r.mensaId !== mensaId);
+    // No value: the visitor took the rating back.
+    ctx.update({ mensaRatings: values.length ? [...others, { mensaId, rating: Number(values[0]) as MensaRating }] : others });
   });
   // "I haven't been to any of these" answers the step: no ratings, then continue (finish on the last step).
   root.querySelector('[data-no-ratings]')!.addEventListener('click', () => { ctx.update({ mensaRatings: [] }); ctx.advance(); });
   return () => {
     if (ctx.store.state.step !== steps.findIndex(step => step.id === 'ratings')) return;
     const p = ctx.store.state.profile;
-    const allowed = new Set([p.campus, ...p.campusSecondary]);
-    const eligible = ctx.data.mensas.filter(m => m.hasMenu && !m.temporarilyClosed && allowed.has(m.campusId));
+    const eligible = eligibleRatingMensas(ctx.data.mensas, p);
     const oldPicks = ctx.store.state.picks;
     if (!oldPicks.length || oldPicks.some(id => !eligible.some(m => m.id === id))) {
       ctx.store.setPicks(pickMensas(eligible, ctx.data.ratingCounts, p, Math.random).map(m => m.id));
@@ -153,22 +151,10 @@ function mountRatings(root: HTMLElement, ctx: Context) {
   };
 }
 export const steps: Step[] = [
-  { id: 'language', titleKey: 'languageTitle', skippable: true, mount: mountLanguage },
-  { id: 'campus', titleKey: 'campusTitle', skippable: true, mount: mountCampus },
-  { id: 'diet', titleKey: 'dietTitle', skippable: true, mount: mountDiet },
-  { id: 'theme', titleKey: 'themeTitle', skippable: true, mount: mountTheme },
-  { id: 'price', titleKey: 'priceTitle', skippable: true, mount: mountPrice },
-  { id: 'ratings', titleKey: 'ratingsTitle', skippable: true, mount: mountRatings },
+  { id: 'language', titleKey: 'languageTitle', mount: mountLanguage },
+  { id: 'campus', titleKey: 'campusTitle', mount: mountCampus },
+  { id: 'diet', titleKey: 'dietTitle', mount: mountDiet },
+  { id: 'theme', titleKey: 'themeTitle', mount: mountTheme },
+  { id: 'price', titleKey: 'priceTitle', mount: mountPrice },
+  { id: 'ratings', titleKey: 'ratingsTitle', mount: mountRatings },
 ];
-
-/** Skip resets this step to its documented defaults, including partially entered answers. */
-export function skipStep(id: string, initial: Profile): Partial<Profile> {
-  switch (id) {
-    case 'campus': return { campus: initial.campus, campusSecondary: [], mensaRatings: [] };
-    case 'diet': return { diet: initial.diet, hard: [] };
-    case 'theme': return { theme: initial.theme };
-    case 'price': return { priceTier: initial.priceTier, maxPrice: null, priceMode: 'soft', priority: [...initial.priority] };
-    case 'ratings': return { mensaRatings: [] };
-    default: return {};
-  }
-}

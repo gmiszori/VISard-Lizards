@@ -49,8 +49,9 @@ public class WebPushSender {
 	private final String subject;
 	private final List<String> extraHosts;
 	private final Clock clock;
+	// Apple's Web Push endpoint requires HTTP/2; other push services still work when HTTP/2 is preferred.
 	private final HttpClient http = HttpClient.newBuilder()
-			.version(HttpClient.Version.HTTP_1_1).connectTimeout(Duration.ofSeconds(10)).build();
+			.version(HttpClient.Version.HTTP_2).connectTimeout(Duration.ofSeconds(10)).build();
 
 	public WebPushSender(VapidKeys keys, @Value("${app.push.subject:mailto:unieats@example.com}") String subject,
 			@Value("${app.push.extra-hosts:}") List<String> extraHosts, Clock clock) {

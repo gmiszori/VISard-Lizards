@@ -13,8 +13,8 @@ const afternoon = new Date('2026-10-09T14:00:00+02:00');
 
 test('rating question offers only the mensa visited on the target day', () => {
   const candidates = visitCandidates(mensas, [
-    { mensaId: 'polyterrasse', date: '2026-10-09', service: 'lunch' },
-    { mensaId: 'polyterrasse', date: '2026-10-09', service: 'dinner' },
+    { mensaId: 'polyterrasse', date: '2026-10-09', service: 'lunch', at: new Date('2026-10-09T12:10:00+02:00').getTime() },
+    { mensaId: 'polyterrasse', date: '2026-10-09', service: 'dinner', at: new Date('2026-10-09T18:30:00+02:00').getTime() },
     { mensaId: 'archimedes', date: '2026-10-08', service: 'lunch' },
   ]);
   assert.deepEqual(getRatingPrompt(afternoon, candidates, state)?.mensaChoices.map(m => m.mensaId), ['polyterrasse']);

@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -120,6 +122,31 @@ class LiveMenuImportTests {
 		assertThat(mensaRepository.findMeals("polyterrasse", LocalDate.of(2026, 10, 5), LocalDate.of(2026, 10, 9)))
 				.hasSize(before)
 				.isNotEmpty();
+	}
+
+	@Test
+	void oneMensaWriteFailureDoesNotStopOtherMensas() {
+		EthMensaClient client = mock(EthMensaClient.class);
+		EthMenuMapper mapper = mock(EthMenuMapper.class);
+		MensaRepository repository = mock(MensaRepository.class);
+		when(repository.findAllMensas()).thenReturn(List.of());
+		when(client.fetchWeeklyRotaPages(any(), any())).thenReturn(List.of("{\"weekly-rota-array\":[]}"));
+		Meal broken = new Meal("broken.2026-10-12.lunch.1", "broken", MONDAY, "lunch", "Main", "main",
+				"Broken", List.of(), "unknown", null, List.of(), null, null);
+		Meal good = new Meal("good.2026-10-12.lunch.1", "good", MONDAY, "lunch", "Main", "main",
+				"Good", List.of(), "unknown", null, List.of(), null, null);
+		when(mapper.map(any(), any(), any(), eq(MONDAY), any())).thenReturn(List.of(broken, good));
+		when(mapper.map(any(), any(), any(), eq(MONDAY.plusWeeks(1)), any())).thenReturn(List.of());
+		doThrow(new IllegalStateException("database write failed"))
+				.when(repository).replaceMeals(eq("broken"), any(), any(), any());
+		Clock clock = Clock.fixed(MONDAY.atStartOfDay(ZoneId.of("Europe/Zurich")).toInstant(), ZoneId.of("Europe/Zurich"));
+
+		var result = new LiveMenuImportService(client, mapper, repository, clock, true).importEthMenus();
+
+		assertThat(result.weeks()).isEqualTo(2);
+		assertThat(result.mensas()).isEqualTo(1);
+		assertThat(result.meals()).isEqualTo(1);
+		verify(repository).replaceMeals(eq("good"), eq(MONDAY), eq(MONDAY.plusDays(6)), eq(List.of(good)));
 	}
 
 }

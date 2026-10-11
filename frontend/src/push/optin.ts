@@ -3,7 +3,7 @@
  * where to turn it off, before the browser's own permission prompt. Never shown again, whatever the answer.
  */
 import { API_URL } from '../data/api.ts';
-import { enablePush, markAsked, pushSupported, syncStarredDishes, wasAsked } from './push.ts';
+import { enablePush, markAsked, PushPermissionUnavailableError, PushSubscriptionUnavailableError, PushWorkerUnavailableError, pushSupported, syncStarredDishes, wasAsked } from './push.ts';
 import './push.css';
 
 export const pushCopy = {
@@ -13,6 +13,9 @@ export const pushCopy = {
     where: 'You can turn it off any time in Settings.',
     yes: 'Notify me', no: 'Not now',
     on: 'Notifications are on.', denied: 'Notifications are blocked in your browser settings.', failed: 'Could not turn on notifications. Try again in Settings.',
+    workerUnavailable: 'The notification service did not start. Reload and try again in Settings.',
+    subscriptionUnavailable: 'The browser push service did not respond. Check your connection and try again in Settings.',
+    permissionUnavailable: 'The browser did not finish the permission request. Check its prompt and try again in Settings.',
   },
   de: {
     title: 'Bescheid geben, wenn es wieder da ist?',
@@ -20,6 +23,9 @@ export const pushCopy = {
     where: 'Du kannst es jederzeit in den Einstellungen ausschalten.',
     yes: 'Benachrichtige mich', no: 'Jetzt nicht',
     on: 'Benachrichtigungen sind an.', denied: 'Benachrichtigungen sind in deinen Browser-Einstellungen blockiert.', failed: 'Benachrichtigungen konnten nicht eingeschaltet werden. Versuche es in den Einstellungen erneut.',
+    workerUnavailable: 'Der Benachrichtigungsdienst wurde nicht gestartet. Lade die Seite neu und versuche es in den Einstellungen erneut.',
+    subscriptionUnavailable: 'Der Push-Dienst des Browsers antwortet nicht. Prüfe die Verbindung und versuche es in den Einstellungen erneut.',
+    permissionUnavailable: 'Der Browser hat die Berechtigungsabfrage nicht abgeschlossen. Prüfe das Fenster und versuche es in den Einstellungen erneut.',
   },
 };
 export const pushText = () => pushCopy[document.documentElement.lang === 'de' ? 'de' : 'en'];
@@ -52,7 +58,11 @@ export async function askForPushOnce(announce: (message: string) => void): Promi
     try {
       const state = await enablePush();
       message = state === 'on' ? t.on : state === 'denied' ? t.denied : t.failed;
-    } catch { /* message stays "failed" */ }
+    } catch (error) {
+      if (error instanceof PushWorkerUnavailableError) message = t.workerUnavailable;
+      if (error instanceof PushSubscriptionUnavailableError) message = t.subscriptionUnavailable;
+      if (error instanceof PushPermissionUnavailableError) message = t.permissionUnavailable;
+    }
     close();
     announce(message);
   });

@@ -13,7 +13,8 @@ import { mensasSoldByWeight, withPriceUnits } from './priceUnits';
 import { compareMealServiceAndKind, prepareMenu, type DisplayMenuItem } from './menu-display';
 import { API_URL, apiGet, type BackendMealDetail } from './api';
 import { DataError, hasOnlyOnePriceCategory, mergePrices, parseMealList, parseMensas, parseMeta } from './validate';
-import { isIsoDate, menuDateCandidates, selectableMenuDays } from './menuDate';
+import { isIsoDate, latestToday, menuDateCandidates, selectableMenuDays } from './menuDate';
+import { zurichParts } from '../time/clock';
 
 /** A canteen as the pages show it. rating is null when nobody has rated it yet. */
 export type AppCanteen = Omit<Canteen, 'rating' | 'menu'> & { rating: number | null; menu: DisplayMenuItem[] };
@@ -59,7 +60,7 @@ const BY_WEIGHT = mensasSoldByWeight(MEALS);
 
 /** Today's date (YYYY-MM-DD) in Zurich. */
 function zurichToday(): string {
-  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Zurich', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+  return zurichParts(new Date()).date;
 }
 
 /** The bundled sample menu of one mensa on one day, in the same shape as the default sample menu. */
@@ -107,8 +108,10 @@ async function fetchAppData(date?: string): Promise<AppData> {
     // covers an older backend that suggests Friday). If there are no meals for that day, use the backend's suggestion.
     let menuDate = meta.menuDate;
     let meals: BackendMealDetail[] = [];
+    // The backend's "today" can lag behind the real date; never present an older day as today.
+    const today = latestToday(meta.today, zurichToday());
     // A day page shows exactly its day; otherwise the wanted day, falling back to the backend's suggestion.
-    for (const day of date ? [date] : menuDateCandidates(meta.today, meta.menuDate)) {
+    for (const day of date ? [date] : menuDateCandidates(today, meta.menuDate)) {
       menuDate = day;
       const parsed = parseMealList(await apiGet<unknown>(`/api/meals?date=${encodeURIComponent(day)}`));
       if (parsed.rejected) console.warn(`[campuseats] ${parsed.rejected} meal(s) for ${day} were skipped because the backend sent them in a form this page cannot read.`);
@@ -131,8 +134,8 @@ async function fetchAppData(date?: string): Promise<AppData> {
     return {
       source: 'backend',
       menuDate,
-      today: meta.today,
-      days: selectableMenuDays(meta.today, menuDate, meta.dataTo),
+      today,
+      days: selectableMenuDays(today, menuDate, meta.dataTo),
       chosenDay: date !== undefined,
       canteens: CANTEENS.map((canteen) => ({
         ...canteen,

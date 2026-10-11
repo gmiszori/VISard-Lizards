@@ -1,6 +1,6 @@
 export interface Preferences {
   vegan: boolean; vegetarian: boolean; meat: boolean; viewMode: 'standard' | 'compact' | 'list';
-  locations: string[]; openOnly: boolean; useAiVoiceSearch: boolean; priceTier: 'student' | 'worker' | 'external';
+  locations: string[]; openOnly: boolean; distanceDefault: boolean; useAiVoiceSearch: boolean; priceTier: 'student' | 'worker' | 'external';
   devMode: boolean;
 }
 export const PREFERENCES_KEY = 'campuseats-preferences';
@@ -19,9 +19,13 @@ export function normalizePreferences(value: unknown, profileTier: unknown = 'stu
   const valid = raw.filter((v): v is string => typeof v === 'string').map(v => legacy[v] ?? v).filter(v => ALL_CAMPUS_IDS.includes(v));
   const locations = raw.length && !valid.length ? [...ALL_CAMPUS_IDS] : [...new Set(valid)];
   const bool = (key: string, fallback: boolean) => typeof saved[key] === 'boolean' ? saved[key] as boolean : fallback;
-  return { vegan: bool('vegan', true), vegetarian: bool('vegetarian', true), meat: bool('meat', true),
+  // All three food categories off would hide every dish; an older save may hold that, so it means "all on".
+  const diets = { vegan: bool('vegan', true), vegetarian: bool('vegetarian', true), meat: bool('meat', true) };
+  if (!diets.vegan && !diets.vegetarian && !diets.meat) { diets.vegan = true; diets.vegetarian = true; diets.meat = true; }
+  return { ...diets,
     viewMode: isViewMode(saved.viewMode) ? saved.viewMode : bool('compact', false) ? 'compact' : 'standard',
     openOnly: bool('openOnly', false),
+    distanceDefault: bool('distanceDefault', false),
     useAiVoiceSearch: bool('useAiVoiceSearch', bool('useAiSearch', true)),
     priceTier: isPriceTier(saved.priceTier) ? saved.priceTier : isPriceTier(profileTier) ? profileTier : 'student',
     locations, devMode: bool('devMode', false) };
@@ -35,7 +39,10 @@ export function readPreferences(storage: Pick<Storage, 'getItem'> = localStorage
     const profileLocations = profile && typeof profile.campus === 'string'
       ? [profile.campus, ...(Array.isArray(profile.campusSecondary) ? profile.campusSecondary : [])]
       : undefined;
-    return normalizePreferences(saved, profile?.priceTier, profileLocations);
+    const preferences = normalizePreferences(saved, profile?.priceTier, profileLocations);
+    if (!(saved && typeof saved === 'object' && !Array.isArray(saved) && typeof (saved as Record<string, unknown>).distanceDefault === 'boolean') &&
+      storage.getItem('campuseats-near-me') === '1') preferences.distanceDefault = true;
+    return preferences;
   } catch { return normalizePreferences(null); }
 }
 export function readFavourites(storage: Pick<Storage, 'getItem'> = localStorage): string[] {

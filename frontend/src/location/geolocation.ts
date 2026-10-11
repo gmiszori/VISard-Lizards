@@ -1,9 +1,7 @@
 /**
- * Browser side of the user location: asks the Geolocation API for a fix and loads the mensa
- * coordinates from GET /api/mensas. The browser shows a permission prompt on the first call, so call
- * locateUserNow() after a user action (e.g. opening the rating card), not on page load.
+ * Browser side of the user location. Cafeteria coordinates must be supplied by the page;
+ * the device fix and nearest calculation never make a backend request.
  */
-import { API_URL, apiGet, type BackendMensa } from '../data/api.ts';
 import { locateUser, type MensaPlace, type PositionFix, type UserLocation } from './locate.ts';
 
 export type LocationError = 'unsupported' | 'denied' | 'unavailable' | 'timeout';
@@ -34,18 +32,7 @@ export function getPositionFix(
   });
 }
 
-/** Mensas with known coordinates, from the backend. */
-export function mensaPlaces(mensas: readonly BackendMensa[]): MensaPlace[] {
-  return mensas.flatMap(({ id, title, campus, coordinates }) =>
-    coordinates ? [{ id, name: title, campus, lat: coordinates.lat, lng: coordinates.lng }] : []);
-}
-
-export async function loadMensaPlaces(baseUrl = API_URL): Promise<MensaPlace[]> {
-  return mensaPlaces(await apiGet<BackendMensa[]>('/api/mensas', baseUrl));
-}
-
 /** Where the user is now. Rejects with LocationUnavailableError when there is no fix. */
-export async function locateUserNow(places?: readonly MensaPlace[], geolocation?: Geolocation): Promise<UserLocation> {
-  const [fix, resolvedPlaces] = await Promise.all([getPositionFix(geolocation), places ?? loadMensaPlaces()]);
-  return locateUser(fix, resolvedPlaces);
+export async function locateUserNow(places: readonly MensaPlace[], geolocation?: Geolocation): Promise<UserLocation> {
+  return locateUser(await getPositionFix(geolocation), places);
 }

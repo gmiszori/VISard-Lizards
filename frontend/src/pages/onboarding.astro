@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { CAMPUSES, MENSAS, MEALS, MENU_DATE } from '../data/canteens';
+import { CAMPUSES, LIVE_DATA, MENSAS, MEALS, MENU_DATE } from '../data/canteens';
+import { WEEKDAYS } from '../crowd/prediction';
 import ChipSelect from '../onboarding/components/ChipSelect.astro';
 import RankList from '../onboarding/components/RankList.astro';
 import RatingRow from '../onboarding/components/RatingRow.astro';
@@ -25,23 +26,29 @@ const bundledMeals = MEALS.filter(meal => meal.date === MENU_DATE && meal.kind =
   kind: meal.kind, service: meal.service, dietTag: meal.dietTag, allergens: meal.allergens,
   originDetail: meal.originDetail, components: meal.components, price: meal.price, nutrition: meal.nutrition,
 }));
+const menuWeekday = WEEKDAYS[(new Date(`${menuDate}T12:00:00Z`).getUTCDay() + 6) % 7]!;
 const payload = {
   campuses: CAMPUSES.map(({ id, name }) => ({ id, name })), menuDate,
-  mensas: MENSAS.map(({ id, name, campusId, hasMenu, temporarilyClosed }) => ({ id, name, campusId, temporarilyClosed,
-    hasMenu: live ? liveMeals.some(meal => meal.mensaId === id) : hasMenu })),
+  mensas: MENSAS.map(({ id, name, campusId, hasMenu, temporarilyClosed }) => {
+    const windows = LIVE_DATA[id]?.windows[menuWeekday];
+    return { id, name, campusId, temporarilyClosed,
+      // No service on the menu's weekday (or closed for good): the pick must not send anyone there.
+      closedOnMenuDay: temporarilyClosed || (windows !== undefined && windows.length === 0),
+      hasMenu: live ? liveMeals.some(meal => meal.mensaId === id) : hasMenu };
+  }),
   // TODO(backend): real rating counts. Current database ratings are synthetic.
   ratingCounts: Object.fromEntries(MENSAS.map(m => [m.id, m.rating.count])),
   ranges: Object.fromEntries(TIERS.map(tier => [tier, priceRange(live && liveMeals.length ? liveMeals : MEALS, tier)])),
   meals: live ? liveMeals : bundledMeals,
 };
 ---
-<BaseLayout title="Personalise your menu">
+<BaseLayout title="Personalise your menu" hideFooter>
   <div class="ob" id="onboarding">
     <div data-flow>
       <header class="ob-progress-header">
         <span class="eyebrow"><span data-ob-i18n="intro">{t('intro')}</span></span>
         <p class="ob-progress-label" data-progress-label aria-live="polite" aria-atomic="true"></p>
-        <progress data-progress max="6" value="1" aria-label="Onboarding progress"></progress>
+        <progress data-progress max="7" value="1" aria-label="Onboarding progress"></progress>
       </header>
       <div class="ob-content">
         <section data-step="language" hidden>
@@ -64,17 +71,17 @@ const payload = {
         <section data-step="diet" hidden>
           <h1 tabindex="-1" data-ob-i18n="dietTitle">{t('dietTitle')}</h1>
           <p class="ob-lead" data-ob-i18n="dietHint">{t('dietHint')}</p>
-          <ChipSelect name="diet" labelKey="diet" mode="single" options={keys(DIETS)} />
+          <ChipSelect name="diet" labelKey="diet" mode="single" className="ob-diet-choices"
+            options={DIETS.map(value => ({ value, key: value, descriptionKey: `dietDescription_${value}` as Key }))} />
           <div class="ob-constraints">
-            <ChipSelect name="hard" labelKey="never" options={HARD.map(value => ({ value, key: value,
-              notice: value === 'halal' || value === 'kosher' }))} />
+            <ChipSelect name="hard" labelKey="never" options={HARD.map(value => ({ value, key: value }))} />
             <p class="ob-note" data-ob-i18n="hardHint">{t('hardHint')}</p>
           </div>
         </section>
         <section data-step="theme" hidden>
           <h1 tabindex="-1" data-ob-i18n="themeTitle">{t('themeTitle')}</h1>
           <p class="ob-lead" data-ob-i18n="themeHint">{t('themeHint')}</p>
-          <ChipSelect name="theme" labelKey="themePreference" mode="single" options={[{ value: 'light', key: 'lightTheme' }, { value: 'dark', key: 'darkTheme' }]} />
+          <ChipSelect name="theme" labelKey="themePreference" mode="single" options={[{ value: 'system', key: 'systemTheme' }, { value: 'light', key: 'lightTheme' }, { value: 'dark', key: 'darkTheme' }]} />
         </section>
         <section data-step="price" hidden>
           <h1 tabindex="-1" data-ob-i18n="priceTitle">{t('priceTitle')}</h1>
@@ -100,8 +107,7 @@ const payload = {
       </div>
       <p class="ob-error" data-error role="alert" hidden></p>
       <footer class="ob-actions">
-        <div class="ob-secondary-actions"><button type="button" data-back class="ob-text-button" data-ob-i18n="back">{t('back')}</button><button type="button" data-skip class="ob-text-button" data-ob-i18n="skip">{t('skip')}</button></div>
-        <button type="button" class="ob-primary" data-next data-ob-i18n="next">{t('next')}</button>
+        <div class="ob-secondary-actions"><button type="button" data-back class="ob-text-button" data-ob-i18n="back">{t('back')}</button><button type="button" class="ob-primary" data-next data-ob-i18n="next">{t('next')}</button><button type="button" data-skip class="ob-text-button" data-ob-i18n="skip">{t('skip')}</button></div>
         <p class="ob-note" data-ob-i18n="saved">{t('saved')}</p>
       </footer>
     </div>
@@ -111,6 +117,7 @@ const payload = {
       <p class="ob-lead" data-ob-i18n="payoffHint">{t('payoffHint')}</p>
       <p class="ob-note"><MenuDate date={menuDate} today={app.today} variant="heading" /></p>
       <article class="ob-pick" data-pick hidden><p class="eyebrow" data-pick-mensa></p><h2 data-pick-title></h2><p data-pick-components></p><strong class="ob-pick-price" data-pick-price></strong><a class="ob-primary" data-pick-link data-ob-i18n="viewMensa">{t('viewMensa')}</a></article>
+      <p class="ob-note ob-pick-closed" data-pick-closed role="status" hidden data-ob-i18n="pickClosed">{t('pickClosed')}</p>
       <p class="ob-empty" data-pick-empty hidden data-ob-i18n="nothing">{t('nothing')}</p>
       <p class="ob-note" data-ob-i18n="payoffNotice">{t('payoffNotice')}</p>
       <p class="ob-note" role="status" data-save-note data-ob-i18n="notSaved" hidden>{t('notSaved')}</p>

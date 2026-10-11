@@ -14,7 +14,11 @@ class Food2050DetailsTest {
     private fun weeklyPage() = page(weekly, """["${'$'}","c",null,{"day":{"__typename":"OutletMenuCategoryCalendarRangeDay","from":{"dateLocal":"2026-10-05T00:00:00+02:00"},"menuItems":[{"id":"item1","detailUrl":"$detail","category":{"name":"Traditional"},"dish":{"name":"Soup","isVegan":true}}]}}]""")
     private fun detailPage(id: String = "item1") = page(detail, """["${'$'}","c",null,{"menuItem":{"id":"$id","dish":{"name":"Soup","description":"Full description","stats":{"energy":{"amount":123,"unit":"kcal"}},"ingredients":[{"name":"Lentils"}],"allergens":[{"allergen":{"name":"Sellerie"}}]},"prices":[{"amount":"6.9","currency":"CHF","priceCategory":{"name":"Studierende"}},{"amount":"9","currency":"CHF","priceCategory":{"name":"Mitarbeitende"}},{"amount":"13.5","currency":"CHF","priceCategory":{"name":"Externe"}}]}}]""")
     @Test fun weeklyGetsAllGroupPricesAndRawNutritionWithoutExtraMeals() {
-        val scraper = createScraper({ url -> if (url == weekly) weeklyPage() else { assertEquals(detail, url); detailPage() } })
+        val scraper = createScraper({ url -> when {
+            url == weekly -> weeklyPage()
+            url.contains("/menu/weekly") -> error("Future week not published")
+            else -> { assertEquals(detail, url); detailPage() }
+        } })
         val result = scraper.scrape(weekly)
         val meal = result.meals.single()
         assertEquals(3, meal.prices.size); assertEquals(MealPrice(6.9,"CHF","Studierende"), meal.price)
@@ -39,7 +43,12 @@ class Food2050DetailsTest {
     }
     @Test fun badOrUnavailableDetailsNeverOverwriteWeeklyDish() {
         for (wrongId in listOf(true,false)) {
-            val scraper = createScraper({ url -> if(url == weekly) weeklyPage() else if(wrongId) detailPage("other-item") else error("HTTP 503") })
+            val scraper = createScraper({ url -> when {
+                url == weekly -> weeklyPage()
+                url.contains("/menu/weekly") -> error("Future week not published")
+                wrongId -> detailPage("other-item")
+                else -> error("HTTP 503")
+            } })
             val result = scraper.scrape(weekly)
             assertEquals("Soup", result.meals.single().name); assertNull(result.meals.single().price)
             assertTrue(result.warnings.any { it.contains("Could not enrich") })

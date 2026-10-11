@@ -3,8 +3,12 @@
  * Levels are the backend's crowd report levels (backend/API.md, crowd-reports):
  * 1 empty, 2 quiet, 3 some queue, 4 busy, 5 packed.
  */
+import { zurichClock, type Weekday } from '../time/clock.ts';
+
+// Kept here for the callers and tests of this module; the implementation lives in time/clock.ts.
+export { zurichClock };
+export type { Weekday };
 export type CrowdLevel = 1 | 2 | 3 | 4 | 5;
-export const CROWD_LEVELS: readonly CrowdLevel[] = [1, 2, 3, 4, 5];
 
 /** The backend accepts one report per mensa and client every 5 minutes (app.rate-limit.crowd-report-window). */
 export const REPORT_COOLDOWN_MS = 5 * 60_000;
@@ -54,17 +58,8 @@ export function cooldownLeft(lastReportedAt: number | null, now: number): number
   return Math.max(0, lastReportedAt + REPORT_COOLDOWN_MS - now);
 }
 
-export type Weekday = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
 /** Opening windows per weekday in minutes since midnight, as in #live-data (src/data/canteens.ts LIVE_DATA). */
 export type OpeningWindows = Partial<Record<Weekday, Array<[number, number]>>>;
-
-/** Weekday and minutes since midnight in Zurich, independent of the device's time zone. */
-export function zurichClock(now: Date): { weekday: Weekday; minutes: number } {
-  const parts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Zurich', weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
-    .formatToParts(now);
-  const get = (type: string) => parts.find(p => p.type === type)?.value ?? '';
-  return { weekday: get('weekday').toLowerCase().slice(0, 3) as Weekday, minutes: Number(get('hour')) * 60 + Number(get('minute')) };
-}
 
 /** Reports only make sense while the mensa serves food. */
 export function isOpenAt(windows: OpeningWindows, temporarilyClosed: boolean, now: Date): boolean {
