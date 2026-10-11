@@ -52,11 +52,13 @@ function currentSearchMensaId() {
     ? null : nearestMensaId;
 }
 
-function searchStatus(message: string) {
+function searchStatus(message: string, voiceState?: RealtimeVoiceStatus) {
   const status = document.querySelector<HTMLElement>('#search-status');
   if (status) {
     status.textContent = message;
     status.hidden = !message;
+    if (voiceState) status.dataset.voiceState = voiceState;
+    else if (!message) delete status.dataset.voiceState;
   }
 }
 
@@ -498,6 +500,7 @@ voiceSearchButton?.addEventListener('click', () => {
       realtimeVoice.close();
       realtimeVoice = null;
       voiceSearchButton.setAttribute('aria-pressed', 'false');
+      delete voiceSearchButton.dataset.voiceState;
       voiceSearchButton.disabled = false;
       searchStatus('');
       return;
@@ -520,7 +523,8 @@ voiceSearchButton?.addEventListener('click', () => {
     applyPreferences();
     voiceSearchButton.disabled = true;
     voiceSearchButton.setAttribute('aria-pressed', 'true');
-    searchStatus(statusText('connecting'));
+    voiceSearchButton.dataset.voiceState = 'connecting';
+    searchStatus(statusText('connecting'), 'connecting');
     let assistantCaptionOpen = false;
     const captionDelta = (text: string) => {
       if (!voiceCaption) return;
@@ -542,7 +546,8 @@ voiceSearchButton?.addEventListener('click', () => {
     };
     const callbacks = {
       onStatus: (status: RealtimeVoiceStatus, detail?: string) => {
-        searchStatus(statusText(status, detail));
+        voiceSearchButton.dataset.voiceState = status;
+        searchStatus(statusText(status, detail), status);
         if (status === 'listening' || status === 'speaking' || status === 'thinking') voiceSearchButton.disabled = false;
         if (status === 'error') {
           realtimeVoice?.close();
@@ -554,7 +559,7 @@ voiceSearchButton?.addEventListener('click', () => {
       onUserText: userCaption,
       onAssistantText: captionDelta,
       onSearch: async (query: string) => {
-        searchStatus(document.documentElement.lang === 'de' ? 'Suche nach passenden Gerichten …' : 'Finding matching dishes…');
+        searchStatus(document.documentElement.lang === 'de' ? 'Suche nach passenden Gerichten …' : 'Finding matching dishes…', 'thinking');
         const explicitDate = /\b(today|tonight|tomorrow|yesterday|monday|tuesday|wednesday|thursday|friday|saturday|sunday|heute|heute abend|morgen|gestern|montag|dienstag|mittwoch|donnerstag|freitag|samstag|sonntag)\b|\b\d{1,2}[./-]\d{1,2}(?:[./-]\d{2,4})?\b/iu.test(query);
         try {
           const [response, allMensas] = await Promise.all([
@@ -639,8 +644,9 @@ voiceSearchButton?.addEventListener('click', () => {
       } catch (error) {
         voiceSearchButton.disabled = false;
         voiceSearchButton.setAttribute('aria-pressed', 'false');
+        voiceSearchButton.dataset.voiceState = 'error';
         const detail = error instanceof ApiError ? error.message : (error instanceof Error ? error.message : 'Connection failed.');
-        searchStatus(document.documentElement.lang === 'de' ? `Sprachsuche fehlgeschlagen: ${detail}` : `Voice search failed: ${detail}`);
+        searchStatus(document.documentElement.lang === 'de' ? `Sprachsuche fehlgeschlagen: ${detail}` : `Voice search failed: ${detail}`, 'error');
       }
     })();
     return;
@@ -695,7 +701,8 @@ voiceSearchButton?.addEventListener('click', () => {
     let retryWithoutHints = false;
     recognition.onstart = () => {
       voiceSearchButton.setAttribute('aria-pressed', 'true');
-      searchStatus(document.documentElement.lang === 'de' ? 'Höre zu … Sag, wonach du suchst.' : 'Listening… say what you are looking for.');
+      voiceSearchButton.dataset.voiceState = 'listening';
+      searchStatus(document.documentElement.lang === 'de' ? 'Höre zu … Sag, wonach du suchst.' : 'Listening… say what you are looking for.', 'listening');
     };
     recognition.onresult = (event) => {
       const finalResult = Array.from({ length: event.results.length - event.resultIndex }, (_, index) =>
@@ -725,12 +732,15 @@ voiceSearchButton?.addEventListener('click', () => {
     };
     recognition.onend = () => {
       voiceSearchButton.setAttribute('aria-pressed', 'false');
+      delete voiceSearchButton.dataset.voiceState;
+      searchStatus('');
       if (retryWithoutHints) startRecognition(false);
     };
     try { recognition.start(); }
     catch {
       voiceSearchButton.setAttribute('aria-pressed', 'false');
-      searchStatus(document.documentElement.lang === 'de' ? 'Sprachsuche konnte nicht gestartet werden.' : 'Could not start voice search. Try again.');
+      voiceSearchButton.dataset.voiceState = 'error';
+      searchStatus(document.documentElement.lang === 'de' ? 'Sprachsuche konnte nicht gestartet werden.' : 'Could not start voice search. Try again.', 'error');
     }
   };
   startRecognition(true);

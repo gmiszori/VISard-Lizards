@@ -23,7 +23,13 @@ import NearMe from '../location/NearMe.astro';
   <div id="ai-results-list" class="ai-results-list"></div>
 </section>
 <style>
-  .search-status{margin:-8px 0 14px;color:var(--muted);font-size:12px}
+  .search-status{margin:-4px 0 14px;color:var(--muted);font-size:12px}
+  .search-status[data-voice-state]{display:inline-flex;align-items:center;gap:8px;width:max-content;max-width:100%;padding:7px 11px;border:1px solid #27845a35;border-radius:999px;background:#eaf6ef;color:#236c4c;font-weight:600}
+  .search-status[data-voice-state]::before{content:"";width:8px;height:8px;flex:0 0 8px;border-radius:50%;background:currentColor;box-shadow:0 0 0 3px #27845a20}
+  .search-status[data-voice-state="connecting"],.search-status[data-voice-state="thinking"]{border-color:#b8791635;background:#fff5df;color:#8e5d0c}
+  .search-status[data-voice-state="speaking"]{border-color:#6753bc35;background:#f1efff;color:#5542a8}
+  .search-status[data-voice-state="error"]{border-color:#b8383835;background:#fff0f0;color:#a12f2f}
+  .search-status[data-voice-state="speaking"]::before{animation:voice-dot .55s ease-in-out infinite alternate}
   .voice-agent-caption{margin:-8px 0 14px;padding:10px 12px;border-radius:12px;background:var(--paper);color:var(--ink);font-size:13px;line-height:1.5;white-space:pre-wrap}
   .ai-results{margin:0 0 18px;padding:16px;border:1px solid var(--line);border-radius:16px;background:var(--paper)}
   .ai-results-heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
@@ -40,13 +46,20 @@ import NearMe from '../location/NearMe.astro';
   .toolbar :global(.search){flex:1 1 auto;min-width:0;margin:0}
   .toolbar :global(.search input){height:46px;font-size:14px}
   .toolbar :global(.search-icon){top:50%;left:13px;width:18px;height:18px;transform:translateY(-50%);pointer-events:none}
-  .voice-search-button{display:grid;place-items:center;width:48px;height:48px;flex:0 0 48px;padding:0;border:0;border-radius:15px;background:#ef8b3a;color:#fff;cursor:pointer;box-shadow:0 4px 12px #a64c162a;transition:background .16s,transform .16s,box-shadow .16s}
+  .voice-search-button{position:relative;display:grid;place-items:center;width:48px;height:48px;flex:0 0 48px;padding:0;border:0;border-radius:15px;background:#ef8b3a;color:#fff;cursor:pointer;box-shadow:0 4px 12px #a64c162a;transition:background .16s,transform .16s,box-shadow .16s}
   .voice-search-button:hover:not(:disabled){background:#dc7626;transform:translateY(-1px);box-shadow:0 6px 16px #a64c1638}
   .voice-icon{width:25px;height:25px;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-  .voice-search-button[aria-pressed="true"]{background:#b83838;border-color:#b83838;color:white;animation:voice-pulse 1.1s ease-in-out infinite alternate}
+  .voice-search-button[data-voice-state="listening"]{background:#27845a;animation:voice-pulse-green 1.2s ease-in-out infinite alternate}
+  .voice-search-button[data-voice-state="connecting"]{background:#b87916;box-shadow:0 0 0 4px #b8791625}
+  .voice-search-button[data-voice-state="thinking"]{background:#b87916;box-shadow:0 0 0 4px #b8791625}
+  .voice-search-button[data-voice-state="speaking"]{background:#6753bc;box-shadow:0 0 0 5px #6753bc30}
+  .voice-search-button[data-voice-state="speaking"]::after{content:"";position:absolute;right:-3px;bottom:-3px;width:15px;height:12px;border:2px solid white;border-radius:7px;background:linear-gradient(90deg,transparent 0 12%,#6753bc 12% 27%,transparent 27% 39%,#6753bc 39% 55%,transparent 55% 67%,#6753bc 67% 83%,transparent 83%);animation:voice-bars .42s ease-in-out infinite alternate}
+  .voice-search-button[data-voice-state="error"]{background:#b83838}
   .voice-search-button:disabled{opacity:.45;cursor:not-allowed}
   .voice-search-button:focus-visible{outline:3px solid #7eb594;outline-offset:2px}
-  @keyframes voice-pulse{to{box-shadow:0 0 0 5px #b8383825}}
+  @keyframes voice-pulse-green{to{box-shadow:0 0 0 5px #27845a30}}
+  @keyframes voice-bars{to{transform:scaleY(.65)}}
+  @keyframes voice-dot{to{transform:scale(1.25);opacity:.65}}
   .campus-tools{display:flex;align-items:center;gap:8px;min-width:0;flex:0 0 auto}
   .campus-select{height:40px;min-height:40px;flex:0 1 auto;max-width:48%;padding:0 12px;border:1px solid var(--line);border-radius:14px;background:var(--paper);color:var(--ink);font:inherit;font-size:14px}
   .campus-tools :global(.near-me){margin:0;flex:0 0 auto}
