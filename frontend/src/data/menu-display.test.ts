@@ -4,6 +4,20 @@ import { MENSAS, MEALS, CANTEENS, type Mensa } from './canteens.ts';
 import { compareMealServiceAndKind, groupMenuByService, prepareMenu } from './menu-display.ts';
 
 const meal = CANTEENS.find(c => c.menu.length)!.menu[0]!;
+
+test('source URLs become compact links and contradictory diets are flagged without changing provider allergens', () => {
+  const [item] = prepareMenu([{ ...meal, dietary: 'vegan' as const, allergens: ['Fische', 'Krebstiere'],
+    description: 'Roasted vegetables | Source: https://app.food2050.ch/de/menu?week=42&year=2026' }], undefined, '2026-10-12');
+  assert.equal(item!.description, 'Roasted vegetables');
+  assert.deepEqual(item!.sourceUrls, ['https://app.food2050.ch/de/menu?week=42&year=2026']);
+  assert.equal(item!.dietConflict, true);
+  assert.deepEqual(item!.allergens, ['Fische', 'Krebstiere']);
+});
+test('otherwise identical offerings with different trace warnings are not merged', () => {
+  const items = prepareMenu([{ ...meal, id: 'a', traceAllergens: ['gluten'] },
+    { ...meal, id: 'b', traceAllergens: [] }], undefined, '2026-10-12');
+  assert.equal(items.length, 2);
+});
 const mensa = { ...MENSAS[0]!, temporarilyClosed: false, closures: [], openingHours: {
   mon: [{ service: 'lunch' as const, open: '11:00', close: '14:00' },
     { service: 'dinner' as const, open: '17:30', close: '19:00' }],

@@ -74,9 +74,10 @@ export function parseMeta(value: unknown): BackendMeta {
 }
 
 /** Ratings are optional extras, so an unreadable list means "no ratings", not an error. */
-export function parseMensas(value: unknown): BackendMensa[] {
+type ParsedMensa = Pick<BackendMensa, 'id' | 'title' | 'campus' | 'coordinates' | 'avgRating'>;
+export function parseMensas(value: unknown): ParsedMensa[] {
   if (!Array.isArray(value)) return [];
-  const out: BackendMensa[] = [];
+  const out: ParsedMensa[] = [];
   for (const item of value.slice(0, 500)) {
     if (!isObject(item)) continue;
     const id = text(item.id, 100);
@@ -122,6 +123,7 @@ export function parseMeal(value: unknown): BackendMealDetail | null {
       description: typeof meal.description === 'string' ? meal.description.slice(0, 2000) : null,
       prices: parsePrices(meal),
       allergens: Array.isArray(meal.allergens) ? meal.allergens.filter((a): a is string => typeof a === 'string' && a.length > 0 && a.length <= 40).slice(0, 30) : [],
+      ...(Array.isArray(meal.traceAllergens) ? { traceAllergens: meal.traceAllergens.filter((a): a is string => typeof a === 'string' && a.length > 0 && a.length <= 40).slice(0, 30) } : {}),
       classification: [diet, kind, service],
     },
   };

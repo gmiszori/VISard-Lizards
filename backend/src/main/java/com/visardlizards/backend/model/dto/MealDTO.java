@@ -17,5 +17,7 @@ public record MealDTO(
 		List<String> allergens,
 		List<String> classification,
 		// TODO: type not yet defined (environmental impact)
-		@Nullable String envImp) {
+		@Nullable String envImp,
+		/** Possible cross-contact, separate from declared ingredients. */
+		List<String> traceAllergens) {
 }

@@ -95,7 +95,7 @@ public class MensaDtoMapper {
 				description,
 				meal.allergens(),
 				List.of(meal.dietTag(), meal.kind(), meal.service()),
-				envImp);
+				envImp, meal.traceAllergens());
 	}
 
 	private static String formatAddress(Address address) {

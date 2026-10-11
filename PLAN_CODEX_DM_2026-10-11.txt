@@ -1,0 +1,10 @@
+2026-10-11 scheduled Discord follow-up
+Base: main 9ff5364. Worked in the scheduled task's existing isolated checkout.
+Source: VISard Lizard group, Martin's 03:00 audit (message 1558645453715669023).
+Implemented: saved hard exclusions for menu details, previews and AI results; provider diet/allergen contradiction warnings and plant-based filtering; separate trace-allergen persistence/API/display including older cached FOOD2050 detail objects; selected-day visibility on mobile; compact menu-source links; German recipe serving capitalization.
+Also repaired existing TypeScript mismatches in the parsed-mensa return type and obsolete DayPicker today prop.
+Verification: 258 frontend tests passed; 165 backend tests passed, 2 skipped; 40 scraper tests passed; Astro check 0 errors/0 warnings (4 hints); static sample-data build 421 pages.
+Browser: real settings controls verified milk exclusion in details/previews, gluten trace exclusion, plant-based contradiction exclusion, and typed AI result filtering. Verified selected 23 October at 390px and 2 Portionen in the recipe dialog using local fixtures. Temporary fixtures were removed before build/commit.
+Provider evidence: https://app.food2050.ch/de/zfv/universitat-zurich,campus-irchel/green-kitchen-lab/mittagsverpflegung,hauptspeisen,one/2026-10-12
+Limits: native Discord capture read loaded project messages through 03:00, but navigation failed twice. Browser Discord requires login, so the other DMs were not verified. Docker is absent and no VM access is configured here; stack startup, scraper refresh and deployment were not performed. Physical hackathon sidequests require the listed people.
+Deployment must rebuild backend, frontend and scraper images because the trace-allergen field spans all three. Backend's existing ddl-auto=update creates the additive meal_trace_allergen table. Cached FOOD2050 detail responses can be projected without paid scraping.

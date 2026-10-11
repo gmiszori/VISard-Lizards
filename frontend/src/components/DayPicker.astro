@@ -44,7 +44,8 @@ const shownDays = days.includes(menuDate) ? days : [...days, menuDate].sort();
       const saved = JSON.parse(raw);
       const path = location.pathname.replace(/\/+$/, '');
       if (saved.path !== path || !(Date.now() - saved.at < 10000)) return;
-      const picker = document.currentScript.previousElementSibling;
+      const picker = document.querySelector('[data-day-picker]');
+      if (!picker) return;
       const body = document.body;
       const place = () => window.scrollTo(0, picker.getBoundingClientRect().top + window.scrollY - saved.top);
       // The rest of the page is not loaded yet: make room so the scroll position can be reached now.
@@ -70,8 +71,16 @@ const shownDays = days.includes(menuDate) ? days : [...days, menuDate].sort();
   const daysNav = root?.querySelector<HTMLElement>('[data-day-picker-nav]');
   const updateScrollHint = () => daysNav?.classList.toggle('has-more-days',
     daysNav.scrollWidth - daysNav.clientWidth - daysNav.scrollLeft > 2);
+  const revealSelectedDay = () => {
+    const selected = daysNav?.querySelector<HTMLElement>('[aria-current="date"]');
+    if (!daysNav || !selected || daysNav.scrollWidth <= daysNav.clientWidth) return;
+    const nav = daysNav.getBoundingClientRect();
+    const day = selected.getBoundingClientRect();
+    if (day.left < nav.left || day.right > nav.right) daysNav.scrollLeft += (day.left + day.right - nav.left - nav.right) / 2;
+    updateScrollHint();
+  };
   daysNav?.addEventListener('scroll', updateScrollHint, { passive: true });
-  window.addEventListener('resize', updateScrollHint);
+  window.addEventListener('resize', () => { revealSelectedDay(); updateScrollHint(); });
 
   // Lunch / dinner filter: an attribute on <html>; scripts/preferences.ts hides the other service's meals.
   function applyService(service: string) {
@@ -102,6 +111,7 @@ const shownDays = days.includes(menuDate) ? days : [...days, menuDate].sort();
     });
     root.querySelector('[data-day-picker-nav]')?.setAttribute('aria-label', de ? 'Menütag' : 'Menu day');
     root.querySelector('[data-service-filter-group]')?.setAttribute('aria-label', de ? 'Mahlzeit' : 'Meal service');
+    revealSelectedDay();
     updateScrollHint();
   }
 
@@ -131,6 +141,7 @@ const shownDays = days.includes(menuDate) ? days : [...days, menuDate].sort();
   }
 
   renderDays();
+  document.fonts.ready.then(revealSelectedDay);
   markOtherDay();
   followSimulatedDay();
   document.addEventListener('languagechange', renderDays);

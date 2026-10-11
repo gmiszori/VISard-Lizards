@@ -3,6 +3,12 @@ import assert from 'node:assert/strict';
 import { matchesConstraints, type ConstraintMeal } from './constraints.ts';
 import type { Profile } from './profile.ts';
 const meal: ConstraintMeal = { dietTag: 'vegan', allergens: [], originDetail: null, components: ['Rice'] };
+
+test('plant-based recommendations reject contradictory ingredient allergens but preserve cross-contact as traces', () => {
+  assert.equal(matchesConstraints({ ...meal, allergens: ['fish'] }, { diet: 'vegan', hard: [] }), false);
+  assert.equal(matchesConstraints({ ...meal, traceAllergens: ['milk'] }, { diet: 'vegan', hard: [] }), true);
+  assert.equal(matchesConstraints({ ...meal, traceAllergens: ['milk'] }, { diet: 'vegan', hard: ['lactose_free'] }), false);
+});
 const allowed: Record<Profile['diet'], string[]> = {
   vegan: ['vegan'], vegetarian: ['vegan', 'vegetarian'], pescetarian: ['vegan', 'vegetarian', 'fish'],
   omnivore: ['vegan', 'vegetarian', 'fish', 'meat'], flexitarian: ['vegan', 'vegetarian', 'fish', 'meat'],

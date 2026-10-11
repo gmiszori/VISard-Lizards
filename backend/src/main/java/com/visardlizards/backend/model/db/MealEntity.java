@@ -83,6 +83,13 @@ public class MealEntity {
 	@BatchSize(size = 100)
 	private List<String> allergens = new ArrayList<>();
 
+	@ElementCollection
+	@CollectionTable(name = "meal_trace_allergen", joinColumns = @JoinColumn(name = "meal_id"))
+	@OrderColumn(name = "position")
+	@Column(name = "allergen")
+	@BatchSize(size = 100)
+	private List<String> traceAllergens = new ArrayList<>();
+
 	protected MealEntity() {
 	}
 
@@ -165,6 +172,8 @@ public class MealEntity {
 	public List<String> getAllergens() {
 		return allergens;
 	}
+	public List<String> getTraceAllergens() { return traceAllergens; }
+	public void setTraceAllergens(List<String> values) { traceAllergens = new ArrayList<>(values); }
 
 	public String getSemanticEmbedding() {
 		return semanticEmbedding;

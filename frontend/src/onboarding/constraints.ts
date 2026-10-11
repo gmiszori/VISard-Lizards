@@ -1,7 +1,8 @@
 import type { Meal } from '../data/canteens';
 import type { Profile } from './profile.ts';
+import { normalizeAllergens, hasDietConflict } from '../data/allergens.ts';
 
-export type ConstraintMeal = Pick<Meal, 'dietTag' | 'allergens' | 'originDetail' | 'components'> & { title?: string; titleDe?: string | null };
+export type ConstraintMeal = Pick<Meal, 'dietTag' | 'originDetail' | 'components'> & { allergens: string[]; traceAllergens?: string[]; title?: string; titleDe?: string | null };
 const pork = /\b(?:pork|schwein\w*|speck\w*|bacon|ham|schinken\w*|salami|chorizo|\w*wurst)\b/i;
 
 /**
@@ -22,6 +23,8 @@ function mentions(meal: ConstraintMeal, words: RegExp, ignore: RegExp[] = []): b
 }
 
 export function matchesConstraints(meal: ConstraintMeal, profile: Pick<Profile, 'diet' | 'hard'>): boolean {
+  if (['vegan', 'vegetarian'].includes(profile.diet) && hasDietConflict(meal.dietTag, meal.allergens)) return false;
+  const allergens = normalizeAllergens([...meal.allergens, ...(meal.traceAllergens ?? [])]);
   if (profile.diet === 'vegan' && meal.dietTag !== 'vegan') return false;
   if (profile.diet === 'vegetarian' && !['vegan', 'vegetarian'].includes(meal.dietTag)) return false;
   if (profile.diet === 'pescetarian' && meal.dietTag === 'meat') return false;
@@ -29,10 +32,10 @@ export function matchesConstraints(meal: ConstraintMeal, profile: Pick<Profile, 
   return profile.hard.every(constraint => {
     switch (constraint) {
       case 'no_pork': return !meal.originDetail?.meat.some(origin => origin.type.toLowerCase() === 'pork')
-        && !meal.components.some(component => pork.test(component));
-      case 'lactose_free': return !meal.allergens.includes('milk') && !mentions(meal, milkWords);
-      case 'gluten_free': return !meal.allergens.includes('gluten') && !mentions(meal, glutenWords, [glutenFree]);
-      case 'nut_free': return !meal.allergens.some(allergen => allergen === 'nuts' || allergen === 'peanuts') && !mentions(meal, nutWords);
+        && !mentions(meal, pork);
+      case 'lactose_free': return !allergens.includes('milk') && !mentions(meal, milkWords);
+      case 'gluten_free': return !allergens.includes('gluten') && !mentions(meal, glutenWords, [glutenFree]);
+      case 'nut_free': return !allergens.some(allergen => allergen === 'nuts' || allergen === 'peanuts') && !mentions(meal, nutWords);
       // Constraints removed from the app (halal, kosher: not determinable from the menu data) never exclude a dish.
       default: return true;
     }

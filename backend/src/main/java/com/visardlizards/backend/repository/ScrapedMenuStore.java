@@ -71,9 +71,11 @@ public class ScrapedMenuStore {
                     if(published.isBlank()) components.add("Every day");
                     String line=meal.path("section").asText("Website menu");
                     if(meal.path("sourceUrl").asText("").toLowerCase(Locale.ROOT).contains("catering")) { line="Catering"; components.add("Catering offer"); }
-                    rows.putIfAbsent(id,new MealEntity(id,venue,day,service,limit(line,250),
+                    var row=new MealEntity(id,venue,day,service,limit(line,250),
                         "main",limit(title,500),diet,price(meal,"student"),price(meal,"staff"),price(meal,"external"),
-                        null,null,components,strings(meal.path("allergens"))));
+                        null,null,components,strings(meal.path("allergens")));
+                    row.setTraceAllergens(traceAllergens(meal));
+                    rows.putIfAbsent(id,row);
                 }
             }
         }
@@ -89,6 +91,17 @@ public class ScrapedMenuStore {
     }
     private static List<String> strings(JsonNode values) {
         var result=new ArrayList<String>(); for(JsonNode value:values) if(value.isTextual()) result.add(limit(value.asText(),250)); return result;
+    }
+    private static List<String> traceAllergens(JsonNode meal) {
+        if(meal.has("traceAllergens")) return strings(meal.path("traceAllergens"));
+        // Older cached FOOD2050 detail responses already retain the full dish object.
+        var result=new ArrayList<String>();
+        for(JsonNode value:meal.path("details").path("dish").path("traceAllergens")) {
+            JsonNode allergen=value.path("allergen");
+            String label=allergen.path("name").asText(allergen.path("externalId").asText(""));
+            if(!label.isBlank()) result.add(limit(label,250));
+        }
+        return result;
     }
     private static String limit(String value,int size) { return value.substring(0,Math.min(value.length(),size)); }
     private static BigDecimal price(JsonNode meal,String group) {

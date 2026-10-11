@@ -152,7 +152,7 @@ async function fetchAppData(date?: string): Promise<AppData> {
 }
 
 /** Same order and categories as the sample menus: lunch before dinner, main dishes first. */
-function toMenu(meals: BackendMealDetail[]): Array<MenuItem & Pick<DisplayMenuItem, 'dietTag' | 'allergenIds'>> {
+function toMenu(meals: BackendMealDetail[]): Array<MenuItem & Pick<DisplayMenuItem, 'dietTag' | 'allergenIds' | 'traceAllergens'>> {
   return meals
     .map((detail) => detail.meal)
     .sort(compareMealServiceAndKind)
@@ -169,9 +169,10 @@ function toMenu(meals: BackendMealDetail[]): Array<MenuItem & Pick<DisplayMenuIt
         dietary: diet === 'vegan' || diet === 'vegetarian' ? diet : 'meat',
         allergens: meal.allergens.map((id) => ALLERGEN_LABELS[id] ?? id),
         allergenIds: meal.allergens,
+        traceAllergens: (meal.traceAllergens ?? []).map(id => ALLERGEN_LABELS[id] ?? id),
         dietTag: diet === 'vegan' || diet === 'vegetarian' || diet === 'fish' ? diet : 'meat',
         category: kind !== 'main' ? 'Side' : index === 0 ? 'Daily Special' : 'Classic',
         service: service === 'dinner' ? 'dinner' : 'lunch',
-      } satisfies MenuItem & Pick<DisplayMenuItem, 'dietTag' | 'allergenIds'>;
+      } satisfies MenuItem & Pick<DisplayMenuItem, 'dietTag' | 'allergenIds' | 'traceAllergens'>;
     });
 }

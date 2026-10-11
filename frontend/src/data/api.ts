@@ -87,6 +87,8 @@ export interface BackendMeal {
   description: string | null;
   /** Canonical allergen ids, e.g. "gluten", "milk". */
   allergens: string[];
+  /** Possible cross-contact, kept separate from ingredients. */
+  traceAllergens?: string[];
   /** [diet, kind, service]: vegan|vegetarian|meat|fish, main|buffet|dessert|drink, lunch|dinner */
   classification: [string, string, string];
 }

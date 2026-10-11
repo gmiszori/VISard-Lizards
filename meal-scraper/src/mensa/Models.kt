@@ -18,6 +18,7 @@ data class SourceDocument(val url: String, val mediaType: String, val bytes: Byt
     val date: String? = null, val timeStart: String? = null, val timeEnd: String? = null,
     val prices: List<MealPrice> = emptyList(), val allergens: List<String> = emptyList(),
     val detailUrl: String? = null, val details: kotlinx.serialization.json.JsonObject? = null,
+    val traceAllergens: List<String> = emptyList(),
 )
 @Serializable data class AvailabilityNotice(
     val status: String = "closed", val dateFrom: String? = null, val dateTo: String? = null,

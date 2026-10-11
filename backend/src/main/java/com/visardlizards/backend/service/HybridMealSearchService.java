@@ -179,7 +179,7 @@ public class HybridMealSearchService {
                 ? null : new Price(e.getPriceStudent(), e.getPriceStaff(), e.getPriceExternal());
         return new Meal(e.getId(), e.getMensaId(), e.getDate(), e.getService(), e.getLine(), e.getKind(),
                 e.getTitle(), List.copyOf(e.getComponents()), e.getDietTag(), price,
-                List.copyOf(e.getAllergens()), e.getEcoScore(), e.getClimateImpact());
+                List.copyOf(e.getAllergens()), e.getEcoScore(), e.getClimateImpact(), List.copyOf(e.getTraceAllergens()));
     }
 
     private record Ranked(MealEntity meal, Mensa venue, Double similarity, Double distanceM, BigDecimal price,
