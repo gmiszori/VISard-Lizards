@@ -1,12 +1,6 @@
 ## Development
 
-When starting the dev server, use background mode:
-
-```
-astro dev --background
-```
-
-Manage the background server with `astro dev stop`, `astro dev status`, and `astro dev logs`.
+Run `pnpm dev` from this directory. For agent sessions, use the execution tool's background mode and stop the owned process when validation is complete.
 
 ## Documentation
 
@@ -21,6 +15,6 @@ Consult these guides before working on related tasks:
 - [Adding styles or using Tailwind](https://docs.astro.build/en/guides/styling/)
 - [Supporting multiple languages](https://docs.astro.build/en/guides/internationalization/)
 
-## Search handoff for Martin's agent
+## Search behavior
 
-The user asked to simplify commit `c6a7b2d`. We kept multiword search, diet-label matching, umlaut folding, and a small set of German/English equivalents. We removed the delayed `/api/search` override because its canteen IDs could replace correct local dish matches after a pause; its request omitted descriptions and categories that the local matcher searched. We also removed typo guessing and broad related-food expansions (for example, tofu matching seitan), which produced surprising results. The overview now has one immediate, deterministic result set. Please preserve that behavior unless a future change can test the complete UI flow and show a clear user benefit.
+Preserve multiword search, diet-label matching, umlaut folding, and tested German/English equivalents. Changes to query ranking must be validated against the existing search tests and the complete UI flow.
