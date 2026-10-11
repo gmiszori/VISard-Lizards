@@ -64,6 +64,7 @@ body{background:transparent;color:var(--ink)}.app-shell{max-width:1160px}.site-h
 @media(max-width:700px){:root{--site-header-height:70px}.app-shell{padding-top:0}}
 .site-header{border-bottom:none;background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;isolation:isolate}
 /* The header background below is as wide as 100vw, which includes a classic vertical scrollbar: without this the page scrolls sideways by the scrollbar width on desktop. */
+:root[data-beta-disabled="true"] :is(.route-link,#voice-search-button){display:none!important}
 html{overflow-x:hidden;overflow-x:clip}
 .site-header::before{content:"";position:absolute;inset:0;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;z-index:-1;border-bottom:1px solid var(--line);background:#f5f6f1cc;backdrop-filter:saturate(125%) blur(6px);-webkit-backdrop-filter:saturate(125%) blur(6px)}
 :root[data-theme="dark"] .site-header::before{background:#000c;border-color:#242424}

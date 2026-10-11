@@ -176,7 +176,7 @@ function statusText(status: RealtimeVoiceStatus, detail?: string) {
 let preferences: Preferences;
 try {
   preferences = readPreferences();
-} catch { preferences = { vegan: true, vegetarian: true, meat: true, viewMode: 'standard', openOnly: false, distanceDefault: false, useAiVoiceSearch: true, locations: [...ALL_CAMPUS_IDS], priceTier: 'student', devMode: false, mealCapitalization: DEFAULT_MEAL_CAPITALIZATION }; }
+} catch { preferences = { vegan: true, vegetarian: true, meat: true, viewMode: 'standard', openOnly: false, distanceDefault: false, useAiVoiceSearch: true, locations: [...ALL_CAMPUS_IDS], priceTier: 'student', devMode: false, disableBetaFeatures: false, mealCapitalization: DEFAULT_MEAL_CAPITALIZATION }; }
 let showWithoutMenu = false;
 /** "Show all canteens" in the empty state also looks past "Only show open canteens" for this visit (Settings stay as they are). */
 let ignoreOpenOnly = false;
@@ -210,6 +210,7 @@ function cardService(card: Element | null | undefined, picked: string | undefine
 const searchTextOf = (row: HTMLElement, card: HTMLElement) => `${card.dataset.name ?? ''} ${row.dataset.search ?? row.dataset.mealName ?? ''}`;
 
 function applyPreferences() {
+  document.documentElement.dataset.betaDisabled = String(preferences.disableBetaFeatures);
   applyMealCapitalization(preferences.mealCapitalization);
   document.querySelectorAll<HTMLSelectElement>('[data-meal-capitalization]').forEach(select => select.value = preferences.mealCapitalization);
   document.documentElement.dataset.density = preferences.viewMode;
@@ -517,6 +518,7 @@ if (voiceSearchButton && !SpeechRecognition) {
     ? 'Dieser Browser unterstützt keine Sprachsuche.' : 'Voice search is not supported in this browser.';
 }
 voiceSearchButton?.addEventListener('click', () => {
+  if (preferences.disableBetaFeatures) return;
   if (preferences.useAiVoiceSearch) {
     if (realtimeVoice) {
       realtimeVoice.close();
@@ -665,7 +667,9 @@ voiceSearchButton?.addEventListener('click', () => {
           appLanguage: document.documentElement.lang === 'de' ? 'de' : 'en',
           now: (({ date, time }) => `${date}T${time}`)(zurichParts(appNow())),
         }, API_URL);
+        if (preferences.disableBetaFeatures) return;
         const connection = await RealtimeVoiceConnection.connect(session.clientSecret, session.instructions, callbacks);
+        if (preferences.disableBetaFeatures) { connection.close(); return; }
         realtimeVoice = connection;
         voiceSearchButton.disabled = false;
       } catch (error) {
@@ -695,6 +699,7 @@ voiceSearchButton?.addEventListener('click', () => {
   showHybridResults(null);
   applyPreferences();
   const startRecognition = (withHints: boolean) => {
+    if (preferences.disableBetaFeatures) return;
     const recognition = new SpeechRecognition();
     speechRecognition = recognition;
     recognition.lang = document.documentElement.lang === 'de' ? 'de-CH' : 'en-US';
@@ -732,6 +737,7 @@ voiceSearchButton?.addEventListener('click', () => {
       searchStatus(document.documentElement.lang === 'de' ? 'Höre zu … Sag, wonach du suchst.' : 'Listening… say what you are looking for.', 'listening');
     };
     recognition.onresult = (event) => {
+      if (preferences.disableBetaFeatures) return;
       const finalResult = Array.from({ length: event.results.length - event.resultIndex }, (_, index) =>
         event.results[event.resultIndex + index]).find(result => result.isFinal);
       const transcript = finalResult
@@ -773,7 +779,13 @@ voiceSearchButton?.addEventListener('click', () => {
   startRecognition(true);
 });
 document.addEventListener('campuseats:preferences-applied', () => {
-  if (!preferences.useAiVoiceSearch && realtimeVoice) {
+  if (preferences.disableBetaFeatures && speechRecognition) {
+    speechRecognition.stop();
+    speechRecognition = null;
+    voiceSearchButton?.setAttribute('aria-pressed', 'false');
+    searchStatus('');
+  }
+  if ((!preferences.useAiVoiceSearch || preferences.disableBetaFeatures) && realtimeVoice) {
     realtimeVoice.close();
     realtimeVoice = null;
     voiceSearchButton?.setAttribute('aria-pressed', 'false');

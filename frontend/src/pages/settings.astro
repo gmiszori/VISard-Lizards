@@ -52,9 +52,8 @@ import WelcomeTour from '../welcome/WelcomeTour.astro';
   </div>
   <form id="preferences-form" class="settings-form">
     <fieldset class="settings-group">
-      <legend data-i18n="searchMode">Search mode</legend>
-      <p data-i18n="searchModeHint">Typed queries use word matching. Spoken queries can use AI intent parsing and semantic ranking.</p>
-      <label class="setting-option compact-option"><span class="compact-icon" aria-hidden="true">✳</span><span class="setting-copy"><strong><span data-i18n="aiSearch">AI for voice search</span> <span class="beta-badge">Beta</span></strong><small data-i18n="aiSearchHint">When enabled, OpenAI Realtime listens, searches the menu, and answers aloud. Typed queries always use word matching.</small></span><input type="checkbox" name="useAiVoiceSearch" value="true" /></label>
+      <legend data-i18n="betaFeatures">Beta features</legend>
+      <label class="setting-option compact-option"><span class="compact-icon" aria-hidden="true">✳</span><span class="setting-copy"><strong data-i18n="disableBetaFeatures">Disable beta features</strong><small data-i18n="disableBetaFeaturesHint">Hide the Route and AI voice search buttons. Regular typed search remains available.</small></span><input type="checkbox" name="disableBetaFeatures" value="true" /></label>
     </fieldset>
     <fieldset class="settings-group price-category">
       <legend data-i18n="priceCategory">Price &amp; budget</legend>

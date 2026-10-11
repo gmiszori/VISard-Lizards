@@ -29,6 +29,7 @@ const { title, hideFooter = false } = Astro.props;
         document.documentElement.dataset.density = ['standard', 'compact', 'list'].includes(savedPreferences?.viewMode)
           ? savedPreferences.viewMode : savedPreferences?.compact === true ? 'compact' : 'standard';
         document.documentElement.dataset.devMode = String(savedPreferences?.devMode === true);
+        document.documentElement.dataset.betaDisabled = String(savedPreferences?.disableBetaFeatures === true);
       } catch (error) { /* storage blocked: the defaults apply */ }
     </script>
     <!-- Until the saved settings are applied (scripts/preferences.ts, onboarding/main.ts), what depends on them stays
@@ -106,6 +107,8 @@ const { title, hideFooter = false } = Astro.props;
       Object.assign(translations.de, { menuFor: 'Menü für', menusFor: 'Menüs für' });
       Object.assign(translations.en, { devMode: 'Dev mode', devModeDescription: 'Show diagnostics for live data, location, storage and backend connectivity.', devTools: 'Developer tools' });
       Object.assign(translations.de, { devMode: 'Entwicklermodus', devModeDescription: 'Zeigt Diagnosen für Live-Daten, Standort, Speicher und Backend-Verbindung.', devTools: 'Entwicklerwerkzeuge' });
+      Object.assign(translations.en, { betaFeatures: 'Beta features', disableBetaFeatures: 'Disable beta features', disableBetaFeaturesHint: 'Hide the Route and AI voice search buttons. Regular typed search remains available.' });
+      Object.assign(translations.de, { betaFeatures: 'Beta-Funktionen', disableBetaFeatures: 'Beta-Funktionen deaktivieren', disableBetaFeaturesHint: 'Blendet die Route- und KI-Sprachsuche-Buttons aus. Die normale Texteingabe bleibt verfügbar.' });
       Object.assign(translations.en, { viewMode: 'Overview layout', viewStandard: 'Standard', viewList: 'List' });
       Object.assign(translations.de, { viewMode: 'Übersichtsansicht', viewStandard: 'Standard', viewList: 'Liste' });
       Object.assign(translations.en, { distanceDefault: 'Sort by distance automatically', distanceDefaultHint: 'When you open the overview. Your location stays on this device.' });

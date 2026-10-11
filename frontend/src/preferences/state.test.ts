@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { normalizePreferences, readPreferences, readFavourites } from './state.ts';
 test('invalid stored shapes and boolean strings cannot break or silently enable filters', () => {
   for (const raw of [null, [], 'wrong', 12, { vegan: 'false', vegetarian: null, meat: [], compact: {}, openOnly: 'yes', priceTier: 'admin', locations: [null, 123, {}, 'invalid'] }]) {
-    assert.deepEqual(normalizePreferences(raw), { vegan: true, vegetarian: true, meat: true, viewMode: 'standard', openOnly: false, distanceDefault: false, useAiVoiceSearch: true, locations: ['zentrum', 'hoenggerberg', 'irchel', 'oerlikon', 'basel', 'toni-areal', 'europaallee'], priceTier: 'student', devMode: false, mealCapitalization: 'title' });
+    assert.deepEqual(normalizePreferences(raw), { vegan: true, vegetarian: true, meat: true, viewMode: 'standard', openOnly: false, distanceDefault: false, useAiVoiceSearch: true, locations: ['zentrum', 'hoenggerberg', 'irchel', 'oerlikon', 'basel', 'toni-areal', 'europaallee'], priceTier: 'student', devMode: false, disableBetaFeatures: false, mealCapitalization: 'title' });
   }
 });
 test('normalizes legacy locations, deduplicates, and preserves intentional empty selection', () => {
@@ -45,6 +45,16 @@ test('all three food categories off is read as all on (nothing would be left to 
   assert.deepEqual([read.vegan, read.vegetarian, read.meat], [true, true, true]);
   const some = normalizePreferences({ vegan: false, vegetarian: false, meat: true });
   assert.deepEqual([some.vegan, some.vegetarian, some.meat], [false, false, true]);
+});
+
+test('beta features remain enabled by default and disabling is a strict persisted boolean', () => {
+  assert.equal(normalizePreferences({}).disableBetaFeatures, false);
+  assert.equal(normalizePreferences({ disableBetaFeatures: 'true' }).disableBetaFeatures, false);
+  for (const disabled of [true, false]) {
+    const storage = { getItem: (key: string) => key === 'campuseats-preferences' ? JSON.stringify({ disableBetaFeatures: disabled }) : null };
+    assert.equal(readPreferences(storage).disableBetaFeatures, disabled);
+  }
+  assert.equal(normalizePreferences({ disableBetaFeatures: true, useAiVoiceSearch: false }).useAiVoiceSearch, false);
 });
 
 test('meal capitalization persists valid choices and defaults old or invalid saves to title case', () => {
