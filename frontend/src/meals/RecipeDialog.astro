@@ -184,13 +184,16 @@
   .recipe-kicker{margin:0 0 5px;color:var(--green);font-size:11px;font-weight:700;text-transform:uppercase}
   .recipe-dialog h2{margin:0;font-size:24px;line-height:1.25;overflow-wrap:anywhere}.recipe-close{flex:0 0 40px;width:40px;height:40px;border:1px solid var(--line);border-radius:6px;background:transparent;color:var(--ink);font-size:25px;cursor:pointer}
   .recipe-disclaimer{margin:14px 0;color:var(--muted);font-size:13px;line-height:1.5}
-  .recipe-controls{display:flex;align-items:center;gap:10px;padding:14px 0;border-block:1px solid var(--line)}
+  .recipe-controls{display:flex;align-items:center;gap:10px;padding:14px 0 0;border-top:1px solid var(--line)}
   .recipe-controls label{font-size:13px;font-weight:700}.recipe-controls input{width:62px;min-height:40px;padding:4px 8px;border:1px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink);font:600 15px 'DM Sans',sans-serif}
-  .recipe-controls button,.recipe-result-actions button{min-height:40px;padding:8px 14px;border:0;border-radius:6px;background:var(--green);color:var(--paper);font:700 13px 'DM Sans',sans-serif;cursor:pointer}
+  .recipe-controls button,.recipe-result-actions button{min-height:40px;padding:8px 14px;border-radius:6px;font:700 13px 'DM Sans',sans-serif;cursor:pointer}
+  .recipe-controls button{border:0;background:var(--green);color:var(--paper)}
+  .recipe-result-actions button{border:1px solid color-mix(in srgb,var(--green) 55%,var(--line));background:color-mix(in srgb,var(--green) 10%,var(--paper));color:var(--green)}
+  .recipe-result-actions button:hover{background:color-mix(in srgb,var(--green) 18%,var(--paper))}
   .recipe-controls button{margin-left:auto}.recipe-controls button:disabled{opacity:.6;cursor:wait}
   .recipe-status{min-height:18px;margin:14px 0;color:var(--muted);font-size:13px;line-height:1.5}
   .recipe-status:empty{min-height:0;margin:0}
-  .recipe-result-actions{display:flex;justify-content:center;margin:0 0 14px}
+  .recipe-result-actions{display:flex;justify-content:center;margin:18px 0 20px}
   .recipe-result h3{margin:0 0 7px;font-size:18px}.recipe-result h4{margin:18px 0 8px;font-size:14px}.recipe-result p,.recipe-result li{font-size:14px;line-height:1.55}.recipe-result ul,.recipe-result ol{padding-left:22px}.recipe-result li{margin-bottom:5px}.recipe-time{color:var(--green);font-weight:700}
   .recipe-dialog button:focus-visible,.recipe-dialog input:focus-visible{outline:3px solid var(--green);outline-offset:2px}
   @media(max-width:500px){.recipe-dialog{padding:18px}.recipe-dialog h2{font-size:20px}.recipe-controls{flex-wrap:wrap}.recipe-controls button,.recipe-result-actions button{width:100%;margin-left:0}}
