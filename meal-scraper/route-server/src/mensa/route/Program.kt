@@ -35,7 +35,7 @@ private suspend fun serve() {
     val steps = listOf(
         Tool(name = "get_route_options", description = "Retrieve Swiss public transport and OpenStreetMap walking route options for the authoritative trip. Returns actual encoded polylines, directions and a temporary sessionId. Call find_meal_stops next using that session; do not invent geometry.",
             inputSchema = ToolSchema(properties = tripProperties, required = listOf("origin", "destination", "departureTime", "arrivalTime", "mealMinutes", "cafeterias"))),
-        Tool(name = "find_meal_stops", description = "Find and verify one to four meal stops near the retrieved route. Reuses the session's trip, menus and direct route. Returns feasible routes with complete 45–60 minute meals and arrival buffers. Default app preference is two stops to limit external requests. Call show_route_on_map to select an existing option.",
+        Tool(name = "find_meal_stops", description = "Find and verify one to four meal stops near the retrieved route. Ranks candidates using a batched pedestrian travel-time matrix and a daily regional restaurant catalog; reuses the session's dated menus and direct route. Returns verified walking/transit journeys with complete 45–60 minute meals and arrival buffers. Matrix ranking does not exclude transit candidates. Call show_route_on_map to select an existing option.",
             inputSchema = ToolSchema(properties = buildJsonObject {
                 putJsonObject("sessionId") { put("type", "string") }
                 putJsonObject("maxStops") { put("type", "integer"); put("minimum", 1); put("maximum", 4) }

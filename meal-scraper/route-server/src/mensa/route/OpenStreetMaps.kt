@@ -19,7 +19,7 @@ class OpenStreetMaps : MapProvider {
         val response = http.send(request, HttpResponse.BodyHandlers.ofString())
         if (response.statusCode() !in 200..299) {
             val code = runCatching { json.parseToJsonElement(response.body()).jsonObject.text("code") }.getOrDefault("")
-            throw OpenRouteException(if (code == "route_provider_busy") code else "route_provider_failed",
+            throw OpenRouteException(if (code in listOf("route_provider_busy", "invalid_location")) code else "route_provider_failed",
                 "OpenStreetMap or Swiss transport lookup failed. Check locations and provider availability.")
         }
         return json.parseToJsonElement(response.body()).jsonObject
@@ -31,6 +31,12 @@ class OpenStreetMaps : MapProvider {
         }
     override fun route(origin: String, destination: String, departure: Instant) = options(origin, destination, departure).firstOrNull()
     override fun nearby(point: Point): List<JsonObject> = nearby(point, LocalDate.now(zurich))
+    override fun walkingCosts(origin: Point, destination: Point, stops: List<Point>): List<Double?> =
+        post("/matrix", buildJsonObject {
+            fun pointJson(point: Point) = buildJsonArray { add(point.lat); add(point.lng) }
+            put("origin", pointJson(origin)); put("destination", pointJson(destination))
+            put("stops", JsonArray(stops.map { pointJson(it) }))
+        }).array("costs").map { (it as? JsonPrimitive)?.doubleOrNull?.takeIf { value -> value.isFinite() && value >= 0 } }
     override fun nearby(point: Point, date: LocalDate): List<JsonObject> = post("/nearby", buildJsonObject {
         put("latitude", point.lat); put("longitude", point.lng); put("date", date.toString())
     }).array("places").map { it.jsonObject }

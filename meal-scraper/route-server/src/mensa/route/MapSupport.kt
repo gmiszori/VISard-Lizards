@@ -21,6 +21,7 @@ interface MapProvider : RouteProvider {
     fun options(origin: String, destination: String, departure: Instant): List<RouteLeg>
     fun nearby(point: Point): List<JsonObject>
     fun nearby(point: Point, date: LocalDate): List<JsonObject> = nearby(point)
+    fun walkingCosts(origin: Point, destination: Point, stops: List<Point>): List<Double?> = stops.map { null }
 }
 fun decodePolyline(encoded: String): List<Point> {
     val points = mutableListOf<Point>(); var index = 0; var lat = 0; var lng = 0

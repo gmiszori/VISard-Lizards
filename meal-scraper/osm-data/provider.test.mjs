@@ -1,6 +1,16 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {openingWindows,encodePolyline,decodePolyline,transitLeg,cached,point,walkingLeg} from './provider.mjs';
+import {openingWindows,encodePolyline,decodePolyline,transitLeg,cached,point,walkingLeg,locationQuery,selectLocation} from './provider.mjs';
+
+test('campus alias resolves an address and unrelated or ambiguous location results are rejected',()=> {
+  const lookup=locationQuery('ETH Zentrum');assert.equal(lookup.type,'address');
+  const hit={name:'Zürich, Rämistrasse 101',coordinate:{x:47.375839,y:8.547595}};
+  assert.equal(selectLocation(lookup.query,[hit]),hit);
+  assert.throws(()=>selectLocation('ETH Zentrum',[{...hit,name:'Horw, Zentrum'}]));
+  assert.throws(()=>selectLocation('Zürich',[{...hit,name:'Zürich HB'},{...hit,name:'Zürich Stadelhofen'}]));
+  assert.equal(selectLocation('Zurich HB',[{...hit,name:'Zürich HB'}]).name,'Zürich HB');
+  assert.equal(selectLocation('Zurich HB',[{...hit,name:'Zürich, Sihlpost/HB'},{...hit,name:'Zürich HB'}]).name,'Zürich HB');
+});
 
 test('walking alternatives retain provider path and rounded duration; malformed evidence is rejected', () => {
   const start=Date.parse('2026-10-12T09:00:00Z');

@@ -1,5 +1,6 @@
 import * as OSM from 'osm-api';
 import OpeningHours from 'opening_hours';
+import {RestaurantCatalog} from './catalog.mjs';
 
 process.env.TZ = 'Europe/Zurich';
 const agent = 'UniEatsMealRoutes/1.0 (https://github.com/gmiszori/VISard-Lizards)';
@@ -9,21 +10,29 @@ const transport = process.env.SWISS_TRANSPORT_URL || 'https://transport.opendata
 const overpass = process.env.OSM_OVERPASS_URL || 'https://overpass-api.de/api/interpreter';
 const cache = new Map();
 const lastCall = new Map();
+const cooldown = new Map();
+const pending = new Map();
+const canonical = new Map();
+let canonicalCooldown=0;
 let queue = Promise.resolve();
 
 // Application-wide serialization, 1 request/second per provider, bounded memory.
 export async function cached(key, ttl, action) {
   const entry = cache.get(key);
   if (entry && entry.until > Date.now()) return entry.value;
-  const value = await action();
-  if (cache.size >= 200) cache.delete(cache.keys().next().value);
-  cache.set(key, {value, until: Date.now() + ttl});
-  return value;
+  if(pending.has(key)) return pending.get(key);
+  const work=(async()=> {
+    const value=await action();
+    if(cache.size>=200) cache.delete(cache.keys().next().value);
+    cache.set(key,{value,until:Date.now()+ttl});return value;
+  })().finally(()=>pending.delete(key));
+  pending.set(key,work);return work;
 }
 async function paced(url, action) {
   const run = queue.catch(() => {}).then(async () => {
     const host = new URL(url).host;
-    const wait = (lastCall.get(host) || 0) + 1050 - Date.now();
+    if((cooldown.get(host)||0)>Date.now()) throw Object.assign(new Error(`Routing provider ${host} is cooling down after HTTP 429.`),{code:'route_provider_busy'});
+    const wait = (lastCall.get(host) || 0) + (new URL(url).hostname==='osrm-foot' ? 0 : 1050) - Date.now();
     if (wait > 0) await new Promise(resolve => setTimeout(resolve, wait));
     lastCall.set(host, Date.now());
     return action();
@@ -34,7 +43,12 @@ async function paced(url, action) {
 async function request(url, init = {}) {
   return paced(url, async () => {
     const res = await fetch(url, {...init, headers: {'User-Agent': agent, ...init.headers}, signal: AbortSignal.timeout(15000)});
-    if (!res.ok) throw Object.assign(new Error(`Route data service failed (HTTP ${res.status}).`), {code: res.status === 429 ? 'route_provider_busy' : 'route_provider_failed'});
+    if(res.status===429) {
+      const retry=res.headers.get('retry-after');
+      const delay=retry && /^\d+$/.test(retry) ? Number(retry)*1000 : Date.parse(retry)-Date.now();
+      cooldown.set(new URL(url).host,Date.now()+Math.max(5000,Math.min(Number.isFinite(delay) ? delay : 30000,3600000)));
+    }
+    if (!res.ok) throw Object.assign(new Error(`Routing provider ${new URL(url).host} failed (HTTP ${res.status}).`), {code: res.status === 429 ? 'route_provider_busy' : 'route_provider_failed'});
     const bytes = await res.arrayBuffer();
     if (bytes.byteLength > 4_000_000) throw new Error('Route data response is too large.');
     return JSON.parse(new TextDecoder().decode(bytes));
@@ -46,13 +60,31 @@ export function point(value) {
   return pair;
 }
 const query = values => new URLSearchParams(values).toString();
+export function locationQuery(value) {
+  const campus=value.trim().toLowerCase().replace(/[.,]/g,'').replace(/\s+/g,' ');
+  if(['eth zentrum','eth zurich zentrum','eth zürich zentrum','eth hauptgebäude'].includes(campus))
+    return {query:'Rämistrasse 101, Zürich',type:'address'};
+  return {query:value,type:/\d/.test(value) ? 'address' : 'all'};
+}
+const locationWords=value=>value.normalize('NFD').replace(/\p{M}/gu,'').toLowerCase().replace(/\bhb\b/g,'hauptbahnhof').match(/[a-z0-9]+/g)||[];
+export function selectLocation(value,stations) {
+  const wanted=locationWords(value).filter(word=>!['switzerland','schweiz'].includes(word));
+  let matches=(stations||[]).filter(s=>s.type!=='refine' && Number.isFinite(s.coordinate?.x) && Number.isFinite(s.coordinate?.y)
+    && wanted.every(word=>locationWords(s.name||'').includes(word)));
+  const exact=matches.filter(s=>locationWords(s.name||'').length===wanted.length);
+  if(exact.length) matches=exact;
+  if(!matches.length) throw Object.assign(new Error('Location could not be matched reliably. Enter a full address or coordinates.'),{code:'invalid_location'});
+  if(new Set(matches.map(s=>locationWords(s.name).join(' '))).size>1)
+    throw Object.assign(new Error('Location is ambiguous. Enter a full address or coordinates.'),{code:'invalid_location'});
+  return matches[0];
+}
 async function locate(value) {
   if (/^\s*-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?\s*$/.test(value)) return point(value);
   if (typeof value !== 'string' || !value.trim() || value.length > 200) throw new Error('Invalid location.');
   return cached(`location:${value}`, 86400000, async () => {
-    const data = await request(`${transport}/locations?${query({query: value, type: /\d/.test(value) ? 'address' : 'all'})}`);
-    const hit = data.stations?.find(s => s.type !== 'refine' && Number.isFinite(s.coordinate?.x) && Number.isFinite(s.coordinate?.y));
-    if (!hit) throw new Error('Location was not found. Enter a more specific address or coordinates.');
+    const lookup=locationQuery(value);
+    const data = await request(`${transport}/locations?${query(lookup)}`);
+    const hit=selectLocation(lookup.query,data.stations);
     return Object.assign(point([hit.coordinate.x, hit.coordinate.y]), {label:hit.name});
   });
 }
@@ -121,18 +153,19 @@ export async function transitLeg(connection, earliest, walking = walk) {
 }
 export async function options(input) {
   const a = await locate(input.origin), b = await locate(input.destination), start = stamp(input.departureTime);
+  let providerFailure;
   const results = [], warnings = [`Locations resolved as: ${a.label || a.join(',')} → ${b.label || b.join(',')}. Check these match your intended trip.`];
   try {
     for (const route of await walkingRoutes(a,b)) results.push(walkingLeg(route,start));
-  } catch { warnings.push('Walking routing is unavailable for this leg.'); }
+  } catch(error) { providerFailure=error;warnings.push('Walking routing is unavailable for this leg.'); }
   try {
     const [date, time] = local(start);
     const data = await cached(`transit:${a}:${b}:${date}:${time}`, 30000, () => request(`${transport}/connections?${query({from:a.join(','),to:b.join(','),date,time,limit:'2'})}`));
     for (const connection of data.connections || []) {
       try { const leg = await transitLeg(connection, start); if (leg) results.push(leg); } catch { warnings.push('A transit connection could not be verified.'); }
     }
-  } catch { warnings.push('Swiss public transport routing is unavailable for this leg.'); }
-  if (!results.length) throw new Error('No walking or public transport route could be verified.');
+  } catch(error) { providerFailure=error;warnings.push('Swiss public transport routing is unavailable for this leg.'); }
+  if (!results.length) throw providerFailure || new Error('No walking or public transport route could be verified.');
   results.forEach(leg => { leg.provider.warnings.push(...warnings); leg.provider.originCoordinates=a.join(','); leg.provider.destinationCoordinates=b.join(','); });
   return {routes:results.sort((a,b) => stamp(a.arrival) - stamp(b.arrival))};
 }
@@ -145,28 +178,57 @@ export function openingWindows(expression, date, coordinates) {
     return hours.getOpenIntervals(from, to).filter(interval => !interval[2]).map(([open,close]) => ({open:open.toISOString(),close:close.toISOString()}));
   } catch { return []; }
 }
+const restaurantCatalog=new RestaurantCatalog(()=>request(overpass,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
+  body:query({data:'[out:json][timeout:12];nwr[amenity~"^(restaurant|cafe)$"][name][opening_hours](47.1,8.2,47.7,8.9);out center;'})}),process.env.OSM_CATALOG_FILE);
+export async function refreshRestaurants() { return restaurantCatalog.current(); }
 export async function nearby(input) {
   const p = point([input.latitude,input.longitude]);
   if (p[0] < 47.1 || p[0] > 47.7 || p[1] < 8.2 || p[1] > 8.9) return {places:[]};
-  const data = await cached(`nearby:${p.map(n=>n.toFixed(4))}`, 300000, () => request(overpass, {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'},body:query({data:`[out:json][timeout:12];nwr[amenity~"^(restaurant|cafe)$"][name][opening_hours](around:800,${p[0]},${p[1]});out center;`})}));
-  const distance = hit => (Number(hit.lat ?? hit.center?.lat)-p[0])**2 + ((Number(hit.lon ?? hit.center?.lon)-p[1])*Math.cos(p[0]*Math.PI/180))**2;
-  const hits = (data.elements || []).filter(hit => ['node','way','relation'].includes(hit.type) && Number.isFinite(distance(hit)))
+  const data=await restaurantCatalog.current();
+  const distance=hit=>Math.hypot((Number(hit.lat ?? hit.center?.lat)-p[0])*111320,(Number(hit.lon ?? hit.center?.lon)-p[1])*111320*Math.cos(p[0]*Math.PI/180));
+  const hits = data.elements.filter(hit => ['node','way','relation'].includes(hit.type) && distance(hit)<=1500)
     .sort((a,b) => distance(a)-distance(b)).slice(0,12);
   const features = [];
   // Use the requested osm-api-js library for current canonical object tags, read-only.
   for (const type of ['node','way','relation']) {
-    const ids = hits.filter(h => h.type === type).map(h => h.id);
-    if (ids.length) features.push(...await cached(`features:${type}:${ids.join(',')}`, 3600000,
-      () => paced('https://api.openstreetmap.org', () => OSM.getFeatures(type, ids, {signal:AbortSignal.timeout(15000)}))));
+    const typed=hits.filter(h=>h.type===type);
+    const ids=typed.filter(h=>(canonical.get(`${type}:${h.id}`)?.until||0)<=Date.now()).map(h=>h.id);
+    if(ids.length && canonicalCooldown<=Date.now()) try {
+      const loaded=await paced('https://api.openstreetmap.org',()=>OSM.getFeatures(type,ids,{signal:AbortSignal.timeout(15000)}));
+      for(const feature of loaded) {
+        if(canonical.size>=2000) canonical.delete(canonical.keys().next().value);
+        canonical.set(`${feature.type}:${feature.id}`,{value:feature,until:Date.now()+86400000});
+      }
+    } catch { canonicalCooldown=Date.now()+60000; }
+    for(const hit of typed) {
+      const entry=canonical.get(`${type}:${hit.id}`);if(entry && entry.until>Date.now()) features.push(entry.value);
+    }
   }
   return {places: hits.flatMap(hit => {
     const feature = features.find(f => f.type === hit.type && f.id === hit.id);
-    const tags = feature?.tags;
+    const tags = feature ? feature.tags : hit.tags;
     if (!tags || !['restaurant','cafe'].includes(tags.amenity) || !tags.name) return [];
     const location = point([hit.lat ?? hit.center?.lat,hit.lon ?? hit.center?.lon]);
     const windows = openingWindows(tags.opening_hours, input.date, location);
     return [{id:`osm:${hit.type}:${hit.id}`,name:tags.name,sourceUrl:`https://www.openstreetmap.org/${hit.type}/${hit.id}`,
       websiteUrl:tags.website || tags['contact:website'] || '',location:{latitude:location[0],longitude:location[1]},windows,
-      hoursNote:`OpenStreetMap opening_hours: ${tags.opening_hours || 'unknown'}; special closures not confirmed`,attributions:[]}];
+      hoursNote:`OpenStreetMap opening_hours: ${tags.opening_hours || 'unknown'}; regional snapshot ${new Date(data.updatedAt).toISOString()}; kitchen hours and special closures not confirmed`,attributions:[]}];
+  })};
+}
+
+// Walking costs rank candidates; they never exclude potentially feasible transit journeys.
+export async function walkingCosts(input) {
+  const origin=point(input.origin),destination=point(input.destination);
+  if(!Array.isArray(input.stops) || input.stops.length>64) throw new Error('Invalid matrix size.');
+  const stops=input.stops.map(point);if(!stops.length) return {costs:[]};
+  const points=[origin,...stops,destination];
+  const coordinates=points.map(p=>`${p[1]},${p[0]}`).join(';');
+  const sources=points.slice(0,-1).map((_,i)=>i).join(';');
+  const destinations=points.slice(1).map((_,i)=>i+1).join(';');
+  const data=await cached(`matrix:${coordinates}`,86400000,()=>request(`${foot}/table/v1/foot/${coordinates}?${query({sources,destinations,annotations:'duration'})}`));
+  if(data.code!=='Ok' || !Array.isArray(data.durations)) throw new Error('Walking matrix unavailable.');
+  return {costs:stops.map((_,i)=> {
+    const outbound=data.durations[0]?.[i],onward=data.durations[i+1]?.[stops.length];
+    return Number.isFinite(outbound) && Number.isFinite(onward) ? outbound+onward : null;
   })};
 }

@@ -17,73 +17,14 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.*;
 
 class RoutePlannerServiceTests {
-    @Test void reportsRouteProviderBusyInsteadOfGenericBadGateway() {
-        var builder=RestClient.builder(); var server=MockRestServiceServer.bindTo(builder).build();
-        server.expect(requestTo("https://api.openai.com/v1/responses"))
-            .andRespond(withSuccess("{\"status\":\"completed\",\"output\":[{\"type\":\"function_call\",\"name\":\"get_route_options\",\"call_id\":\"c1\"}]}",MediaType.APPLICATION_JSON));
-        server.expect(requestTo("http://router/api/tools/routes"))
-            .andRespond(withStatus(org.springframework.http.HttpStatus.UNPROCESSABLE_CONTENT)
-                .contentType(MediaType.APPLICATION_JSON).body("{\"code\":\"route_provider_busy\",\"error\":\"private-provider-payload\"}"));
-        var failure=assertThrows(ResponseStatusException.class,()->service(builder.build()).plan(trip(),"key"));
-        assertEquals(429,failure.getStatusCode().value());
-        assertTrue(failure.getReason().contains("route data provider is busy"));
-        assertFalse(failure.getReason().contains("private-provider-payload")); server.verify();
-    }
-    @Test void openAiAuthenticationAndModelErrorsAreNotMisreportedAsRoutingFailures() {
-        for(int status:List.of(401,404,429)) {
-            var builder=RestClient.builder(); var server=MockRestServiceServer.bindTo(builder).build();
-            server.expect(requestTo("https://api.openai.com/v1/responses"))
-                .andRespond(withStatus(org.springframework.http.HttpStatus.valueOf(status)).contentType(MediaType.APPLICATION_JSON)
-                    .body("{\"error\":{\"message\":\"private-provider-message\"}}"));
-            var failure=assertThrows(ResponseStatusException.class,()->service(builder.build()).plan(trip(),"key"));
-            assertEquals(status==404 ? 503 : status,failure.getStatusCode().value());
-            assertTrue(failure.getReason().contains("OpenAI"));
-            assertFalse(failure.getReason().contains("private-provider-message"));server.verify();
-        }
-    }
     private final JsonMapper mapper=JsonMapper.builder().build();
     private final MensaRepository repository=mock(MensaRepository.class);
     private final Clock clock=Clock.fixed(Instant.parse("2026-10-10T20:00:00Z"),ZoneOffset.UTC);
     private Trip trip() { return new Trip("Zürich HB","ETH Zentrum",Instant.parse("2026-10-12T09:00:00Z"),Instant.parse("2026-10-12T12:00:00Z"),60); }
     private RoutePlannerService service(RestClient client) { return new RoutePlannerService(mapper,repository,clock,"http://router","connector-secret-123","gpt-6-astra",client); }
-    @Test void keyOnlyGoesToOpenAiAndUserTripOverridesModelArguments() {
-        when(repository.findAllMensas()).thenReturn(List.of()); when(repository.findMealsOn(any())).thenReturn(List.of());
-        var builder=RestClient.builder(); var server=MockRestServiceServer.bindTo(builder).build();
-        server.expect(requestTo("https://api.openai.com/v1/responses")).andExpect(header("Authorization","Bearer user-openai-secret"))
-            .andExpect(jsonPath("$.store").value(false)).andExpect(jsonPath("$.tool_choice.name").value("get_route_options"))
-            .andRespond(withSuccess(mapper.writeValueAsString(Map.of("status","completed","output",List.of(
-                Map.of("type","reasoning","id","r1","summary",List.of()),
-                Map.of("type","function_call","name","get_route_options","call_id","c1","arguments",mapper.writeValueAsString(Map.of("destination","malicious")))))),MediaType.APPLICATION_JSON));
-        server.expect(requestTo("http://router/api/tools/routes")).andExpect(header("Authorization","Bearer connector-secret-123"))
-            .andExpect(headerDoesNotExist("X-OpenAI-Key")).andExpect(jsonPath("$.destination").value("ETH Zentrum"))
-            .andExpect(jsonPath("$.arrivalTime").value("2026-10-12T12:00:00Z"))
-            .andRespond(withSuccess("{\"sessionId\":\"trusted-session\"}",MediaType.APPLICATION_JSON));
-        server.expect(requestTo("https://api.openai.com/v1/responses")).andExpect(header("Authorization","Bearer user-openai-secret"))
-            .andExpect(jsonPath("$.tool_choice.name").value("find_meal_stops"))
-            .andRespond(withSuccess(call("find_meal_stops","c2","{\"maxStops\":2,\"sessionId\":\"malicious-session\"}"),MediaType.APPLICATION_JSON));
-        server.expect(requestTo("http://router/api/tools/stops")).andExpect(header("Authorization","Bearer connector-secret-123"))
-            .andExpect(jsonPath("$.sessionId").value("trusted-session")).andExpect(jsonPath("$.maxStops").value(2))
-            .andRespond(withSuccess("{\"options\":[{}]}",MediaType.APPLICATION_JSON));
-        server.expect(requestTo("https://api.openai.com/v1/responses")).andExpect(header("Authorization","Bearer user-openai-secret"))
-            .andExpect(jsonPath("$.tool_choice.name").value("show_route_on_map"))
-            .andRespond(withSuccess(call("show_route_on_map","c3","{\"optionIndex\":0}"),MediaType.APPLICATION_JSON));
-        server.expect(requestTo("http://router/api/tools/show")).andExpect(header("Authorization","Bearer connector-secret-123"))
-            .andExpect(jsonPath("$.sessionId").value("trusted-session")).andExpect(jsonPath("$.optionIndex").value(0))
-            .andRespond(withSuccess("{\"options\":[{}],\"selectedOptionIndex\":0}",MediaType.APPLICATION_JSON));
-        server.expect(requestTo("https://api.openai.com/v1/responses")).andExpect(header("Authorization","Bearer user-openai-secret"))
-            .andExpect(jsonPath("$.tool_choice").value("none")).andExpect(jsonPath("$.input[1].type").value("reasoning"))
-            .andExpect(jsonPath("$.input[3].call_id").value("c1"))
-            .andRespond(withSuccess("{\"status\":\"completed\",\"output\":[{\"type\":\"message\",\"content\":[{\"type\":\"output_text\",\"text\":\"Try leaving earlier.\"}]}]}",MediaType.APPLICATION_JSON));
-        var result=service(builder.build()).plan(trip(),"user-openai-secret");
-        assertEquals("Try leaving earlier.",result.path("explanation").asText()); assertFalse(result.toString().contains("secret")); server.verify();
-        assertEquals(0,result.path("plan").path("selectedOptionIndex").asInt()); assertEquals(3,result.path("toolCalls").size());
-    }
-    private String call(String name, String id, String args) {
-        return mapper.writeValueAsString(Map.of("status","completed","output",List.of(Map.of("type","function_call","name",name,"call_id",id,"arguments",args))));
-    }
     @Test void rejectsMissingKeyPastAndCrossDateTripsBeforeAnyNetworkCall() {
         var builder=RestClient.builder(); var server=MockRestServiceServer.bindTo(builder).build(); var service=service(builder.build());
-        assertThrows(ResponseStatusException.class,()->service.plan(trip(),""));
+        assertThrows(ResponseStatusException.class,()->service.plan(trip(),"bad\nkey"));
         assertThrows(ResponseStatusException.class,()->service.plan(new Trip("A","B",clock.instant().minusSeconds(300),clock.instant().plusSeconds(600),60),"key"));
         assertThrows(ResponseStatusException.class,()->service.plan(new Trip("A","B",Instant.parse("2026-10-12T21:00:00Z"),Instant.parse("2026-10-12T23:00:00Z"),60),"key"));
         verifyNoInteractions(repository); server.verify();
@@ -101,10 +42,66 @@ class RoutePlannerServiceTests {
         assertTrue(closedContext.path("cafeterias").isEmpty());
         assertEquals("Test",closedContext.path("closedPlaces").get(0).path("name").asText());
     }
-    @Test void neverCallsUnsupportedModelTools() {
-        when(repository.findAllMensas()).thenReturn(List.of()); when(repository.findMealsOn(any())).thenReturn(List.of());
-        var builder=RestClient.builder(); var server=MockRestServiceServer.bindTo(builder).build();
-        server.expect(requestTo("https://api.openai.com/v1/responses")).andRespond(withSuccess("{\"status\":\"completed\",\"output\":[{\"type\":\"function_call\",\"name\":\"shell\",\"call_id\":\"x\"}]}",MediaType.APPLICATION_JSON));
-        assertThrows(ResponseStatusException.class,()->service(builder.build()).plan(trip(),"key")); server.verify();
+    private void routes(MockRestServiceServer server) {
+        server.expect(requestTo("http://router/api/tools/routes")).andExpect(header("Authorization","Bearer connector-secret-123"))
+            .andExpect(headerDoesNotExist("X-OpenAI-Key")).andExpect(jsonPath("$.destination").value("ETH Zentrum"))
+            .andRespond(withSuccess("{\"sessionId\":\"trusted-session\"}",MediaType.APPLICATION_JSON));
+        server.expect(requestTo("http://router/api/tools/stops")).andExpect(jsonPath("$.sessionId").value("trusted-session"))
+            .andExpect(jsonPath("$.maxStops").value(4)).andRespond(withSuccess("{\"options\":[{},{}],\"warnings\":[]}",MediaType.APPLICATION_JSON));
     }
+    private void selected(MockRestServiceServer server,int index) {
+        server.expect(requestTo("http://router/api/tools/show")).andExpect(header("Authorization","Bearer connector-secret-123"))
+            .andExpect(jsonPath("$.sessionId").value("trusted-session")).andExpect(jsonPath("$.optionIndex").value(index))
+            .andRespond(withSuccess("{\"options\":[{},{}],\"warnings\":[],\"selectedOptionIndex\":"+index+"}",MediaType.APPLICATION_JSON));
+    }
+    @Test void verifiedRoutesSurviveOpenAiAuthenticationModelAndQuotaFailures() {
+        for(int status:List.of(401,404,429)) {
+            var builder=RestClient.builder();var server=MockRestServiceServer.bindTo(builder).build();routes(server);
+            server.expect(requestTo("https://api.openai.com/v1/responses")).andRespond(withStatus(org.springframework.http.HttpStatus.valueOf(status))
+                .contentType(MediaType.APPLICATION_JSON).body("{\"error\":{\"message\":\"private-provider-message\"}}"));
+            selected(server,0);var result=service(builder.build()).plan(trip(),"key");
+            assertFalse(result.path("aiAvailable").asBoolean());assertEquals(0,result.path("plan").path("selectedOptionIndex").asInt());
+            assertTrue(result.path("explanation").asText().contains("OpenAI"));assertFalse(result.toString().contains("private-provider-message"));server.verify();
+        }
+    }
+    @Test void keyIsOptionalAndNotSentToMcp() {
+        var builder=RestClient.builder();var server=MockRestServiceServer.bindTo(builder).build();routes(server);selected(server,0);
+        var result=service(builder.build()).plan(trip(),"");assertFalse(result.path("aiAvailable").asBoolean());assertEquals(3,result.path("toolCalls").size());server.verify();
+    }
+    @Test void aiCanOnlySelectVerifiedRoutesAndKeyOnlyGoesToOpenAi() {
+        var builder=RestClient.builder();var server=MockRestServiceServer.bindTo(builder).build();routes(server);
+        server.expect(requestTo("https://api.openai.com/v1/responses")).andExpect(header("Authorization","Bearer user-openai-secret"))
+            .andExpect(jsonPath("$.store").value(false)).andExpect(jsonPath("$.tool_choice.name").value("show_route_on_map"))
+            .andRespond(withSuccess(mapper.writeValueAsString(Map.of("status","completed","output",List.of(Map.of("type","function_call","name","show_route_on_map","call_id","c1","arguments",mapper.writeValueAsString(Map.of("optionIndex",1,"sessionId","malicious")))))),MediaType.APPLICATION_JSON));
+        selected(server,1);
+        server.expect(requestTo("https://api.openai.com/v1/responses")).andExpect(jsonPath("$.tool_choice").value("none"))
+            .andExpect(jsonPath("$.input[2].call_id").value("c1"))
+            .andRespond(withSuccess("{\"status\":\"completed\",\"output\":[{\"content\":[{\"type\":\"output_text\",\"text\":\"Verified meal route.\"}]}]}",MediaType.APPLICATION_JSON));
+        var result=service(builder.build()).plan(trip(),"user-openai-secret");assertEquals("Verified meal route.",result.path("explanation").asText());assertTrue(result.path("aiAvailable").asBoolean());assertFalse(result.toString().contains("secret"));server.verify();
+    }
+    @Test void invalidAiToolFallsBackWithoutExecutingIt() {
+        var builder=RestClient.builder();var server=MockRestServiceServer.bindTo(builder).build();routes(server);
+        server.expect(requestTo("https://api.openai.com/v1/responses")).andRespond(withSuccess("{\"status\":\"completed\",\"output\":[{\"type\":\"function_call\",\"name\":\"shell\",\"call_id\":\"x\"}]}",MediaType.APPLICATION_JSON));
+        selected(server,0);assertFalse(service(builder.build()).plan(trip(),"key").path("aiAvailable").asBoolean());server.verify();
+    }
+    @Test void providerFailureDoesNotTriggerOpenAi() {
+        var builder=RestClient.builder();var server=MockRestServiceServer.bindTo(builder).build();
+        server.expect(requestTo("http://router/api/tools/routes")).andRespond(withStatus(org.springframework.http.HttpStatus.UNPROCESSABLE_CONTENT)
+            .contentType(MediaType.APPLICATION_JSON).body("{\"code\":\"route_provider_busy\"}"));
+        var failure=assertThrows(ResponseStatusException.class,()->service(builder.build()).plan(trip(),"key"));assertEquals(429,failure.getStatusCode().value());server.verify();
+    }
+    @Test void verifiedGeometrySurvivesAnExpiredMcpSelectionSession() {
+        var builder=RestClient.builder();var server=MockRestServiceServer.bindTo(builder).build();routes(server);
+        server.expect(requestTo("http://router/api/tools/show")).andRespond(withStatus(org.springframework.http.HttpStatus.UNPROCESSABLE_CONTENT)
+            .contentType(MediaType.APPLICATION_JSON).body("{\"error\":\"Session expired\"}"));
+        var result=service(builder.build()).plan(trip(),"");assertEquals(0,result.path("plan").path("selectedOptionIndex").asInt());
+        assertEquals(2,result.path("plan").path("options").size());assertTrue(result.path("explanation").asText().contains("already-verified"));server.verify();
+    }
+    @Test void ambiguousLocationReturnsBadRequestWithoutCallingAi() {
+        var builder=RestClient.builder();var server=MockRestServiceServer.bindTo(builder).build();
+        server.expect(requestTo("http://router/api/tools/routes")).andRespond(withStatus(org.springframework.http.HttpStatus.UNPROCESSABLE_CONTENT)
+            .contentType(MediaType.APPLICATION_JSON).body("{\"code\":\"invalid_location\"}"));
+        var failure=assertThrows(ResponseStatusException.class,()->service(builder.build()).plan(trip(),""));assertEquals(400,failure.getStatusCode().value());server.verify();
+    }
+
 }

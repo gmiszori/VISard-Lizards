@@ -138,3 +138,14 @@ OSM migration verified: full OpenAI/backend/Kotlin MCP run completed in 42.3 sec
 OSM wiki follow-up: optional self-hosted OSRM foot graph pipeline, walking alternatives and 100m snapping limit; OpenAI key/model/quota errors now distinguished from routing failures. Saved-key E2E succeeded again; user-specific 502 cause not identified without its response body.
 
 Verified private OSRM image v5.27.1 with real extract/partition/customize pipeline on a synthetic foot graph: returned footway detour instead of shorter foot=no motorway. No full Switzerland graph loaded yet; optional self-hosted config needs region.osm.pbf. Node 5 tests and backend error tests pass.
+
+2026-10-11 - Codex: reliable routing upgrade on codex/meal-route-planner.
+- Walking now uses private OSRM by default. First Compose startup downloads the Swiss map extract and builds the pedestrian graph; named volume reuses it on rebuild. Full Switzerland foot graph built and running locally.
+- Kotlin MCP ranks up to 64 candidates with a single walking matrix request, then checks four stops with actual walking/transit legs. Matrix failure falls back to proximity; it never excludes transit based on walking feasibility.
+- Daily Zurich regional catalog (3252 OSM restaurants/cafes) persists across restarts. Searches reuse it; background checks refresh after 24h. Expired opening-hour data is not silently accepted. Canonical osm-api-js tags are batched/cached, with snapshot fallback.
+- Node shares identical in-flight cached requests and respects provider Retry-After cooldowns. Private OSRM requests avoid artificial public-provider pacing.
+- Backend gets verified MCP routes before optional AI selection/explanation (two AI calls, 45s timeout each). OpenAI key/model/quota failures still return map-ready routes with explicit warnings. Verified geometry also survives MCP map-selection expiry/disconnection. API can run without an OpenAI key; existing form still accepts user keys.
+- Route submissions have a 10-second cooldown, and failed attempts release it. No changes to rating/crowd limits.
+- Fixed ETH Zentrum resolving to Horw: campus alias uses Rämistrasse 101, Zurich; exact station matches beat nearby names and ambiguous/unrelated results return 400.
+- Tests: Java service/rate/config 15, Kotlin 8, Node 10 pass. Website invalid-key E2E finished in 14s with four meal options and map alternatives. Saved-key AI E2E passed with both WALK/TRANSIT, correct ETH destination, distinct venues and full 60-minute meals plus arrival buffer.
+- Checked origin/main 5d47b9d UI simplification and origin/codex/recipe-poc updates. Keeping feature isolated; no frontend source changes, main 8083 stack unchanged, no secrets/IDE files committed.

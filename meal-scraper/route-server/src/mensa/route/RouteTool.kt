@@ -68,9 +68,21 @@ class RouteTool(private val maps: MapProvider) {
                 if (!duplicate) restaurants += Candidate(MealStop(data.text("id"), name, point.toString(), windows), point, data, false)
             }
         }
-        val other = restaurants.distinctBy { it.stop.id }.sortedBy { corridorDistance(it.point, path) }
+        val candidates = (cafeterias + restaurants.distinctBy { it.stop.id }).sortedBy { corridorDistance(it.point, path) }.take(64)
+        val costs = runCatching {
+            fun evidencePoint(field: String, fallback: Point): Point {
+                val pair = baseline.evidence?.text(field)?.takeIf { it.isNotBlank() }?.split(',')?.map { it.toDouble() }
+                return if (pair?.size == 2) Point(pair[0], pair[1]) else fallback
+            }
+            maps.walkingCosts(evidencePoint("originCoordinates", path.first()), evidencePoint("destinationCoordinates", path.last()), candidates.map { it.point })
+        }.getOrElse { warnings += "Walking matrix unavailable; stops ranked by route proximity."; candidates.map { null } }
+        val ranked = candidates.withIndex().sortedWith(compareBy<IndexedValue<Candidate>> {
+            costs.getOrNull(it.index) ?: Double.POSITIVE_INFINITY
+        }.thenBy { corridorDistance(it.value.point, path) }).map { it.value }
+        val rankedCafeterias = ranked.filter { it.cafeteria }
+        val other = ranked.filter { !it.cafeteria }
         val half = (maxStops + 1) / 2
-        val shortlist = (cafeterias.take(half) + other.take(maxStops - half) + cafeterias.drop(half) + other.drop(maxStops - half)).distinctBy { it.stop.id }.take(maxStops)
+        val shortlist = (rankedCafeterias.take(half) + other.take(maxStops - half) + rankedCafeterias.drop(half) + other.drop(maxStops - half)).distinctBy { it.stop.id }.take(maxStops)
         val planner = MealRoutePlanner(RouteProvider { a, b, time ->
             try { maps.route(a, b, time) } catch (ex: Exception) { warnings += "A candidate journey could not be verified and was omitted."; null }
         })
