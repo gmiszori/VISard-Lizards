@@ -416,14 +416,17 @@ document.querySelector<HTMLInputElement>('#search-input')?.addEventListener('inp
   searchStatus('');
   showHybridResults(null);
   applyPreferences();
-  if (!fromVoice || query.length < 2 || !API_URL) return;
+  if (query.length < 2 || !API_URL) return;
   if (!preferences.useAiVoiceSearch) {
-    searchStatus(document.documentElement.lang === 'de'
-      ? 'KI für die Sprachsuche ist ausgeschaltet. Zeige Worttreffer.'
-      : 'AI voice search is off. Showing word matches.');
+    if (fromVoice) {
+      searchStatus(document.documentElement.lang === 'de'
+        ? 'KI für die Sprachsuche ist ausgeschaltet. Zeige Worttreffer.'
+        : 'AI voice search is off. Showing word matches.');
+    }
     return;
   }
 
+  const delayMs = fromVoice ? 650 : 1000;
   searchTimer = setTimeout(async () => {
     searchStatus(document.documentElement.lang === 'de' ? 'Suche nach passenden Gerichten …' : 'Finding matching dishes…');
 
@@ -475,7 +478,7 @@ document.querySelector<HTMLInputElement>('#search-input')?.addEventListener('inp
           : 'Backend at localhost:8080 is unreachable. Showing local text matches.');
       searchStatus(message);
     }
-  }, 650);
+  }, delayMs);
 });
 
 const voiceSearchButton = document.querySelector<HTMLButtonElement>('#voice-search-button');
