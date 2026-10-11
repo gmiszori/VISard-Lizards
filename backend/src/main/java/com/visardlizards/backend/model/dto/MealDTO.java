@@ -12,6 +12,7 @@ public record MealDTO(
 		PriceDTO price,
 		/** All three prices, for clients that pick the category themselves. */
 		PricesDTO prices,
+		List<String> components,
 		@Nullable String description,
 		List<String> allergens,
 		List<String> classification,

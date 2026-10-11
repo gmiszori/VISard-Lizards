@@ -91,6 +91,7 @@ public class MensaDtoMapper {
 				new PriceDTO(price, priceCategory.name().toLowerCase(Locale.ROOT)),
 				meal.price() == null ? new PricesDTO(null, null, null)
 						: new PricesDTO(meal.price().student(), meal.price().staff(), meal.price().external()),
+				meal.components(),
 				description,
 				meal.allergens(),
 				List.of(meal.dietTag(), meal.kind(), meal.service()),

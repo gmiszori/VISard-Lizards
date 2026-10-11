@@ -1,7 +1,9 @@
 import { matchesQuery } from '../search/fold';
 import { addSpeechPhraseHints, chooseFoodAwareTranscript, speechRecognitionConstructor, type SpeechRecognitionLike } from '../search/speech';
-import { ALL_CAMPUS_IDS, isPriceTier, isViewMode, readPreferences, PREFERENCES_KEY, type Preferences } from '../preferences/state';
-import { API_URL, ApiError, createRealtimeVoiceSession, searchHybridMeals, type HybridMealSearchResponse } from '../data/api';
+import { ALL_CAMPUS_IDS, isPriceTier, isViewMode, readFavourites, readPreferences, PREFERENCES_KEY, type Preferences } from '../preferences/state';
+import { API_URL, ApiError, createRealtimeVoiceSession, getMensas, searchHybridMeals, type BackendMensa, type HybridMealSearchResponse } from '../data/api';
+import { distanceM } from '../location/locate';
+import { matchesMeal, readStarredMeals } from '../meals/stars';
 import { RealtimeVoiceConnection, type RealtimeVoiceStatus } from '../search/realtime';
 let aiMatchedIds: Set<string> | null = null;
 let aiMatchedMealIds: Set<string> | null = null;
@@ -356,6 +358,7 @@ document.querySelector<HTMLInputElement>('#search-input')?.addEventListener('inp
 
       const hybridRes = await searchHybridMeals({
         query,
+        appLanguage: document.documentElement.lang === 'de' ? 'de' : 'en',
         // GPS gives us context for explicit "here" requests; it must not narrow every voice query.
         mensaId,
         date,
@@ -466,19 +469,69 @@ voiceSearchButton?.addEventListener('click', () => {
         searchStatus(document.documentElement.lang === 'de' ? 'Suche nach passenden Gerichten …' : 'Finding matching dishes…');
         const explicitDate = /\b(today|tonight|tomorrow|yesterday|monday|tuesday|wednesday|thursday|friday|saturday|sunday|heute|heute abend|morgen|gestern|montag|dienstag|mittwoch|donnerstag|freitag|samstag|sonntag)\b|\b\d{1,2}[./-]\d{1,2}(?:[./-]\d{2,4})?\b/iu.test(query);
         try {
-          const response = await searchHybridMeals({
-            query,
-            mensaId: currentSearchMensaId(),
-            campusId: activeCampusFilter(),
-            campusIds: activeCampusScope(),
-            date: explicitDate ? null : document.querySelector<HTMLElement>('[data-day-picker]')?.dataset.pickerDate ?? null,
-            userLat: userCoords?.lat ?? null,
-            userLng: userCoords?.lng ?? null,
-            priceCategory: priceCategory(),
-            limit: 10,
-          }, API_URL, 20000);
+          const [response, allMensas] = await Promise.all([
+            searchHybridMeals({
+              query,
+              appLanguage: document.documentElement.lang === 'de' ? 'de' : 'en',
+              mensaId: currentSearchMensaId(),
+              campusId: activeCampusFilter(),
+              campusIds: activeCampusScope(),
+              date: explicitDate ? null : document.querySelector<HTMLElement>('[data-day-picker]')?.dataset.pickerDate ?? null,
+              userLat: userCoords?.lat ?? null,
+              userLng: userCoords?.lng ?? null,
+              priceCategory: priceCategory(),
+              limit: 10,
+            }, API_URL, 20000),
+            getMensas(API_URL).catch(() => [] as BackendMensa[]),
+          ]);
           displayHybridResponse(response, '', true);
-          return response;
+          const visibleResults = visibleHybridResults(response);
+          const favouriteMensaIds = new Set(readFavourites());
+          const favouriteMealNames = readStarredMeals();
+          const venueFacts = allMensas
+            .filter(mensa => priceCategory() !== 'STUDENT' || mensa.id !== 'dozentenfoyer')
+            .map(mensa => ({
+              id: mensa.id,
+              name: mensa.title,
+              campus: mensa.campus,
+              address: mensa.location,
+              distanceM: userCoords && mensa.coordinates
+                ? Math.round(distanceM(userCoords, mensa.coordinates)) : null,
+              openingHours: mensa.openingHours,
+              averageRating: mensa.avgRating,
+              isFavourite: favouriteMensaIds.has(mensa.id),
+            }))
+            .sort((a, b) => (a.distanceM ?? Number.POSITIVE_INFINITY) - (b.distanceM ?? Number.POSITIVE_INFINITY));
+          const venuesById = new Map(venueFacts.map(venue => [venue.id, venue]));
+          const mealOptions = visibleResults.map(result => {
+            const venue = venuesById.get(result.mensaId);
+            return {
+              id: result.meal.id,
+              name: result.meal.name,
+              venue: result.mensaName,
+              campus: venue?.campus ?? null,
+              date: result.date,
+              prices: result.meal.prices,
+              ingredients: result.meal.components ?? (result.meal.description ? [result.meal.description] : []),
+              allergens: result.meal.allergens,
+              classification: result.meal.classification,
+              distanceM: result.distanceM ?? venue?.distanceM ?? null,
+              venueAverageRating: venue?.averageRating ?? null,
+              isFavouriteMeal: matchesMeal(result.meal.name, favouriteMealNames),
+              isFavouriteVenue: venue?.isFavourite ?? false,
+            };
+          });
+          return {
+            userRequest: query,
+            appliedCriteria: response.criteria,
+            totalMealMatches: response.totalMatches,
+            mealOptions,
+            venues: venueFacts,
+            personalizationContext: {
+              favouriteMealsInCurrentResults: mealOptions.filter(meal => meal.isFavouriteMeal).map(meal => meal.name),
+              favouriteRestaurants: venueFacts.filter(venue => venue.isFavourite).map(venue => venue.name),
+            },
+          };
         } finally {
           searchStatus('');
         }
@@ -490,6 +543,7 @@ voiceSearchButton?.addEventListener('click', () => {
           activeMensaId: currentSearchMensaId(),
           activeCampusId,
           priceCategory: priceCategory(),
+          appLanguage: document.documentElement.lang === 'de' ? 'de' : 'en',
         }, API_URL);
         const connection = await RealtimeVoiceConnection.connect(session.clientSecret, session.instructions, callbacks);
         realtimeVoice = connection;

@@ -59,7 +59,8 @@ public class HybridMealSearchService {
             case EXTERNAL -> "priceExternal";
         };
         SearchCriteria criteria = request.criteria() == null
-                ? parser.parse(request.query(), request.mensaId(), request.campusId(), priceColumn)
+                ? parser.parse(request.query(), request.mensaId(), request.campusId(), priceColumn,
+                        request.appLanguage())
                 : parser.normalizeRealtimeCriteria(request.criteria(), request.mensaId());
         if (request.criteria() != null) validateRealtimeCriteria(criteria);
         return searchWithCriteria(request, criteria);

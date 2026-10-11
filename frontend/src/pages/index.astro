@@ -103,7 +103,7 @@ const openCount = canteens.filter((canteen) => canteen.isOpen).length;
   .ai-menu-hint{margin:0 0 12px;color:var(--muted);font-size:12px;line-height:1.5}
   #no-menu-toggle{min-height:44px;padding:5px 0;border:0;background:none;color:var(--green);font-size:12px;font-weight:700;text-decoration:underline;text-underline-offset:3px}
   #no-menu-toggle[hidden]{display:none}
-  .back-to-top{position:fixed;right:max(16px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom));z-index:30;display:grid;place-items:center;width:44px;height:44px;padding:0;border:1px solid var(--line);border-radius:50%;background:var(--paper);color:var(--green);box-shadow:var(--shadow);font:700 22px/1 'DM Sans',sans-serif;cursor:pointer;transition:transform .18s,background .18s}
+  .back-to-top{position:fixed;left:max(16px,env(safe-area-inset-left));bottom:max(16px,env(safe-area-inset-bottom));z-index:30;display:grid;place-items:center;width:44px;height:44px;padding:0;border:1px solid var(--line);border-radius:50%;background:var(--paper);color:var(--green);box-shadow:var(--shadow);font:700 22px/1 'DM Sans',sans-serif;cursor:pointer;transition:transform .18s,background .18s}
   .back-to-top:hover{transform:translateY(-2px)}
   .back-to-top:focus-visible{outline:3px solid var(--green);outline-offset:3px}
 </style>

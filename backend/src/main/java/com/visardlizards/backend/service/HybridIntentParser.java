@@ -51,6 +51,7 @@ public class HybridIntentParser {
             Active price column: %s
             Active mensaId in context: %s
             Active campusId in context: %s
+            App language context: %s. Interpret queries in either English or German/Swiss German, but retain the exact database values required by the JSON schema. Any natural-language wording returned to the user should use the selected app language.
             """;
 
     private final RestClient client;
@@ -77,10 +78,15 @@ public class HybridIntentParser {
     }
 
     public SearchCriteria parse(String query, String activeMensaId, String activeCampusId, String priceColumn) {
+        return parse(query, activeMensaId, activeCampusId, priceColumn, "en");
+    }
+
+    public SearchCriteria parse(String query, String activeMensaId, String activeCampusId, String priceColumn,
+            String appLanguage) {
         if (query == null || query.isBlank()) return new SearchCriteria(null, false, null, null);
         if (apiKey == null || apiKey.isBlank())
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "OpenAI intent parser is not configured");
-        RealtimePrompt prompt = realtimePrompt(activeMensaId, activeCampusId, priceColumn);
+        RealtimePrompt prompt = realtimePrompt(activeMensaId, activeCampusId, priceColumn, appLanguage);
         Map<String, Object> body = Map.of("model", model, "store", false,
                 "instructions", prompt.instructions(), "input", query,
                 "text", Map.of("format", Map.of("type", "json_schema", "name", "meal_search_criteria",
@@ -107,6 +113,11 @@ public class HybridIntentParser {
 
     /** Builds the same exact dynamic domain prompt and SearchCriteria schema for Realtime function calls. */
     public RealtimePrompt realtimePrompt(String activeMensaId, String activeCampusId, String priceColumn) {
+        return realtimePrompt(activeMensaId, activeCampusId, priceColumn, "en");
+    }
+
+    public RealtimePrompt realtimePrompt(String activeMensaId, String activeCampusId, String priceColumn,
+            String appLanguage) {
         List<String> diets = repository.values("dietTag");
         List<String> kinds = repository.values("kind");
         List<String> services = repository.values("service");
@@ -117,7 +128,8 @@ public class HybridIntentParser {
         String instructions = SYSTEM_PROMPT.formatted(diets, kinds, services, mensas, campuses,
                 venueNames, allergens, LocalDate.now(clock), priceColumn,
                 activeMensaId == null ? "none" : activeMensaId,
-                activeCampusId == null ? "none" : activeCampusId);
+                activeCampusId == null ? "none" : activeCampusId,
+                "de".equalsIgnoreCase(appLanguage) ? "German" : "English");
         return new RealtimePrompt(instructions, schema(diets, kinds, services, mensas, campuses, allergens));
     }
 

@@ -83,6 +83,7 @@ export interface BackendMeal {
   id: string;
   name: string;
   prices: { student: number | null; staff: number | null; external: number | null };
+  components?: string[];
   description: string | null;
   /** Canonical allergen ids, e.g. "gluten", "milk". */
   allergens: string[];
@@ -102,12 +103,17 @@ export interface BackendMealDetail {
 export interface BackendMensa {
   id: string;
   title: string;
+  location: string;
   /** Campus display name: Zentrum, Hönggerberg or Irchel. */
   campus: string;
+  openingHours: Record<string, Array<{ from: string; to: string }>> | null;
   /** WGS84, accurate to the building; null when unknown. */
   coordinates: { lat: number; lng: number } | null;
   avgRating: number | null;
 }
+
+export const getMensas = (baseUrl = API_URL, timeoutMs = 10000): Promise<BackendMensa[]> =>
+  apiGet<BackendMensa[]>('/api/mensas', baseUrl, timeoutMs);
 
 /** GET /api/meta */
 export interface BackendMeta {
@@ -241,6 +247,7 @@ export const createRealtimeVoiceSession = (params: {
   activeMensaId: string | null;
   activeCampusId: string | null;
   priceCategory: 'STUDENT' | 'STAFF' | 'EXTERNAL';
+  appLanguage: 'en' | 'de';
 }, baseUrl = API_URL): Promise<RealtimeVoiceSession> =>
   apiPost<RealtimeVoiceSession>('/api/voice/realtime-session', params, baseUrl, 15000);
 
@@ -252,6 +259,7 @@ export const searchHybridMeals = (
     campusIds?: string[] | null;
     date?: string | null;
     priceCategory?: 'STUDENT' | 'STAFF' | 'EXTERNAL';
+    appLanguage?: 'en' | 'de';
     userLat?: number | null;
     userLng?: number | null;
     limit?: number;

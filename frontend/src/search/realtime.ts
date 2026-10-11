@@ -212,14 +212,6 @@ export class RealtimeVoiceConnection {
       : { type: 'response.create' }));
   }
 
-  private isMealLookupRequest(text: string): boolean {
-    if (/\b(eat|food|dish|meal|menu|mensa|restaurant|cafeteria|cafe|price|cost|francs?|franken|chf|vegan|vegetarian|chicken|poulet|rice|pasta|sushi|lunch|dinner|breakfast|snack|essen|gericht|gerichte|speise|menü|preis|kostet|mittagessen|abendessen|frühstück|kantine|huhn|reis|available|availability|open|opening|hours?|distance|nearby|nearest|location|address|cheap|cheaper|budget|under|below|less than|günstig|preiswert|öffnungszeit(?:en)?|geöffnet|offen|entfernung|nähe|standort|adresse|wo|unter)\b/iu.test(text)) return true;
-    const normalized = text.toLocaleLowerCase().normalize('NFC');
-    return [...document.querySelectorAll<HTMLElement>('[data-canteen-card]')].some(card =>
-      [card.dataset.name, card.dataset.canteenId, card.dataset.campus, card.dataset.campusId]
-        .some(name => !!name && normalized.includes(name.toLocaleLowerCase().normalize('NFC'))));
-  }
-
   private scheduleUserResponse(): void {
     if (this.userResponseTimer !== null) clearTimeout(this.userResponseTimer);
     this.userResponseTimer = null;
@@ -229,15 +221,16 @@ export class RealtimeVoiceConnection {
     this.userResponseTimer = setTimeout(() => {
       this.userResponseTimer = null;
       this.flushPendingResponses();
-    }, 1250);
+    }, 750);
   }
 
   private acceptTranscript(transcript: string): void {
     this.callbacks.onUserText(transcript);
-    if (this.isMealLookupRequest(transcript)) {
-      this.queuedMealLookup = true;
-      this.queuedMealQuery = [this.queuedMealQuery, transcript].filter(Boolean).join(' ');
-    }
+    // Let the backend's structured intent parser decide what the user means.
+    // A frontend keyword allowlist silently bypasses valid requests such as
+    // nutrition questions, newly added data fields, and unfamiliar dish names.
+    this.queuedMealLookup = true;
+    this.queuedMealQuery = [this.queuedMealQuery, transcript].filter(Boolean).join(' ');
     this.queuedUserResponse = true;
     this.scheduleUserResponse();
   }
@@ -252,11 +245,17 @@ export class RealtimeVoiceConnection {
   private isTranscriptionHintEcho(text: string): boolean {
     const normalized = text.normalize('NFKD').replace(/\p{M}/gu, '').toLocaleLowerCase()
       .replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
-    const distinctiveHintPhrases = [
-      'this is live english or german swiss german speech about eth zurich cafeteria food',
-      'common terms include eth zentrum honggerberg irchel polysnack mensa chf francs franken vegan chicken rice',
-      'preserve the words and amounts actually spoken do not invent or replace them',
+    const distinctiveTerms = [
+      'eth', 'zentrum', 'honggerberg', 'irchel', 'polysnack', 'mensa', 'chf',
+      'franken', 'vegan', 'chicken', 'huhn', 'rice', 'reis',
     ];
-    return distinctiveHintPhrases.filter(phrase => normalized.includes(phrase)).length >= 2;
+    const termCount = distinctiveTerms.filter(term => new RegExp(`(^| )${term}( |$)`, 'u').test(normalized)).length;
+    const translatedPromptMarkers = [
+      'common terms include', 'preserve the words and amounts', 'app language is',
+      'haufige begriffe', 'bewahren sie die tatsachlich gesprochenen', 'app sprache ist',
+      '一般的な用語', '実際に話された言葉', 'アプリの言語',
+    ];
+    const hasPromptMarker = translatedPromptMarkers.some(marker => normalized.includes(marker));
+    return normalized.length >= 100 && termCount >= 5 && (hasPromptMarker || termCount >= 9);
   }
 }

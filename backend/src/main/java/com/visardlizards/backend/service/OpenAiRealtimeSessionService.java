@@ -49,6 +49,7 @@ public class OpenAiRealtimeSessionService {
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "OpenAI Realtime is not configured");
         String mensaId = allowedOrNull(request.activeMensaId(), repository.mensaIds(), "mensa");
         String campusId = allowedOrNull(request.activeCampusId(), repository.campusIds(), "campus");
+        String appLanguage = "de".equalsIgnoreCase(request.appLanguage()) ? "German" : "English";
         String instructions = """
 You are UniEats, a voice assistant exclusively for campus dining, cafeterias, and meals.
 
@@ -58,13 +59,19 @@ Scope & Guardrails:
 
 Operational constraints:
 - Meal answers: Use only the structured meal data supplied with the response. Do not answer a meal lookup before that data is supplied. Never mention internal criteria, JSON, databases, or backend operations.
+- Allergen answers: For the requested dish, treat its allergens list as authoritative. If it includes the asked allergen, say clearly that the dish contains it. If the allergen is absent, say it is not listed and you cannot confirm the dish is free of it; never infer allergen-free from missing data. When asked for details, list the allergens provided and keep the answer consistent across follow-ups. If a previous answer conflicts with the supplied meal data, correct it briefly.
+- Follow-ups: Use recent conversation context to resolve references such as "that dish" or "what did you just say?" Answer from the visible conversation and supplied meal data; do not claim not to know when the reference is clear.
 - Food recommendations: Present up to 3 best options strictly formatted as "Dish — venue — price". Omit the price if unavailable. If specifically asked for prices and none are found, say: "I don't know the prices."
 - Venue & distance queries: State the venue name and distance or location directly in 1 short sentence.
 - Unknowns / No matches: State plainly that you do not know or that no options match.
 - Length: Strictly under 30 words per turn."
-- Style: Direct, natural spoken English. No filler words, greetings, status updates ("Let me check"), summaries, or unprompted follow-up offers.
+- Style: Direct, natural spoken English or German. No filler words, greetings, status updates ("Let me check"), summaries, or unprompted follow-up offers.
 - Unclear input: If user speech is directed to you but unintelligible, reply only: "Sorry, I didn't understand." 
-                """;
+                """ + "\nSelected app language: " + appLanguage
+                + ". Reply in this language, even when the user speaks the other supported language. Do not switch languages unless the app language changes.";
+        String transcriptionPrompt = "ETH Zurich cafeteria vocabulary (English/German): ETH, Zürich, Zentrum, Hönggerberg, Irchel, "
+                + "Polysnack, Mensa, CHF, francs, Franken, vegan, vegetarian, chicken, Huhn, rice, Reis, Spring Rolls, "
+                + "Bulgur Bowl, Laksa Nudelsuppe.";
 
         Map<String, Object> session = Map.of(
                 "type", "realtime",
@@ -74,8 +81,7 @@ Operational constraints:
                 "audio", Map.of(
                         "input", Map.of(
                                 "noise_reduction", Map.of("type", "near_field"),
-                                "transcription", Map.of("model", "gpt-4o-mini-transcribe", "prompt",
-                                        "This is live English or German/Swiss German speech about ETH Zurich cafeteria food, campus venues, and prices. Common terms include ETH, Zentrum, Hönggerberg, Irchel, Polysnack, Mensa, CHF, francs, Franken, vegan, chicken, rice, and dish names. Preserve the words and amounts actually spoken; do not invent or replace them."),
+                                "transcription", Map.of("model", "gpt-4o-mini-transcribe", "prompt", transcriptionPrompt),
                                 "turn_detection", Map.of("type", "server_vad", "threshold", 0.65,
                                         "prefix_padding_ms", 300, "silence_duration_ms", 1000,
                                         "create_response", false, "interrupt_response", false)),
