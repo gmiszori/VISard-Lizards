@@ -74,6 +74,7 @@ services:
       - ROUTE_CONNECTOR_URL=http://route-planner:8092
       - ROUTE_CONNECTOR_TOKEN=${ROUTE_CONNECTOR_TOKEN:?Set ROUTE_CONNECTOR_TOKEN in root .env}
       - ROUTE_PLANNER_MODEL=${ROUTE_PLANNER_MODEL:-gpt-6-astra}
+      - GOOGLE_MAPS_BROWSER_KEY=${GOOGLE_MAPS_BROWSER_KEY:-}
       - MEAL_SCRAPER_ENABLED=false
     depends_on:
       route-planner:

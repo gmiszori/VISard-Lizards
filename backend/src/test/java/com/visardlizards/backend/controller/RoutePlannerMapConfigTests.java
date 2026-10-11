@@ -18,12 +18,12 @@ class RoutePlannerMapConfigTests {
     @Autowired MockMvc mvc;
     @MockitoBean RoutePlannerService service;
 
-    @Test void exposesOsmProviderWithoutCredentialsAndDisablesCaching() throws Exception {
+    @Test void exposesOnlyPublicDisplayKeyAndDisablesCaching() throws Exception {
         mvc.perform(get("/api/route-planner/map-config"))
             .andExpect(status().isOk())
             .andExpect(header().string("Cache-Control", "no-store"))
-            .andExpect(jsonPath("$.provider").value("openstreetmap"))
-            .andExpect(jsonPath("$.browserKey").doesNotExist())
+            .andExpect(jsonPath("$.provider").value("google"))
+            .andExpect(jsonPath("$.browserKey").value("public-browser-key"))
             .andExpect(content().string(not(containsString("private-routing-secret"))));
     }
 }

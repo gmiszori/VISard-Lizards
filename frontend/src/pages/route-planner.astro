@@ -1,7 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import '../route-planner/styles.css';
-import 'leaflet/dist/leaflet.css';
 ---
 <BaseLayout title="Meal route planner">
   <div class="planner-heading"><a href="/">← Cafeterias</a><span class="preview-tag">Branch preview</span></div>
@@ -17,7 +16,7 @@ import 'leaflet/dist/leaflet.css';
       <form id="route-form">
         <label for="openai-key">Your OpenAI API key</label>
         <input id="openai-key" type="password" autocomplete="off" spellcheck="false" required maxlength="256" placeholder="sk-…" />
-        <p class="field-note">Used for this request only. Never saved in your browser or the app database.</p>
+        <p class="field-note">Kept in this form until you clear it or reload the page. Never saved to browser storage or the app database.</p>
         <label for="origin">Starting point</label>
         <div class="location-row"><input id="origin" required maxlength="200" placeholder="Address or place, e.g. Zürich HB" /><button type="button" id="use-location">Use my location</button></div>
         <label for="destination">Destination</label>
@@ -38,7 +37,7 @@ import 'leaflet/dist/leaflet.css';
     <section class="planner-results" aria-labelledby="result-title" aria-busy="false">
       <div id="route-map-panel">
         <div class="map-heading"><h2>Your route</h2><span id="route-map-selection" aria-live="polite">Routes will appear here after planning.</span></div>
-        <div id="route-map" aria-label="Interactive OpenStreetMap map of your journey and meal stops"></div>
+        <div id="route-map" aria-label="Interactive Google map of your journey and meal stops"></div>
         <p id="route-map-status" role="status">Loading map…</p>
         <div class="map-legend"><span><i class="outbound"></i> To meal stop</span><span><i class="onward"></i> To destination</span><span><i class="alternative"></i> Other options</span><span>Dashed: transit stops</span></div>
         <div id="route-map-options" aria-label="Choose a route option"></div>

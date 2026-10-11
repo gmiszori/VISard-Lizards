@@ -85,7 +85,7 @@ form.addEventListener('submit', async event => {
   event.preventDefault(); if (button.disabled) return;
   const departure = new Date(input('departure').value); const arrival = new Date(input('arrival').value);
   if (!(departure.getTime() < arrival.getTime())) { status.textContent = 'Arrival must be after departure.'; return; }
-  const key = input('openai-key').value.trim(); input('openai-key').value = '';
+  const key = input('openai-key').value.trim();
   button.disabled = true; section.setAttribute('aria-busy', 'true'); results.replaceChildren(); routeMap.reset();
   const started = Date.now();
   const timer = window.setInterval(() => { status.textContent = `Planning with AI and MCP: checking restaurants, opening hours and travel legs… ${Math.floor((Date.now() - started) / 1000)}s`; }, 1000);

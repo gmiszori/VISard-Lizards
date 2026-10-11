@@ -1,10 +1,10 @@
 # Meal route planner branch preview
 
-The route planner uses OpenStreetMap instead of Google. It retains walking, Swiss public transport, the user's OpenAI key, cached cafeteria meals and three separate MCP tools.
+The route planner uses OpenStreetMap for routing and restaurant data, with Google Maps JavaScript for display only. It retains walking, Swiss public transport, the user's OpenAI key, cached cafeteria meals and three separate MCP tools.
 
 ## Run
 
-Set `ROUTE_CONNECTOR_TOKEN` (a random secret of at least 16 characters) in ignored root `.env`. Optional settings are in `.env.route-planner.example`. No Google key or OSM login is required.
+Set `ROUTE_CONNECTOR_TOKEN` (a random secret of at least 16 characters) in ignored root `.env`. Optional settings are in `.env.route-planner.example`. For the map display, set `GOOGLE_MAPS_BROWSER_KEY` to a browser key restricted to Maps JavaScript API and your website referrers. No Google routing key or OSM login is required.
 
 ```powershell
 docker compose -p mensa-route-test -f docker-compose.yml -f compose.route-planner.yaml --profile route-planner up --build -d
@@ -16,7 +16,7 @@ The first startup automatically downloads the Swiss OSM extract and builds a pri
 
 ## Data flow
 
-Browser form and Leaflet map → Java backend → private Kotlin MCP tools → private Node data adapter → private OSRM / Swiss timetable API. After verification, OpenAI may select and explain an existing option.
+Browser form and Google Maps JavaScript display → Java backend → private Kotlin MCP tools → private Node data adapter → private OSRM / Swiss timetable API. After verification, OpenAI may select and explain an existing option.
 
 The Kotlin MCP remains Kotlin. The Node adapter is necessary because the requested https://github.com/osmlab/osm-api-js library is JavaScript: it reads canonical restaurant objects after Overpass discovery. It never edits OSM, logs in, opens changesets or sends messages. The library does not provide routing itself.
 
@@ -26,13 +26,13 @@ The Kotlin MCP remains Kotlin. The Node adapter is necessary because the request
 
 The authenticated HTTP bridge exposes `/api/tools/routes`, `/api/tools/stops`, `/api/tools/show`, legacy `/api/tools/plan` and `/health`. The internal Node service exposes authenticated `/options`, `/nearby`, `/matrix` and `/health` on 8093. MCP, the data adapter and OSRM publish no host ports. Only the backend is exposed through the website proxy. Deploy behind HTTPS on Linux; never publish connector tokens or private services publicly.
 
-The backend invokes route discovery and meal checks before any AI request. OpenAI sees the trip and verified evidence, but cannot replace the submitted session or invent map geometry. It can request `show_route_on_map` for an existing option, followed by an explanation: at most two AI requests, with `store:false`. On quota, authentication, model or output failures, the backend selects the earliest verified meal arrival (or the direct route when none fits), executes the same map tool and returns HTTP 200 with a visible warning and `aiAvailable:false`. The entered API key is cleared after submission, sent only to OpenAI, and not stored. Tool records include `initiatedBy` to distinguish backend and AI dispatch.
+The backend invokes route discovery and meal checks before any AI request. OpenAI sees the trip and verified evidence, but cannot replace the submitted session or invent map geometry. It can request `show_route_on_map` for an existing option, followed by an explanation: at most two AI requests, with `store:false`. On quota, authentication, model or output failures, the backend selects the earliest verified meal arrival (or the direct route when none fits), executes the same map tool and returns HTTP 200 with a visible warning and `aiAvailable:false`. The entered OpenAI key stays in the form until cleared or the page reloads; it is sent through the backend only to OpenAI, never to MCP or map providers, and never persisted. Tool records include `initiatedBy` to distinguish backend and AI dispatch.
 
 AI requests time out after 45 seconds each. If the subsequent MCP selection fails or the session expires, the backend can still display the previously verified geometry with an explicit warning. Unknown and ambiguous location matches are rejected instead of taking the first unrelated result. `ETH Zentrum` resolves to Rämistrasse 101, Zürich.
 
 ## Providers and limits
 
-- Leaflet 1.9.4 renders OSM tiles: https://operations.osmfoundation.org/policies/tiles/. Browser caching is preserved; no prefetch/offline tile download. Attribution and Fix the map links stay visible.
+- Google Maps JavaScript draws supplied route geometry and clickable numbered stops. It does not call Google Directions, Routes, Places or geocoding. Transit stop sequences remain dashed. Only the public browser key is exposed by `/api/route-planner/map-config`.
 - Private OSRM with an extracted **foot** graph supplies walking geometry and batched travel-time matrices. Never use the driving profile as walking. `OSM_FOOT_URL` can override the private endpoint; public alternatives retain provider throttling.
 - https://transport.opendata.ch/docs.html supplies Swiss transit schedules, intermediate stops and address lookup. Street-address inputs use address search rather than station search. Resolved place names are returned as warnings for user verification.
 - One regional Overpass snapshot covers Zurich (47.1–47.7 latitude, 8.2–8.9 longitude), stored in `/data/restaurants.json`. Startup and a 30-minute check refresh it only when at least 24 hours old. Failed refreshes keep the file but do not treat expired hours as current; cafeterias and direct routes can still work. Nearby searches use this local catalog. osm-api-js refreshes canonical tags in batches, caches by object for 24 hours and falls back to the dated snapshot if unavailable. opening_hours parses Swiss/Zurich dated, split and overnight schedules. Unknown intervals and unsupported expressions are excluded. Opening hours do not confirm kitchen availability, prices or meals.
