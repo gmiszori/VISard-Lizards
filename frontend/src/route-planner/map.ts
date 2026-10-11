@@ -129,7 +129,7 @@ export class MealRouteMap {
         const path = decodeRoute(segment.polyline); if (path.length < 2) continue;
         const line = new google.maps.Polyline({ map: this.map, path, clickable: true });
         line.addListener('click', () => { this.select(index); this.onSelect(index); });
-        this.lines.push({line, index, leg: part, dashed: ['stop_sequence','osm_transit_path','osm_rail_corridor'].includes(segment.geometryKind)});
+        this.lines.push({line, index, leg: part, dashed: ['stop_sequence','osm_transit_path','osm_rail_corridor','ojp_transit_path'].includes(segment.geometryKind)});
       }
       return decodeRoute(leg.provider?.polyline);
     };

@@ -54,12 +54,15 @@ test('route controls and meal markers select both legs; replanning removes old o
     const selected: number[] = []; const map = new MealRouteMap(index => selected.push(index)); await map.start();
     const leg = { provider: { polyline: '_p~iF~ps|U_ulLnnqC_mqNvxq`@', segments: [{polyline: '_p~iF~ps|U_ulLnnqC_mqNvxq`@', geometryKind: 'osm_rail_corridor'}, {polyline:'_p~iF~ps|U_ulLnnqC_mqNvxq`@',geometryKind:'stop_sequence'}] } };
     const walking={provider:{...leg.provider,segments:[{...leg.provider.segments[0],geometryKind:'street_path'}]}};
+    const ojpLeg={provider:{...leg.provider,segments:[{...leg.provider.segments[0],geometryKind:'ojp_transit_path'}]}};
     map.setPlan({ baseline: leg, options: [
-      { place: { name: 'Lunch A' }, outbound: leg, onward: walking },
+      { place: { name: 'Lunch A' }, outbound: ojpLeg, onward: walking },
       { place: { name: 'Lunch B' }, outbound: leg, onward: walking },
     ] });
     assert.equal(lines[0].options.strokeOpacity, 0); assert.ok((lines[0].options.icons as unknown[]).length); assert.equal(lines[2].options.strokeOpacity,.95); assert.deepEqual(lines[2].options.icons,[]); assert.equal(lines.length, 5,'unmatched stop-to-stop chords must not be drawn over streets or tracks'); assert.equal(markers.length, 4);
     assert.equal(fitted.length, 6, 'fit both legs of the initially selected meal route');
+    assert.equal(lines[1].options.strokeOpacity,0,'OJP train paths stay dashed');
+    assert.ok((lines[1].options.icons as unknown[]).length);
     assert.equal(lines[0].options.map,null,'direct route is hidden when a meal route is selected');
     assert.equal(lines[3].options.map,null,'other meal routes cannot look like extra waypoints');
     const chips = nodes.get('#route-map-options')!.children;

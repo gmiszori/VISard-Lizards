@@ -2,6 +2,7 @@ import * as OSM from 'osm-api';
 import OpeningHours from 'opening_hours';
 import {RestaurantCatalog} from './catalog.mjs';
 import {transitGeometryQuery, matchTransitGeometry} from './transit-geometry.mjs';
+import {tripRequest, journeyProjection} from './ojp.mjs';
 
 process.env.TZ = 'Europe/Zurich';
 const agent = 'UniEatsMealRoutes/1.0 (https://github.com/gmiszori/VISard-Lizards)';
@@ -9,6 +10,8 @@ OSM.configure({userAgent: agent});
 const foot = process.env.OSM_FOOT_URL || 'https://routing.openstreetmap.de/routed-foot';
 const transport = process.env.SWISS_TRANSPORT_URL || 'https://transport.opendata.ch/v1';
 const transitGeometryUrl=process.env.OSM_TRANSIT_GEOMETRY_URL || 'https://overpass.osm.ch/api/interpreter';
+const ojpUrl=process.env.OJP_API_URL || 'https://api.opentransportdata.swiss/ojp20';
+const ojpKey=process.env.OJP_API_KEY || '';
 const overpass = process.env.OSM_OVERPASS_URL || 'https://overpass-api.de/api/interpreter';
 const cache = new Map();
 const lastCall = new Map();
@@ -43,7 +46,7 @@ async function paced(url, action) {
   queue = run.catch(() => {});
   return run;
 }
-async function request(url, init = {}, timeoutMs = 15000) {
+async function request(url, init = {}, timeoutMs = 15000, format='json') {
   return paced(url, async () => {
     const res = await fetch(url, {...init, headers: {'User-Agent': agent, ...init.headers}, signal: AbortSignal.timeout(timeoutMs)});
     if(res.status===429) {
@@ -54,7 +57,8 @@ async function request(url, init = {}, timeoutMs = 15000) {
     if (!res.ok) throw Object.assign(new Error(`Routing provider ${new URL(url).host} failed (HTTP ${res.status}).`), {code: res.status === 429 ? 'route_provider_busy' : 'route_provider_failed'});
     const bytes = await res.arrayBuffer();
     if (bytes.byteLength > 4_000_000) throw new Error('Route data response is too large.');
-    return JSON.parse(new TextDecoder().decode(bytes));
+    const text=new TextDecoder().decode(bytes);
+    return format==='xml' ? text : JSON.parse(text);
   });
 }
 export function point(value) {
@@ -146,7 +150,28 @@ const iso = time => new Date(time).toISOString();
 const clock = time => new Date(time).toLocaleTimeString('en-GB', {timeZone: 'Europe/Zurich', hour: '2-digit', minute: '2-digit'});
 const local = time => new Intl.DateTimeFormat('sv-SE', {timeZone: 'Europe/Zurich',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(time)).split(' ');
 
-export async function transitShape(journey,stops) {
+export async function transitShape(journey,stops,section) {
+  if(ojpKey && section && !['T','TRAM','B','BUS','NFB','BN'].includes(String(journey.category).toUpperCase())) {
+    const key=`ojp-shape:${section.departure.station.id}:${section.arrival.station.id}:${section.departure.departure}:${section.arrival.arrival}:${journey.category}:${journey.number}`;
+    try {
+      const projection=await cached(key,86400000,async()=>{
+        if((shapeCooldown.get(key)||0)>Date.now()) throw new Error('OJP lookup is cooling down.');
+        const response=await request(ojpUrl,{method:'POST',headers:{'Content-Type':'application/xml',Authorization:`Bearer ${ojpKey}`},body:tripRequest(section)},8000,'xml');
+        const result=journeyProjection(response,section);
+        if(!result) throw new Error('No matching OJP journey projection.');
+        return result;
+      });
+      if(projection) return {polyline:encodePolyline(projection.path),geometryKind:'ojp_transit_path',
+        journeyRef:projection.journeyRef,operatingDay:projection.operatingDay,
+        sourceUrl:'https://opentransportdata.swiss/en/cookbook/open-journey-planner-ojp-landing-page/'};
+    } catch {
+      if((shapeCooldown.get(key)||0)<=Date.now()) {
+        if(shapeCooldown.size>=200) shapeCooldown.delete(shapeCooldown.keys().next().value);
+        shapeCooldown.set(key,Date.now()+300000);
+        console.warn('OJP journey geometry unavailable; using labelled OSM fallback.');
+      }
+    }
+  }
   const service=transitGeometryQuery(journey,stops);if(!service) return null;
   try {
     // Sanitized service references or published station bounds; never device coordinates.
@@ -182,7 +207,7 @@ export async function transitLeg(connection, earliest, walking = walk, shape = t
           return Number.isFinite(at) && at>=depart && at<=arrive ? [stopPoint(s)] : [];
         } catch { return []; }
       }), b];
-      paths.push(await shape(section.journey,stops) || {polyline: encodePolyline(stops), geometryKind: 'stop_sequence'});
+      paths.push(await shape(section.journey,stops,section) || {polyline: encodePolyline(stops), geometryKind: 'stop_sequence'});
       const category=String(section.journey.category||'').toUpperCase();
       itinerary.push({mode: ['T','TRAM'].includes(category) ? 'TRAM' : ['B','BUS','NFB','BN'].includes(category) ? 'BUS' : 'TRAIN',
         line: `${section.journey.category || ''} ${String(section.journey.number || section.journey.name || '').replace(/^0+(?=\d)/,'')}`.trim(),

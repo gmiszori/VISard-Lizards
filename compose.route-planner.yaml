@@ -69,6 +69,8 @@ services:
       - OSM_FOOT_URL=${OSM_FOOT_URL:-http://osrm-foot:5000}
       - SWISS_TRANSPORT_URL=${SWISS_TRANSPORT_URL:-https://transport.opendata.ch/v1}
       - OSM_TRANSIT_GEOMETRY_URL=${OSM_TRANSIT_GEOMETRY_URL:-https://overpass.osm.ch/api/interpreter}
+      - OJP_API_KEY=${OJP_API_KEY:-}
+      - OJP_API_URL=${OJP_API_URL:-https://api.opentransportdata.swiss/ojp20}
       - OSM_OVERPASS_URL=${OSM_OVERPASS_URL:-https://overpass-api.de/api/interpreter}
   backend:
     environment:
