@@ -21,6 +21,7 @@ export function attachLocationSuggestions(field: HTMLInputElement) {
   const choose = (item: LocationSuggestion) => {
     ++version; clearTimeout(timer); request?.abort(); selection.select(item); field.value = item.label;
     note.textContent = `Selected: ${item.label}`; close();
+    field.dispatchEvent(new Event('change'));
   };
   const highlight = () => {
     Array.from(list.children).forEach((child,i) => child.setAttribute('aria-selected', String(i === active)));

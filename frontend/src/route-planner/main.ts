@@ -17,6 +17,10 @@ function selectCard(index: number) {
   });
 }
 const routeMap = new MealRouteMap(selectCard);
+let originRevision = 0;
+for (const event of ['input','change']) input('origin').addEventListener(event, () => {
+  originRevision++; routeMap.clearLocation();
+});
 void routeMap.start();
 const localTime = (date: Date) => new Date(date.getTime() - date.getTimezoneOffset() * 60_000).toISOString().slice(0, 16);
 const initialDeparture = new Date(Date.now() + 5 * 60_000);
@@ -34,9 +38,14 @@ fetch('/api/route-planner/status', { cache: 'no-store' }).then(async response =>
   button.disabled = !readiness.ready;
 }).catch(() => { document.querySelector('#planner-readiness')!.textContent = 'Could not reach the route planner backend.'; });
 document.querySelector('#use-location')!.addEventListener('click', async () => {
+  const requestedRevision = ++originRevision;
   status.textContent = 'Requesting your location…';
-  try { const fix = await getPositionFix(); input('origin').value = `${fix.lat},${fix.lng}`; input('origin').dispatchEvent(new Event('input')); routeMap.locate(fix); status.textContent = 'Starting point set to your current location.'; }
-  catch { status.textContent = 'Location unavailable. Please enter your starting point instead.'; }
+  try {
+    const fix = await getPositionFix();
+    if(originRevision !== requestedRevision) return;
+    input('origin').value = `${fix.lat},${fix.lng}`; input('origin').dispatchEvent(new Event('input')); routeMap.locate(fix); status.textContent = 'Starting point set to your current location.';
+  }
+  catch { if(originRevision === requestedRevision) status.textContent = 'Location unavailable. Please enter your starting point instead.'; }
 });
 type Leg = { departure: string; arrival: string; distanceMetres: number; directions: string[]; mapsUrl: string; provider?: { warnings?: string[]; polyline?: string } };
 type Meal = { id: string; title: string; components: string[]; price?: { student?: number; staff?: number; external?: number } };
@@ -89,6 +98,7 @@ form.addEventListener('submit', async event => {
   const departure = new Date(input('departure').value); const arrival = new Date(input('arrival').value);
   if (!(departure.getTime() < arrival.getTime())) { status.textContent = 'Arrival must be after departure.'; return; }
   const key = input('openai-key').value.trim();
+  originRevision++; // A pending GPS lookup must not change this submitted journey.
   button.disabled = true; section.setAttribute('aria-busy', 'true'); results.replaceChildren(); routeMap.reset();
   const started = Date.now();
   const timer = window.setInterval(() => { status.textContent = `Planning with AI and MCP: checking restaurants, opening hours and travel legs… ${Math.floor((Date.now() - started) / 1000)}s`; }, 1000);

@@ -1,6 +1,7 @@
 import * as OSM from 'osm-api';
 import OpeningHours from 'opening_hours';
 import {RestaurantCatalog} from './catalog.mjs';
+import {transitGeometryQuery, matchTransitGeometry} from './transit-geometry.mjs';
 
 process.env.TZ = 'Europe/Zurich';
 const agent = 'UniEatsMealRoutes/1.0 (https://github.com/gmiszori/VISard-Lizards)';
@@ -14,6 +15,7 @@ const cooldown = new Map();
 const pending = new Map();
 const canonical = new Map();
 let canonicalCooldown=0;
+const shapeCooldown=new Map();
 let queue = Promise.resolve();
 
 // Application-wide serialization, 1 request/second per provider, bounded memory.
@@ -40,9 +42,9 @@ async function paced(url, action) {
   queue = run.catch(() => {});
   return run;
 }
-async function request(url, init = {}) {
+async function request(url, init = {}, timeoutMs = 15000) {
   return paced(url, async () => {
-    const res = await fetch(url, {...init, headers: {'User-Agent': agent, ...init.headers}, signal: AbortSignal.timeout(15000)});
+    const res = await fetch(url, {...init, headers: {'User-Agent': agent, ...init.headers}, signal: AbortSignal.timeout(timeoutMs)});
     if(res.status===429) {
       const retry=res.headers.get('retry-after');
       const delay=retry && /^\d+$/.test(retry) ? Number(retry)*1000 : Date.parse(retry)-Date.now();
@@ -143,34 +145,63 @@ const iso = time => new Date(time).toISOString();
 const clock = time => new Date(time).toLocaleTimeString('en-GB', {timeZone: 'Europe/Zurich', hour: '2-digit', minute: '2-digit'});
 const local = time => new Intl.DateTimeFormat('sv-SE', {timeZone: 'Europe/Zurich',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(time)).split(' ');
 
-// Timetable supplies stop coordinates, not track geometry. Preserve that distinction.
-export async function transitLeg(connection, earliest, walking = walk) {
+export async function transitShape(journey,stops) {
+  const service=transitGeometryQuery(journey,stops);if(!service) return null;
+  try {
+    // Sanitized service references or published station bounds; never device coordinates.
+    const data=await cached(`transit-shape:${service.key}`,86400000,()=>{
+      if((shapeCooldown.get(service.key)||0)>Date.now()) throw new Error('Transit geometry lookup is cooling down.');
+      return request(overpass,{method:'POST',
+      headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body:query({data:service.query})},8000);});
+    const match=matchTransitGeometry(data.elements,stops,service.mode,service.kind==='osm_rail_corridor');
+    return match ? {polyline:encodePolyline(match.path),geometryKind:service.kind,sourceUrl:`https://www.openstreetmap.org/relation/${match.relationId}`} : null;
+  } catch {
+    if((shapeCooldown.get(service.key)||0)<=Date.now()) {
+      if(shapeCooldown.size>=200) shapeCooldown.delete(shapeCooldown.keys().next().value);
+      shapeCooldown.set(service.key,Date.now()+300000);
+    }
+    return null;
+  }
+}
+// Timetables determine times; matched OSM service paths improve the display only.
+export async function transitLeg(connection, earliest, walking = walk, shape = transitShape) {
   const start = timeOf(connection.from, 'departure'), end = timeOf(connection.to, 'arrival');
   if (start < earliest || end < start) return null;
   const paths = [], directions = []; let cursor = earliest, distance = 0;
   for (const section of connection.sections || []) {
     const a = stopPoint(section.departure), b = stopPoint(section.arrival);
     const depart = timeOf(section.departure, 'departure'), arrive = timeOf(section.arrival, 'arrival');
-    if (depart < cursor || arrive < depart) return null;
+    if (arrive < depart) return null;
     if (section.journey) {
-      const stops = [a, ...(section.journey.passList || []).flatMap(s => { try { return [stopPoint(s)]; } catch { return []; } }), b];
-      paths.push({polyline: encodePolyline(stops), geometryKind: 'stop_sequence'});
+      if(depart < cursor) return null;
+      const stops = [a, ...(section.journey.passList || []).flatMap(s => {
+        try {
+          const at=Date.parse(s.departure || s.arrival);
+          return Number.isFinite(at) && at>=depart && at<=arrive ? [stopPoint(s)] : [];
+        } catch { return []; }
+      }), b];
+      paths.push(await shape(section.journey,stops) || {polyline: encodePolyline(stops), geometryKind: 'stop_sequence'});
       directions.push(`${clock(depart)}: ${section.journey.category || ''} ${section.journey.number || section.journey.name || ''} from ${section.departure.station.name} to ${section.arrival.station.name} (${clock(arrive)})`);
     } else if (section.walk) {
       const route = await walking(a, b);
-      // Reject transfers that do not leave enough time for the actual OSM foot route.
-      if (depart + route.duration * 1000 > arrive + 1000) return null;
+      // Use the full wait before the next vehicle, rather than only the timetable walking estimate.
+      // The next journey rejects a missed boarding; the final walk may extend the arrival.
+      cursor=Math.max(depart,cursor)+Math.ceil(route.duration)*1000;
       distance += Math.round(route.distance);
       paths.push({polyline: route.geometry, geometryKind: 'street_path'});
       directions.push(`${clock(depart)}: Walk to ${section.arrival.station.name} (${Math.ceil(route.duration / 60)} min)`);
     } else return null;
-    cursor = arrive;
+    if(section.journey) cursor = arrive;
   }
-  if (!paths.length || cursor > end) return null;
+  if (!paths.length) return null;
   const geometry = paths.flatMap(p => decodePolyline(p.polyline));
-  return {departure: iso(start), arrival: iso(end), distanceMetres: distance, directions,
+  return {departure: iso(start), arrival: iso(Math.max(end,cursor)), distanceMetres: distance, directions,
     provider: {mode: 'TRANSIT', polyline: encodePolyline(geometry), segments: paths, geometryKind: 'mixed', distanceScope:'walking_only',
-      warnings: ['Dashed transit segments connect published stops; they are not exact track geometry. Transit distance is not supplied.']}};
+      warnings: [...(paths.some(p=>p.geometryKind==='stop_sequence') ? ['Dashed transit segments have no matched service path; they connect published stops only.'] : []),
+        ...(paths.some(p=>p.geometryKind==='osm_transit_path') ? ['Transit paths follow matched OpenStreetMap service ways; diversions and platform tracks may differ.'] : []),
+        ...(paths.some(p=>p.geometryKind==='osm_rail_corridor') ? ['Rail geometry follows an inferred OSM corridor through the published stations; the exact train track is not confirmed.'] : []),
+        'Transit distance is not supplied.']}};
 }
 export async function options(input) {
   const a = await locate(input.origin), b = await locate(input.destination), start = stamp(input.departureTime);
@@ -182,8 +213,9 @@ export async function options(input) {
   try {
     const [date, time] = local(start);
     const data = await cached(`transit:${a}:${b}:${date}:${time}`, 30000, () => request(`${transport}/connections?${query({from:a.join(','),to:b.join(','),date,time,limit:'2'})}`));
+    if(!data.connections?.length) warnings.push('No public transport connections were returned for this leg.');
     for (const connection of data.connections || []) {
-      try { const leg = await transitLeg(connection, start); if (leg) results.push(leg); } catch { warnings.push('A transit connection could not be verified.'); }
+      try { const leg = await transitLeg(connection, start); if (leg) results.push(leg); else warnings.push('A transit connection was excluded because its walking transfer would miss a departure.'); } catch { warnings.push('A transit connection could not be verified.'); }
     }
   } catch(error) { providerFailure=error;warnings.push('Swiss public transport routing is unavailable for this leg.'); }
   if (!results.length) throw providerFailure || new Error('No walking or public transport route could be verified.');

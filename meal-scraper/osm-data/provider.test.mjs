@@ -41,15 +41,43 @@ test('transit preserves schedules and labels stop geometry; impossible walking t
   const stop=(name,time,type) => ({station:{name,coordinate:{x:47.37,y:8.54}},[type]:time});
   const departure=stop('A','2026-10-12T09:00:00Z','departure'),arrival=stop('B','2026-10-12T09:10:00Z','arrival');
   const connection={from:departure,to:arrival,sections:[{departure,arrival,journey:{category:'Tram',number:'6',passList:[]}}]};
-  const leg=await transitLeg(connection,Date.parse('2026-10-12T08:59:00Z'));
+  const leg=await transitLeg(connection,Date.parse('2026-10-12T08:59:00Z'),undefined,async()=>null);
   assert.equal(leg.provider.segments[0].geometryKind,'stop_sequence');assert.equal(leg.provider.distanceScope,'walking_only');
   assert.equal(await transitLeg(connection,Date.parse('2026-10-12T09:01:00Z')),null);
   connection.sections[0]={departure,arrival,walk:{duration:600}};
-  assert.equal(await transitLeg(connection,Date.parse('2026-10-12T08:59:00Z'),async()=>({duration:601.1,distance:900,geometry:'_p~iF~ps|U'})),null);
+  const finalWalk=await transitLeg(connection,Date.parse('2026-10-12T08:59:00Z'),async()=>({duration:601.1,distance:900,geometry:'_p~iF~ps|U'}));
+  assert.equal(finalWalk.arrival,'2026-10-12T09:10:02.000Z');
 });
 test('cache reuses data and does not cache failed requests', async () => {
   let calls=0;const action=async()=>++calls;
   assert.equal(await cached('test',10000,action),1);assert.equal(await cached('test',10000,action),1);
   await assert.rejects(cached('failed',10000,async()=>{throw new Error('offline');}));
   assert.equal(await cached('failed',10000,action),2);
+});
+test('transit display clips whole-service pass lists to the boarded section and preserves matched geometry',async()=> {
+  const stop=(name,time,type,lat=47.37)=>({station:{name,coordinate:{x:lat,y:8.54}},[type]:time});
+  const departure=stop('A','2026-10-12T09:00:00Z','departure'),arrival=stop('B','2026-10-12T09:10:00Z','arrival');
+  const connection={from:departure,to:arrival,sections:[{departure,arrival,journey:{category:'IC',number:'3',passList:[
+    stop('Before boarding','2026-10-12T08:00:00Z','departure',48),departure,arrival,
+    stop('After alighting','2026-10-12T10:00:00Z','arrival',49)]}}]};
+  const geometry=encodePolyline([[47.37,8.54],[47.371,8.541],[47.37,8.54]]);
+  const leg=await transitLeg(connection,Date.parse('2026-10-12T08:59:00Z'),undefined,async(journey,stops)=> {
+    assert.equal(journey.number,'3');assert.ok(stops.every(p=>p[0]===47.37));
+    return {polyline:geometry,geometryKind:'osm_transit_path',sourceUrl:'https://www.openstreetmap.org/relation/123'};
+  });
+  assert.equal(leg.provider.segments[0].polyline,geometry);
+  assert.equal(leg.provider.segments[0].geometryKind,'osm_transit_path');
+  assert.equal(leg.arrival,'2026-10-12T09:10:00.000Z');
+});
+
+test('walking transfers use waiting time before the next vehicle but reject missed boarding',async()=> {
+  const stop=(name,time,type)=>({station:{name,coordinate:{x:47.37,y:8.54}},[type]:time});
+  const departure=stop('HB','2026-10-12T10:00:00Z','departure'),walkEnd=stop('Sihlquai','2026-10-12T10:04:00Z','arrival');
+  const board=stop('Sihlquai','2026-10-12T10:09:00Z','departure'),arrival=stop('Hönggerberg','2026-10-12T10:30:00Z','arrival');
+  const connection={from:departure,to:arrival,sections:[{departure,arrival:walkEnd,walk:{duration:240}},
+    {departure:board,arrival,journey:{category:'T',number:'50',passList:[]}}]};
+  const walking=duration=>async()=>({duration,distance:400,geometry:encodePolyline([[47.37,8.54],[47.371,8.541]])});
+  const leg=await transitLeg(connection,Date.parse(departure.departure),walking(267),async()=>null);
+  assert.equal(leg.arrival,arrival.arrival.replace('Z','.000Z'));
+  assert.equal(await transitLeg(connection,Date.parse(departure.departure),walking(541),async()=>null),null);
 });
