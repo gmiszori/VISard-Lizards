@@ -10,6 +10,7 @@
 <script>
   import { apiGet, type BackendMealDetail, type BackendMensa } from '../data/api';
   import { RATINGS_KEY, undoMealRating, type MealRating } from '../rating/saveMealRating';
+  import { dishName, formatMenuDay } from '../data/presentation';
 
   const copy = {
     en: { title: 'Your meal ratings', hint: 'Rated on this device. Remove a rating to take it back; it then no longer counts for the dish.', remove: 'Remove', removed: 'Rating removed.', failed: 'Could not remove the rating. Check your connection and try again.', meal: 'A meal', stars: 'of 5 stars' },
@@ -43,15 +44,14 @@
     root.querySelectorAll<HTMLElement>('[data-your-ratings-copy]').forEach(el => { el.textContent = t(el.dataset.yourRatingsCopy as Key); });
     const ratings = readRatings();
     root.hidden = ratings.length === 0;
-    const day = new Intl.DateTimeFormat(de() ? 'de-CH' : 'en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' });
     list.replaceChildren(...ratings.map(rating => {
       const li = document.createElement('li');
       const stars = Object.assign(document.createElement('span'), { className: 'your-rating-stars', textContent: '★'.repeat(rating.rating) + '☆'.repeat(5 - rating.rating) });
       stars.setAttribute('aria-label', `${rating.rating} ${t('stars')}`);
       const text = document.createElement('span');
       text.className = 'your-rating-text';
-      const name = Object.assign(document.createElement('strong'), { textContent: rating.mealName ?? fetchedNames.get(rating.mealId) ?? t('meal') });
-      const date = /^\d{4}-\d{2}-\d{2}$/.test(rating.mealDate) ? day.format(new Date(`${rating.mealDate}T12:00:00Z`)) : '';
+      const name = Object.assign(document.createElement('strong'), { textContent: dishName(rating.mealName ?? fetchedNames.get(rating.mealId) ?? t('meal')) });
+      const date = /^\d{4}-\d{2}-\d{2}$/.test(rating.mealDate) ? formatMenuDay(rating.mealDate, de() ? 'de' : 'en') : '';
       const meta = Object.assign(document.createElement('small'), { textContent: [rating.mensaName ?? mensaNames.get(rating.mensaId) ?? rating.mensaId, date].filter(Boolean).join(' · ') });
       text.append(name, meta);
       const remove = Object.assign(document.createElement('button'), { type: 'button', className: 'your-rating-remove', textContent: t('remove') });

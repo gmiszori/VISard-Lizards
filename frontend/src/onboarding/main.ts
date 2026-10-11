@@ -8,6 +8,7 @@ import { t, translate } from './i18n';
 import { ONBOARDING_AUTO_START } from './config';
 import { appNow, zurichParts } from '../time/clock';
 import { WELCOME_KEY } from '../welcome/state';
+import { dishName } from '../data/presentation';
 
 const root = document.querySelector<HTMLElement>('#onboarding');
 
@@ -78,7 +79,7 @@ function initialise(root: HTMLElement) {
       root.querySelector<HTMLElement>('[data-pick]')!.hidden = !pick;
       root.querySelector<HTMLElement>('[data-pick-empty]')!.hidden = !!pick;
       if (!pick) return;
-      root.querySelector<HTMLElement>('[data-pick-title]')!.textContent = p.lang === 'de' ? pick.meal.titleDe ?? pick.meal.title : pick.meal.title;
+      root.querySelector<HTMLElement>('[data-pick-title]')!.textContent = dishName(p.lang === 'de' ? pick.meal.titleDe ?? pick.meal.title : pick.meal.title);
       root.querySelector<HTMLElement>('[data-pick-mensa]')!.textContent = pick.mensa.name;
       root.querySelector<HTMLElement>('[data-pick-components]')!.textContent = pick.meal.components.join(' · ');
       root.querySelector<HTMLElement>('[data-pick-price]')!.textContent = pick.price === null ? t('unavailablePrice') : `CHF ${pick.price.toFixed(2)} · ${t(p.priceTier)}`;

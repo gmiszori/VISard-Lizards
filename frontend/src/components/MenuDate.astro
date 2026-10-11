@@ -8,6 +8,7 @@
  * today is never called "Today's menu".
  */
 import { menuDateNotice, requestedMenuDate } from '../data/menuDate';
+import { formatMenuDay } from '../data/presentation';
 interface Props {
   /** The menu's day, YYYY-MM-DD. */
   date: string;
@@ -17,8 +18,7 @@ interface Props {
   variant: 'heading' | 'note';
 }
 const { date, today, variant } = Astro.props;
-const label = new Intl.DateTimeFormat('en-GB', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' })
-  .format(new Date(`${date}T00:00:00Z`));
+const label = formatMenuDay(date);
 const isToday = date === today;
 const notice = menuDateNotice(requestedMenuDate(Astro.url.pathname, Astro.url.search, today), date);
 ---
