@@ -1,0 +1,16 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+<BaseLayout title="Route planner privacy and service terms">
+  <a href="/route-planner/">← Route planner</a>
+  <h1>Route planner privacy and service terms</h1>
+  <h2>Your journey data</h2>
+  <p>Opening the planner loads Google Maps for display only. Google receives your IP address and displayed map area. “Use my location” asks your browser for permission and fills the starting point.</p>
+  <p>Typing at least three characters in a location field requests suggestions from the Swiss transport service through the backend. Selecting one uses its coordinates for routing. Submitting the form sends your trip to the backend, OpenAI and the route services: private OSRM for walking, transport.opendata.ch for Swiss transit and address lookup, Swiss OJP for train journey shapes, and Overpass/OpenStreetMap for restaurants and other transit paths through published stations. OJP receives the boarding and arrival stations and scheduled departure time; its API key stays on the server. The private adapter uses osm-api-js only to read map objects.</p>
+  <p>Your OpenAI key authenticates optional route selection and explanation. It stays in the form until cleared or the page is reloaded, and is never saved to browser storage or the database or forwarded to map services. Food-type research sends it per request through the private authenticated MCP connector to OpenAI web search; it is never retained there.</p>
+  <p>Trip sessions expire after three minutes. Bounded in-memory caches retain transit responses for 30 seconds, walking paths, transit shapes and location lookups for 24 hours, canonical OSM tags for 24 hours. Restarting the service clears them. No journey history is saved in the database.</p>
+  <h2>Service terms</h2>
+  <p>Map data is © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>. Google provides the <a href="https://cloud.google.com/maps-platform/terms">map display</a>; private OSRM computes walking routes. The service caches requests and limits public provider calls to one per second. Swiss timetables come from <a href="https://transport.opendata.ch/docs.html">transport.opendata.ch</a>. AI processing follows <a href="https://openai.com/policies/privacy-policy/">OpenAI’s privacy policy</a>.</p>
+  <p>Solid lines show walking. Dashed lines show public transport, following matched OpenStreetMap service ways or inferred rail corridors where available. Inferred rail corridors do not confirm the exact train track. Transit paths are approximate and may differ during diversions. Transit sections without matched path geometry are omitted from the map; their timetable remains visible. Approximate train corridors are labelled below the map. Transit distance is unavailable; its displayed distance covers walking only. Opening hours do not confirm kitchen service, dishes or prices. Restaurants with uncertain hours are omitted. Check disruptions and restaurant sources before travelling.</p>
+</BaseLayout>
+<style>h1{margin:1.5rem 0;font-size:2rem}h2{margin:2rem 0 1rem}p{max-width:750px;line-height:1.8}p a{text-decoration:underline;text-underline-offset:3px}</style>

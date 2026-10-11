@@ -8,3 +8,4 @@ artifacts/
 *.iml
 .env*
 .git/
+**/node_modules/

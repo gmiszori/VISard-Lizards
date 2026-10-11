@@ -20,6 +20,73 @@ services:
       # frontend/backend stack start without configuring the optional scraper.
       - MEAL_CONNECTOR_TOKEN=${MEAL_CONNECTOR_TOKEN:-local-compose-connector-token}
 
+  osrm-download:
+    image: alpine:3.22
+    volumes:
+      - osrm-data:/data
+    entrypoint: ["/bin/sh", "-ec"]
+    command:
+      - |
+        if [ ! -f /data/region.osm.pbf ]; then
+          wget -T 60 -O /data/region.osm.pbf.part https://download.geofabrik.de/europe/switzerland-latest.osm.pbf
+          mv /data/region.osm.pbf.part /data/region.osm.pbf
+        fi
+  osrm-build:
+    image: ghcr.io/project-osrm/osrm-backend:v5.27.1
+    volumes:
+      - osrm-data:/data
+    depends_on:
+      osrm-download:
+        condition: service_completed_successfully
+    entrypoint: ["/bin/sh", "-ec"]
+    command:
+      - |
+        if [ ! -f /data/foot-ready ]; then
+          osrm-extract -p /opt/foot.lua /data/region.osm.pbf
+          osrm-partition /data/region.osrm
+          osrm-customize /data/region.osrm
+          touch /data/foot-ready
+        fi
+  osrm-foot:
+    image: ghcr.io/project-osrm/osrm-backend:v5.27.1
+    restart: unless-stopped
+    volumes:
+      - osrm-data:/data:ro
+    command: ["osrm-routed", "--algorithm", "mld", "--max-alternatives", "3", "/data/region.osrm"]
+    depends_on:
+      osrm-build:
+        condition: service_completed_successfully
+  route-planner:
+    build:
+      context: ./meal-scraper
+      dockerfile: Dockerfile.route
+    init: true
+    restart: unless-stopped
+    environment:
+      - OSM_DATA_URL=http://osm-data:8093
+      - FOOD_SEARCH_MODEL=${FOOD_SEARCH_MODEL:-gpt-5-mini}
+      - ROUTE_CONNECTOR_TOKEN=${ROUTE_CONNECTOR_TOKEN:-local-compose-route-connector-token}
+    depends_on:
+      osm-data:
+        condition: service_started
+  osm-data:
+    build: ./meal-scraper/osm-data
+    restart: unless-stopped
+    init: true
+    volumes:
+      - osm-catalog:/data
+    depends_on:
+      osrm-foot:
+        condition: service_started
+    environment:
+      - OSM_CATALOG_FILE=/data/restaurants.json
+      - ROUTE_CONNECTOR_TOKEN=${ROUTE_CONNECTOR_TOKEN:-local-compose-route-connector-token}
+      - OSM_FOOT_URL=${OSM_FOOT_URL:-http://osrm-foot:5000}
+      - SWISS_TRANSPORT_URL=${SWISS_TRANSPORT_URL:-https://transport.opendata.ch/v1}
+      - OSM_TRANSIT_GEOMETRY_URL=${OSM_TRANSIT_GEOMETRY_URL:-https://overpass.osm.ch/api/interpreter}
+      - OJP_API_KEY=${OJP_API_KEY:-}
+      - OJP_API_URL=${OJP_API_URL:-https://api.opentransportdata.swiss/ojp20}
+      - OSM_OVERPASS_URL=${OSM_OVERPASS_URL:-https://overpass-api.de/api/interpreter}
   backend:
     stdin_open: true
     tty: true
@@ -36,9 +103,15 @@ services:
       - MEAL_SCRAPER_ENABLED=${MEAL_SCRAPER_ENABLED:-false}
       - MEAL_SCRAPER_MODEL=${MEAL_SCRAPER_MODEL:-gpt-6-astra}
       - MEAL_SCRAPER_CRON=${MEAL_SCRAPER_CRON:-0 0 6 * * *}
+      - ROUTE_CONNECTOR_URL=http://route-planner:8092
+      - ROUTE_CONNECTOR_TOKEN=${ROUTE_CONNECTOR_TOKEN:-local-compose-route-connector-token}
+      - ROUTE_PLANNER_MODEL=${ROUTE_PLANNER_MODEL:-gpt-6-astra}
+      - GOOGLE_MAPS_BROWSER_KEY=${GOOGLE_MAPS_BROWSER_KEY:-}
       - MEAL_CONNECTOR_URL=http://meal-scraper:8091
       - MEAL_CONNECTOR_TOKEN=${MEAL_CONNECTOR_TOKEN:-local-compose-connector-token}
     depends_on:
+      route-planner:
+        condition: service_started
       backend-data-init:
         condition: service_completed_successfully
     restart: unless-stopped
@@ -62,3 +135,6 @@ services:
 
 volumes:
   backend-data:
+  osm-catalog:
+  osrm-data:
+    name: ${OSRM_DATA_VOLUME:-${COMPOSE_PROJECT_NAME}_osrm-data}

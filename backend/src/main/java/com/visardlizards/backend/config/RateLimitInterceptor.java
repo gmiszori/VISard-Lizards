@@ -25,10 +25,16 @@ public class RateLimitInterceptor implements HandlerInterceptor {
 	private final Duration window;
 	private final String what;
 	private final Clock clock;
+	private final boolean successfulOnly;
 	private final Cache<String, Instant> lastAccepted;
 
 	/** @param what describes the action for the error message, e.g. "rate this again" */
 	public RateLimitInterceptor(Duration window, String what, Clock clock) {
+		this(window, what, clock, false);
+	}
+
+	public RateLimitInterceptor(Duration window, String what, Clock clock, boolean successfulOnly) {
+		this.successfulOnly = successfulOnly;
 		this.window = window;
 		this.what = what;
 		this.clock = clock;
@@ -50,10 +56,20 @@ public class RateLimitInterceptor implements HandlerInterceptor {
 			Duration retryAfter = Duration.between(now, previous.plus(window));
 			throw new TooManyRequestsException("You can " + what + " in " + format(retryAfter) + ".", retryAfter);
 		}
+		request.setAttribute("rateLimitReservation:" + what, now);
 		return true;
 	}
 
+	@Override
+	public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception exception) {
+		if (successfulOnly && (exception != null || response.getStatus() >= 400)) {
+			Object accepted = request.getAttribute("rateLimitReservation:" + what);
+			if (accepted != null) lastAccepted.asMap().remove(request.getRemoteAddr() + " " + request.getRequestURI(), accepted);
+		}
+	}
+
 	private static String format(Duration duration) {
+		if (duration.toSeconds() < 60) return Math.max(1, (duration.toMillis() + 999) / 1000) + " seconds";
 		long minutes = (duration.toSeconds() + 59) / 60;
 		return minutes >= 60 ? (minutes + 59) / 60 + " hours" : minutes + " minutes";
 	}

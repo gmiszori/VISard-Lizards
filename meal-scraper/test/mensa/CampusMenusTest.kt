@@ -5,6 +5,20 @@ import kotlin.test.*
 
 class CampusMenusTest {
     private val extractor = MenuExtractor()
+    @Test fun missingEnglishEthNamesUseGermanMenuWithoutLosingDatesOrPrices() {
+        val calls = mutableListOf<String>()
+        val scraper = MealScraper({ url ->
+            calls += url
+            val name = if (url.contains("lang=de")) "Pasta" else "novalue"
+            val json = """{"weekly-rota-array":[{"facility-id":3,"valid-from":"2026-10-12","day-of-week-array":[{"day-of-week-code":1,"opening-hour-array":[{"meal-time-array":[{"time-from":"11:00","time-to":"14:00","line-array":[{"name":"Lunch","meal":{"line-id":1,"name":"$name","meal-price-array":[{"price":9.9,"customer-group-desc":"Studierende"}]}}]}]}]}]}]}"""
+            SourceDocument(url,"application/json",json.toByteArray())
+        }, today = { java.time.LocalDate.parse("2026-10-11") })
+        val url = "https://idapps.ethz.ch/cookpit-pub-services/v1/weeklyrotas?facility=3&lang=en&valid-after=2026-10-12&valid-before=2026-10-19"
+        val entry = scraper.read(url,java.time.LocalDate.parse("2026-10-12")).meals.single()
+        assertEquals("Pasta",entry.name); assertEquals("2026-10-12",entry.date)
+        assertEquals("11:00",entry.timeStart); assertEquals(9.9,entry.price?.amount)
+        assertTrue(entry.sourceUrl.contains("lang=de")); assertEquals(2,calls.size)
+    }
     @Test fun foodFlightChunksResolveSharedReferencesAndKeepDifferentDays() {
         val record = """7:["${'$'}","component",null,{"outlet":{"calendar":{"__typename":"OutletMenuCategoryCalendarRangeDay","from":{"dateLocal":"2026-10-05T00:00:00+02:00"},"menuItems":[{"id":"one","category":{"name":"Traditional"},"dish":{"name":"Soup","description":"Lentils","isVegan":true,"isVegetarian":true,"allergens":[{"allergen":{"externalId":"celery"}}]}}]},"next":{"__typename":"OutletMenuCategoryCalendarRangeDay","from":{"dateLocal":"2026-10-06T00:00:00+02:00"},"menuItems":[{"id":"two","category":"${'$'}7:props:outlet:calendar:menuItems:0:category","dish":"${'$'}7:props:outlet:calendar:menuItems:0:dish"}]}}}]
         """.trimIndent()
