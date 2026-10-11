@@ -2,6 +2,7 @@ import { getPositionFix } from '../location/geolocation';
 import { MealRouteMap, selectedOption } from './map';
 import { attachLocationSuggestions } from './locations';
 import { journeyTimeline, mealBreak, type JourneyLeg } from './journey';
+import { attachCalendar } from './calendar';
 
 const form = document.querySelector<HTMLFormElement>('#route-form')!;
 const input = (id: string) => document.querySelector<HTMLInputElement>(`#${id}`)!;
@@ -23,14 +24,13 @@ for (const event of ['input','change']) input('origin').addEventListener(event, 
   originRevision++; routeMap.clearLocation();
 });
 void routeMap.start();
-const localTime = (date: Date) => new Date(date.getTime() - date.getTimezoneOffset() * 60_000).toISOString().slice(0, 16);
 const initialDeparture = new Date(Date.now() + 5 * 60_000);
 if (initialDeparture.getHours() >= 14 || initialDeparture.getHours() < 8) {
   if (initialDeparture.getHours() >= 14) initialDeparture.setDate(initialDeparture.getDate() + 1);
   initialDeparture.setHours(11, 0, 0, 0);
 }
-input('departure').value = localTime(initialDeparture);
-input('arrival').value = localTime(new Date(initialDeparture.getTime() + 3 * 60 * 60_000));
+const departureDate=attachCalendar('departure',initialDeparture);
+const arrivalDate=attachCalendar('arrival',new Date(initialDeparture.getTime() + 3 * 60 * 60_000));
 document.querySelector('#time-zone')!.textContent = `Input times use your device timezone: ${Intl.DateTimeFormat().resolvedOptions().timeZone}. Results use Europe/Zurich.`;
 fetch('/api/route-planner/status', { cache: 'no-store' }).then(async response => {
   if (!response.ok) throw new Error();
@@ -53,7 +53,7 @@ type Meal = { id: string; title: string; components: string[]; price?: { student
 type Place = { id: string; name: string; kind: string; sourceUrl: string; websiteUrl?: string; menuNote: string; hoursNote?: string; meals: Meal[]; attributions?: { provider: string; providerUri: string }[] };
 type Option = { place: Place; mealStart: string; mealEnd: string; arrival: string; spareMinutes: number; extraMinutes: number; outbound: Leg; onward: Leg };
 type Plan = { baseline: Leg; directRoutes?: Leg[]; selectedOptionIndex?: number; options: Option[]; checkedStops: number; mealMinutes: number; warnings: string[] };
-const time = (value: string) => new Intl.DateTimeFormat(undefined, { timeZone: 'Europe/Zurich', hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' }).format(new Date(value));
+const time = (value: string) => `${new Intl.DateTimeFormat('de-CH', { timeZone: 'Europe/Zurich',day:'2-digit',month:'2-digit',year:'numeric' }).format(new Date(value))}, ${new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Zurich',hour:'2-digit',minute:'2-digit'}).format(new Date(value))}`;
 function element<K extends keyof HTMLElementTagNameMap>(tag: K, text = '') { const el = document.createElement(tag); el.textContent = text; return el; }
 function render(plan: Plan, explanation: string) {
   results.replaceChildren(); results.append(element('p', explanation));
@@ -72,14 +72,12 @@ function render(plan: Plan, explanation: string) {
     results.append(card);
   });
   if(!plan.options.length) results.append(journeyTimeline('To your destination',plan.baseline,input('origin').value,input('destination').value));
-  const warnings = element('ul'); plan.warnings.forEach(warning => warnings.append(element('li', warning))); results.append(warnings);
-  results.append(element('p', 'OpenStreetMap contributors. Walking: FOSSGIS/OSRM. Transit: transport.opendata.ch. Cafeteria menus: UniEats database.'));
-  const raw = element('details'); raw.append(element('summary', 'View MCP tool result'), element('pre', JSON.stringify(plan, null, 2))); results.append(raw);
   routeMap.setPlan(plan); selectCard(selectedOption(plan));
 }
 form.addEventListener('submit', async event => {
   event.preventDefault(); if (button.disabled) return;
-  const departure = new Date(input('departure').value); const arrival = new Date(input('arrival').value);
+  const departure = departureDate(); const arrival = arrivalDate();
+  if(!departure || !arrival) {status.textContent='Enter valid dates as DD.MM.YYYY and valid departure/arrival times.';return;}
   if (!(departure.getTime() < arrival.getTime())) { status.textContent = 'Arrival must be after departure.'; return; }
   const key = input('openai-key').value.trim();
   originRevision++; // A pending GPS lookup must not change this submitted journey.
@@ -92,7 +90,6 @@ form.addEventListener('submit', async event => {
       headers: { 'Content-Type': 'application/json', 'X-OpenAI-Key': key }, body: JSON.stringify({ origin: originLocation.value(input('origin').value), destination: destinationLocation.value(input('destination').value), departureTime: departure.toISOString(), arrivalTime: arrival.toISOString(), mealMinutes: Number(input('meal-minutes').value) }) });
     const data = await response.json(); if (!response.ok) throw new Error(data.detail ?? 'Route planning failed. Check backend configuration.');
     render(data.plan, data.explanation); status.textContent = `Finished in ${Math.round((Date.now() - started) / 1000)} seconds.`;
-    if(Array.isArray(data.toolCalls)) results.prepend(element('p', `AI tools used: ${data.toolCalls.map((call: {name: string}) => call.name).join(' → ')}`));
   } catch (error) { status.textContent = error instanceof Error ? error.message : 'Could not plan the journey.'; }
   finally { clearInterval(timer); button.disabled = false; section.setAttribute('aria-busy', 'false'); }
 });

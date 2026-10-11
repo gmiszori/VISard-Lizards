@@ -7,7 +7,7 @@ export type JourneyLeg = {
   provider?: {mode?: string; warnings?: string[]; polyline?: string; itinerary?: JourneyStep[]};
 };
 const clock = (value: string) => new Intl.DateTimeFormat('en-GB', {timeZone:'Europe/Zurich',hour:'2-digit',minute:'2-digit'}).format(new Date(value));
-const date = (value: string) => new Intl.DateTimeFormat('en-GB', {timeZone:'Europe/Zurich',day:'numeric',month:'short'}).format(new Date(value));
+const date = (value: string) => new Intl.DateTimeFormat('de-CH', {timeZone:'Europe/Zurich',day:'2-digit',month:'2-digit',year:'numeric'}).format(new Date(value));
 export const minutesBetween = (a: string,b: string) => Math.max(0,Math.ceil((Date.parse(b)-Date.parse(a))/60000));
 function node<K extends keyof HTMLElementTagNameMap>(tag: K,text='',className='') {
   const el=document.createElement(tag);el.textContent=text;el.className=className;return el;
@@ -23,11 +23,19 @@ export function journeyTimeline(label: string,leg: JourneyLeg,from: string,to: s
   const head=node('header','','journey-heading');head.append(node('h4',label),node('span',`${date(leg.departure)} · ${clock(leg.departure)}–${clock(leg.arrival)} · ${minutesBetween(leg.departure,leg.arrival)} min`));panel.append(head);
   const itinerary=leg.provider?.itinerary;
   const steps=itinerary?.length ? itinerary : [{mode:leg.provider?.mode || 'WALK',from,to,departure:leg.departure,arrival:leg.arrival,distanceMetres:leg.distanceMetres}];
+  const overview=node('div','','journey-overview');overview.setAttribute('aria-label','Journey stages');
+  steps.forEach((step,index)=>{
+    if(index) overview.append(node('span','→','journey-overview-arrow'));
+    overview.append(node('span',step.mode==='WALK' ? 'Walk' : step.line || step.mode,`journey-stage mode-${step.mode.toLowerCase()}`));
+  });panel.append(overview);
   const timeline=node('div','','journey-timeline');let cursor=leg.departure;
   steps.forEach((step,index)=> {
     const wait=minutesBetween(cursor,step.departure);
-    if(wait) timeline.append(node('div',`${index ? 'Transfer' : 'Wait before departure'} · ${wait} min`,'journey-wait'));
-    const block=node('div','','journey-segment');
+    if(index && step.mode!=='WALK') {
+      const transfer=node('div','','journey-transfer');
+      transfer.append(node('strong',`↳ Change to ${step.line || step.mode}`),node('span',`${step.from}${wait ? ` · ${wait} min to transfer` : ' · Board next service'}`));timeline.append(transfer);
+    } else if(wait) timeline.append(node('div',`${index ? 'Transfer' : 'Wait before departure'} · ${wait} min`,'journey-wait'));
+    const block=node('div','',`journey-segment mode-${step.mode.toLowerCase()}`);
     block.append(stop(step.departure,index===0 && step.mode==='WALK' ? from : step.from || from,step.departurePlatform));
     const travel=node('div','',`journey-travel ${step.mode==='WALK' ? 'is-walk' : 'is-transit'}`);
     const mode=step.mode==='WALK' ? 'Walk' : step.mode==='TRAM' ? 'Tram' : step.mode==='BUS' ? 'Bus' : step.mode==='TRAIN' ? 'Train' : 'Public transport';
