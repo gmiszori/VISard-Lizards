@@ -62,7 +62,7 @@ const { title, hideFooter = false } = Astro.props;
       <p class="offline-banner" data-offline-banner role="status" hidden>You are offline. Showing the last cached version.</p>
       <main class="main" id="main" tabindex="-1"><slot /></main>
       {!hideFooter && <footer class="footer">
-        <span data-i18n="studentFooter">Made by students with ❤️ for students</span>
+        <span lang="en">Made by students with ❤️ for students</span>
       </footer>}
       <SimulatedClockBanner />
     </div>
@@ -110,8 +110,6 @@ const { title, hideFooter = false } = Astro.props;
       Object.assign(translations.de, { viewMode: 'Übersichtsansicht', viewStandard: 'Standard', viewList: 'Liste' });
       Object.assign(translations.en, { distanceDefault: 'Sort by distance automatically', distanceDefaultHint: 'When you open the overview. Your location stays on this device.' });
       Object.assign(translations.de, { distanceDefault: 'Automatisch nach Entfernung sortieren', distanceDefaultHint: 'Beim Öffnen der Übersicht. Dein Standort bleibt auf diesem Gerät.' });
-      translations.en.studentFooter = 'Made by students with ❤️ for students';
-      translations.de.studentFooter = 'Von Studierenden für Studierende gemacht ❤️';
       translations.en.filtersHint = 'Choose one or more campus locations to include.';
       translations.de.filtersHint = 'Wähle einen oder mehrere Campus-Standorte aus.';
       // Storage can be unavailable (private mode, blocked cookies) or hold unexpected values: never let that stop this script.
