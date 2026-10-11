@@ -1,14 +1,16 @@
 ---
 import { type DisplayMenuItem } from '../data/menu-display';
 import MealPrice from './MealPrice.astro';
+import { dishName } from '../data/presentation';
 import MealStar from './MealStar.astro';
+import RecipeAction from '../meals/RecipeAction.astro';
 import MealServingTime from './MealServingTime.astro';
 interface Props { item: DisplayMenuItem }
 const { item } = Astro.props;
 ---
 <article class="menu-item" data-diet={item.dietary} data-meal-row>
   <span class="eyebrow" data-i18n={`category_${item.category.toLowerCase().replace(' ', '_')}`}>{item.category}</span>
-  <div class="meal-detail-heading"><h3>{item.name}</h3><MealStar item={item} /></div>
+  <div class="meal-detail-heading"><h3 data-dish-name={item.name}>{dishName(item.name)}</h3><RecipeAction item={item} /><MealStar item={item} /></div>
   <MealServingTime item={item} />
   <p>{item.description}</p>
   <p style="margin-top:9px"><span data-i18n={item.allergens?.length ? 'contains' : 'noAllergens'}>{item.allergens?.length ? 'Contains' : 'Allergen information unavailable. Ask the canteen before ordering.'}</span>{item.allergens?.length ? `: ${item.allergens.join(', ')}` : ''}</p>

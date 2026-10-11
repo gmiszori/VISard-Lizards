@@ -57,6 +57,8 @@ public class WebConfig implements WebMvcConfigurer {
 				.addPathPatterns("/api/search");
 		registry.addInterceptor(new RateLimitInterceptor(Duration.ofSeconds(10), "start voice search again", clock))
 				.addPathPatterns("/api/voice/realtime-session");
+		registry.addInterceptor(new RateLimitInterceptor(Duration.ofSeconds(30), "generate another recipe", clock))
+				.addPathPatterns("/api/recipes");
 		registry.addInterceptor(new RateLimitInterceptor(Duration.ofMinutes(1), "send another test notification", clock))
 				.addPathPatterns("/api/push/test");
 	}

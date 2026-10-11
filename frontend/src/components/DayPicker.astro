@@ -4,6 +4,7 @@
  * only lunch or only dinner (client-side, remembered on the device).
  * With a simulated time in the developer tools, the default pages jump to that time's menu day.
  */
+import { formatMenuDay } from '../data/presentation';
 interface Props {
   days: string[];
   /** The day shown on this page. */
@@ -15,7 +16,7 @@ interface Props {
 }
 const { days, menuDate, chosenDay, canteenId } = Astro.props;
 const href = (day: string) => (canteenId ? `/canteen/${encodeURIComponent(canteenId)}/${day}` : `/day/${day}`);
-const label = (day: string) => new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', timeZone: 'UTC' }).format(new Date(`${day}T12:00:00Z`));
+const label = (day: string) => formatMenuDay(day);
 const shownDays = days.includes(menuDate) ? days : [...days, menuDate].sort();
 ---
 <div class="day-picker" data-day-picker data-picker-date={menuDate} data-chosen-day={String(chosenDay)}
@@ -31,6 +32,7 @@ const shownDays = days.includes(menuDate) ? days : [...days, menuDate].sort();
     <button type="button" data-service-choice="dinner" aria-pressed="false" data-i18n="dinner">Dinner</button>
   </div>
 </div>
+<p class="price-category-note"><span data-price-category>Student prices</span> · <a href="/settings" data-i18n="changePriceCategory">Change</a></p>
 <script is:inline>
   // Switching the day loads another page. Keep the picker where it was on screen instead of jumping to the
   // top: runs while the page is still loading, right after the picker exists (the click saved its position).
@@ -61,6 +63,7 @@ const shownDays = days.includes(menuDate) ? days : [...days, menuDate].sort();
 <script>
   import { activeSimulatedClock, appNow, CLOCK_EVENT, zurichParts } from '../time/clock';
   import { defaultService, wantedMenuDate } from '../data/menuDate';
+  import { formatMenuDay } from '../data/presentation';
 
   const SERVICE_KEY = 'campuseats-service-filter';
   const root = document.querySelector<HTMLElement>('[data-day-picker]');
@@ -93,12 +96,9 @@ const shownDays = days.includes(menuDate) ? days : [...days, menuDate].sort();
   function renderDays() {
     if (!root) return;
     const de = document.documentElement.lang === 'de';
-    // The real date (not the date the page was built for), so a pill is only "Today" when it is.
-    const today = zurichParts(appNow()).date;
     root.querySelectorAll<HTMLAnchorElement>('[data-day]').forEach(link => {
       const day = link.dataset.day!;
-      link.textContent = day === today ? (de ? 'Heute' : 'Today')
-        : new Intl.DateTimeFormat(de ? 'de-CH' : 'en-GB', { weekday: 'short', day: 'numeric', timeZone: 'UTC' }).format(new Date(`${day}T12:00:00Z`));
+      link.textContent = formatMenuDay(day, de ? 'de' : 'en');
     });
     root.querySelector('[data-day-picker-nav]')?.setAttribute('aria-label', de ? 'Menütag' : 'Menu day');
     root.querySelector('[data-service-filter-group]')?.setAttribute('aria-label', de ? 'Mahlzeit' : 'Meal service');
@@ -136,10 +136,13 @@ const shownDays = days.includes(menuDate) ? days : [...days, menuDate].sort();
   document.addEventListener('languagechange', renderDays);
   document.addEventListener(CLOCK_EVENT, () => { renderDays(); markOtherDay(); followSimulatedDay(); });
 </script>
+<style>.price-category-note{margin:0 0 16px;color:var(--muted);font-size:12px}.price-category-note a{display:inline-flex;align-items:center;min-width:44px;min-height:44px;margin-block:-13px;vertical-align:middle;color:var(--green);text-decoration:underline;text-underline-offset:3px}</style>
 <style>
   .day-picker{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;margin:0 0 14px}
-  .day-picker-days,.day-picker-services{display:flex;flex-wrap:wrap;gap:6px}
+  .day-picker-days{display:flex;flex-wrap:wrap;gap:6px}
   .day-picker a,.day-picker button{display:inline-flex;align-items:center;min-height:44px;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--ink);font:700 13px 'DM Sans',sans-serif;text-decoration:none;cursor:pointer;white-space:nowrap}
+  .day-picker-services{display:inline-flex;gap:2px;padding:3px;border:1px solid var(--line);border-radius:10px;background:var(--paper)}
+  .day-picker-services button{min-height:38px;border:0;border-radius:7px;background:transparent}
   .day-picker a:hover,.day-picker button:hover{border-color:var(--green)}
   .day-picker a.is-selected,.day-picker button[aria-pressed="true"]{background:var(--green);border-color:var(--green);color:var(--paper)}
   .day-picker a:focus-visible,.day-picker button:focus-visible{outline:3px solid color-mix(in srgb,var(--green) 45%,transparent);outline-offset:2px}

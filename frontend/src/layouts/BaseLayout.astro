@@ -4,6 +4,7 @@ import '../styles/selects.css';
 import '../styles/touch-targets.css';
 import '../styles/list-view.css';
 import SimulatedClockBanner from '../time/SimulatedClockBanner.astro';
+import RecipeDialog from '../meals/RecipeDialog.astro';
 import { LIVE_DATA } from '../data/canteens';
 interface Props { title: string; hideFooter?: boolean }
 const { title, hideFooter = false } = Astro.props;
@@ -65,6 +66,7 @@ const { title, hideFooter = false } = Astro.props;
       </footer>}
       <SimulatedClockBanner />
     </div>
+    <RecipeDialog />
     <script is:inline>
       const translations = {
         en: { campus:'Campus canteens', openCount:'open right now', search:'Search canteens or dishes', all:'All spots', favourites:'Your favourites', settings:'Settings', settingsTitle:'Your settings', settingsIntro:'Choose which meals you want to see. Your choices are saved on this device.', foodPreferences:'Food preferences', vegan:'Vegan', vegetarian:'Vegetarian', meat:'Meat', preferencesHint:'Select every type of meal you want included.', plantBased:'Plant-based', meatFree:'Meat-free', meatDishes:'Including meat dishes', canteenFilters:'Canteen filters', filtersHint:'Choose which campus locations to include.', location:'Campus location', zentrum:'Zentrum', hoenggerberg:'Hönggerberg', irchel:'Irchel', openOnly:'Only show open canteens', noPreferenceMeals:'No dishes match your food preferences.', noDishesAvailable:'No dishes available', compact:'Compact', settingsSaved:'Saved', today:'On the menu today', open:'Open now', closed:'Closed', back:'← All canteens', hours:'Opening hours', lunch:'Lunch',allMeals:'All', dinner:'Dinner', servingTimeUnknown:'Serving time unavailable', crowd:'Current crowd', todayMenu:'Today’s menu', dishes:'dishes', empty:'No canteens match your search. Try another dish or campus.', contains:'Contains', noAllergens:'Allergen information unavailable. Ask the canteen before ordering.', student:'Student', worker:'Staff', external:'External', low:'Quiet', medium:'Moderate', high:'Busy', diet_vegan:'Vegan', diet_vegetarian:'Vegetarian', diet_meat:'Meat', category_daily_special:'Daily Special', category_classic:'Classic', category_side:'Side' },
@@ -96,8 +98,8 @@ const { title, hideFooter = false } = Astro.props;
       Object.assign(translations.de, { canteensTitle: 'Mensen' });
       Object.assign(translations.en, { sampleMenusInvalid: 'Showing sample menus: the UniEats backend sent data this page could not read.' });
       Object.assign(translations.de, { sampleMenusInvalid: 'Beispielmenüs: Das UniEats-Backend hat Daten gesendet, die diese Seite nicht lesen konnte.' });
-      Object.assign(translations.en, { appearance: 'Appearance', themeLabel: 'Theme', languageLabel: 'Language', english: 'English', german: 'German', systemTheme: 'System', lightTheme: 'Light', darkTheme: 'Dark' });
-      Object.assign(translations.de, { appearance: 'Darstellung', themeLabel: 'Design', languageLabel: 'Sprache', english: 'Englisch', german: 'Deutsch', systemTheme: 'System', lightTheme: 'Hell', darkTheme: 'Dunkel' });
+      Object.assign(translations.en, { mealCapitalization: 'Letter capitalization', mealCapitalizationHint: 'Only changes mensa meal names.', caseUpper: 'ALL CAPS', caseTitle: 'Capitalize Each Word', caseSentence: 'Sentence case', caseLower: 'lowercase', appearance: 'Appearance', themeLabel: 'Theme', languageLabel: 'Language', english: 'English', german: 'German', systemTheme: 'System', lightTheme: 'Light', darkTheme: 'Dark' });
+      Object.assign(translations.de, { mealCapitalization: 'Gross-/Kleinschreibung', mealCapitalizationHint: 'Ändert nur die Namen der Mensa-Gerichte.', caseUpper: 'GROSSBUCHSTABEN', caseTitle: 'Jedes Wort Gross', caseSentence: 'Satzanfang gross', caseLower: 'kleinbuchstaben', appearance: 'Darstellung', themeLabel: 'Design', languageLabel: 'Sprache', english: 'Englisch', german: 'Deutsch', systemTheme: 'System', lightTheme: 'Hell', darkTheme: 'Dunkel' });
       translations.en.installApp = 'Install UniEats';
       translations.de.installApp = 'UniEats installieren';
       Object.assign(translations.en, { menuFor: 'Menu for', menusFor: 'Menus for' });
@@ -130,10 +132,12 @@ const { title, hideFooter = false } = Astro.props;
         document.querySelectorAll('[data-i18n-placeholder]').forEach(el => el.placeholder = translations[lang][el.dataset.i18nPlaceholder]);
         document.querySelectorAll('[data-i18n-aria]').forEach(el => el.setAttribute('aria-label', translations[lang][el.dataset.i18nAria]));
         document.querySelectorAll('[data-i18n-title]').forEach(el => el.setAttribute('title', translations[lang][el.dataset.i18nTitle]));
-        const dateFormatter = new Intl.DateTimeFormat(lang === 'de' ? 'de-CH' : 'en-GB', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' });
-        document.querySelectorAll('[data-menu-date]').forEach(el => { el.textContent = dateFormatter.format(new Date(`${el.dataset.menuDate}T00:00:00Z`)); });
+        const dateFormatter = new Intl.DateTimeFormat(lang === 'de' ? 'de-CH' : 'en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' });
+        document.querySelectorAll('[data-menu-date]').forEach(el => { el.textContent = dateFormatter.format(new Date(`${el.dataset.menuDate}T00:00:00Z`)).replace(/,/g, ''); });
         document.dispatchEvent(new CustomEvent('languagechange', { detail: { lang, translations: translations[lang] } }));
       };
+      Object.assign(translations.en, { changePriceCategory: 'Change', lunchDinner: 'Lunch & dinner' });
+      Object.assign(translations.de, { changePriceCategory: 'Ändern', lunchDinner: 'Mittag- & Abendessen' });
       const themeSelect = document.querySelector('#theme-select');
       const colorScheme = window.matchMedia('(prefers-color-scheme: dark)');
       const themeColor = document.querySelector('meta[data-theme-color]');

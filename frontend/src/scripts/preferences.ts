@@ -1,6 +1,8 @@
 import { matchesQuery } from '../search/fold';
 import { createSearch } from '../search/dishSearch';
 import { canShowCanteen } from '../preferences/canteenVisibility';
+import { DEFAULT_MEAL_CAPITALIZATION, isMealCapitalization } from '../data/presentation';
+import { applyMealCapitalization } from './meal-names';
 import { addSpeechPhraseHints, chooseFoodAwareTranscript, speechRecognitionConstructor, type SpeechRecognitionLike } from '../search/speech';
 import { ALL_CAMPUS_IDS, isPriceTier, isViewMode, readFavourites, readPreferences, PREFERENCES_KEY, type Preferences } from '../preferences/state';
 import { API_URL, ApiError, createRealtimeVoiceSession, getMensas, searchHybridMeals, type BackendMensa, type HybridMealSearchResponse } from '../data/api';
@@ -156,7 +158,7 @@ function statusText(status: RealtimeVoiceStatus, detail?: string) {
 let preferences: Preferences;
 try {
   preferences = readPreferences();
-} catch { preferences = { vegan: true, vegetarian: true, meat: true, viewMode: 'standard', openOnly: false, distanceDefault: false, useAiVoiceSearch: true, locations: [...ALL_CAMPUS_IDS], priceTier: 'student', devMode: false }; }
+} catch { preferences = { vegan: true, vegetarian: true, meat: true, viewMode: 'standard', openOnly: false, distanceDefault: false, useAiVoiceSearch: true, locations: [...ALL_CAMPUS_IDS], priceTier: 'student', devMode: false, mealCapitalization: DEFAULT_MEAL_CAPITALIZATION }; }
 let showWithoutMenu = false;
 /** "Show all canteens" in the empty state also looks past "Only show open canteens" for this visit (Settings stay as they are). */
 let ignoreOpenOnly = false;
@@ -190,23 +192,27 @@ function cardService(card: Element | null | undefined, picked: string | undefine
 const searchTextOf = (row: HTMLElement, card: HTMLElement) => `${card.dataset.name ?? ''} ${row.dataset.search ?? row.dataset.mealName ?? ''}`;
 
 function applyPreferences() {
+  applyMealCapitalization(preferences.mealCapitalization);
+  document.querySelectorAll<HTMLSelectElement>('[data-meal-capitalization]').forEach(select => select.value = preferences.mealCapitalization);
   document.documentElement.dataset.density = preferences.viewMode;
   document.documentElement.dataset.devMode = String(preferences.devMode);
   document.documentElement.dataset.priceTier = preferences.priceTier;
   document.querySelectorAll<HTMLElement>('[data-meal-price]').forEach(price => {
     const amount = price.querySelector<HTMLElement>('[data-price-amount]');
-    const label = price.querySelector<HTMLElement>('[data-price-label]');
     const value = price.getAttribute(`data-price-${preferences.priceTier}`) ?? '–';
     const row = price.closest<HTMLElement>('[data-meal-row]');
     if (row) row.dataset.mealPriceMissing = String(value === '–');
-    if (amount) amount.textContent = `CHF ${value}`;
-    if (label) {
-      label.dataset.i18n = preferences.priceTier;
-      const labels = document.documentElement.lang === 'de'
-        ? { student: 'Studierende', worker: 'Mitarbeitende', external: 'Externe' }
-        : { student: 'Student', worker: 'Staff', external: 'External' };
-      label.textContent = labels[preferences.priceTier];
-    }
+    if (amount) amount.textContent = value === '–'
+      ? document.documentElement.lang === 'de' ? 'Preis nicht verfügbar' : 'Price unavailable'
+      : `CHF ${value}`;
+    const unit = price.querySelector<HTMLElement>('[data-price-unit]');
+    if (unit) unit.hidden = value === '–';
+  });
+  const categoryLabels = document.documentElement.lang === 'de'
+    ? { student: 'Preise für Studierende', worker: 'Preise für Mitarbeitende', external: 'Preise für Externe' }
+    : { student: 'Student prices', worker: 'Staff prices', external: 'External prices' };
+  document.querySelectorAll<HTMLElement>('[data-price-category]').forEach(label => {
+    label.textContent = categoryLabels[preferences.priceTier];
   });
   document.querySelectorAll<HTMLSelectElement>('[data-price-tier]').forEach(select => select.value = preferences.priceTier);
 
@@ -238,7 +244,7 @@ function applyPreferences() {
     const card = meal.closest<HTMLElement>('[data-canteen-card]');
     const effectiveService = cardService(card, service);
     const groupService = meal.closest<HTMLElement>('[data-meal-group]')?.dataset.service;
-    const otherService = effectiveService === 'closed' || (!!effectiveService && !!groupService && groupService !== effectiveService);
+    const otherService = effectiveService === 'closed' || (!!effectiveService && !!groupService && !groupService.split(' ').includes(effectiveService));
     const isAiMatch = aiResultsActive && aiMatchedMealIds?.has(meal.dataset.mealId ?? '');
     meal.hidden = !preferences[diet] || otherService
       || (aiResultsActive ? !isAiMatch : !!(useTextQuery && card && !search.test(searchTextOf(meal, card), meal.dataset.diet)));
@@ -273,7 +279,7 @@ function applyPreferences() {
       const card = list.closest<HTMLElement>('[data-canteen-card]');
       const effectiveService = cardService(card, service);
       const hasDishForService = effectiveService === 'closed' ? false
-        : !effectiveService || list.querySelector(`[data-meal-group][data-service="${effectiveService}"], [data-meal-group]:not([data-service])`) !== null;
+        : !effectiveService || list.querySelector(`[data-meal-group][data-service~="${effectiveService}"], [data-meal-group]:not([data-service])`) !== null;
       const hasAnyDish = list.querySelector('[data-meal-row]') !== null;
       const key = !hasAnyDish || !hasDishForService ? 'noDishesAvailable' : 'noPreferenceMeals';
       emptyMessage.dataset.i18n = key;
@@ -297,7 +303,7 @@ function applyPreferences() {
       ? aiMatchedIds.has(card.dataset.canteenId ?? '') : searchPending || fallbackSearch;
     // With lunch or dinner picked, a canteen without that service counts as having no menu.
     const effectiveService = cardService(card, service);
-    const servesChoice = !effectiveService || (effectiveService !== 'closed' && card.querySelector(`[data-meal-group][data-service="${effectiveService}"], [data-meal-group]:not([data-service])`) !== null);
+    const servesChoice = !effectiveService || (effectiveService !== 'closed' && card.querySelector(`[data-meal-group][data-service~="${effectiveService}"], [data-meal-group]:not([data-service])`) !== null);
     const hasMenu = preferences.viewMode === 'list'
       ? card.querySelector('[data-meal-row]:not([hidden])') !== null
       : card.dataset.hasMenu === 'true' && servesChoice;
@@ -362,10 +368,13 @@ function applyPreferences() {
   document.dispatchEvent(new Event('campuseats:preferences-applied'));
 }
 
-document.querySelector<HTMLFormElement>('#preferences-form')?.addEventListener('change', (event) => {
-  const input = event.target as HTMLInputElement | HTMLSelectElement;
+document.addEventListener('change', (event) => {
+  const input = event.target;
+  if (!(input instanceof HTMLInputElement || input instanceof HTMLSelectElement) || input.form?.id !== 'preferences-form') return;
   if (input instanceof HTMLSelectElement && input.name === 'priceTier' && isPriceTier(input.value)) {
     preferences = { ...preferences, priceTier: input.value };
+  } else if (input instanceof HTMLSelectElement && input.name === 'mealCapitalization' && isMealCapitalization(input.value)) {
+    preferences = { ...preferences, mealCapitalization: input.value };
   } else if (input instanceof HTMLInputElement && input.type === 'radio' && input.name === 'viewMode' && isViewMode(input.value)) {
     preferences = { ...preferences, viewMode: input.value };
   } else if (input instanceof HTMLInputElement && input.type === 'checkbox' && input.name in preferences) {

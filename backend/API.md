@@ -62,6 +62,7 @@ Services only see domain models through `MensaRepository` (implemented by `JpaMe
 | POST | [`/api/meals/search-structured`](#post-apimealssearch-structured) | Structured AI meal search with hard constraints, price and distance ranking |
 | POST | [`/api/search/extract-query`](#post-apisearchextract-query) | Extract structured database query with OpenAI from natural language |
 | POST | [`/api/search`](#post-apisearch) | Match a search query to displayed canteens with OpenAI |
+| POST | [`/api/recipes`](#post-apirecipes) | Generate a home-cooking recreation of a dish |
 | GET | [`/api/meals/{id}`](#get-apimealsid) | One meal with its ratings |
 | POST | [`/api/meals/{id}/ratings`](#post-apimealsidratings) | Rate a meal |
 | DELETE | [`/api/meals/{id}/ratings?userId=`](#delete-apimealsidratings) | Take back a meal rating |
@@ -89,6 +90,7 @@ Services only see domain models through `MensaRepository` (implemented by `JpaMe
   Windows: `app.rate-limit.*` in `application.properties`. Meal ratings are limited per user instead:
   one rating per anonymous user id and meal (`409` otherwise). OpenAI-backed `POST /api/search` is
   limited to one request per IP every 10 seconds.
+  Recipe generation is limited to one request per IP every 30 seconds.
 - **Operational endpoints:** generic data CRUD, cache management, and manual ETH/UZH import endpoints
   are disabled unless `INTERNAL_API_ENABLED=true`. Do not enable them on a public deployment without
   placing them behind authentication or a private network.
@@ -168,6 +170,21 @@ Body: `{"query": "i want to eat fish for a low price in a close place for at mos
 Response `200`: `StructuredMealQuery` object.
 
 Also available via `GET /api/meals/search-structured?query=...&userLat=...&userLng=...&priceCategory=STUDENT`.
+
+### POST /api/recipes
+
+Generates a home-cooking idea inspired by a dish, not the cafeteria's official recipe. The browser
+sends only the dish name, description, diet, number of servings and language; no location or user
+identifier is needed. Example request:
+
+```json
+{"name":"Mushroom Risotto","description":"With herbs","diet":"vegetarian","servings":2,"language":"en"}
+```
+
+The response contains `title`, `intro`, `servings`, `minutes`, `ingredients` (`amount` and `item`)
+and `steps`. Configure `OPENAI_API_KEY` on the backend as above. A missing key returns 503, an
+upstream failure returns 502, and repeated requests within 30 seconds return 429. The frontend
+generates the downloadable PDF locally from this response; the backend does not store recipes.
 
 ## Mensas
 

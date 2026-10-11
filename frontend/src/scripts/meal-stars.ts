@@ -1,5 +1,7 @@
 import { matchesMeal, normalizedName, starName, PROFILE_KEY, readStarredMeals, writeStarredMeals } from '../meals/stars';
 import { askForPushOnce, syncLater } from '../push/optin';
+import { formatMenuDay } from '../data/presentation';
+import { setMealName } from './meal-names';
 
 const copy = {
   en: { featured: 'Your starred meals', savedTitle: 'Starred meals', savedHint: 'When these dishes return to the menu, we’ll bring them to the top. Saved on this device.', empty: 'No starred meals yet. Tap the star next to a dish to save it.', star: 'Star meal', unstar: 'Unstar meal', remove: 'Remove', menuFor: 'On the menu for', added: 'Starred', removed: 'Unstarred', error: 'Could not save your starred meals on this device.' },
@@ -67,8 +69,7 @@ function render() {
     featured.hidden = current.length === 0;
     const dateLabel = featured.querySelector<HTMLElement>('[data-starred-menu-date]');
     if (dateLabel) {
-      const date = new Date(`${dateLabel.dataset.starredMenuDate}T12:00:00Z`);
-      dateLabel.textContent = `${t('menuFor')} ${new Intl.DateTimeFormat(language(), { day: 'numeric', month: 'short', weekday: 'short', timeZone: 'Europe/Zurich' }).format(date)}`;
+      dateLabel.textContent = `${t('menuFor')} ${formatMenuDay(dateLabel.dataset.starredMenuDate!, language())}`;
     }
   }
 
@@ -83,7 +84,7 @@ function render() {
   if (savedList) {
     savedList.replaceChildren(...stars.map(meal => {
       const li = document.createElement('li');
-      const name = document.createElement('strong'); name.textContent = meal;
+      const name = document.createElement('strong'); setMealName(name, meal);
       const remove = document.createElement('button');
       remove.type = 'button'; remove.className = 'saved-meal-remove'; remove.dataset.mealRemove = meal;
       remove.textContent = t('remove'); remove.setAttribute('aria-label', `${t('unstar')}: ${meal}`);

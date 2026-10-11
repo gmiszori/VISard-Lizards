@@ -165,14 +165,15 @@
 @media (min-width: 701px) {
   :root[data-density="list"] :is(#canteen-grid, #favourites-grid) .canteen-card .dish-preview,
   :root[data-density="list"] :is(#canteen-grid, #favourites-grid) .canteen-card .dish-preview:not([hidden]) ~ .dish-preview:not([hidden]) {
-    grid-template-columns: minmax(0, 1fr) 120px 44px;
+    grid-template-columns: minmax(0, 1fr) 120px 32px 44px;
     justify-content: start;
     column-gap: 10px;
   }
   :root[data-density="list"] .canteen-card .meal-preview-heading { display: contents; }
   :root[data-density="list"] .canteen-card .meal-preview-heading .dish { grid-column: 1; }
   :root[data-density="list"] .canteen-card .meal-price { grid-column: 2; grid-row: 1; }
-  :root[data-density="list"] .canteen-card .meal-preview-heading .meal-star { grid-column: 3; grid-row: 1; }
+  :root[data-density="list"] .canteen-card .meal-preview-heading .recipe-action { grid-column: 3; grid-row: 1; }
+  :root[data-density="list"] .canteen-card .meal-preview-heading .meal-star { grid-column: 4; grid-row: 1; }
 }
 
 @media (max-width: 700px) {
@@ -180,15 +181,16 @@
   :root[data-density="list"] .canteen-card .dish { font-size: 12px; }
   :root[data-density="list"] :is(#canteen-grid, #favourites-grid) .canteen-card .dish-preview,
   :root[data-density="list"] :is(#canteen-grid, #favourites-grid) .canteen-card .dish-preview:not([hidden]) ~ .dish-preview:not([hidden]) {
-    grid-template-columns: minmax(0, 1fr) auto 44px;
+    grid-template-columns: minmax(0, 1fr) auto 32px 44px;
     column-gap: 8px;
     min-height: 48px;
   }
   :root[data-density="list"] .canteen-card .meal-preview-heading { display: contents; }
   :root[data-density="list"] .canteen-card .meal-preview-heading .dish { grid-column: 1; grid-row: 1; }
   :root[data-density="list"] .canteen-card .meal-price { grid-column: 2; grid-row: 1; white-space: nowrap; }
+  :root[data-density="list"] .canteen-card .meal-preview-heading .recipe-action { grid-column: 3; grid-row: 1; }
   :root[data-density="list"] .canteen-card .meal-preview-heading .meal-star {
-    grid-column: 3;
+    grid-column: 4;
     grid-row: 1;
     justify-self: end;
   }

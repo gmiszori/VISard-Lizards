@@ -1,0 +1,17 @@
+---
+import type { DisplayMenuItem } from '../data/menu-display';
+interface Props { item: Pick<DisplayMenuItem, 'name' | 'description' | 'dietary' | 'dietTag'> }
+const { item } = Astro.props;
+---
+<button type="button" class="recipe-action" data-recipe-trigger
+  data-recipe-name={item.name} data-recipe-description={item.description}
+  data-recipe-diet={item.dietTag ?? item.dietary}
+  aria-label={`More actions for ${item.name}`} aria-haspopup="menu" aria-expanded="false"
+  title={`More actions for ${item.name}`}><span aria-hidden="true">⋯</span></button>
+<style is:global>
+  .recipe-action{position:relative;z-index:2;flex:0 0 36px;display:grid;place-items:center;align-self:center;width:36px;height:36px;padding:0;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);font:700 21px/1 'DM Sans',sans-serif;cursor:pointer}
+  .recipe-action:hover{border-color:var(--green);color:var(--green)}
+  .recipe-action:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+  .recipe-action>span{transform:translateY(-2px)}
+  :root[data-density="list"] .meal-preview-heading>.recipe-action{flex-basis:32px;width:32px;height:32px;font-size:19px}
+</style>

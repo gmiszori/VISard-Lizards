@@ -28,7 +28,7 @@ services:
       dockerfile: Dockerfile
     environment:
       - DB_URL=jdbc:h2:file:./data/visard
-      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-http://localhost:4321,http://127.0.0.1:4321}
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-http://localhost:4321,http://127.0.0.1:4321,https://01.hackathon.ethz.ch}
       - INTERNAL_API_ENABLED=${INTERNAL_API_ENABLED:-false}
       - SERVER_FORWARD_HEADERS_STRATEGY=framework
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}

@@ -32,7 +32,7 @@ const prediction: CrowdPrediction = {
   ])),
 };
 const menuGroups = groupMenuByService(canteen.menu);
-const showServiceHeadings = menuGroups.some(group => group.service === 'lunch') && menuGroups.some(group => group.service === 'dinner');
+const showServiceHeadings = menuGroups.some(group => group.service === 'lunch dinner') || (menuGroups.some(group => group.service === 'lunch') && menuGroups.some(group => group.service === 'dinner'));
 ---
 <BaseLayout title={canteen.name}>
   <a href={chosenDay ? `/day/${menuDate}` : '/'} class="detail-back sticky-back-link" data-i18n="back">← All canteens</a>
@@ -42,7 +42,7 @@ const showServiceHeadings = menuGroups.some(group => group.service === 'lunch') 
   <section><h2 class="menu-section-title"><MenuDate date={menuDate} today={today} variant="heading" /></h2>
     <DayPicker days={days} menuDate={menuDate} chosenDay={chosenDay} canteenId={canteen.id} />
     {canteen.menu.length ? <><div class="menu-list" data-preference-list data-meal-list>{menuGroups.map(group => <div class="menu-service-group" data-meal-group data-service={group.service}>
-      {showServiceHeadings && group.service && <h3 class="menu-service-heading" data-i18n={group.service}>{group.service === 'dinner' ? 'Dinner' : 'Lunch'}</h3>}
+      {showServiceHeadings && group.service && <h3 class="menu-service-heading" data-i18n={group.service === 'lunch dinner' ? 'lunchDinner' : group.service}>{group.service === 'lunch dinner' ? 'Lunch & dinner' : group.service === 'dinner' ? 'Dinner' : 'Lunch'}</h3>}
       {group.items.map(item => <MenuItem item={item} />)}
     </div>)}</div><div class="empty-state preference-empty" data-no-preference-meals hidden data-i18n="noPreferenceMeals">No dishes match your food preferences.</div></> : <div class="empty-state" style="display:block" data-i18n="noDishesAvailable">No dishes available</div>}
   </section>

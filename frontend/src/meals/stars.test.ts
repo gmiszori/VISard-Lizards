@@ -1,6 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { starName, matchesMeal, normalizedName } from './stars.ts';
+
+test('saved names still match after scraped separators are cleaned', () => {
+  assert.equal(matchesMeal('SCHWAMMERL SCHNITTLAUCH RAHMSAUCE', ['Schwammerl Schnittlauch |Rahmsauce']), true);
+});
 test('stores the full dish name with tidy whitespace', () => {
   assert.equal(starName('  Schnitzel   with pommes '), 'Schnitzel with pommes');
   assert.equal(normalizedName('  SCHNITZEL  with  rice '), 'schnitzel with rice');
