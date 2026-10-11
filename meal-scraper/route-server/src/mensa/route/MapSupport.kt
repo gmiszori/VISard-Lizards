@@ -22,7 +22,9 @@ interface MapProvider : RouteProvider {
     fun options(origin: String, destination: String, departure: Instant): List<RouteLeg>
     fun nearby(point: Point): List<JsonObject>
     fun nearby(point: Point, date: LocalDate): List<JsonObject> = nearby(point)
+    fun nearby(point: Point, date: LocalDate, quickMeal: Boolean): List<JsonObject> = nearby(point,date)
     fun walkingCosts(origin: Point, destination: Point, stops: List<Point>): List<Double?> = stops.map { null }
+    fun walkingDistances(origin: Point, destination: Point, stops: List<Point>): List<Double?> = stops.map { null }
 }
 fun travelModes(request: JsonObject): List<String> {
     val modes = if (request["modes"] == null) listOf("WALK", "TRANSIT") else request.array("modes").map { it.jsonPrimitive.content }

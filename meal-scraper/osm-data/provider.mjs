@@ -1,6 +1,7 @@
 import * as OSM from 'osm-api';
 import OpeningHours from 'opening_hours';
 import {RestaurantCatalog} from './catalog.mjs';
+import {mealPlacesQuery,mealPlace} from './meal-places.mjs';
 import {transitGeometryQuery, matchTransitGeometry} from './transit-geometry.mjs';
 import {tripRequest, journeyProjection} from './ojp.mjs';
 
@@ -270,14 +271,14 @@ export function openingWindows(expression, date, coordinates) {
   } catch { return []; }
 }
 const restaurantCatalog=new RestaurantCatalog(()=>request(overpass,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
-  body:query({data:'[out:json][timeout:12];nwr[amenity~"^(restaurant|cafe)$"][name][opening_hours](47.1,8.2,47.7,8.9);out center;'})}),process.env.OSM_CATALOG_FILE);
+  body:query({data:mealPlacesQuery})}),process.env.OSM_CATALOG_FILE ? `${process.env.OSM_CATALOG_FILE}.meal-places-v2` : undefined);
 export async function refreshRestaurants() { return restaurantCatalog.current(); }
 export async function nearby(input) {
   const p = point([input.latitude,input.longitude]);
   if (p[0] < 47.1 || p[0] > 47.7 || p[1] < 8.2 || p[1] > 8.9) return {places:[]};
   const data=await restaurantCatalog.current();
   const distance=hit=>Math.hypot((Number(hit.lat ?? hit.center?.lat)-p[0])*111320,(Number(hit.lon ?? hit.center?.lon)-p[1])*111320*Math.cos(p[0]*Math.PI/180));
-  const hits = data.elements.filter(hit => ['node','way','relation'].includes(hit.type) && distance(hit)<=1500)
+  const hits = data.elements.filter(hit => ['node','way','relation'].includes(hit.type) && mealPlace(hit.tags,input.quickMeal===true) && distance(hit)<=1500)
     .sort((a,b) => distance(a)-distance(b)).slice(0,12);
   const features = [];
   // Use the requested osm-api-js library for current canonical object tags, read-only.
@@ -298,11 +299,11 @@ export async function nearby(input) {
   return {places: hits.flatMap(hit => {
     const feature = features.find(f => f.type === hit.type && f.id === hit.id);
     const tags = feature ? feature.tags : hit.tags;
-    if (!tags || !['restaurant','cafe'].includes(tags.amenity) || !tags.name) return [];
+    const category=mealPlace(tags,input.quickMeal===true);if(!category) return [];
     const location = point([hit.lat ?? hit.center?.lat,hit.lon ?? hit.center?.lon]);
     const windows = openingWindows(tags.opening_hours, input.date, location);
     return [{id:`osm:${hit.type}:${hit.id}`,name:tags.name,sourceUrl:`https://www.openstreetmap.org/${hit.type}/${hit.id}`,
-      websiteUrl:tags.website || tags['contact:website'] || '',location:{latitude:location[0],longitude:location[1]},windows,
+      websiteUrl:tags.website || tags['contact:website'] || '',...category,location:{latitude:location[0],longitude:location[1]},windows,
       hoursNote:`OpenStreetMap opening_hours: ${tags.opening_hours || 'unknown'}; regional snapshot ${new Date(data.updatedAt).toISOString()}; kitchen hours and special closures not confirmed`,attributions:[]}];
   })};
 }
@@ -316,9 +317,12 @@ export async function walkingCosts(input) {
   const coordinates=points.map(p=>`${p[1]},${p[0]}`).join(';');
   const sources=points.slice(0,-1).map((_,i)=>i).join(';');
   const destinations=points.slice(1).map((_,i)=>i+1).join(';');
-  const data=await cached(`matrix:${coordinates}`,86400000,()=>request(`${foot}/table/v1/foot/${coordinates}?${query({sources,destinations,annotations:'duration'})}`));
+  const data=await cached(`matrix-distance:${coordinates}`,86400000,()=>request(`${foot}/table/v1/foot/${coordinates}?${query({sources,destinations,annotations:'duration,distance'})}`));
   if(data.code!=='Ok' || !Array.isArray(data.durations)) throw new Error('Walking matrix unavailable.');
-  return {costs:stops.map((_,i)=> {
+  return {distances:stops.map((_,i)=> {
+    const a=data.distances?.[0]?.[i],b=data.distances?.[i+1]?.[stops.length],direct=data.distances?.[0]?.[stops.length];
+    return [a,b,direct].every(Number.isFinite) ? Math.max(0,a+b-direct) : null;
+  }),costs:stops.map((_,i)=> {
     const outbound=data.durations[0]?.[i],onward=data.durations[i+1]?.[stops.length];
     return Number.isFinite(outbound) && Number.isFinite(onward) ? outbound+onward : null;
   })};

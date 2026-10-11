@@ -16,6 +16,15 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.*;
 
 class RouteMenuServiceTests {
+    @Test void rankingAvailabilityUsesFreshPersistedMenusWithoutScraping() {
+        var row=new ScrapedMenuEntity("route-menu.v2.test","""
+            {"updatedAt":"2026-10-11T08:00:00Z","result":{"url":"https://restaurant.example/menu","meals":[{"name":"Soup"},{"name":"Soup"},{"name":"novalue"}]}}
+            """);
+        when(cache.findAll()).thenReturn(List.of(row));when(cache.findById(row.getId())).thenReturn(Optional.of(row));
+        var known=service(RestClient.create()).availability(LocalDate.parse("2026-10-12"));
+        assertEquals(1,known.size());assertEquals(1,known.get(0).path("dishCount").asInt());
+        assertEquals("https://restaurant.example/menu",known.get(0).path("websiteUrl").asText());
+    }
     final JsonMapper mapper=JsonMapper.builder().build();
     final ScrapedMenuEntityRepository cache=mock(ScrapedMenuEntityRepository.class);
     final Clock clock=Clock.fixed(Instant.parse("2026-10-11T09:00:00Z"),ZoneOffset.UTC);

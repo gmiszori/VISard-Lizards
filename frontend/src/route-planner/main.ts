@@ -63,7 +63,7 @@ document.querySelector('#use-location')!.addEventListener('click', async () => {
 type Leg = JourneyLeg;
 type Meal = { id: string; title: string; components: string[]; price?: { student?: number; staff?: number; external?: number } };
 type Place = { id: string; name: string; kind: string; sourceUrl: string; websiteUrl?: string; menuNote: string; hoursNote?: string; meals: Meal[]; attributions?: { provider: string; providerUri: string }[] };
-type Option = { place: Place; mealStart: string; mealEnd: string; arrival: string; spareMinutes: number; extraMinutes: number; outbound: Leg; onward: Leg; timing?:JourneyTiming };
+type Option = { place: Place; mealStart: string; mealEnd: string; arrival: string; spareMinutes: number; extraMinutes: number; additionalDistanceMetres?:number; distanceEstimated?:boolean; outbound: Leg; onward: Leg; timing?:JourneyTiming };
 type Plan = { baseline: Leg; directRoutes?: Leg[]; selectedOptionIndex?: number; options: Option[]; checkedStops: number; mealMinutes: number; mealMaxMinutes?:number; warnings: string[] };
 const time = (value: string) => `${new Intl.DateTimeFormat('de-CH', { timeZone: 'Europe/Zurich',day:'2-digit',month:'2-digit',year:'numeric' }).format(new Date(value))}, ${new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Zurich',hour:'2-digit',minute:'2-digit'}).format(new Date(value))}`;
 function element<K extends keyof HTMLElementTagNameMap>(tag: K, text = '') { const el = document.createElement(tag); el.textContent = text; return el; }
@@ -76,7 +76,8 @@ function render(plan: Plan, explanation: string,planId?:string) {
     const show = element('button', `Show option ${index + 1} on map`); show.type = 'button'; show.className = 'show-route';
     show.addEventListener('click', () => { routeMap.select(index); selectCard(index); document.querySelector('#route-map-panel')!.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
     card.append(show);
-    card.append(element('p', index === 0 ? 'Earliest verified arrival' : 'Another option'), element('h3', option.place.name));
+    card.append(element('p', index === 0 ? 'Smallest detour' : 'Another option'), element('h3', option.place.name));
+    if(option.additionalDistanceMetres!=null) card.append(element('p',`${option.additionalDistanceMetres<1000 ? `${option.additionalDistanceMetres} m` : `${(option.additionalDistanceMetres/1000).toFixed(1)} km`} additional distance${option.distanceEstimated ? ' · estimated from walking access' : ''}`));
     card.append(element('p', `Eat ${time(option.mealStart)}–${time(option.mealEnd)}. Arrive ${time(option.arrival)}, ${option.spareMinutes} minutes before your deadline.`));
     card.append(element('p', `${option.extraMinutes} extra minutes compared with the direct journey, including your meal and waiting.`));
     if(option.timing) card.append(journeyTiming(option.timing));

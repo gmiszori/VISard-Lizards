@@ -98,6 +98,17 @@ public class RouteMenuService {
             } catch(RuntimeException ignored) { return null; }
         }).orElse(null);
     }
+    public JsonNode availability(LocalDate date) {
+        var result=mapper.createArrayNode();var seen=new HashSet<String>();
+        for(var row:cache.findAll()) {
+            if(!row.getId().startsWith("route-menu.v2.")) continue;
+            var raw=cached(row.getId());if(raw==null || !raw.path("meals").isArray()) continue;
+            String source=raw.path("url").asText("");if(source.isBlank() || !seen.add(source)) continue;
+            var dishes=forMeal(raw,date.atTime(12,0).atZone(ZURICH).toInstant(),date.atTime(12,0).atZone(ZURICH).toInstant(),true);
+            result.add(mapper.createObjectNode().put("websiteUrl",source).put("dishCount",dishes.path("meals").size()));
+        }
+        return result;
+    }
     private static String source(JsonNode place) {
         String value="cafeteria".equals(place.path("kind").asText()) ? place.path("sourceUrl").asText("") : place.path("websiteUrl").asText("");
         try {

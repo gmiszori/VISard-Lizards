@@ -32,12 +32,12 @@ private suspend fun serve() {
         putJsonObject("mealMinutes") { put("type", "integer"); put("minimum", 5); put("maximum", 120) }
         putJsonObject("mealMaxMinutes") { put("type", "integer"); put("minimum", 5); put("maximum", 120); put("description", "Maximum meal duration; mealMinutes is the minimum. Omit for a fixed duration. Must be at least mealMinutes.") }
         putJsonObject("modes") { put("type", "array"); put("minItems", 1); put("maxItems", 2); putJsonObject("items") { put("type", "string"); put("enum", buildJsonArray { add("WALK"); add("TRANSIT") }) } }
-        for (name in listOf("cafeterias", "closedPlaces")) putJsonObject(name) { put("type", "array"); putJsonObject("items") { put("type", "object") } }
+        for (name in listOf("cafeterias", "closedPlaces", "menuAvailability")) putJsonObject(name) { put("type", "array"); putJsonObject("items") { put("type", "object") } }
     }
     val steps = listOf(
         Tool(name = "get_route_options", description = "Retrieve Swiss public transport and OpenStreetMap walking route options for the authoritative trip. Returns actual encoded polylines, directions and a temporary sessionId. Call find_meal_stops next using that session; do not invent geometry.",
             inputSchema = ToolSchema(properties = tripProperties, required = listOf("origin", "destination", "departureTime", "arrivalTime", "mealMinutes", "cafeterias"))),
-        Tool(name = "find_meal_stops", description = "Find and verify one to four meal stops near the retrieved route. Ranks candidates using a batched pedestrian travel-time matrix and a daily regional restaurant catalog; reuses the session's dated menus and direct route. Returns verified walking/transit journeys with meals within the requested 5–120 minute range and arrival buffers. Matrix ranking does not exclude transit candidates. Call show_route_on_map to select an existing option.",
+        Tool(name = "find_meal_stops", description = "Find and verify one to four meal stops near the retrieved route. Rank by additional distance first, then published dish availability; unknown menus are not confirmed meals. Walking distances are routed; transit detours use a labelled pedestrian-network estimate. Maximum breaks of 15 minutes include fast food/kebab, kiosks, supermarkets, convenience shops and bakeries with published opening hours. Reuses the session's dated menus and direct route. Returns verified walking/transit journeys with meals within the requested 5–120 minute range and arrival buffers. Call show_route_on_map to select an existing option.",
             inputSchema = ToolSchema(properties = buildJsonObject {
                 putJsonObject("sessionId") { put("type", "string") }
                 putJsonObject("maxStops") { put("type", "integer"); put("minimum", 1); put("maximum", 4) }

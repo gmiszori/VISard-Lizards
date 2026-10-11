@@ -45,6 +45,13 @@ class OpenStreetMaps(private val modes: List<String> = listOf("TRANSIT", "WALK")
     override fun nearby(point: Point, date: LocalDate): List<JsonObject> = post("/nearby", buildJsonObject {
         put("latitude", point.lat); put("longitude", point.lng); put("date", date.toString())
     }).array("places").map { it.jsonObject }
+    override fun nearby(point: Point,date: LocalDate,quickMeal: Boolean): List<JsonObject> = post("/nearby",buildJsonObject {
+        put("latitude",point.lat);put("longitude",point.lng);put("date",date.toString());put("quickMeal",quickMeal)
+    }).array("places").map { it.jsonObject }
+    override fun walkingDistances(origin: Point,destination: Point,stops: List<Point>): List<Double?> = post("/matrix",buildJsonObject {
+        fun pointJson(point: Point)=buildJsonArray { add(point.lat);add(point.lng) }
+        put("origin",pointJson(origin));put("destination",pointJson(destination));put("stops",JsonArray(stops.map { pointJson(it) }))
+    }).array("distances").map { (it as? JsonPrimitive)?.doubleOrNull?.takeIf { value -> value.isFinite() && value>=0 } }
 }
 fun parseOpenLeg(value: JsonObject, earliest: Instant): RouteLeg {
     val departure = Instant.parse(value.text("departure")); val arrival = Instant.parse(value.text("arrival"))
