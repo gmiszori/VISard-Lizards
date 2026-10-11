@@ -34,7 +34,7 @@ import WelcomeTour from '../welcome/WelcomeTour.astro';
           <option value="de" data-i18n="german">German</option>
         </select>
       </label>
-      <a class="install-entry" href="/settings?install=1" data-i18n="installApp">Install UniEats</a>
+      <button type="button" class="install-entry" data-install-open aria-haspopup="dialog" data-i18n="installApp">Install UniEats</button>
     </fieldset>
     <StarredMealsSettings />
     <YourRatings />

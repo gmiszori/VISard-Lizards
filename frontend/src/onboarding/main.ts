@@ -36,7 +36,7 @@ function initialise(root: HTMLElement) {
     const restart = url.searchParams.get('restart') === '1';
     const editSavedProfile = url.searchParams.get('edit') === '1';
     const inWelcomeTour = !restart && !editSavedProfile && localStorage.getItem(WELCOME_KEY) === 'personalise';
-    const flowSteps = inWelcomeTour ? steps.filter(step => step.id !== 'install') : steps;
+    const flowSteps = steps;
     const store = createOnboardingStore(data.campuses.map(c => c.id), flowSteps.length, restart, editSavedProfile);
     if (restart || editSavedProfile) {
       // Consume the command so reloads resume this draft rather than resetting it.

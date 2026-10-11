@@ -83,6 +83,29 @@ export function nearestMenuDay(date: string, days: readonly string[]): string | 
   return sorted.find(day => day >= date) ?? sorted[sorted.length - 1] ?? null;
 }
 
+/** Preserve the date from an unavailable link; otherwise use the picked day or today's date. */
+export function requestedMenuDate(pathname: string, search: string, today: string): string {
+  const requested = new URLSearchParams(search).get('requestedDate');
+  const picked = /^\/(?:day|canteen\/[^/]+)\/(\d{4}-\d{2}-\d{2})\/?$/.exec(pathname)?.[1];
+  return isIsoDate(requested) ? requested : isIsoDate(picked) ? picked : today;
+}
+
+/** A different menu day must be explained, including when a weekend has no menu. */
+export function menuDateNotice(requested: string, shown: string, language: 'en' | 'de' = 'en'): string | null {
+  if (!isIsoDate(requested) || !isIsoDate(shown) || requested === shown) return null;
+  const format = new Intl.DateTimeFormat(language === 'de' ? 'de-CH' : 'en-GB', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC',
+  });
+  const from = format.format(new Date(`${requested}T12:00:00Z`));
+  const to = format.format(new Date(`${shown}T12:00:00Z`));
+  if (language === 'de') return isWeekend(requested)
+    ? `Für ${from} ist kein Wochenendmenü verfügbar. Wir zeigen ${to}.`
+    : `Für ${from} ist kein Menü verfügbar. Wir zeigen ${to}.`;
+  return isWeekend(requested)
+    ? `No weekend menu is available for ${from}. Showing ${to}.`
+    : `No menu is available for ${from}. Showing ${to}.`;
+}
+
 /**
  * Dates to try in order: the wanted day, then the backend's suggestion (no duplicates).
  * The first one with meals wins; if none has meals the last one is shown (an honest empty menu).

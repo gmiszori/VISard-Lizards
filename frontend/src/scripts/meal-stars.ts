@@ -19,6 +19,7 @@ let noticeTimer: ReturnType<typeof setTimeout> | undefined;
 
 function rank(a: HTMLElement, b: HTMLElement) {
   return Number(a.dataset.mealsAvailable === 'false') - Number(b.dataset.mealsAvailable === 'false') ||
+    Number(a.dataset.mealPriceMissing === 'true') - Number(b.dataset.mealPriceMissing === 'true') ||
     Number(b.dataset.mealStarred === 'true' && !b.hidden) - Number(a.dataset.mealStarred === 'true' && !a.hidden) ||
     (originalOrder.get(a) ?? 0) - (originalOrder.get(b) ?? 0);
 }

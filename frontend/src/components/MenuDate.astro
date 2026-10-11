@@ -7,6 +7,7 @@
  * while). In the browser the label is re-checked against the real Zurich date, so a menu that is not from
  * today is never called "Today's menu".
  */
+import { menuDateNotice, requestedMenuDate } from '../data/menuDate';
 interface Props {
   /** The menu's day, YYYY-MM-DD. */
   date: string;
@@ -19,13 +20,16 @@ const { date, today, variant } = Astro.props;
 const label = new Intl.DateTimeFormat('en-GB', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' })
   .format(new Date(`${date}T00:00:00Z`));
 const isToday = date === today;
+const notice = menuDateNotice(requestedMenuDate(Astro.url.pathname, Astro.url.search, today), date);
 ---
 <span data-menu-date-root={date}>
   {variant === 'heading' && <span data-menu-today-label hidden={!isToday} data-i18n="todayMenu">Today’s menu</span>}
   <span data-menu-other-label hidden={isToday} class={variant === 'note' ? 'menu-date-note' : undefined}><span data-i18n={variant === 'note' ? 'menusFor' : 'menuFor'}>{variant === 'note' ? 'Menus for' : 'Menu for'}</span> <time datetime={date} data-menu-date={date}>{label}</time></span>
+  <span class="menu-date-notice" data-menu-date-notice role="status" hidden={!notice}>{notice}</span>
 </span>
 <script>
   import { appNow, CLOCK_EVENT, zurichParts } from '../time/clock';
+  import { menuDateNotice, requestedMenuDate } from '../data/menuDate';
   function reconcile() {
     const realToday = zurichParts(appNow()).date;
     document.querySelectorAll<HTMLElement>('[data-menu-date-root]').forEach(root => {
@@ -34,13 +38,22 @@ const isToday = date === today;
       const otherLabel = root.querySelector<HTMLElement>('[data-menu-other-label]');
       if (todayLabel) todayLabel.hidden = !isToday;
       if (otherLabel) otherLabel.hidden = isToday;
+      const notice = root.querySelector<HTMLElement>('[data-menu-date-notice]');
+      if (notice) {
+        const message = menuDateNotice(requestedMenuDate(location.pathname, location.search, realToday),
+          root.dataset.menuDateRoot!, document.documentElement.lang === 'de' ? 'de' : 'en');
+        notice.textContent = message ?? '';
+        notice.hidden = !message;
+      }
     });
   }
   reconcile();
   document.addEventListener(CLOCK_EVENT, reconcile);
+  document.addEventListener('languagechange', reconcile);
 </script>
 <style>
   span[data-menu-date-root] { display: contents; }
   .menu-date-note { display: block; margin: 0 0 12px; font-weight: 600; }
+  .menu-date-notice { display: block; margin: 0 0 14px; padding: 10px 12px; border-left: 3px solid var(--green); background: var(--paper); color: var(--muted); font: 500 13px/1.5 'DM Sans',sans-serif; letter-spacing: normal; }
   [hidden] { display: none !important; }
 </style>
