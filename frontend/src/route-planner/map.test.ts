@@ -1,6 +1,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { MealRouteMap, selectedOption, routeColor } from './map.ts';
+import { MealRouteMap, selectedOption, routeColor, transferPoints } from './map.ts';
+test('transfer dots mark vehicle changes, deduplicate shared stops, and ignore access walking',()=>{
+  const step=(mode:string,from:string,to:string,a:number[],b:number[])=>({mode,from,to,departureCoordinates:a,arrivalCoordinates:b});
+  const a=[47.37,8.54],b=[47.38,8.55],c=[47.39,8.56];
+  const leg={provider:{itinerary:[step('WALK','home','A',a,a),step('TRAM','A','B',a,b),step('WALK','B','B',b,b),step('BUS','B','C',b,c)]}};
+  assert.deepEqual(transferPoints(leg),[{point:{lat:b[0],lng:b[1]},title:'Change transport at B'}]);
+  assert.deepEqual(transferPoints({provider:{itinerary:leg.provider.itinerary.slice(0,2)}}),[]);
+  leg.provider.itinerary[3].departureCoordinates=[47.381,8.55];assert.equal(transferPoints(leg).length,2);
+});
 
 test('only an existing verified option can be highlighted by AI selection', () => {
   const leg = {}; const options = [{ place: {name: 'A'}, outbound: leg, onward: leg }, { place: {name: 'B'}, outbound: leg, onward: leg }];
@@ -20,7 +28,7 @@ test('route controls and meal markers select both legs; replanning removes old o
     textContent = ''; dataset: Record<string, string> = {}; children: Node[] = [];
     attributes: Record<string, string> = {}; events: Record<string, () => void> = {};
     map: unknown; gmpClickable = false;
-    style: Record<string,string> = {};
+    style: Record<string,string> = {}; className='';
     append(...nodes: Node[]) { this.children.push(...nodes); }
     replaceChildren() { this.children = []; }
     querySelectorAll() { return this.children; }
@@ -86,5 +94,15 @@ test('route controls and meal markers select both legs; replanning removes old o
     map.clearLocation();assert.equal(locationMarker.map,null,'manual start removes the old device-location marker');
     map.reset(); assert.ok(lines.every(line => line.options.map === null)); assert.ok(markers.every(marker => marker.map === null));
     assert.equal(nodes.get('#route-map-options')!.children.length, 0);
+    const interchange={provider:{...ojpLeg.provider,itinerary:[
+      {mode:'TRAM',from:'A',to:'B',arrivalCoordinates:[47.38,8.55]},
+      {mode:'BUS',from:'B',to:'C',departureCoordinates:[47.38,8.55]},
+    ]}};
+    map.setPlan({baseline:interchange,options:[{place:{name:'Lunch'},outbound:interchange,onward:walking}]});
+    const dots=markers.filter(marker=>marker.children.some(child=>child.className==='route-transfer-dot'));
+    assert.equal(dots.length,2,'one deduplicated transfer for each itinerary');
+    assert.equal(dots[0].map,null,'direct transfer is hidden for the selected meal route');assert.ok(dots[1].map);
+    map.select(-1);assert.ok(dots[0].map);assert.equal(dots[1].map,null);
+    map.reset();assert.ok(dots.every(dot=>dot.map===null));
   } finally { for (const [name, value] of saved) { if (value === undefined) delete globals[name]; else globals[name] = value; } }
 });

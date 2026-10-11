@@ -151,7 +151,7 @@ const clock = time => new Date(time).toLocaleTimeString('en-GB', {timeZone: 'Eur
 const local = time => new Intl.DateTimeFormat('sv-SE', {timeZone: 'Europe/Zurich',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(time)).split(' ');
 
 export async function transitShape(journey,stops,section) {
-  if(ojpKey && section && !['T','TRAM','B','BUS','NFB','BN'].includes(String(journey.category).toUpperCase())) {
+  if(ojpKey && section) {
     const key=`ojp-shape:${section.departure.station.id}:${section.arrival.station.id}:${section.departure.departure}:${section.arrival.arrival}:${journey.category}:${journey.number}`;
     try {
       const projection=await cached(key,86400000,async()=>{
@@ -212,7 +212,7 @@ export async function transitLeg(connection, earliest, walking = walk, shape = t
       itinerary.push({mode: ['T','TRAM'].includes(category) ? 'TRAM' : ['B','BUS','NFB','BN'].includes(category) ? 'BUS' : 'TRAIN',
         line: `${section.journey.category || ''} ${String(section.journey.number || section.journey.name || '').replace(/^0+(?=\d)/,'')}`.trim(),
         direction: section.journey.to || '', from: section.departure.station.name, to: section.arrival.station.name,
-        departure: iso(depart), arrival: iso(arrive),
+        departure: iso(depart), arrival: iso(arrive), departureCoordinates:a, arrivalCoordinates:b,
         departurePlatform: section.departure.prognosis?.platform || section.departure.platform || '',
         arrivalPlatform: section.arrival.prognosis?.platform || section.arrival.platform || ''});
       directions.push(`${clock(depart)}: ${section.journey.category || ''} ${section.journey.number || section.journey.name || ''} from ${section.departure.station.name} to ${section.arrival.station.name} (${clock(arrive)})`);

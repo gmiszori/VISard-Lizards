@@ -18,7 +18,9 @@ class RouteSessions(private val provider: () -> MapProvider, private val clock: 
         require(origin.isNotBlank() && origin.length <= 200 && destination.isNotBlank() && destination.length <= 200)
         require(departure >= now.minusSeconds(120) && departure < arrival && Duration.between(departure, arrival) <= Duration.ofHours(18))
         require(date >= today && date <= today.plusDays(6) && date == arrival.atZone(zurich).toLocalDate())
-        require(request["mealMinutes"]!!.jsonPrimitive.int in 45..60)
+        val minimum = request["mealMinutes"]!!.jsonPrimitive.int
+        val maximum = request["mealMaxMinutes"]?.jsonPrimitive?.int ?: minimum
+        require(minimum in 5..120 && maximum in minimum..120)
         val maps = provider().withModes(travelModes(request)); val routes = maps.options(origin, destination, departure)
         require(routes.isNotEmpty()) { "No walking or transit route was returned." }
         val id = UUID.randomUUID().toString()

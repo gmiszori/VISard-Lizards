@@ -3,6 +3,14 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {tripRequest,journeyProjection} from './ojp.mjs';
 const response=readFileSync(new URL('./fixtures/ojp-ec151.xml',import.meta.url),'utf8');
+test('ETH Link lettered bus gets its actual OJP path, never a tram or a different departure',()=>{
+  const bus=readFileSync(new URL('./fixtures/ojp-bus-e.xml',import.meta.url),'utf8');
+  const input=JSON.parse(readFileSync(new URL('./fixtures/eth-link-section.json',import.meta.url),'utf8'));
+  assert.ok(journeyProjection(bus,input)?.path.length>20);
+  assert.equal(journeyProjection(bus,{...input,journey:{...input.journey,category:'T'}}),null);
+  assert.equal(journeyProjection(bus,{...input,journey:{...input.journey,number:'F'}}),null);
+  assert.equal(journeyProjection(bus,{...input,departure:{...input.departure,departure:'2026-10-12T11:35:00+02:00'}}),null);
+});
 const section={journey:{category:'EC',number:'000151'},
   departure:{departure:'2026-10-12T11:07:00+02:00',station:{id:'8500010',name:'Basel SBB',coordinate:{x:47.547413,y:7.58956}}},
   arrival:{arrival:'2026-10-12T12:00:00+02:00',station:{id:'8503000',name:'Zürich HB',coordinate:{x:47.378176,y:8.540212}}}};

@@ -3,6 +3,7 @@ import { MealRouteMap, selectedOption } from './map';
 import { attachLocationSuggestions } from './locations';
 import { journeyTimeline, mealBreak, type JourneyLeg } from './journey';
 import { attachCalendar } from './calendar';
+import { attachMealRange } from './meal-range';
 
 const form = document.querySelector<HTMLFormElement>('#route-form')!;
 const input = (id: string) => document.querySelector<HTMLInputElement>(`#${id}`)!;
@@ -24,6 +25,7 @@ function selectCard(index: number) {
 }
 const modeButtons=[...document.querySelectorAll<HTMLButtonElement>('[data-mode]')];
 modeButtons.forEach(button=>button.addEventListener('click',()=>button.setAttribute('aria-pressed',String(button.getAttribute('aria-pressed')!=='true'))));
+const mealRange=attachMealRange();
 const routeMap = new MealRouteMap(selectCard);
 let originRevision = 0;
 for (const event of ['input','change']) input('origin').addEventListener(event, () => {
@@ -58,12 +60,12 @@ type Leg = JourneyLeg;
 type Meal = { id: string; title: string; components: string[]; price?: { student?: number; staff?: number; external?: number } };
 type Place = { id: string; name: string; kind: string; sourceUrl: string; websiteUrl?: string; menuNote: string; hoursNote?: string; meals: Meal[]; attributions?: { provider: string; providerUri: string }[] };
 type Option = { place: Place; mealStart: string; mealEnd: string; arrival: string; spareMinutes: number; extraMinutes: number; outbound: Leg; onward: Leg };
-type Plan = { baseline: Leg; directRoutes?: Leg[]; selectedOptionIndex?: number; options: Option[]; checkedStops: number; mealMinutes: number; warnings: string[] };
+type Plan = { baseline: Leg; directRoutes?: Leg[]; selectedOptionIndex?: number; options: Option[]; checkedStops: number; mealMinutes: number; mealMaxMinutes?:number; warnings: string[] };
 const time = (value: string) => `${new Intl.DateTimeFormat('de-CH', { timeZone: 'Europe/Zurich',day:'2-digit',month:'2-digit',year:'numeric' }).format(new Date(value))}, ${new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Zurich',hour:'2-digit',minute:'2-digit'}).format(new Date(value))}`;
 function element<K extends keyof HTMLElementTagNameMap>(tag: K, text = '') { const el = document.createElement(tag); el.textContent = text; return el; }
 function render(plan: Plan, explanation: string) {
   results.replaceChildren(); results.append(element('p', explanation));
-  results.append(element('p', `${plan.checkedStops} stops checked · Direct route arrival ${time(plan.baseline.arrival)} · ${plan.mealMinutes}-minute meal break`));
+  results.append(element('p', `${plan.checkedStops} stops checked · Direct route arrival ${time(plan.baseline.arrival)} · ${plan.mealMinutes}${plan.mealMaxMinutes && plan.mealMaxMinutes!==plan.mealMinutes ? `–${plan.mealMaxMinutes}` : ''} minute meal range`));
   plan.options.forEach((option, index) => {
     const card = element('article'); card.className = 'route-option';
     const show = element('button', `Show option ${index + 1} on map`); show.type = 'button'; show.className = 'show-route';
@@ -98,7 +100,7 @@ form.addEventListener('submit', async event => {
   status.textContent = 'Starting AI and MCP route planning…';
   try {
     const response = await fetch('/api/route-planner/plan', { method: 'POST', cache: 'no-store', signal: AbortSignal.timeout(300_000),
-      headers: { 'Content-Type': 'application/json', 'X-OpenAI-Key': key }, body: JSON.stringify({ origin: originLocation.value(input('origin').value), destination: destinationLocation.value(input('destination').value), departureTime: departure.toISOString(), arrivalTime: arrival.toISOString(), mealMinutes: Number(input('meal-minutes').value),modes }) });
+      headers: { 'Content-Type': 'application/json', 'X-OpenAI-Key': key }, body: JSON.stringify({ origin: originLocation.value(input('origin').value), destination: destinationLocation.value(input('destination').value), departureTime: departure.toISOString(), arrivalTime: arrival.toISOString(), ...mealRange(),modes }) });
     const data = await response.json(); if (!response.ok) throw new Error(data.detail ?? 'Route planning failed. Check backend configuration.');
     render(data.plan, data.explanation); status.textContent = `Finished in ${Math.round((Date.now() - started) / 1000)} seconds.`;
   } catch (error) { status.textContent = error instanceof Error ? error.message : 'Could not plan the journey.'; }

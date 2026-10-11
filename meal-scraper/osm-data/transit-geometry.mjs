@@ -3,7 +3,7 @@ const distance = (a,b) => Math.hypot((a[0]-b[0])*111320,(a[1]-b[1])*111320*Math.
 const same = (a,b) => distance(a,b)<2;
 export function transitReference(journey) {
   const category=String(journey.category||'').toUpperCase(), number=String(journey.number||'').trim();
-  if(!/^[0-9]{1,4}[A-Z]?$/.test(number)) return null;
+  if(!/^(?:[0-9]{1,4}[A-Z]?|[A-Z]{1,3})$/.test(number)) return null;
   if(['S','IC','IR','RE','R','EC'].includes(category)) return {mode:'train',ref:category+number};
   if(['T','TRAM'].includes(category)) return {mode:'tram',ref:number};
   if(['B','BUS','NFB','BN'].includes(category)) return {mode:'bus',ref:number};

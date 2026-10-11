@@ -21,6 +21,14 @@ class RoutePlannerServiceTests {
     private final MensaRepository repository=mock(MensaRepository.class);
     private final Clock clock=Clock.fixed(Instant.parse("2026-10-10T20:00:00Z"),ZoneOffset.UTC);
     private Trip trip() { return new Trip("Zürich HB","ETH Zentrum",Instant.parse("2026-10-12T09:00:00Z"),Instant.parse("2026-10-12T12:00:00Z"),60); }
+    @Test void mealRangeRelaysToMcpAndRejectsInvalidBounds() {
+        var base=trip();var service=service(RestClient.create());
+        var range=new Trip(base.origin(),base.destination(),base.departureTime(),base.arrivalTime(),5,List.of("TRANSIT"),120);
+        service.validate(range,"");assertEquals(5,service.tripContext(range).path("mealMinutes").asInt());
+        assertEquals(120,service.tripContext(range).path("mealMaxMinutes").asInt());
+        assertEquals(60,base.mealMaxMinutes());
+        for(int maximum:List.of(4,121,30)) assertThrows(ResponseStatusException.class,()->service.validate(new Trip(base.origin(),base.destination(),base.departureTime(),base.arrivalTime(),45,List.of("TRANSIT"),maximum),""));
+    }
     @Test void modesArePreservedAndEmptySelectionRejectedBeforeProviders() {
         var base=trip();var transit=new Trip(base.origin(),base.destination(),base.departureTime(),base.arrivalTime(),60,List.of("TRANSIT"));
         var service=service(RestClient.create());

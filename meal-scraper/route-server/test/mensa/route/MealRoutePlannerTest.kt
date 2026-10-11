@@ -17,6 +17,16 @@ class MealRoutePlannerTest {
         assertEquals(at(100), result.onward.arrival)
         assertEquals(20L, result.spareMinutes)
     }
+    @Test fun choosesLongestBreakThatFitsRangeHoursAndArrivalBuffer() {
+        val result = MealRoutePlanner(routes).evaluate("a", "b", start, at(100), 5, listOf(stop(0, 120)), 120).single()
+        assertEquals(75L, Duration.between(result.mealStart,result.mealEnd).toMinutes())
+        assertEquals(at(95),result.onward.arrival)
+        assertEquals(5L,result.spareMinutes)
+        val limited = MealRoutePlanner(routes).evaluate("a", "b", start, at(180), 5, listOf(stop(0, 35)), 120).single()
+        assertEquals(25L, Duration.between(limited.mealStart,limited.mealEnd).toMinutes())
+        assertTrue(MealRoutePlanner(routes).evaluate("a", "b", start, at(69), 45, listOf(stop(0, 120)),120).isEmpty())
+        assertFailsWith<IllegalArgumentException> { MealRoutePlanner(routes).evaluate("a","b",start,at(180),60,listOf(stop(0,120)),45) }
+    }
     @Test fun rejectsInsufficientMealWindowAndMissingTimetables() {
         assertTrue(MealRoutePlanner(routes).evaluate("a", "b", start, at(120), 45, listOf(stop(0, 54))).isEmpty())
         assertTrue(MealRoutePlanner(RouteProvider { _, _, _ -> null }).evaluate("a", "b", start, at(120), 45, listOf(stop(0, 120))).isEmpty())

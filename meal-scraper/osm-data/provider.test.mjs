@@ -45,6 +45,8 @@ test('transit preserves schedules and labels stop geometry; impossible walking t
   const leg=await transitLeg(connection,Date.parse('2026-10-12T08:59:00Z'),undefined,async()=>null);
   assert.equal(leg.provider.itinerary[0].mode,'TRAM');
   assert.equal(leg.provider.itinerary[0].from,'A');
+  assert.deepEqual(leg.provider.itinerary[0].departureCoordinates,[47.37,8.54]);
+  assert.deepEqual(leg.provider.itinerary[0].arrivalCoordinates,[47.37,8.54]);
   assert.equal(leg.provider.itinerary[0].departurePlatform,'6','updated platform takes precedence over planned platform');
   assert.equal(leg.provider.itinerary[0].arrivalPlatform,'9');
   assert.equal(leg.provider.itinerary[0].arrival,'2026-10-12T09:10:00.000Z');

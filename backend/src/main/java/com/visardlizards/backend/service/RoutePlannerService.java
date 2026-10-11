@@ -73,6 +73,8 @@ public class RoutePlannerService {
         }
     }
     void validate(Trip trip, String key) {
+        if(trip.mealMinutes()<5 || trip.mealMaxMinutes()>120 || trip.mealMaxMinutes()<trip.mealMinutes())
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Choose a meal range between 5 and 120 minutes, minimum first.");
         if(trip.modes().isEmpty() || trip.modes().size()>2 || !Set.of("WALK","TRANSIT").containsAll(trip.modes()))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Select walking or public transport.");
         if(key.length()>256 || key.chars().anyMatch(Character::isISOControl))

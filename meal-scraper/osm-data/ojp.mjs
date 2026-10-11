@@ -32,12 +32,16 @@ export function journeyProjection(response,section) {
   if(typeof response!=='string' || response.length>4_000_000 || /<!DOCTYPE|<!ENTITY/i.test(response)
     || XMLValidator.validate(response)!==true) throw new Error('Invalid OJP XML response.');
   const expected=line(`${section.journey.category}${section.journey.number||section.journey.name}`);
+  const category=String(section.journey.category).toUpperCase();
+  const localMode=['T','TRAM'].includes(category) ? 'tram' : ['B','BUS','NFB','BN'].includes(category) ? 'bus' : null;
   for(const leg of timedLegs(parser.parse(response))) {
     const service=leg.Service,board=leg.LegBoard,alight=leg.LegAlight;
     if(!service || !board || !alight || service.Cancelled==='true') continue;
     const codes=[service.PublicCode,service.PublishedServiceName?.Text,
       `${service.ProductCategory?.ShortName?.Text||service.Mode?.ShortName?.Text||''}${service.TrainNumber||''}`].map(line);
-    if(!codes.includes(expected)
+    const sameLocalService=localMode && service.Mode?.PtMode===localMode
+      && [service.PublicCode,service.PublishedServiceName?.Text].map(line).includes(line(section.journey.number||section.journey.name));
+    if(!(localMode ? sameLocalService : codes.includes(expected))
       || normalized(board.StopPointName?.Text)!==normalized(section.departure.station.name)
       || normalized(alight.StopPointName?.Text)!==normalized(section.arrival.station.name)
       || Date.parse(board.ServiceDeparture?.TimetabledTime)!==Date.parse(section.departure.departure)

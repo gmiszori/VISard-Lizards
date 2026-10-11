@@ -1,6 +1,19 @@
 /// <reference types="google.maps" />
 import { decodeRoute, type Point } from './geometry.ts';
-export type MappableLeg = { provider?: { mode?: string; polyline?: string; segments?: {polyline: string; geometryKind: string}[] } };
+export type MappableLeg = { provider?: { mode?: string; polyline?: string; segments?: {polyline: string; geometryKind: string}[]; itinerary?: {mode:string; from:string; to:string; departureCoordinates?:number[]; arrivalCoordinates?:number[]}[] } };
+export function transferPoints(leg:MappableLeg): {point:Point;title:string}[] {
+  const vehicles=leg.provider?.itinerary?.filter(step=>step.mode!=='WALK') || [];
+  const points:{point:Point;title:string}[]=[];
+  for(let i=1;i<vehicles.length;i++) {
+    for(const [coordinates,name] of [[vehicles[i-1].arrivalCoordinates,vehicles[i-1].to],[vehicles[i].departureCoordinates,vehicles[i].from]] as const) {
+      if(!coordinates || coordinates.length!==2 || !coordinates.every(Number.isFinite)) continue;
+      const [lat,lng]=coordinates;
+      if(Math.abs(lat)>90 || Math.abs(lng)>180 || points.some(p=>Math.abs(p.point.lat-lat)<.00003 && Math.abs(p.point.lng-lng)<.00003)) continue;
+      points.push({point:{lat,lng},title:`Change transport at ${name}`});
+    }
+  }
+  return points;
+}
 export type MappablePlan = { baseline: MappableLeg; directRoutes?: MappableLeg[]; selectedOptionIndex?: number; options: { place: { name: string }; outbound: MappableLeg; onward: MappableLeg }[] };
 export function selectedOption(plan: MappablePlan): number {
   const index = plan.selectedOptionIndex;
@@ -124,8 +137,8 @@ export class MealRouteMap {
     const marker = new google.maps.marker.AdvancedMarkerElement({ map: this.map, position, title });
     marker.append(pin); return marker;
   }
-  private endpoint(position: Point,title: string,color: string) {
-    const dot=document.createElement('span');dot.className='route-endpoint-dot';dot.style.backgroundColor=color;
+  private endpoint(position: Point,title: string,color: string,transfer=false) {
+    const dot=document.createElement('span');dot.className=transfer ? 'route-transfer-dot' : 'route-endpoint-dot';dot.style.backgroundColor=color;
     const marker=new google.maps.marker.AdvancedMarkerElement({map:this.map,position,title,zIndex:100});
     marker.append(dot);return marker;
   }
@@ -133,6 +146,7 @@ export class MealRouteMap {
     if (!this.map || !this.plan) return;
     this.clearOverlays();
     const addLine = (leg: MappableLeg, index: number, part: number) => {
+      for(const {point,title} of transferPoints(leg)) this.markers.push({marker:this.endpoint(point,title,routeColor(index,part),true),index});
       const segments = leg.provider?.segments ?? [{polyline: leg.provider?.polyline ?? '', geometryKind: leg.provider?.mode==='TRANSIT' ? 'stop_sequence' : 'street_path'}];
       for (const segment of segments) {
         // Stop coordinates are not a track/road shape. Never draw straight chords as transit paths.

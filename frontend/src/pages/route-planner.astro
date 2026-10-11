@@ -31,8 +31,14 @@ import '../route-planner/styles.css';
           <div class="journey-datetime"><label for="departure">Leave at</label><div class="date-fields"><div class="date-picker"><input id="departure" type="text" required placeholder="DD.MM.YYYY" maxlength="10" inputmode="numeric" aria-label="Departure date" /><button id="departure-calendar-toggle" type="button" class="calendar-toggle" aria-label="Choose departure date" aria-expanded="false" aria-controls="departure-calendar">▦</button><div id="departure-calendar" class="calendar-popup" role="group" aria-label="Departure calendar" hidden></div></div><input id="departure-time" type="time" required aria-label="Departure time" /></div></div>
           <div class="journey-datetime"><label for="arrival">Arrive by</label><div class="date-fields"><div class="date-picker"><input id="arrival" type="text" required placeholder="DD.MM.YYYY" maxlength="10" inputmode="numeric" aria-label="Arrival date" /><button id="arrival-calendar-toggle" type="button" class="calendar-toggle" aria-label="Choose arrival date" aria-expanded="false" aria-controls="arrival-calendar">▦</button><div id="arrival-calendar" class="calendar-popup" role="group" aria-label="Arrival calendar" hidden></div></div><input id="arrival-time" type="time" required aria-label="Arrival time" /></div></div>
         </div>
-        <label for="meal-minutes">Time to eat</label>
-        <select id="meal-minutes"><option value="45">45 minutes</option><option value="60" selected>1 hour</option></select>
+        <fieldset class="meal-range"><legend>Time to eat</legend>
+          <output id="meal-range-label" for="meal-minutes meal-max-minutes" aria-live="polite">45 min – 1 hour</output>
+          <div class="meal-slider" id="meal-slider"><div class="meal-slider-track" aria-hidden="true"></div>
+            <input id="meal-minutes" type="range" min="5" max="120" step="5" value="45" aria-label="Minimum meal time" />
+            <input id="meal-max-minutes" type="range" min="5" max="120" step="5" value="60" aria-label="Maximum meal time" />
+          </div><div class="meal-range-scale" aria-hidden="true"><span>5 min</span><span>2 hours</span></div>
+          <p class="field-note">Choose your minimum and maximum break. We allow as much meal time as fits the opening hours and arrival deadline.</p>
+        </fieldset>
         <p class="field-note">Within the next seven days. Cafeterias and other restaurants are considered, with a five-minute arrival buffer.</p>
         <p class="field-note">Planning sends your journey to OpenAI and OSM/Swiss transport services. <a href="/route-planner-info/">Privacy and service terms</a></p>
         <button id="plan-button" class="plan-button" type="submit" disabled>Find my meal stop <span aria-hidden="true">→</span></button>

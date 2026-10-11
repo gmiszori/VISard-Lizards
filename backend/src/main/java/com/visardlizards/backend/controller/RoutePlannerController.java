@@ -15,9 +15,13 @@ import tools.jackson.databind.JsonNode;
 public class RoutePlannerController {
     public record Trip(@NotBlank @Size(max=200) String origin, @NotBlank @Size(max=200) String destination,
                        @NotNull Instant departureTime, @NotNull Instant arrivalTime,
-                       @Min(45) @Max(60) int mealMinutes,
-                       @Size(min=1,max=2) java.util.List<@Pattern(regexp="WALK|TRANSIT") String> modes) {
-        public Trip { modes = modes == null ? java.util.List.of("WALK","TRANSIT") : java.util.List.copyOf(modes); }
+                       @Min(5) @Max(120) int mealMinutes,
+                       @Size(min=1,max=2) java.util.List<@Pattern(regexp="WALK|TRANSIT") String> modes,
+                       @Min(5) @Max(120) Integer mealMaxMinutes) {
+        public Trip { modes = modes == null ? java.util.List.of("WALK","TRANSIT") : java.util.List.copyOf(modes); mealMaxMinutes=mealMaxMinutes==null ? mealMinutes : mealMaxMinutes; }
+        public Trip(String origin,String destination,Instant departureTime,Instant arrivalTime,int mealMinutes,java.util.List<String> modes) {
+            this(origin,destination,departureTime,arrivalTime,mealMinutes,modes,null);
+        }
         public Trip(String origin,String destination,Instant departureTime,Instant arrivalTime,int mealMinutes) {
             this(origin,destination,departureTime,arrivalTime,mealMinutes,null);
         }

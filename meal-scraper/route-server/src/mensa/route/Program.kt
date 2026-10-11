@@ -29,14 +29,15 @@ private suspend fun serve() {
     val sessions = RouteSessions({ OpenStreetMaps() })
     val tripProperties = buildJsonObject {
         for (name in listOf("origin", "destination", "departureTime", "arrivalTime")) putJsonObject(name) { put("type", "string") }
-        putJsonObject("mealMinutes") { put("type", "integer"); put("minimum", 45); put("maximum", 60) }
+        putJsonObject("mealMinutes") { put("type", "integer"); put("minimum", 5); put("maximum", 120) }
+        putJsonObject("mealMaxMinutes") { put("type", "integer"); put("minimum", 5); put("maximum", 120); put("description", "Maximum meal duration; mealMinutes is the minimum. Omit for a fixed duration. Must be at least mealMinutes.") }
         putJsonObject("modes") { put("type", "array"); put("minItems", 1); put("maxItems", 2); putJsonObject("items") { put("type", "string"); put("enum", buildJsonArray { add("WALK"); add("TRANSIT") }) } }
         for (name in listOf("cafeterias", "closedPlaces")) putJsonObject(name) { put("type", "array"); putJsonObject("items") { put("type", "object") } }
     }
     val steps = listOf(
         Tool(name = "get_route_options", description = "Retrieve Swiss public transport and OpenStreetMap walking route options for the authoritative trip. Returns actual encoded polylines, directions and a temporary sessionId. Call find_meal_stops next using that session; do not invent geometry.",
             inputSchema = ToolSchema(properties = tripProperties, required = listOf("origin", "destination", "departureTime", "arrivalTime", "mealMinutes", "cafeterias"))),
-        Tool(name = "find_meal_stops", description = "Find and verify one to four meal stops near the retrieved route. Ranks candidates using a batched pedestrian travel-time matrix and a daily regional restaurant catalog; reuses the session's dated menus and direct route. Returns verified walking/transit journeys with complete 45–60 minute meals and arrival buffers. Matrix ranking does not exclude transit candidates. Call show_route_on_map to select an existing option.",
+        Tool(name = "find_meal_stops", description = "Find and verify one to four meal stops near the retrieved route. Ranks candidates using a batched pedestrian travel-time matrix and a daily regional restaurant catalog; reuses the session's dated menus and direct route. Returns verified walking/transit journeys with meals within the requested 5–120 minute range and arrival buffers. Matrix ranking does not exclude transit candidates. Call show_route_on_map to select an existing option.",
             inputSchema = ToolSchema(properties = buildJsonObject {
                 putJsonObject("sessionId") { put("type", "string") }
                 putJsonObject("maxStops") { put("type", "integer"); put("minimum", 1); put("maximum", 4) }
@@ -66,13 +67,8 @@ private suspend fun serve() {
         }
     }
     server.addTool(Tool(name = "plan_meal_route",
-        description = "Find route-near cafeterias and restaurants for a 45–60 minute meal, then verify both transit/walking legs, service hours and a five-minute arrival buffer. Uses Europe/Zurich dates within the next seven days. Returns best checked options and source links; restaurants without verified menus are labelled. Backend supplies authoritative trip inputs and cached cafeteria meals.",
-        inputSchema = ToolSchema(properties = buildJsonObject {
-            for (name in listOf("origin", "destination", "departureTime", "arrivalTime")) putJsonObject(name) { put("type", "string") }
-            putJsonObject("mealMinutes") { put("type", "integer"); put("minimum", 45); put("maximum", 60) }
-            putJsonObject("cafeterias") { put("type", "array"); putJsonObject("items") { put("type", "object") } }
-            putJsonObject("closedPlaces") { put("type", "array"); putJsonObject("items") { put("type", "object") } }
-        }, required = listOf("origin", "destination", "departureTime", "arrivalTime", "mealMinutes", "cafeterias")),
+        description = "Find route-near cafeterias and restaurants for a meal within the requested 5–120 minute range, then verify both transit/walking legs, service hours and a five-minute arrival buffer. Uses Europe/Zurich dates within the next seven days. Returns best checked options and source links; restaurants without verified menus are labelled. Backend supplies authoritative trip inputs and cached cafeteria meals.",
+        inputSchema = ToolSchema(properties = tripProperties, required = listOf("origin", "destination", "departureTime", "arrivalTime", "mealMinutes", "cafeterias")),
         annotations = ToolAnnotations(readOnlyHint = true, destructiveHint = false, openWorldHint = true))) { call ->
         try {
             val result = withContext(Dispatchers.IO) { RouteTool(OpenStreetMaps()).plan(call.arguments ?: error("Trip inputs required.")) }

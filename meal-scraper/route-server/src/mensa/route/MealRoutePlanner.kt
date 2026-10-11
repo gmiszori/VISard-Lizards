@@ -19,8 +19,8 @@ data class MealJourney(
 /** Schedules a complete meal inside a published service window, then verifies the onward journey. */
 class MealRoutePlanner(private val routes: RouteProvider) {
     fun evaluate(origin: String, destination: String, departure: Instant, deadline: Instant,
-                 mealMinutes: Int, stops: List<MealStop>): List<MealJourney> {
-        require(mealMinutes in 45..60) { "The meal break must be 45–60 minutes." }
+                 mealMinutes: Int, stops: List<MealStop>, mealMaxMinutes: Int = mealMinutes): List<MealJourney> {
+        require(mealMinutes in 5..120 && mealMaxMinutes in mealMinutes..120) { "The meal range must be within 5–120 minutes, minimum first." }
         require(departure < deadline) { "Departure must be before the arrival deadline." }
         require(stops.size <= 8) { "At most eight shortlisted stops can be checked." }
         val buffer = Duration.ofMinutes(5)
@@ -29,12 +29,28 @@ class MealRoutePlanner(private val routes: RouteProvider) {
             require(outbound.departure >= departure && outbound.arrival >= outbound.departure) { "Invalid routing timetable." }
             stop.windows.sortedBy { it.open }.firstNotNullOfOrNull { window ->
                 val mealStart = maxOf(outbound.arrival, window.open)
-                val mealEnd = mealStart.plus(Duration.ofMinutes(mealMinutes.toLong()))
-                if (mealEnd > window.close || mealEnd.plus(buffer) > deadline) return@firstNotNullOfOrNull null
-                val onward = routes.route(stop.position, destination, mealEnd) ?: return@firstNotNullOfOrNull null
-                require(onward.departure >= mealEnd && onward.arrival >= onward.departure) { "Invalid routing timetable." }
-                if (onward.arrival.plus(buffer) > deadline) return@firstNotNullOfOrNull null
-                MealJourney(stop, outbound, mealStart, mealEnd, onward, Duration.between(onward.arrival, deadline).toMinutes())
+                fun check(minutes: Int): MealJourney? {
+                    val mealEnd = mealStart.plus(Duration.ofMinutes(minutes.toLong()))
+                    if (mealEnd > window.close || mealEnd.plus(buffer) > deadline) return null
+                    val onward = routes.route(stop.position, destination, mealEnd) ?: return null
+                    require(onward.departure >= mealEnd && onward.arrival >= onward.departure) { "Invalid routing timetable." }
+                    if (onward.arrival.plus(buffer) > deadline) return null
+                    return MealJourney(stop, outbound, mealStart, mealEnd, onward, Duration.between(onward.arrival, deadline).toMinutes())
+                }
+                var best = check(mealMinutes) ?: return@firstNotNullOfOrNull null
+                if (mealMaxMinutes == mealMinutes) return@firstNotNullOfOrNull best
+                val upper = minOf(mealMaxMinutes, Duration.between(mealStart, minOf(window.close, deadline.minus(buffer))).toMinutes().toInt())
+                if (upper <= mealMinutes) return@firstNotNullOfOrNull best
+                check(upper)?.let { return@firstNotNullOfOrNull it }
+                // Earliest-arrival routing permits waiting, so feasibility decreases with a later departure.
+                // Check five-minute increments using a bounded binary search, preserving the minimum.
+                var low = 1; var high = (upper - mealMinutes - 1) / 5
+                while (low <= high) {
+                    val mid = (low + high) / 2
+                    val candidate = check(mealMinutes + mid * 5)
+                    if (candidate != null) { best = candidate; low = mid + 1 } else high = mid - 1
+                }
+                best
             }
         }.sortedWith(compareBy<MealJourney> { it.onward.arrival }
             .thenBy { Duration.between(it.outbound.departure, it.outbound.arrival).plus(Duration.between(it.onward.departure, it.onward.arrival)) }

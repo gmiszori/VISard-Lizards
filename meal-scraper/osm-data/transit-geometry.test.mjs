@@ -6,6 +6,7 @@ test('service reference separates numbered trains, trams and buses',()=> {
   assert.deepEqual(transitReference({category:'IC',number:'3'}),{mode:'train',ref:'IC3'});
   assert.deepEqual(transitReference({category:'Tram',number:'8'}),{mode:'tram',ref:'8'});
   assert.deepEqual(transitReference({category:'Bus',number:'80'}),{mode:'bus',ref:'80'});
+  assert.deepEqual(transitReference({category:'B',number:'E'}),{mode:'bus',ref:'E'});
   assert.equal(transitReference({category:'IC',number:'3";out;'}),null);
 });
 test('matched geometry follows actual bent ways, reverses members and trims to board/alight',()=> {

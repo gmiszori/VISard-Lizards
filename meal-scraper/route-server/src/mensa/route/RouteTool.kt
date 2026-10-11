@@ -14,7 +14,8 @@ class RouteTool(private val baseMaps: MapProvider) {
         require(origin.isNotBlank() && origin.length <= 200 && destination.isNotBlank() && destination.length <= 200)
         val departure = Instant.parse(request.text("departureTime")); val deadline = Instant.parse(request.text("arrivalTime"))
         val minutes = request["mealMinutes"]!!.jsonPrimitive.int
-        require(minutes in 45..60 && departure < deadline && Duration.between(departure, deadline) <= Duration.ofHours(18))
+        val maxMinutes = request["mealMaxMinutes"]?.jsonPrimitive?.int ?: minutes
+        require(minutes in 5..120 && maxMinutes in minutes..120 && departure < deadline && Duration.between(departure, deadline) <= Duration.ofHours(18))
         val today = LocalDate.now(zurich); val date = departure.atZone(zurich).toLocalDate()
         require(date >= today && date <= today.plusDays(6)) { "Plan within the next seven days, for which restaurant hours can be checked." }
         require(date == deadline.atZone(zurich).toLocalDate()) { "Departure and arrival must be on the same Zurich date." }
@@ -87,9 +88,10 @@ class RouteTool(private val baseMaps: MapProvider) {
         val planner = MealRoutePlanner(RouteProvider { a, b, time ->
             try { maps.route(a, b, time) } catch (ex: Exception) { warnings += "A candidate journey could not be verified and was omitted."; null }
         })
-        val journeys = planner.evaluate(origin, destination, departure, deadline, minutes, shortlist.map { it.stop })
+        val journeys = planner.evaluate(origin, destination, departure, deadline, minutes, shortlist.map { it.stop }, maxMinutes)
         return buildJsonObject {
             put("timeZone", "Europe/Zurich"); put("arrivalDeadline", deadline.toString()); put("mealMinutes", minutes)
+            put("mealMaxMinutes", maxMinutes)
             put("baseline", legJson(baseline, origin, destination)); put("checkedStops", shortlist.size)
             put("options", JsonArray(journeys.map { journey -> buildJsonObject {
                 val candidate = shortlist.first { it.stop.id == journey.stop.id }
