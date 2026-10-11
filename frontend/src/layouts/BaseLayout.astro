@@ -58,7 +58,7 @@ const { title, hideFooter = false } = Astro.props;
     <div class="app-shell">
       <header class="site-header">
         <a class="brand" href="/" aria-label="UniEats home"><span class="brand-mark" aria-hidden="true">U</span><span>UniEats</span></a>
-        <div class="header-controls"><a class="settings-link route-link" href="/route-planner/" aria-label="Plan a journey with a meal stop (Beta)">Route <span class="beta-badge">Beta</span></a><a class="settings-link" href="/settings" data-tour-settings-target data-i18n="settings">Settings</a></div>
+        <div class="header-controls"><a class="settings-link" href="/settings" data-tour-settings-target data-i18n="settings">Settings</a></div>
       </header>
       <p class="offline-banner" data-offline-banner role="status" hidden>You are offline. Showing the last cached version.</p>
       <main class="main" id="main" tabindex="-1"><slot /></main>
@@ -107,8 +107,8 @@ const { title, hideFooter = false } = Astro.props;
       Object.assign(translations.de, { menuFor: 'Menü für', menusFor: 'Menüs für' });
       Object.assign(translations.en, { devMode: 'Dev mode', devModeDescription: 'Show diagnostics for live data, location, storage and backend connectivity.', devTools: 'Developer tools' });
       Object.assign(translations.de, { devMode: 'Entwicklermodus', devModeDescription: 'Zeigt Diagnosen für Live-Daten, Standort, Speicher und Backend-Verbindung.', devTools: 'Entwicklerwerkzeuge' });
-      Object.assign(translations.en, { betaFeatures: 'Beta features', disableBetaFeatures: 'Disable beta features', disableBetaFeaturesHint: 'Hide the Route and AI voice search buttons. Regular typed search remains available.' });
-      Object.assign(translations.de, { betaFeatures: 'Beta-Funktionen', disableBetaFeatures: 'Beta-Funktionen deaktivieren', disableBetaFeaturesHint: 'Blendet die Route- und KI-Sprachsuche-Buttons aus. Die normale Texteingabe bleibt verfügbar.' });
+      Object.assign(translations.en, { betaFeatures: 'Beta features', disableBetaFeatures: 'Disable beta features', disableBetaFeaturesHint: 'Hide the AI voice search button. Regular typed search remains available.' });
+      Object.assign(translations.de, { betaFeatures: 'Beta-Funktionen', disableBetaFeatures: 'Beta-Funktionen deaktivieren', disableBetaFeaturesHint: 'Blendet den KI-Sprachsuche-Button aus. Die normale Texteingabe bleibt verfügbar.' });
       Object.assign(translations.en, { viewMode: 'Overview layout', viewStandard: 'Standard', viewList: 'List' });
       Object.assign(translations.de, { viewMode: 'Übersichtsansicht', viewStandard: 'Standard', viewList: 'Liste' });
       Object.assign(translations.en, { distanceDefault: 'Sort by distance automatically', distanceDefaultHint: 'When you open the overview. Your location stays on this device.' });

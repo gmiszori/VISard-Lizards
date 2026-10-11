@@ -27,7 +27,7 @@ Use isolated test-origin storage, disposable backend fixtures and deterministic 
 - [ ] SH13 JS-disabled/slow-JS pages show useful content without misleading dead controls.
 - [ ] SH14 Page restoration from BFCache resumes clock-dependent status and event handling.
 
-## Home catalogue, cards and maps (HM)
+## Home catalogue, cards and canteen locations (HM)
 
 - [ ] HM01 Correct mensa count and catalogue for all supported campuses.
 - [ ] HM02 Backend-added/deleted/renamed mensas follow the agreed catalogue ownership.
@@ -37,9 +37,9 @@ Use isolated test-origin storage, disposable backend fixtures and deterministic 
 - [ ] HM06 Missing/broken/slow image has readable text and a stable placeholder.
 - [ ] HM07 Name/photo/meal links open the correct detail page.
 - [ ] HM08 Star and Location clicks do not accidentally open the detail link.
-- [ ] HM09 Every Location query identifies the correct mensa/address in Google Maps.
-- [ ] HM10 Map links encode umlauts, spaces, slashes, punctuation and apostrophes.
-- [ ] HM11 Map links open in a new tab with safe opener handling and descriptive labels.
+- [ ] HM09 Every Location link identifies the correct mensa/address in the external location viewer.
+- [ ] HM10 Location links encode umlauts, spaces, slashes, punctuation and apostrophes.
+- [ ] HM11 Location links open in a new tab with safe opener handling and descriptive labels.
 - [ ] HM12 No “Fresh picks from around Zürich” subtitle remains.
 - [ ] HM13 No “Heute auf dem Menü” home-card label or empty spacer rows remain.
 - [ ] HM14 Missing menu has a specific unavailable message and sorts below available menus.
@@ -64,6 +64,30 @@ Use isolated test-origin storage, disposable backend fixtures and deterministic 
 - [ ] SE10 Rapid typing/deleting and input method composition keep the latest result.
 - [ ] SE11 Search label and empty state translate on language change.
 - [ ] SE12 Search does not expose hidden starred clones or double-count cards.
+
+## AI voice search and beta preference (VS)
+
+- [ ] VS01 AI voice search is available only when enabled; typed search remains usable without AI configuration.
+- [ ] VS02 Microphone permission granted, denied, dismissed and unsupported states produce useful feedback.
+- [ ] VS03 HTTPS/localhost and browser compatibility requirements are disclosed when voice cannot start.
+- [ ] VS04 Start, stop, cancel and retry release microphone resources without duplicate sessions.
+- [ ] VS05 Transcripts and AI results render safely and preserve the current filters and price tier.
+- [ ] VS06 Missing AI configuration, service failure, timeout and offline state recover without losing typed search.
+- [ ] VS07 Settings → Disable beta features hides only the AI voice-search button; disabling it restores the button when otherwise enabled.
+- [ ] VS08 Beta preference persists on this device across reload/navigation and updates between tabs.
+- [ ] VS09 Disabling beta features during a voice session stops it; menus, typed search, location sorting, ratings and push remain available.
+- [ ] VS10 Voice controls, permission/errors and result announcements work in EN/DE and with keyboard/screen readers.
+
+## Canteen distance sorting (DS)
+
+- [ ] DS01 Sort by distance orders canteens consistently using their known coordinates and the current location fix.
+- [ ] DS02 Missing/invalid coordinates and equal distances do not hide canteens or crash sorting.
+- [ ] DS03 Permission denied, timeout, unavailable location and unsupported geolocation show a recoverable state.
+- [ ] DS04 Distance labels distinguish unavailable distances from zero and format consistently.
+- [ ] DS05 Distance sorting composes with typed search, campus/food filters and favourites without duplicating cards.
+- [ ] DS06 Automatic distance-sort preference persists and applies on overview entry without resetting unrelated settings.
+- [ ] DS07 Location prompts and sort controls remain keyboard/touch accessible on small screens.
+- [ ] DS08 Device location handling matches the stated privacy policy; changing or clearing preferences restores the intended default.
 
 ## Settings, filters and price tier (PF)
 
@@ -240,7 +264,7 @@ Use isolated test-origin storage, disposable backend fixtures and deterministic 
 ## Mensa detail, availability and crowd (CR)
 
 - [ ] CR01 Every generated mensa detail route renders the correct name/photo/menu.
-- [ ] CR02 Back and Maps links work; long name/status/photo remain readable.
+- [ ] CR02 Back and canteen Location links work; long name/status/photo remain readable.
 - [ ] CR03 Opening windows respect Zurich day, weekend and temporary closures.
 - [ ] CR04 Open/closed updates after window boundary and visibility restoration.
 - [ ] CR05 Actual current crowd is identified separately from predicted/preview crowd.
@@ -263,6 +287,17 @@ Use isolated test-origin storage, disposable backend fixtures and deterministic 
 - [ ] CR22 No chart overflow at all matrix widths and zoom settings.
 - [ ] CR23 Source, sample size and freshness are visible according to the agreed design.
 - [ ] CR24 Closing-time bins and lunch/dinner openings follow the documented policy.
+
+## Web Push notifications (PU)
+
+- [ ] PU01 Supported HTTPS/localhost browsers can enable notifications after explicit permission.
+- [ ] PU02 Unsupported browsers, denied permission and unavailable service workers show truthful actionable states.
+- [ ] PU03 Subscription creation, refresh and removal handle backend errors without false success notices.
+- [ ] PU04 Reload/navigation preserve the actual subscription state; device/browser changes do not imply a shared subscription.
+- [ ] PU05 Saved dish preferences and notification settings agree with the subscription sent to the API.
+- [ ] PU06 Notification content and click targets identify the correct canteen/menu without exposing credentials.
+- [ ] PU07 Backend restart with persisted VAPID keys preserves subscriptions; changed keys produce recoverable re-subscription behaviour.
+- [ ] PU08 Permission, subscription and notification controls remain accessible and translated in EN/DE.
 
 ## Backend integration and degraded networks (API)
 
@@ -311,7 +346,7 @@ Use isolated test-origin storage, disposable backend fixtures and deterministic 
 - [ ] RS05 Concurrent profile/stars/preferences/prompt writes do not silently lose unrelated changes.
 - [ ] RS06 Repeated navigation/resume does not duplicate event listeners or timers.
 - [ ] RS07 No input/network text is inserted as executable markup or unsafe URL.
-- [ ] RS08 CSP/deployment headers and third-party image/map behaviour are reviewed against deployment needs.
+- [ ] RS08 CSP/deployment headers, third-party images and external location links are reviewed against deployment needs.
 - [ ] RS09 Anonymous feedback/local data retention and clearing are documented truthfully.
 - [ ] RS10 Dummy login credentials never persist, log or leave the browser.
 - [ ] RS11 1,000 local meal fixtures/100 canteens render/filter without freezing under measured budgets.

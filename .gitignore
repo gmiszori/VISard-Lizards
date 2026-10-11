@@ -12,6 +12,5 @@ Servers/
 .env
 .env.*
 !.env.example
-!.env.route-planner.example
 
 .DS_Store

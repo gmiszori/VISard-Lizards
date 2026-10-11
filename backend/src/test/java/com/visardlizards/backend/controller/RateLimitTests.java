@@ -1,14 +1,18 @@
 package com.visardlizards.backend.controller;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.request;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -49,6 +53,27 @@ class RateLimitTests {
 		mockMvc.perform(report)
 				.andExpect(status().isTooManyRequests())
 				.andExpect(header().string("Retry-After", "300"));
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+			"GET, /api/route-planner/status",
+			"GET, /api/route-planner/map-config",
+			"POST, /api/route-planner/plan",
+			"POST, /api/route-planner/plan/jobs",
+			"GET, /api/route-planner/jobs/removed-job",
+			"POST, /api/route-planner/food/jobs",
+			"GET, /api/route-planner/locations",
+			"GET, /api/route-planner/menu",
+			"POST, /api/route-planner/food"
+	})
+	void removedRoutePlanningEndpointsReturnNotFound(String method, String path) throws Exception {
+		for (int attempt = 0; attempt < 2; attempt++) {
+			mockMvc.perform(request(HttpMethod.valueOf(method), path)
+					.contentType(MediaType.APPLICATION_JSON)
+					.content("{}"))
+					.andExpect(status().isNotFound());
+		}
 	}
 
 	private static MockHttpServletRequestBuilder rate(String path, String clientIp) {
