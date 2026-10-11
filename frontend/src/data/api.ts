@@ -65,7 +65,8 @@ async function request<T>(method: 'GET' | 'POST' | 'PUT' | 'DELETE', path: strin
     throw new ApiError(response.status, detail, retryAfterMs(response.headers.get('Retry-After')));
   }
   if (response.status === 204) return undefined as T;
-  return response.json() as Promise<T>;
+  const text = await response.text();
+  return text ? JSON.parse(text) as T : undefined as T;
 }
 
 export const apiGet = <T>(path: string, baseUrl = API_URL, timeoutMs = 5000) =>
@@ -87,6 +88,8 @@ export interface BackendMeal {
   description: string | null;
   /** Canonical allergen ids, e.g. "gluten", "milk". */
   allergens: string[];
+  /** Possible cross-contact, kept separate from ingredients. */
+  traceAllergens?: string[];
   /** [diet, kind, service]: vegan|vegetarian|meat|fish, main|buffet|dessert|drink, lunch|dinner */
   classification: [string, string, string];
 }
@@ -248,6 +251,8 @@ export const createRealtimeVoiceSession = (params: {
   activeCampusId: string | null;
   priceCategory: 'STUDENT' | 'STAFF' | 'EXTERNAL';
   appLanguage: 'en' | 'de';
+  /** The app's Zurich local time ("YYYY-MM-DDTHH:mm"), simulated in dev mode. */
+  now?: string | null;
 }, baseUrl = API_URL): Promise<RealtimeVoiceSession> =>
   apiPost<RealtimeVoiceSession>('/api/voice/realtime-session', params, baseUrl, 15000);
 
@@ -258,6 +263,8 @@ export const searchHybridMeals = (
     campusId?: string | null;
     campusIds?: string[] | null;
     date?: string | null;
+    /** The app's Zurich date that "today" and "tomorrow" resolve against, simulated in dev mode. */
+    today?: string | null;
     priceCategory?: 'STUDENT' | 'STAFF' | 'EXTERNAL';
     appLanguage?: 'en' | 'de';
     userLat?: number | null;

@@ -10,7 +10,7 @@ import java.security.MessageDigest
 import java.math.BigDecimal
 
 class MenuExtractor {
-    private val menuLink = Regex("(?i)(speise|men[uü]|menue|food|essen|lunch|dinner|snack|catering)")
+    private val menuLink = Regex("(?i)(speise|men[uü]|menue|food|essen|lunch|dinner|snack|catering|carte|déjeuner|specialites|spécialités)")
     private val priceEnd = Regex("\\s+(?:CHF\\s*)?(\\d{1,3}[.,]\\d{2})(?:\\s*CHF)?\\s*$")
     private val dietLine = Regex("(?i)^(Vegan|Vegetarian|Gluten Free)(,\\s*(Vegan|Vegetarian|Gluten Free))*$")
 
@@ -21,6 +21,7 @@ class MenuExtractor {
         fun add(href: String, label: String) {
             val uri = runCatching { URI(source.url).resolve(href) }.getOrNull() ?: return
             if (uri.scheme != "https" || !menuLink.containsMatchIn(label + " " + uri.path)) return
+            if (Regex("(?i)(boissons|carte.des.vins|weinkarte|wine.list|drinks)").containsMatchIn(label + " " + uri.path)) return
             val url = uri.toString().substringBefore('#')
             if (url == source.url.substringBefore('#') || Regex("(?i)\\.(jpg|jpeg|png|gif|svg|webp)$").containsMatchIn(uri.path)) return
             links += MenuSource(url, clean(label), if (uri.path.endsWith(".pdf", true)) "pdf" else "html")
@@ -107,6 +108,9 @@ class MenuExtractor {
         val warnings = mutableListOf<String>()
         val evidence = StringBuilder()
         Loader.loadPDF(source.bytes).use { document ->
+            val allText = PDFTextStripper().apply { endPage = minOf(30, document.numberOfPages) }.getText(document)
+            val generalMenu = menuLink.containsMatchIn(URI(source.url).path) && Regex("(?i)(entrées|viandes|poissons|burger|pasta|desserts|hauptgerichte|vorspeisen|main courses)").containsMatchIn(allText)
+            val currency = if (Regex("(?i)(CHF|Schweizer Franken|Swiss francs)").containsMatchIn(allText)) "CHF" else null
             if (document.numberOfPages > 30) warnings += "Only the first 30 PDF pages were read."
             for (index in 0 until minOf(30, document.numberOfPages)) {
                 val positions = mutableListOf<TextPosition>()
@@ -124,7 +128,21 @@ class MenuExtractor {
                     continue
                 }
                 val compact = text.replace(Regex("\\s"), "").uppercase()
-                if (!compact.contains("FOOD") || !compact.contains("SNACKS") || !compact.contains("CHF")) continue
+                if (!compact.contains("FOOD") || !compact.contains("SNACKS") || !compact.contains("CHF")) {
+                    if (generalMenu) {
+                        val lines = text.lines().map(::clean).filter { it.isNotBlank() }
+                        val ending = Regex("(\\d{1,3}[.,]\\d{2}(?:\\s*/\\s*\\d{1,3}[.,]\\d{2})*)\\s*(?:CHF)?\\s*$")
+                        lines.forEachIndexed { i, line ->
+                            val match = ending.find(line) ?: return@forEachIndexed
+                            var name = clean(line.substring(0, match.range.first))
+                            if (i > 0 && (name.isBlank() || name.first().isLowerCase())) name = clean(lines[i-1] + " " + name)
+                            if (name.length < 5 || Regex("(?i)(mwst|tax|preise|prices)").containsMatchIn(name)) return@forEachIndexed
+                            val prices = if (currency == null) emptyList() else match.groupValues[1].split('/').map { MealPrice(it.trim().replace(',', '.').toDouble(),currency) }
+                            meals += create(name,null,prices.firstOrNull(),null,emptyList(),source.url,index+1,line,"general-priced-menu-pdf").copy(prices=prices)
+                        }
+                    }
+                    continue
+                }
                 val page = document.getPage(index)
                 for (column in 0..1) {
                     data class Row(val y: Float, val chars: MutableList<TextPosition>)

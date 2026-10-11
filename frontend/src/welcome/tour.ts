@@ -100,7 +100,7 @@ export function mountWelcomeTour(): void {
     progress.hidden = standaloneInstall;
     progress.textContent = copy[language].progress;
     const skip = root!.querySelector<HTMLElement>('[data-welcome-skip]')!;
-    skip.hidden = standaloneInstall;
+    skip.hidden = standaloneInstall || step === 'finish';
     skip.textContent = copy[language].skip;
     root!.querySelector<HTMLElement>('[data-welcome-title]')!.textContent = content.title;
     root!.querySelector<HTMLElement>('[data-welcome-description]')!.textContent = content.description;

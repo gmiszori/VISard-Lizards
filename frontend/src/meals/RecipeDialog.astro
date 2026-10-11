@@ -69,7 +69,7 @@
       button.setAttribute('aria-label', label);
       button.title = label;
     });
-    if (recipe) dialog.querySelector<HTMLElement>('[data-recipe-time]')!.textContent = `${recipe.servings} ${t().servings.toLowerCase()} · ${recipe.minutes} ${t().minute}`;
+    if (recipe) dialog.querySelector<HTMLElement>('[data-recipe-time]')!.textContent = `${recipe.servings} ${language() === 'de' ? t().servings : t().servings.toLowerCase()} · ${recipe.minutes} ${t().minute}`;
   }
 
   function closeMenu(restoreFocus = false): void {

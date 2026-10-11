@@ -1,6 +1,15 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { addDays, defaultService, isIsoDate, isWeekend, latestToday, menuDateCandidates, menuDateNotice, nearestMenuDay, pickSampleMenuDate, requestedMenuDate, weekdayIndex, wantedMenuDate } from './menuDate.ts';
+import { addDays, defaultService, isIsoDate, isWeekend, latestToday, menuDateCandidates, menuDateNotice, nearestMenuDay, pickSampleMenuDate, requestedMenuDate, visibleMenuDays, weekdayIndex, wantedMenuDate } from './menuDate.ts';
+
+test('compact picker shows the selected day and next two available days', () => {
+  const days = ['2026-10-09', '2026-10-12', '2026-10-13', '2026-10-14', '2026-10-15'];
+  assert.deepEqual(visibleMenuDays(days, '2026-10-12'), ['2026-10-12', '2026-10-13', '2026-10-14']);
+  assert.deepEqual(visibleMenuDays(days, '2026-10-09'), ['2026-10-09', '2026-10-12', '2026-10-13']);
+  assert.deepEqual(visibleMenuDays(days, '2026-10-15'), ['2026-10-15']);
+  assert.deepEqual(visibleMenuDays(['invalid', '2026-10-13', '2026-10-13'], '2026-10-12'), ['2026-10-12', '2026-10-13']);
+  assert.deepEqual(days, ['2026-10-09', '2026-10-12', '2026-10-13', '2026-10-14', '2026-10-15']);
+});
 
 // 2026-10-10 is a Saturday.
 test('weekday numbers and weekend detection', () => {

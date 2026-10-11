@@ -1,0 +1,82 @@
+{
+  "journey": {
+    "category": "B",
+    "number": "E"
+  },
+  "departure": {
+    "station": {
+      "id": "8591123",
+      "name": "Zürich, ETH/Universitätsspital",
+      "score": null,
+      "coordinate": {
+        "type": "WGS84",
+        "x": 47.377288,
+        "y": 8.548225
+      },
+      "distance": null
+    },
+    "arrival": null,
+    "arrivalTimestamp": null,
+    "departure": "2026-10-12T11:15:00+0200",
+    "departureTimestamp": 1791796500,
+    "delay": null,
+    "platform": null,
+    "prognosis": {
+      "platform": null,
+      "arrival": null,
+      "departure": null,
+      "capacity1st": null,
+      "capacity2nd": null
+    },
+    "realtimeAvailability": null,
+    "location": {
+      "id": "8591123",
+      "name": "Zürich, ETH/Universitätsspital",
+      "score": null,
+      "coordinate": {
+        "type": "WGS84",
+        "x": 47.377288,
+        "y": 8.548225
+      },
+      "distance": null
+    }
+  },
+  "arrival": {
+    "station": {
+      "id": "8591122",
+      "name": "Zürich, ETH Hönggerberg",
+      "score": null,
+      "coordinate": {
+        "type": "WGS84",
+        "x": 47.40868,
+        "y": 8.50771
+      },
+      "distance": null
+    },
+    "arrival": "2026-10-12T11:29:00+0200",
+    "arrivalTimestamp": 1791797340,
+    "departure": null,
+    "departureTimestamp": null,
+    "delay": null,
+    "platform": null,
+    "prognosis": {
+      "platform": null,
+      "arrival": null,
+      "departure": null,
+      "capacity1st": null,
+      "capacity2nd": null
+    },
+    "realtimeAvailability": null,
+    "location": {
+      "id": "8591122",
+      "name": "Zürich, ETH Hönggerberg",
+      "score": null,
+      "coordinate": {
+        "type": "WGS84",
+        "x": 47.40868,
+        "y": 8.50771
+      },
+      "distance": null
+    }
+  }
+}

@@ -81,6 +81,7 @@ export async function saveMealRating(value: MealRating, storage: Storage = local
     // duplicate check. If it cannot be written (corrupt data, full storage) the rating still counts and
     // the user must not be told that saving failed.
     try { await writeDeviceCopy(); } catch { /* best effort */ }
+    if (typeof document !== 'undefined') document.dispatchEvent(new Event('campuseats:feedback-changed'));
     return;
   }
   await writeDeviceCopy();
@@ -99,6 +100,7 @@ export async function undoMealRating(value: Pick<MealRating, 'userId' | 'mealId'
       if (!(error instanceof ApiError && error.status === 404)) throw error;
     }
   }
+  if (apiUrl && typeof document !== 'undefined') document.dispatchEvent(new Event('campuseats:feedback-changed'));
   try {
     const raw: unknown = JSON.parse(storage.getItem(key) ?? '[]');
     if (Array.isArray(raw)) storage.setItem(key, JSON.stringify(raw.filter(r => !(r && r.userId === value.userId && r.mealId === value.mealId))));

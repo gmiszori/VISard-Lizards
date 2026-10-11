@@ -4,7 +4,7 @@ import NearMe from '../location/NearMe.astro';
 ---
 <div class="toolbar">
   <label class="search"><svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg><input type="search" id="search-input" maxlength="200" data-i18n-placeholder="search" data-i18n-aria="search" placeholder="Search canteens or dishes" aria-label="Search canteens or dishes" /></label>
-  <button type="button" id="voice-search-button" class="voice-search-button" data-i18n-aria="voiceSearch" data-i18n-title="voiceSearch" aria-label="Search by voice" title="Search by voice" aria-pressed="false"><svg class="voice-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5.5 11.5v1a6.5 6.5 0 0 0 13 0v-1M12 19v3m-4 0h8"/></svg></button>
+  <button type="button" id="voice-search-button" class="voice-search-button" data-i18n-aria="voiceSearch" data-i18n-title="voiceSearch" aria-label="Search by voice (Beta)" title="Search by voice (Beta)" aria-pressed="false"><span class="beta-badge voice-beta">Beta</span><svg class="voice-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5.5 11.5v1a6.5 6.5 0 0 0 13 0v-1M12 19v3m-4 0h8"/></svg></button>
   <div class="campus-tools">
     <select id="campus-select" class="campus-select" data-i18n-aria="campusSelect" aria-label="Campus">
       <option value="preset" data-i18n="campusPreset">My campuses</option>
@@ -46,6 +46,7 @@ import NearMe from '../location/NearMe.astro';
   .toolbar :global(.search){flex:1 1 auto;min-width:0;margin:0}
   .toolbar :global(.search input){height:46px;font-size:14px}
   .toolbar :global(.search-icon){top:50%;left:13px;width:18px;height:18px;transform:translateY(-50%);pointer-events:none}
+  .voice-beta{position:absolute;bottom:-6px;right:-6px;pointer-events:none}
   .voice-search-button{position:relative;display:grid;place-items:center;width:48px;height:48px;flex:0 0 48px;padding:0;border:0;border-radius:15px;background:#ef8b3a;color:#fff;cursor:pointer;box-shadow:0 4px 12px #a64c162a;transition:background .16s,transform .16s,box-shadow .16s}
   .voice-search-button:hover:not(:disabled){background:#dc7626;transform:translateY(-1px);box-shadow:0 6px 16px #a64c1638}
   .voice-icon{width:25px;height:25px;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}

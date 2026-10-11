@@ -15,6 +15,7 @@ class RatingServiceTests {
 	@Test
 	void averageIsNullWithoutRatings() {
 		assertThat(ratingService.getAverage("polyterrasse")).isNull();
+		assertThat(ratingService.getMensaAverage("polyterrasse")).isNull();
 	}
 
 	@Test
@@ -23,6 +24,7 @@ class RatingServiceTests {
 		ratingService.addRating("polyterrasse", 4);
 		ratingService.addRating("polyterrasse", 4);
 		assertThat(ratingService.getAverage("polyterrasse")).isEqualByComparingTo(new BigDecimal("4.3"));
+		assertThat(ratingService.getMensaAverage("polyterrasse")).isEqualByComparingTo(new BigDecimal("4.3"));
 	}
 
 	@Test

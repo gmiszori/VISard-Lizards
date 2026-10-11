@@ -12,7 +12,7 @@ class Food2050DetailsTest {
         return SourceDocument(url, "text/html", "<script>self.__next_f.push($stream)</script>".toByteArray())
     }
     private fun weeklyPage() = page(weekly, """["${'$'}","c",null,{"day":{"__typename":"OutletMenuCategoryCalendarRangeDay","from":{"dateLocal":"2026-10-05T00:00:00+02:00"},"menuItems":[{"id":"item1","detailUrl":"$detail","category":{"name":"Traditional"},"dish":{"name":"Soup","isVegan":true}}]}}]""")
-    private fun detailPage(id: String = "item1") = page(detail, """["${'$'}","c",null,{"menuItem":{"id":"$id","dish":{"name":"Soup","description":"Full description","stats":{"energy":{"amount":123,"unit":"kcal"}},"ingredients":[{"name":"Lentils"}],"allergens":[{"allergen":{"name":"Sellerie"}}]},"prices":[{"amount":"6.9","currency":"CHF","priceCategory":{"name":"Studierende"}},{"amount":"9","currency":"CHF","priceCategory":{"name":"Mitarbeitende"}},{"amount":"13.5","currency":"CHF","priceCategory":{"name":"Externe"}}]}}]""")
+    private fun detailPage(id: String = "item1") = page(detail, """["${'$'}","c",null,{"menuItem":{"id":"$id","dish":{"name":"Soup","description":"Full description","stats":{"energy":{"amount":123,"unit":"kcal"}},"ingredients":[{"name":"Lentils"}],"allergens":[{"allergen":{"name":"Sellerie"}}],"traceAllergens":[{"allergen":{"name":"Glutenhaltiges Getreide"}}]},"prices":[{"amount":"6.9","currency":"CHF","priceCategory":{"name":"Studierende"}},{"amount":"9","currency":"CHF","priceCategory":{"name":"Mitarbeitende"}},{"amount":"13.5","currency":"CHF","priceCategory":{"name":"Externe"}}]}}]""")
     @Test fun weeklyGetsAllGroupPricesAndRawNutritionWithoutExtraMeals() {
         val scraper = createScraper({ url -> when {
             url == weekly -> weeklyPage()
@@ -24,6 +24,7 @@ class Food2050DetailsTest {
         assertEquals(3, meal.prices.size); assertEquals(MealPrice(6.9,"CHF","Studierende"), meal.price)
         assertEquals("2026-10-05", meal.date); assertEquals("Traditional", meal.section)
         assertEquals(listOf("Vegan"), meal.dietaryLabels); assertEquals(listOf("Sellerie"), meal.allergens)
+        assertEquals(listOf("Glutenhaltiges Getreide"), meal.traceAllergens)
         assertEquals(123, meal.details!!["dish"]!!.jsonObject["stats"]!!.jsonObject["energy"]!!.jsonObject["amount"]!!.jsonPrimitive.int)
         assertFalse(result.warnings.any { it.contains("does not provide prices") })
     }

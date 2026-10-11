@@ -8,6 +8,32 @@ import org.apache.pdfbox.pdmodel.font.Standard14Fonts
 import java.io.ByteArrayOutputStream
 
 class ExtractorTest {
+    @Test fun restaurantMenuPageDiscoversPricedPdfAndKeepsAvailabilityUnknown() {
+        val output=ByteArrayOutputStream()
+        PDDocument().use { document ->
+            val page=PDPage();document.addPage(page)
+            PDPageContentStream(document,page).use { stream ->
+                listOf("Main courses CHF","Burger maison 25.50","Raviolis 18.00/28.00").forEachIndexed { i,text ->
+                    stream.beginText();stream.setFont(PDType1Font(Standard14Fonts.FontName.HELVETICA),12f)
+                    stream.newLineAtOffset(30f,750f-i*30f);stream.showText(text);stream.endText()
+                }
+            };document.save(output)
+        }
+        val calls=mutableListOf<String>()
+        val scraper=MealScraper({ url ->
+            calls+=url
+            when {
+                url.endsWith(".pdf") -> SourceDocument(url,"application/pdf",output.toByteArray())
+                url.endsWith("la-carte") -> SourceDocument(url,"text/html","<a href='/menu.pdf'>La carte</a><a href='/vins.pdf'>La carte des vins</a>".toByteArray())
+                else -> SourceDocument(url,"text/html","<a href='/la-carte'>Notre carte</a>".toByteArray())
+            }
+        })
+        val result=scraper.scrape("https://restaurant.example/")
+        assertEquals(3,calls.size);assertFalse(calls.any { it.endsWith("vins.pdf") })
+        assertEquals(listOf("Burger maison","Raviolis"),result.meals.map { it.name })
+        assertEquals(listOf(18.0,28.0),result.meals[1].prices.map { it.amount })
+        assertTrue(result.meals.all { it.date==null && it.timeStart==null && it.timeEnd==null && it.sourcePage==1 })
+    }
     @Test fun zfvDiscoveryExcludesRecommendedRestaurantsAndSelfLinks() {
         val source = SourceDocument("https://www.zfv.ch/de/essen-gehen/raemi-59", "text/html", """
             <a href='#menu'>Menüplan</a>

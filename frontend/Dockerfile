@@ -17,6 +17,7 @@ RUN mkdir -p /srv
 COPY --from=caddy /usr/bin/caddy /usr/bin/caddy
 COPY Caddyfile /etc/caddy/Caddyfile
 COPY --from=build /app /app
+COPY --from=build /app/dist /srv
 COPY scripts/container-entrypoint.sh /usr/local/bin/container-entrypoint.sh
 # Checkouts on Windows (core.autocrlf) give the script CRLF line endings, which sh rejects.
 RUN sed -i 's/\r$//' /usr/local/bin/container-entrypoint.sh

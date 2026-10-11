@@ -11,6 +11,11 @@ public interface RatingRepository {
 
 	List<Rating> findBySubjectId(String subjectId);
 
+	/** Direct mensa ratings plus user ratings of its stored meals. */
+	default List<Rating> findByMensaId(String mensaId) {
+		return findBySubjectId(mensaId);
+	}
+
 	/** Whether this user already rated this mensa or meal. */
 	boolean existsBySubjectIdAndUserId(String subjectId, String userId);
 

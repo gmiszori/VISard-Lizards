@@ -28,6 +28,24 @@ class ScrapedMenuDatabaseTests {
     @Autowired MensaRepository publicMeals;
     private final LocalDate today=LocalDate.now(ZoneId.of("Europe/Zurich"));
 
+    @Test void traceAllergensSurviveNewScrapesAndOlderCachedDetailsSeparately() throws Exception {
+        for(String metadata:List.of("\"traceAllergens\":[\"Glutenhaltiges Getreide\",\"Sellerie\"]",
+                "\"details\":{\"dish\":{\"traceAllergens\":[{\"allergen\":{\"name\":\"Glutenhaltiges Getreide\"}},{\"allergen\":{\"externalId\":\"Sellerie\"}}]}}")) {
+            store.save(mapper.readTree("""
+                {"id":"scraper-test","result":{"toolResults":[{"name":"scrape_meals","data":{"meals":[
+                {"name":"Cauliflower","date":"%s","allergens":["Sesam"],%s} ]}}]}}
+                """.formatted(today,metadata)));
+            var meal=publicMeals.findMeals("scraper-test",today,today).getFirst();
+            assertEquals(List.of("Sesam"),meal.allergens());
+            assertEquals(List.of("Glutenhaltiges Getreide","Sellerie"),meal.traceAllergens());
+            mvc.perform(get("/api/meals/"+meal.id()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.meal.allergens[0]").value("Sesam"))
+                .andExpect(jsonPath("$.meal.traceAllergens[0]").value("Glutenhaltiges Getreide"))
+                .andExpect(jsonPath("$.meal.traceAllergens[1]").value("Sellerie"));
+        }
+    }
+
     @Test void manualRefreshEndpointRejectsAnonymousRequests() throws Exception {
         mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/api/scraped-menus/refresh"))
             .andExpect(status().isUnauthorized()).andExpect(jsonPath("$.status").value("unauthorized"));

@@ -37,13 +37,14 @@ class Food2050Details(private val fetch: (String) -> SourceDocument) {
                     if (amount == null || !amount.isFinite() || amount < 0 || currency.isNullOrBlank()) null
                     else MealPrice(amount, currency, text((price["priceCategory"] as? JsonObject)?.get("name")))
                 }.sortedBy { if (it.customerGroup == "Studierende") 0 else 1 }
-                val allergens = (dish["allergens"] as? JsonArray).orEmpty().mapNotNull {
+                fun allergens(field: String) = (dish[field] as? JsonArray).orEmpty().mapNotNull {
                     val allergen = (it.jsonObject["allergen"] as? JsonObject)
                     text(allergen?.get("name")) ?: text(allergen?.get("externalId"))
                 }
                 complete++
                 meal.copy(name = text(dish["name"]) ?: meal.name, description = text(dish["description"]) ?: meal.description,
-                    prices = prices, price = prices.firstOrNull(), allergens = allergens, details = item,
+                    prices = prices, price = prices.firstOrNull(), allergens = allergens("allergens"),
+                    traceAllergens = allergens("traceAllergens"), details = item,
                     extractionMethod = "food2050-weekly-and-detail", evidence = item.toString())
             } catch (ex: Exception) {
                 warnings += "Could not enrich FOOD2050 dish ${meal.name} from $url: ${ex.message}"

@@ -5,6 +5,7 @@
  * With a simulated time in the developer tools, the default pages jump to that time's menu day.
  */
 import { formatMenuDay } from '../data/presentation';
+import { visibleMenuDays } from '../data/menuDate';
 interface Props {
   days: string[];
   /** The day shown on this page. */
@@ -17,7 +18,7 @@ interface Props {
 const { days, menuDate, chosenDay, canteenId } = Astro.props;
 const href = (day: string) => (canteenId ? `/canteen/${encodeURIComponent(canteenId)}/${day}` : `/day/${day}`);
 const label = (day: string) => formatMenuDay(day);
-const shownDays = days.includes(menuDate) ? days : [...days, menuDate].sort();
+const shownDays = visibleMenuDays(days, menuDate);
 ---
 <div class="day-picker" data-day-picker data-picker-date={menuDate} data-chosen-day={String(chosenDay)}
   data-days={JSON.stringify(days)} data-href-base={canteenId ? `/canteen/${encodeURIComponent(canteenId)}/` : '/day/'}>
@@ -32,7 +33,7 @@ const shownDays = days.includes(menuDate) ? days : [...days, menuDate].sort();
     <button type="button" data-service-choice="dinner" aria-pressed="false" data-i18n="dinner">Dinner</button>
   </div>
 </div>
-<p class="price-category-note"><span data-price-category>Student prices</span> · <a href="/settings" data-i18n="changePriceCategory">Change</a></p>
+<p class="price-category-note"><span data-price-category>Student prices</span><span aria-hidden="true">·</span><a href="/settings" data-i18n="changePriceCategory">Change</a></p>
 <script is:inline>
   // Switching the day loads another page. Keep the picker where it was on screen instead of jumping to the
   // top: runs while the page is still loading, right after the picker exists (the click saved its position).
@@ -44,7 +45,8 @@ const shownDays = days.includes(menuDate) ? days : [...days, menuDate].sort();
       const saved = JSON.parse(raw);
       const path = location.pathname.replace(/\/+$/, '');
       if (saved.path !== path || !(Date.now() - saved.at < 10000)) return;
-      const picker = document.currentScript.previousElementSibling;
+      const picker = document.querySelector('[data-day-picker]');
+      if (!picker) return;
       const body = document.body;
       const place = () => window.scrollTo(0, picker.getBoundingClientRect().top + window.scrollY - saved.top);
       // The rest of the page is not loaded yet: make room so the scroll position can be reached now.
@@ -70,8 +72,16 @@ const shownDays = days.includes(menuDate) ? days : [...days, menuDate].sort();
   const daysNav = root?.querySelector<HTMLElement>('[data-day-picker-nav]');
   const updateScrollHint = () => daysNav?.classList.toggle('has-more-days',
     daysNav.scrollWidth - daysNav.clientWidth - daysNav.scrollLeft > 2);
+  const revealSelectedDay = () => {
+    const selected = daysNav?.querySelector<HTMLElement>('[aria-current="date"]');
+    if (!daysNav || !selected || daysNav.scrollWidth <= daysNav.clientWidth) return;
+    const nav = daysNav.getBoundingClientRect();
+    const day = selected.getBoundingClientRect();
+    if (day.left < nav.left || day.right > nav.right) daysNav.scrollLeft += (day.left + day.right - nav.left - nav.right) / 2;
+    updateScrollHint();
+  };
   daysNav?.addEventListener('scroll', updateScrollHint, { passive: true });
-  window.addEventListener('resize', updateScrollHint);
+  window.addEventListener('resize', () => { revealSelectedDay(); updateScrollHint(); });
 
   // Lunch / dinner filter: an attribute on <html>; scripts/preferences.ts hides the other service's meals.
   function applyService(service: string) {
@@ -102,6 +112,7 @@ const shownDays = days.includes(menuDate) ? days : [...days, menuDate].sort();
     });
     root.querySelector('[data-day-picker-nav]')?.setAttribute('aria-label', de ? 'Menütag' : 'Menu day');
     root.querySelector('[data-service-filter-group]')?.setAttribute('aria-label', de ? 'Mahlzeit' : 'Meal service');
+    revealSelectedDay();
     updateScrollHint();
   }
 
@@ -131,22 +142,23 @@ const shownDays = days.includes(menuDate) ? days : [...days, menuDate].sort();
   }
 
   renderDays();
+  document.fonts.ready.then(revealSelectedDay);
   markOtherDay();
   followSimulatedDay();
   document.addEventListener('languagechange', renderDays);
   document.addEventListener(CLOCK_EVENT, () => { renderDays(); markOtherDay(); followSimulatedDay(); });
 </script>
-<style>.price-category-note{margin:0 0 16px;color:var(--muted);font-size:12px}.price-category-note a{display:inline-flex;align-items:center;min-width:44px;min-height:44px;margin-block:-13px;vertical-align:middle;color:var(--green);text-decoration:underline;text-underline-offset:3px}</style>
+<style>.price-category-note{display:flex;align-items:center;gap:6px;margin:0 0 16px;color:var(--muted);font-size:12px;line-height:1.5}.price-category-note a{display:inline-flex;align-items:center;min-width:44px;min-height:44px;margin-block:-13px;color:var(--green);text-decoration:underline;text-underline-offset:3px}</style>
 <style>
-  .day-picker{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;margin:0 0 14px}
-  .day-picker-days{display:flex;flex-wrap:wrap;gap:6px}
+  .day-picker{display:flex;align-items:center;justify-content:space-between;gap:10px 16px;margin:0 0 14px}
+  .day-picker-days{display:flex;flex:1 1 auto;min-width:0;gap:6px;overflow-x:auto;padding-block:2px}
   .day-picker a,.day-picker button{display:inline-flex;align-items:center;min-height:44px;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--ink);font:700 13px 'DM Sans',sans-serif;text-decoration:none;cursor:pointer;white-space:nowrap}
-  .day-picker-services{display:inline-flex;gap:2px;padding:3px;border:1px solid var(--line);border-radius:10px;background:var(--paper)}
+  .day-picker-services{display:inline-flex;flex:0 0 auto;margin-left:auto;gap:2px;padding:3px;border:1px solid var(--line);border-radius:10px;background:var(--paper)}
   .day-picker-services button{min-height:38px;border:0;border-radius:7px;background:transparent}
   .day-picker a:hover,.day-picker button:hover{border-color:var(--green)}
   .day-picker a.is-selected,.day-picker button[aria-pressed="true"]{background:var(--green);border-color:var(--green);color:var(--paper)}
   .day-picker a:focus-visible,.day-picker button:focus-visible{outline:3px solid color-mix(in srgb,var(--green) 45%,transparent);outline-offset:2px}
   /* Page changes (day, canteen) cross-fade instead of flashing white, where the browser supports it. */
   @media (prefers-reduced-motion: no-preference) { @view-transition { navigation: auto; } }
-  @media(max-width:520px){.day-picker{gap:8px}.day-picker-days{flex-wrap:nowrap;overflow-x:auto;width:100%;min-width:0;padding-bottom:2px}.day-picker-days.has-more-days{mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent);-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent)}}
+  @media(max-width:520px){.day-picker{gap:8px}.day-picker-days{flex-wrap:nowrap}.day-picker-days.has-more-days{mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent);-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent)}}
 </style>

@@ -2,6 +2,7 @@ import type { Mensa, MenuItem, Service, Weekday } from './canteens.ts';
 import { cuisineForDish, type CuisineCategory } from './cuisine.ts';
 import { minutesOfDay, zurichParts } from '../time/clock.ts';
 import { dishName } from './presentation.ts';
+import { hasDietConflict } from './allergens.ts';
 
 export type DisplayMenuItem = MenuItem & {
   cuisine?: CuisineCategory;
@@ -9,6 +10,9 @@ export type DisplayMenuItem = MenuItem & {
   /** Live menus only (the sample menus lack them): the exact diet class (fish stays fish) and the allergen ids. */
   dietTag?: 'vegan' | 'vegetarian' | 'meat' | 'fish';
   allergenIds?: string[];
+  traceAllergens?: string[];
+  dietConflict?: boolean;
+  sourceUrls?: string[];
   /** Set when the price is not for a plate, e.g. '100 g' at by-weight buffets (priceUnits.ts). */
   priceUnit?: string;
   services?: Service[];
@@ -63,15 +67,21 @@ export function prepareMenu<T extends MenuItem>(menu: T[], mensa: Mensa | undefi
     if (seen.has(item.id)) continue;
     seen.add(item.id);
     const name = dishName(item.name, 'upper');
-    const description = item.description.replace(/\s*\|\s*/g, ' ').replace(/\s+/g, ' ').trim();
+    const sourceUrls: string[] = [];
+    const description = item.description.replace(/\bSource:\s*(https?:\/\/[^\s|]+)/gi, (_, url: string) => {
+      try { const parsed = new URL(url.replace(/[,.;]+$/, '')); if (['http:', 'https:'].includes(parsed.protocol)) sourceUrls.push(parsed.href); } catch { /* invalid source */ }
+      return '';
+    }).replace(/\s*\|\s*/g, ' ').replace(/\s+/g, ' ').trim().replace(/[,|]+$/, '').trim();
+    const display = item as T & DisplayMenuItem;
+    const dietConflict = hasDietConflict(display.dietTag ?? item.dietary, [...(display.allergenIds ?? []), ...(item.allergens ?? [])]);
     // Merge only identical published offerings; different prices, ingredients or diets stay separate.
     const key = JSON.stringify([name, description, item.priceStudent, item.priceWorker, item.priceExternal,
-      item.dietary, [...(item.allergens ?? [])].sort(), item.kcal, item.proteinG, (item as DisplayMenuItem).priceUnit,
+      item.dietary, [...(item.allergens ?? [])].sort(), [...(display.traceAllergens ?? [])].sort(), sourceUrls, item.kcal, item.proteinG, (item as DisplayMenuItem).priceUnit,
       (item as DisplayMenuItem).dietTag, item.service ? 'known-service' : 'unknown-service']);
     const existing = offerings.get(key);
     if (existing) {
       if (item.service && !existing.services!.includes(item.service)) existing.services!.push(item.service);
-    } else offerings.set(key, { ...item, name, description, services: item.service ? [item.service] : [],
+    } else offerings.set(key, { ...item, name, description, sourceUrls, dietConflict, services: item.service ? [item.service] : [],
       cuisine: cuisineForDish(item.id, name, description) });
   }
   return [...offerings.values()].map(item => ({

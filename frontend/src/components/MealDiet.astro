@@ -1,0 +1,9 @@
+---
+import type { DisplayMenuItem } from '../data/menu-display';
+interface Props { item: DisplayMenuItem; compact?: boolean }
+const { item, compact = false } = Astro.props;
+---
+{item.dietConflict
+  ? <span class="diet-conflict" data-i18n="dietConflict">Diet label conflicts with listed allergens. Check with the canteen.</span>
+  : <span class={`${compact ? 'diet' : 'menu-diet'} diet-${item.dietary}`} data-i18n={`diet_${item.dietary}`}>{item.dietary}</span>}
+<style>.diet-conflict{display:block;margin-top:7px;color:var(--ink);font-size:12px;line-height:1.5;font-weight:600}</style>

@@ -1,0 +1,58 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import '../route-planner/styles.css';
+---
+<BaseLayout title="Meal route planner">
+  <div class="planner-heading"><a href="/">← Cafeterias</a></div>
+  <section class="planner-intro">
+    <p class="eyebrow">A good meal on the way <span class="beta-badge">Beta</span></p>
+    <h1>Make room for lunch.</h1>
+    <p>Plan a journey by public transport or on foot, with a full meal break before you arrive.</p>
+  </section>
+  <div class="planner-layout">
+    <section class="planner-panel" aria-labelledby="trip-title">
+      <h2 id="trip-title">Your journey</h2>
+      <p id="planner-readiness" role="status">Checking route planner connection…</p>
+      <form id="route-form">
+        <label for="openai-key">Your OpenAI API key</label>
+        <input id="openai-key" type="password" autocomplete="off" spellcheck="false" required maxlength="256" placeholder="sk-…" />
+        <p class="field-note">Kept in this form until you clear it or reload the page. Never saved to browser storage or the app database.</p>
+        <label for="origin">Starting point</label>
+        <div class="location-row"><input id="origin" required maxlength="200" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="origin-suggestions" aria-describedby="origin-location-status" placeholder="Address or place, e.g. Zürich HB" /><button type="button" id="use-location">Use my location</button></div>
+        <div id="origin-suggestions" class="location-suggestions" role="listbox" aria-label="Starting point suggestions" hidden></div>
+        <p id="origin-location-status" class="field-note" role="status"></p>
+        <label for="destination">Destination</label>
+        <input id="destination" required maxlength="200" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="destination-suggestions" aria-describedby="destination-location-status" placeholder="e.g. ETH Zürich, Rämistrasse 101" />
+        <div id="destination-suggestions" class="location-suggestions" role="listbox" aria-label="Destination suggestions" hidden></div>
+        <p id="destination-location-status" class="field-note" role="status"></p>
+        <p class="field-note" id="time-zone"></p>
+        <fieldset class="travel-modes"><legend>Travel by</legend><button type="button" data-mode="WALK" aria-pressed="false">🚶 Walk</button><button type="button" data-mode="TRANSIT" aria-pressed="true">🚆 Public transport</button></fieldset>
+        <div class="time-row">
+          <div class="journey-datetime"><label for="departure">Leave at</label><div class="date-fields"><div class="date-picker"><input id="departure" type="text" required placeholder="DD.MM.YYYY" maxlength="10" inputmode="numeric" aria-label="Departure date" /><button id="departure-calendar-toggle" type="button" class="calendar-toggle" aria-label="Choose departure date" aria-expanded="false" aria-controls="departure-calendar">▦</button><div id="departure-calendar" class="calendar-popup" role="group" aria-label="Departure calendar" hidden></div></div><input id="departure-time" type="time" required aria-label="Departure time" /></div></div>
+          <div class="journey-datetime"><label for="arrival">Arrive by</label><div class="date-fields"><div class="date-picker"><input id="arrival" type="text" required placeholder="DD.MM.YYYY" maxlength="10" inputmode="numeric" aria-label="Arrival date" /><button id="arrival-calendar-toggle" type="button" class="calendar-toggle" aria-label="Choose arrival date" aria-expanded="false" aria-controls="arrival-calendar">▦</button><div id="arrival-calendar" class="calendar-popup" role="group" aria-label="Arrival calendar" hidden></div></div><input id="arrival-time" type="time" required aria-label="Arrival time" /></div></div>
+        </div>
+        <fieldset class="meal-range"><legend>Time to eat</legend>
+          <output id="meal-range-label" for="meal-minutes meal-max-minutes" aria-live="polite">45 min – 1 hour</output>
+          <div class="meal-slider" id="meal-slider"><div class="meal-slider-track" aria-hidden="true"></div>
+            <input id="meal-minutes" type="range" min="5" max="120" step="5" value="45" aria-label="Minimum meal time" />
+            <input id="meal-max-minutes" type="range" min="5" max="120" step="5" value="60" aria-label="Maximum meal time" />
+          </div><div class="meal-range-scale" aria-hidden="true"><span>5 min</span><span>2 hours</span></div>
+        </fieldset>
+        <button id="plan-button" class="plan-button" type="submit" disabled>Find my meal stop <span aria-hidden="true">→</span></button>
+      </form>
+      <p id="planner-status" role="status" aria-live="polite"></p>
+    </section>
+    <section class="planner-results" aria-labelledby="result-title" aria-busy="false">
+      <div id="route-map-panel">
+        <div class="map-heading"><h2>Your route</h2><span id="route-map-selection" aria-live="polite">Routes will appear here after planning.</span></div>
+        <div id="route-map" aria-label="Interactive Google map of your journey and meal stops"></div>
+        <p id="route-map-status" role="status">Loading map…</p>
+        <div class="map-legend"><span><i class="outbound"></i> To meal stop</span><span><i class="onward"></i> To destination</span><span><i class="alternative"></i> Other routes</span><span>Dashed: public transport · Solid: walking</span></div>
+        <div id="route-map-options" aria-label="Choose a route option"></div>
+      </div>
+      <h2 id="result-title">Your options</h2>
+      <div id="route-results"><div class="empty-result"><span aria-hidden="true">↗</span><h3>A little time for a good meal.</h3><p>Enter your journey to see meal stops, walking and transit directions, and how much time you’ll have before arrival.</p></div></div>
+    </section>
+  </div>
+  <script>import '../route-planner/main';</script>
+</BaseLayout>

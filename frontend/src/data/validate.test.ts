@@ -11,6 +11,13 @@ test('F08: a correct meal passes unchanged', () => {
   assert.deepEqual(parseMeal(good()), good());
 });
 
+test('trace allergens survive validation separately, with malformed entries removed', () => {
+  const entry = good();
+  const parsed = parseMeal({ ...entry, meal: { ...entry.meal, traceAllergens: ['Glutenhaltiges Getreide', 'Sellerie', null, 7] } });
+  assert.deepEqual(parsed?.meal.traceAllergens, ['Glutenhaltiges Getreide', 'Sellerie']);
+  assert.deepEqual(parsed?.meal.allergens, ['gluten', 'eggs']);
+});
+
 test('F08: unusable prices become unknown, never 0 or NaN', () => {
   for (const bad of ['8.50', 'n/a', NaN, Infinity, -1, 0, 1_000_000, null, undefined, {}, [], true]) {
     assert.equal(price(bad), null, String(bad));

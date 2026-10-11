@@ -73,6 +73,11 @@ export function selectableMenuDays(today: string, menuDate: string, dataTo: stri
   return [...days].sort();
 }
 
+/** The shown menu day and the next two available days; full dated routes remain available. */
+export function visibleMenuDays(days: readonly string[], menuDate: string): string[] {
+  return [...new Set([...days, menuDate])].filter(day => isIsoDate(day) && day >= menuDate).sort().slice(0, 3);
+}
+
 /**
  * Where to send a visitor who asked for `date` (a link, a bookmark) when there is no page for it, e.g. a weekend:
  * the next day that has menus, else the last one before. Null when the date is not a real date or no day exists.

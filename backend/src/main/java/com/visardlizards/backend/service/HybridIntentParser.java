@@ -83,10 +83,16 @@ public class HybridIntentParser {
 
     public SearchCriteria parse(String query, String activeMensaId, String activeCampusId, String priceColumn,
             String appLanguage) {
+        return parse(query, activeMensaId, activeCampusId, priceColumn, appLanguage, null);
+    }
+
+    /** {@code today} overrides the server date, so a simulated app day resolves "today" and "tomorrow". */
+    public SearchCriteria parse(String query, String activeMensaId, String activeCampusId, String priceColumn,
+            String appLanguage, LocalDate today) {
         if (query == null || query.isBlank()) return new SearchCriteria(null, false, null, null);
         if (apiKey == null || apiKey.isBlank())
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "OpenAI intent parser is not configured");
-        RealtimePrompt prompt = realtimePrompt(activeMensaId, activeCampusId, priceColumn, appLanguage);
+        RealtimePrompt prompt = realtimePrompt(activeMensaId, activeCampusId, priceColumn, appLanguage, today);
         Map<String, Object> body = Map.of("model", model, "store", false,
                 "instructions", prompt.instructions(), "input", query,
                 "text", Map.of("format", Map.of("type", "json_schema", "name", "meal_search_criteria",
@@ -118,6 +124,11 @@ public class HybridIntentParser {
 
     public RealtimePrompt realtimePrompt(String activeMensaId, String activeCampusId, String priceColumn,
             String appLanguage) {
+        return realtimePrompt(activeMensaId, activeCampusId, priceColumn, appLanguage, null);
+    }
+
+    public RealtimePrompt realtimePrompt(String activeMensaId, String activeCampusId, String priceColumn,
+            String appLanguage, LocalDate today) {
         List<String> diets = repository.values("dietTag");
         List<String> kinds = repository.values("kind");
         List<String> services = repository.values("service");
@@ -126,7 +137,7 @@ public class HybridIntentParser {
         List<String> allergens = repository.allergenValues();
         Map<String, String> venueNames = repository.mensaNames();
         String instructions = SYSTEM_PROMPT.formatted(diets, kinds, services, mensas, campuses,
-                venueNames, allergens, LocalDate.now(clock), priceColumn,
+                venueNames, allergens, today != null ? today : LocalDate.now(clock), priceColumn,
                 activeMensaId == null ? "none" : activeMensaId,
                 activeCampusId == null ? "none" : activeCampusId,
                 "de".equalsIgnoreCase(appLanguage) ? "German" : "English");

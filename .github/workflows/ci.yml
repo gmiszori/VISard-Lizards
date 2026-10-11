@@ -28,7 +28,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: docker compose config --quiet
-      - run: docker compose up --build -d backend meal-scraper frontend
+      - run: docker compose run --rm backend-data-init
+      - run: docker compose up --build -d --no-deps backend meal-scraper frontend
       - name: Verify real MCP tools and private backend connection
         run: |
           # The scraper needs a few seconds to start listening after "up -d"; retry like the backend check below.
@@ -67,6 +68,21 @@ jobs:
         run: docker compose logs --tail=100 backend meal-scraper frontend
       - if: always()
         run: docker compose down
+
+  osm-data:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: meal-scraper/osm-data
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.13.0'
+          cache: npm
+          cache-dependency-path: meal-scraper/osm-data/package-lock.json
+      - run: npm ci
+      - run: npm test
 
   backend:
     runs-on: ubuntu-latest

@@ -9,6 +9,14 @@ import { API_URL, ApiError, createRealtimeVoiceSession, getMensas, searchHybridM
 import { distanceM } from '../location/locate';
 import { matchesMeal, readStarredMeals } from '../meals/stars';
 import { RealtimeVoiceConnection, type RealtimeVoiceStatus } from '../search/realtime';
+import { readProfileSettings } from '../onboarding/profileSettings';
+import { backendMealConstraints, matchesMenuExclusions } from '../preferences/menuConstraints';
+import { hasDietConflict, normalizeAllergens } from '../data/allergens';
+import { appNow, zurichParts } from '../time/clock';
+import type { ConstraintMeal } from '../onboarding/constraints';
+function savedExclusions() {
+  try { return readProfileSettings().hard ?? []; } catch { return []; }
+}
 let aiMatchedIds: Set<string> | null = null;
 let aiMatchedMealIds: Set<string> | null = null;
 let aiQuery = '';
@@ -109,9 +117,17 @@ function showHybridResults(response: HybridMealSearchResponse | null) {
 }
 
 function visibleHybridResults(response: HybridMealSearchResponse) {
-  return preferences.priceTier === 'student'
-    ? response.results.filter(result => result.mensaId !== 'dozentenfoyer')
-    : response.results;
+  const hard = savedExclusions();
+  const excludedAllergens = normalizeAllergens(response.criteria.hardFilters.excludeAllergens);
+  const plantBasedRequest = !preferences.meat || ['vegan', 'vegetarian'].includes(response.criteria.hardFilters.dietTag?.toLowerCase() ?? '');
+  return response.results.filter(result => {
+    const diet = result.meal.classification[0];
+    const category = diet === 'vegan' || diet === 'vegetarian' ? diet : 'meat';
+    return !(preferences.priceTier === 'student' && result.mensaId === 'dozentenfoyer')
+      && preferences[category] && (!plantBasedRequest || !hasDietConflict(diet, result.meal.allergens))
+      && !normalizeAllergens([...result.meal.allergens, ...(result.meal.traceAllergens ?? [])]).some(id => excludedAllergens.includes(id))
+      && matchesMenuExclusions(backendMealConstraints(result.meal), hard);
+  });
 }
 
 function displayHybridResponse(response: HybridMealSearchResponse, query: string, fromRealtime = false) {
@@ -241,6 +257,7 @@ function applyPreferences() {
   const search = createSearch(query);
   // Lunch / dinner choice of the day picker (components/DayPicker.astro); unset shows both.
   const service = document.documentElement.dataset.serviceFilter;
+  const hard = savedExclusions();
   document.querySelectorAll<HTMLElement>('[data-diet]').forEach((meal) => {
     const diet = meal.dataset.diet as keyof Pick<Preferences, 'vegan' | 'vegetarian' | 'meat'>;
     const card = meal.closest<HTMLElement>('[data-canteen-card]');
@@ -248,7 +265,11 @@ function applyPreferences() {
     const groupService = meal.closest<HTMLElement>('[data-meal-group]')?.dataset.service;
     const otherService = effectiveService === 'closed' || (!!effectiveService && !!groupService && !groupService.split(' ').includes(effectiveService));
     const isAiMatch = aiResultsActive && aiMatchedMealIds?.has(meal.dataset.mealId ?? '');
-    meal.hidden = !preferences[diet] || otherService
+    let excluded = false;
+    try {
+      if (meal.dataset.mealConstraints) excluded = !matchesMenuExclusions(JSON.parse(meal.dataset.mealConstraints) as ConstraintMeal, hard);
+    } catch { excluded = hard.length > 0; }
+    meal.hidden = !preferences[diet] || otherService || excluded || (!preferences.meat && meal.dataset.dietConflict === 'true')
       || (aiResultsActive ? !isAiMatch : !!(useTextQuery && card && !search.test(searchTextOf(meal, card), meal.dataset.diet)));
   });
 
@@ -452,6 +473,7 @@ document.querySelector<HTMLInputElement>('#search-input')?.addEventListener('inp
         // GPS gives us context for explicit "here" requests; it must not narrow every voice query.
         mensaId,
         date,
+        today: zurichParts(appNow()).date,
         userLat: userCoords?.lat ?? null,
         userLng: userCoords?.lng ?? null,
         campusId,
@@ -570,6 +592,7 @@ voiceSearchButton?.addEventListener('click', () => {
               campusId: activeCampusFilter(),
               campusIds: activeCampusScope(),
               date: explicitDate ? null : document.querySelector<HTMLElement>('[data-day-picker]')?.dataset.pickerDate ?? null,
+              today: zurichParts(appNow()).date,
               userLat: userCoords?.lat ?? null,
               userLng: userCoords?.lng ?? null,
               priceCategory: priceCategory(),
@@ -614,8 +637,11 @@ voiceSearchButton?.addEventListener('click', () => {
               isFavouriteVenue: venue?.isFavourite ?? false,
             };
           });
+          const now = zurichParts(appNow());
           return {
             userRequest: query,
+            // The app's clock (simulated in dev mode) decides "today" and "open now", not the model's.
+            currentZurichTime: { date: now.date, weekday: now.weekday, time: now.time },
             appliedCriteria: response.criteria,
             totalMealMatches: response.totalMatches,
             mealOptions,
@@ -637,6 +663,7 @@ voiceSearchButton?.addEventListener('click', () => {
           activeCampusId,
           priceCategory: priceCategory(),
           appLanguage: document.documentElement.lang === 'de' ? 'de' : 'en',
+          now: (({ date, time }) => `${date}T${time}`)(zurichParts(appNow())),
         }, API_URL);
         const connection = await RealtimeVoiceConnection.connect(session.clientSecret, session.instructions, callbacks);
         realtimeVoice = connection;
@@ -794,7 +821,7 @@ function showSavedState(success = true) {
 }
 
 window.addEventListener('storage', event => {
-  if (event.key === PREFERENCES_KEY || event.key === 'campuseats-profile' || event.key === null) {
+  if (event.key === PREFERENCES_KEY || ['campuseats-profile', 'campuseats-profile-overrides', 'campuseats-onboarding'].includes(event.key ?? '') || event.key === null) {
     try { preferences = readPreferences(); applyPreferences(); } catch { /* Keep the current working preferences. */ }
   }
 });

@@ -1,3 +1,4 @@
 modules:
   - connector
+  - route-server
   - server

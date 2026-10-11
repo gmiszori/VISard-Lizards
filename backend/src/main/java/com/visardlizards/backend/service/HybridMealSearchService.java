@@ -60,7 +60,7 @@ public class HybridMealSearchService {
         };
         SearchCriteria criteria = request.criteria() == null
                 ? parser.parse(request.query(), request.mensaId(), request.campusId(), priceColumn,
-                        request.appLanguage())
+                        request.appLanguage(), request.today())
                 : parser.normalizeRealtimeCriteria(request.criteria(), request.mensaId());
         if (request.criteria() != null) validateRealtimeCriteria(criteria);
         return searchWithCriteria(request, criteria);
@@ -96,7 +96,8 @@ public class HybridMealSearchService {
         if (requestedDate != null && filterDate != null && !requestedDate.equals(filterDate))
             return new HybridMealSearchResponse(criteria, 0, List.of());
         LocalDate date = filterDate != null ? filterDate
-                : requestedDate != null ? requestedDate : mensaService.getMenuDate(LocalDate.now(clock));
+                : requestedDate != null ? requestedDate : mensaService.getMenuDate(
+                        request.today() != null ? request.today() : LocalDate.now(clock));
         List<String> requestedCampusIds = request.campusIds();
         List<MealEntity> candidates = repository.candidates(date,
                 criteria.isLocationScoped() ? request.mensaId() : null,
@@ -179,7 +180,7 @@ public class HybridMealSearchService {
                 ? null : new Price(e.getPriceStudent(), e.getPriceStaff(), e.getPriceExternal());
         return new Meal(e.getId(), e.getMensaId(), e.getDate(), e.getService(), e.getLine(), e.getKind(),
                 e.getTitle(), List.copyOf(e.getComponents()), e.getDietTag(), price,
-                List.copyOf(e.getAllergens()), e.getEcoScore(), e.getClimateImpact());
+                List.copyOf(e.getAllergens()), e.getEcoScore(), e.getClimateImpact(), List.copyOf(e.getTraceAllergens()));
     }
 
     private record Ranked(MealEntity meal, Mensa venue, Double similarity, Double distanceM, BigDecimal price,

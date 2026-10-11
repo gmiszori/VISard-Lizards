@@ -1,0 +1,15 @@
+FROM eclipse-temurin:25-jdk AS build
+WORKDIR /build
+RUN apt-get update && apt-get install -y --no-install-recommends curl unzip ca-certificates && rm -rf /var/lib/apt/lists/*
+ENV KOTLIN_CLI_JAVA_HOME=/opt/java/openjdk
+COPY . .
+RUN sed -i 's/\r$//' kotlin && sh ./kotlin package -m route-server -p jvm -f executable-jar
+
+FROM eclipse-temurin:25-jre
+WORKDIR /app
+RUN useradd --system --uid 10003 --create-home router
+COPY --from=build /build/build/tasks/_route-server_executableJarJvm/route-server-jvm-executable.jar /app/route-server.jar
+ENV ROUTE_CONNECTOR_HOST=0.0.0.0 ROUTE_CONNECTOR_PORT=8092
+USER router
+EXPOSE 8092
+ENTRYPOINT ["java", "-jar", "/app/route-server.jar", "--http", "/app/route-server.jar"]

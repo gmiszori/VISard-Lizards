@@ -150,7 +150,7 @@ public class JpaMensaRepository implements MensaRepository {
 				: new Price(e.getPriceStudent(), e.getPriceStaff(), e.getPriceExternal());
 		return new Meal(e.getId(), e.getMensaId(), e.getDate(), e.getService(), e.getLine(), e.getKind(), e.getTitle(),
 				List.copyOf(e.getComponents()), e.getDietTag(), price, List.copyOf(e.getAllergens()), e.getEcoScore(),
-				e.getClimateImpact());
+				e.getClimateImpact(), List.copyOf(e.getTraceAllergens()));
 	}
 
 }
