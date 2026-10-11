@@ -1,8 +1,13 @@
 package com.visardlizards.backend.service;
 
 import java.net.http.HttpClient;
+import java.time.Clock;
 import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -30,8 +35,11 @@ public class OpenAiRealtimeSessionService {
     private final HybridMealRepository repository;
     private final String apiKey;
     private final String model;
+    private final Clock clock;
+    private static final ZoneId ZURICH = ZoneId.of("Europe/Zurich");
+    private static final DateTimeFormatter CURRENT = DateTimeFormatter.ofPattern("EEEE d MMMM yyyy, HH:mm", Locale.ENGLISH);
 
-    public OpenAiRealtimeSessionService(JsonMapper mapper, HybridMealRepository repository,
+    public OpenAiRealtimeSessionService(JsonMapper mapper, HybridMealRepository repository, Clock clock,
             @Value("${openai.api-key:}") String apiKey,
             @Value("${openai.realtime-model:gpt-realtime-2.1-mini}") String model) {
         var factory = new JdkClientHttpRequestFactory(HttpClient.newBuilder()
@@ -42,6 +50,7 @@ public class OpenAiRealtimeSessionService {
         this.repository = repository;
         this.apiKey = apiKey;
         this.model = model;
+        this.clock = clock;
     }
 
     public RealtimeVoiceSessionResponse create(RealtimeVoiceSessionRequest request) {
@@ -68,7 +77,10 @@ Operational constraints:
 - Style: Direct, natural spoken English or German. No filler words, greetings, status updates ("Let me check"), summaries, or unprompted follow-up offers.
 - Unclear input: If user speech is directed to you but unintelligible, reply only: "Sorry, I didn't understand." 
                 """ + "\nSelected app language: " + appLanguage
-                + ". Reply in this language, even when the user speaks the other supported language. Do not switch languages unless the app language changes.";
+                + ". Reply in this language, even when the user speaks the other supported language. Do not switch languages unless the app language changes."
+                + "\nCurrent date and time in Zurich: " + CURRENT.format(request.now() != null ? request.now()
+                        : LocalDateTime.now(clock.withZone(ZURICH)))
+                + ". Resolve \"today\", \"tomorrow\", weekdays and \"open now\" against this time, not your own clock.";
         String transcriptionPrompt = "ETH Zurich cafeteria vocabulary (English/German): ETH, Zürich, Zentrum, Hönggerberg, Irchel, "
                 + "Polysnack, Mensa, CHF, francs, Franken, vegan, vegetarian, chicken, Huhn, rice, Reis, Spring Rolls, "
                 + "Bulgur Bowl, Laksa Nudelsuppe.";
