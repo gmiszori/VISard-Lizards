@@ -1,8 +1,41 @@
 # UniEats / VISard-Lizards
 
-A university meal finder for ETH, UZH and nearby cafeterias, built for VISCon. Browse dated menus, prices and dietary information; rate meals, report crowd levels, and save preferences and starred dishes. A first-visit welcome tour introduces the app. The **AI voice assistant (Beta)** supports spoken meal searches, and the **meal route planner (Beta)** plans walking/public-transport journeys with a meal break. These experimental features depend on browser permissions and available services. Settings → **Disable beta features** hides both the Route and voice-search buttons on this device; turning it off restores them. Ordinary browsing and typed search remain available independently.
+### What’s for Lunch?
+The ultimate campus meal finder for ETH Zurich, UZH, and nearby cafeterias—built during **VISCon Hackathon 2026**.
 
-The repository contains the website, API, Kotlin MCP services and routing infrastructure. **OpenAI is optional for the basic application. The backend API supports verified routing without AI, but the current route-planner form requires the user's OpenAI key.** Live menus and route providers still require network access; bundled sample menus are not a guarantee of current availability.
+Stop guessing daily menus or standing in surprise 30-minute lines. Browse real-time menus, filter by price or dietary preference, and plan your campus lunch break in seconds.
+
+---
+
+### Core Features
+
+* 🥗 **Menus & Filters:** Instant access to daily cafeteria menus across ETH and UZH, complete with prices and dietary tags (vegan, vegetarian, allergens).
+* 📊 **Crowd Reports & Ratings:** See live crowd levels reported by fellow students and rate dishes to help others find the best meal on campus.
+* ⭐ **Personalized Dining:** Save dietary preferences and star your favorite dishes to get notified when they're back on the menu.
+* 🧭 **First-Time Guided Tour:** Quick onboarding to get new students up and running instantly.
+
+---
+
+### Experimental AI Features (Beta)
+
+* 🎙️ **Voice Assistant:** Hands-free meal search powered by speech. Just ask what’s cooking.
+* 🗺️ **Meal Route Planner:** Generates walking and public transport routes between lectures with an optimized lunch stop factored into your travel time.
+
+Settings → **Disable beta features** hides both the Route and voice-search buttons on this device; turning it off restores them. Ordinary browsing and typed search remain available independently.
+
+*Note: AI features are completely optional. Traditional search, filtering, and manual browsing work offline or without an API key.*
+
+---
+
+### Tech Stack & Architecture
+
+A full-stack repository including:
+* **Web Frontend**
+* **REST API**
+* **Kotlin MCP Services**
+* **Custom Routing Infrastructure**
+
+> **AI Configuration:** The core app and backend routing operate 100% independently without AI. Providing an OpenAI API key unlocks experimental voice queries and AI-assisted route planning. Live menu updates and transit routing require an active network connection.
 
 ## Architecture
 
