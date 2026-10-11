@@ -15,8 +15,8 @@
 /* Very narrow phones (320px) with long German labels: the settings link becomes a gear so the brand and
    the controls do not overlap. The text stays in the page for screen readers (font-size 0, not hidden). */
 @media (max-width: 350px) {
-  .site-header .settings-link { font-size: 0; min-width: 44px; padding-inline: 0; justify-content: center; }
-  .site-header .settings-link::before { content: "⚙"; font-size: 20px; line-height: 1; }
+  .site-header .settings-link:not(.route-link) { font-size: 0; min-width: 44px; padding-inline: 0; justify-content: center; }
+  .site-header .settings-link:not(.route-link)::before { content: "⚙"; font-size: 20px; line-height: 1; }
   .site-header .brand small { display: none; }
 }
 
