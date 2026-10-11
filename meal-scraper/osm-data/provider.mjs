@@ -168,7 +168,7 @@ export async function transitShape(journey,stops) {
 export async function transitLeg(connection, earliest, walking = walk, shape = transitShape) {
   const start = timeOf(connection.from, 'departure'), end = timeOf(connection.to, 'arrival');
   if (start < earliest || end < start) return null;
-  const paths = [], directions = []; let cursor = earliest, distance = 0;
+  const paths = [], directions = [], itinerary = []; let cursor = earliest, distance = 0;
   for (const section of connection.sections || []) {
     const a = stopPoint(section.departure), b = stopPoint(section.arrival);
     const depart = timeOf(section.departure, 'departure'), arrive = timeOf(section.arrival, 'arrival');
@@ -182,12 +182,22 @@ export async function transitLeg(connection, earliest, walking = walk, shape = t
         } catch { return []; }
       }), b];
       paths.push(await shape(section.journey,stops) || {polyline: encodePolyline(stops), geometryKind: 'stop_sequence'});
+      const category=String(section.journey.category||'').toUpperCase();
+      itinerary.push({mode: ['T','TRAM'].includes(category) ? 'TRAM' : ['B','BUS','NFB','BN'].includes(category) ? 'BUS' : 'TRAIN',
+        line: `${section.journey.category || ''} ${String(section.journey.number || section.journey.name || '').replace(/^0+(?=\d)/,'')}`.trim(),
+        direction: section.journey.to || '', from: section.departure.station.name, to: section.arrival.station.name,
+        departure: iso(depart), arrival: iso(arrive),
+        departurePlatform: section.departure.prognosis?.platform || section.departure.platform || '',
+        arrivalPlatform: section.arrival.prognosis?.platform || section.arrival.platform || ''});
       directions.push(`${clock(depart)}: ${section.journey.category || ''} ${section.journey.number || section.journey.name || ''} from ${section.departure.station.name} to ${section.arrival.station.name} (${clock(arrive)})`);
     } else if (section.walk) {
       const route = await walking(a, b);
       // Use the full wait before the next vehicle, rather than only the timetable walking estimate.
       // The next journey rejects a missed boarding; the final walk may extend the arrival.
-      cursor=Math.max(depart,cursor)+Math.ceil(route.duration)*1000;
+      const walkStart=Math.max(depart,cursor);
+      cursor=walkStart+Math.ceil(route.duration)*1000;
+      if(route.duration>0) itinerary.push({mode:'WALK', from:section.departure.station.name,to:section.arrival.station.name,
+        departure:iso(walkStart),arrival:iso(cursor),distanceMetres:Math.round(route.distance)});
       distance += Math.round(route.distance);
       paths.push({polyline: route.geometry, geometryKind: 'street_path'});
       directions.push(`${clock(depart)}: Walk to ${section.arrival.station.name} (${Math.ceil(route.duration / 60)} min)`);
@@ -197,8 +207,8 @@ export async function transitLeg(connection, earliest, walking = walk, shape = t
   if (!paths.length) return null;
   const geometry = paths.flatMap(p => decodePolyline(p.polyline));
   return {departure: iso(start), arrival: iso(Math.max(end,cursor)), distanceMetres: distance, directions,
-    provider: {mode: 'TRANSIT', polyline: encodePolyline(geometry), segments: paths, geometryKind: 'mixed', distanceScope:'walking_only',
-      warnings: [...(paths.some(p=>p.geometryKind==='stop_sequence') ? ['Dashed transit segments have no matched service path; they connect published stops only.'] : []),
+    provider: {mode: 'TRANSIT', itinerary, polyline: encodePolyline(geometry), segments: paths, geometryKind: 'mixed', distanceScope:'walking_only',
+      warnings: [...(paths.some(p=>p.geometryKind==='stop_sequence') ? ['Some transit sections have no matched service path; their geometry connects published stops only.'] : []),
         ...(paths.some(p=>p.geometryKind==='osm_transit_path') ? ['Transit paths follow matched OpenStreetMap service ways; diversions and platform tracks may differ.'] : []),
         ...(paths.some(p=>p.geometryKind==='osm_rail_corridor') ? ['Rail geometry follows an inferred OSM corridor through the published stations; the exact train track is not confirmed.'] : []),
         'Transit distance is not supplied.']}};

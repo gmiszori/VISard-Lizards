@@ -41,7 +41,7 @@ export class MealRouteMap {
         center: { lat: 47.3769, lng: 8.5417 }, zoom: 13, mapId: config.mapId || 'DEMO_MAP_ID',
         mapTypeControl: false, streetViewControl: false, fullscreenControl: true, gestureHandling: 'cooperative',
       });
-      this.message.textContent = 'Only the selected route is shown. Transit paths follow OSM service ways where available; dashed lines have no matched path.';
+      this.message.textContent = 'Dashed lines: public transport. Solid lines: walking. Transit paths are approximate; see journey details for unmatched sections.';
       if (this.userLocation) this.locate(this.userLocation);
       if (this.plan) this.draw();
     } catch (error) { this.message.textContent = error instanceof Error ? error.message : 'Map unavailable. Route planning still works below.'; }
@@ -113,12 +113,12 @@ export class MealRouteMap {
     if (!this.map || !this.plan) return;
     this.clearOverlays();
     const addLine = (leg: MappableLeg, index: number, part: number) => {
-      const segments = leg.provider?.segments ?? [{polyline: leg.provider?.polyline ?? '', geometryKind: 'street_path'}];
+      const segments = leg.provider?.segments ?? [{polyline: leg.provider?.polyline ?? '', geometryKind: leg.provider?.mode==='TRANSIT' ? 'stop_sequence' : 'street_path'}];
       for (const segment of segments) {
         const path = decodeRoute(segment.polyline); if (path.length < 2) continue;
         const line = new google.maps.Polyline({ map: this.map, path, clickable: true });
         line.addListener('click', () => { this.select(index); this.onSelect(index); });
-        this.lines.push({line, index, leg: part, dashed: segment.geometryKind === 'stop_sequence'});
+        this.lines.push({line, index, leg: part, dashed: ['stop_sequence','osm_transit_path','osm_rail_corridor'].includes(segment.geometryKind)});
       }
       return decodeRoute(leg.provider?.polyline);
     };

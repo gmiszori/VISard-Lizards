@@ -40,8 +40,14 @@ test('provider geometry round trips without invented vertices', () => {
 test('transit preserves schedules and labels stop geometry; impossible walking transfers rejected', async () => {
   const stop=(name,time,type) => ({station:{name,coordinate:{x:47.37,y:8.54}},[type]:time});
   const departure=stop('A','2026-10-12T09:00:00Z','departure'),arrival=stop('B','2026-10-12T09:10:00Z','arrival');
+  departure.platform='5';departure.prognosis={platform:'6'};arrival.platform='9';
   const connection={from:departure,to:arrival,sections:[{departure,arrival,journey:{category:'Tram',number:'6',passList:[]}}]};
   const leg=await transitLeg(connection,Date.parse('2026-10-12T08:59:00Z'),undefined,async()=>null);
+  assert.equal(leg.provider.itinerary[0].mode,'TRAM');
+  assert.equal(leg.provider.itinerary[0].from,'A');
+  assert.equal(leg.provider.itinerary[0].departurePlatform,'6','updated platform takes precedence over planned platform');
+  assert.equal(leg.provider.itinerary[0].arrivalPlatform,'9');
+  assert.equal(leg.provider.itinerary[0].arrival,'2026-10-12T09:10:00.000Z');
   assert.equal(leg.provider.segments[0].geometryKind,'stop_sequence');assert.equal(leg.provider.distanceScope,'walking_only');
   assert.equal(await transitLeg(connection,Date.parse('2026-10-12T09:01:00Z')),null);
   connection.sections[0]={departure,arrival,walk:{duration:600}};
@@ -78,6 +84,10 @@ test('walking transfers use waiting time before the next vehicle but reject miss
     {departure:board,arrival,journey:{category:'T',number:'50',passList:[]}}]};
   const walking=duration=>async()=>({duration,distance:400,geometry:encodePolyline([[47.37,8.54],[47.371,8.541]])});
   const leg=await transitLeg(connection,Date.parse(departure.departure),walking(267),async()=>null);
+  assert.equal(leg.provider.itinerary[0].mode,'WALK');
+  assert.equal(leg.provider.itinerary[0].arrival,'2026-10-12T10:04:27.000Z');
+  assert.equal(leg.provider.itinerary[1].mode,'TRAM');
+  assert.equal(leg.provider.itinerary[1].departure,'2026-10-12T10:09:00.000Z');
   assert.equal(leg.arrival,arrival.arrival.replace('Z','.000Z'));
   assert.equal(await transitLeg(connection,Date.parse(departure.departure),walking(541),async()=>null),null);
 });

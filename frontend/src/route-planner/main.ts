@@ -1,6 +1,7 @@
 import { getPositionFix } from '../location/geolocation';
 import { MealRouteMap, selectedOption } from './map';
 import { attachLocationSuggestions } from './locations';
+import { journeyTimeline, mealBreak, type JourneyLeg } from './journey';
 
 const form = document.querySelector<HTMLFormElement>('#route-form')!;
 const input = (id: string) => document.querySelector<HTMLInputElement>(`#${id}`)!;
@@ -47,7 +48,7 @@ document.querySelector('#use-location')!.addEventListener('click', async () => {
   }
   catch { if(originRevision === requestedRevision) status.textContent = 'Location unavailable. Please enter your starting point instead.'; }
 });
-type Leg = { departure: string; arrival: string; distanceMetres: number; directions: string[]; mapsUrl: string; provider?: { warnings?: string[]; polyline?: string } };
+type Leg = JourneyLeg;
 type Meal = { id: string; title: string; components: string[]; price?: { student?: number; staff?: number; external?: number } };
 type Place = { id: string; name: string; kind: string; sourceUrl: string; websiteUrl?: string; menuNote: string; hoursNote?: string; meals: Meal[]; attributions?: { provider: string; providerUri: string }[] };
 type Option = { place: Place; mealStart: string; mealEnd: string; arrival: string; spareMinutes: number; extraMinutes: number; outbound: Leg; onward: Leg };
@@ -60,12 +61,6 @@ function link(label: string, url: string) {
   catch { return element('span', label); }
   return anchor;
 }
-function legDetails(label: string, leg: Leg) {
-  const details = element('details'); details.append(element('summary', `${label}: ${time(leg.departure)} → ${time(leg.arrival)}`));
-  const list = element('ol'); leg.directions.forEach(step => list.append(element('li', step))); details.append(list);
-  for (const warning of leg.provider?.warnings ?? []) details.append(element('p', warning));
-  details.append(link('Open route provider ↗', leg.mapsUrl)); return details;
-}
 function render(plan: Plan, explanation: string) {
   results.replaceChildren(); results.append(element('p', explanation));
   results.append(element('p', `${plan.checkedStops} stops checked · Direct route arrival ${time(plan.baseline.arrival)} · ${plan.mealMinutes}-minute meal break`));
@@ -77,17 +72,22 @@ function render(plan: Plan, explanation: string) {
     card.append(element('p', index === 0 ? 'Earliest verified arrival' : 'Another option'), element('h3', option.place.name));
     card.append(element('p', `Eat ${time(option.mealStart)}–${time(option.mealEnd)}. Arrive ${time(option.arrival)}, ${option.spareMinutes} minutes before your deadline.`));
     card.append(element('p', `${option.extraMinutes} extra minutes compared with the direct journey, including your meal and waiting.`));
+    card.append(journeyTimeline('To your meal stop',option.outbound,input('origin').value,option.place.name),
+      mealBreak(option.mealStart,option.mealEnd,option.place.name),
+      journeyTimeline('To your destination',option.onward,option.place.name,input('destination').value));
+    const menu=element('details');menu.className='venue-details';menu.append(element('summary','Meals and venue information'));
     option.place.meals.forEach(meal => {
       const prices = Object.entries(meal.price ?? {}).filter(([, price]) => price != null).map(([group, price]) => `${group}: CHF ${price}`).join(' · ');
-      card.append(element('p', `${meal.title}${meal.components.length ? ' — ' + meal.components.join(', ') : ''}${prices ? ' · ' + prices : ''}`));
+      menu.append(element('p', `${meal.title}${meal.components.length ? ' — ' + meal.components.join(', ') : ''}${prices ? ' · ' + prices : ''}`));
     });
-    card.append(element('p', option.place.menuNote));
-    if (option.place.hoursNote) card.append(element('p', option.place.hoursNote));
-    if (option.place.sourceUrl) card.append(link('Source ↗', option.place.sourceUrl));
-    if (option.place.websiteUrl) card.append(element('span', ' · '), link('Restaurant website ↗', option.place.websiteUrl));
-    for (const attribution of option.place.attributions ?? []) card.append(element('p', attribution.provider), link('Data source', attribution.providerUri));
-    card.append(legDetails('To your meal stop', option.outbound), legDetails('To your destination', option.onward)); results.append(card);
+    menu.append(element('p', option.place.menuNote));
+    if (option.place.hoursNote) menu.append(element('p', option.place.hoursNote));
+    if (option.place.sourceUrl) menu.append(link('Source ↗', option.place.sourceUrl));
+    if (option.place.websiteUrl) menu.append(element('span', ' · '), link('Restaurant website ↗', option.place.websiteUrl));
+    for (const attribution of option.place.attributions ?? []) menu.append(element('p', attribution.provider), link('Data source', attribution.providerUri));
+    card.append(menu); results.append(card);
   });
+  if(!plan.options.length) results.append(journeyTimeline('To your destination',plan.baseline,input('origin').value,input('destination').value));
   const warnings = element('ul'); plan.warnings.forEach(warning => warnings.append(element('li', warning))); results.append(warnings);
   results.append(element('p', 'OpenStreetMap contributors. Walking: FOSSGIS/OSRM. Transit: transport.opendata.ch. Cafeteria menus: UniEats database.'));
   const raw = element('details'); raw.append(element('summary', 'View MCP tool result'), element('pre', JSON.stringify(plan, null, 2))); results.append(raw);
