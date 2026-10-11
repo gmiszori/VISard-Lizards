@@ -8,6 +8,10 @@ import java.time.*
 class OpenRouteException(val code: String, message: String) : IllegalStateException(message)
 /** Kotlin MCP remains the authority; the private JS adapter uses osm-api-js read-only. */
 class OpenStreetMaps : MapProvider {
+    fun locations(query: String): JsonObject {
+        require(query.length in 3..200) { "Enter between 3 and 200 characters." }
+        return post("/locations", buildJsonObject { put("query", query) })
+    }
     private val http = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build()
     private val base = (System.getenv("OSM_DATA_URL") ?: "http://127.0.0.1:8093").trimEnd('/')
     private val token = System.getenv("ROUTE_CONNECTOR_TOKEN").orEmpty()

@@ -22,6 +22,18 @@ class RoutePlannerServiceTests {
     private final Clock clock=Clock.fixed(Instant.parse("2026-10-10T20:00:00Z"),ZoneOffset.UTC);
     private Trip trip() { return new Trip("Zürich HB","ETH Zentrum",Instant.parse("2026-10-12T09:00:00Z"),Instant.parse("2026-10-12T12:00:00Z"),60); }
     private RoutePlannerService service(RestClient client) { return new RoutePlannerService(mapper,repository,clock,"http://router","connector-secret-123","gpt-6-astra",client); }
+    @Test void locationSuggestionsRelayWithoutOpenAiAndValidateBeforeNetwork() {
+        var builder=RestClient.builder();var server=MockRestServiceServer.bindTo(builder).build();var service=service(builder.build());
+        assertTrue(service.locations("ab").path("locations").isEmpty());
+        assertThrows(ResponseStatusException.class,()->service.locations("x".repeat(201)));
+        server.expect(requestTo("http://router/api/locations"))
+            .andExpect(header("Authorization","Bearer connector-secret-123"))
+            .andExpect(headerDoesNotExist("X-OpenAI-Key"))
+            .andExpect(jsonPath("$.query").value("Zürich"))
+            .andRespond(withSuccess("{\"locations\":[{\"label\":\"Zürich HB\",\"latitude\":47.378,\"longitude\":8.54}]}",MediaType.APPLICATION_JSON));
+        assertEquals(47.378,service.locations(" Zürich ").path("locations").get(0).path("latitude").asDouble());
+        server.verify();verifyNoInteractions(repository);
+    }
     @Test void rejectsMissingKeyPastAndCrossDateTripsBeforeAnyNetworkCall() {
         var builder=RestClient.builder(); var server=MockRestServiceServer.bindTo(builder).build(); var service=service(builder.build());
         assertThrows(ResponseStatusException.class,()->service.plan(trip(),"bad\nkey"));

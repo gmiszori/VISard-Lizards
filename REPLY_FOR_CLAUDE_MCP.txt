@@ -156,3 +156,10 @@ Verified private OSRM image v5.27.1 with real extract/partition/customize pipeli
 - map-config exposes only GOOGLE_MAPS_BROWSER_KEY, never the server Maps key; Compose forwards the existing browser key for the preview. Privacy text/config docs updated.
 - Focused Java service/config tests (10), frontend map/geometry tests (4), frontend build and Astro check pass (0 errors; three existing hints). Docker preview rebuilt.
 - Browser verification: Google map renders route polylines and four clickable meal stops; planning completed in nine seconds with dummy-key fallback and the password input retained. All-options control switches correctly.
+
+2026-10-11 - Codex: location suggestions on codex/meal-route-planner.
+- Both route fields offer Swiss transport location matches after 3 characters and 500ms debounce. Click or arrow keys + Enter to select; Escape closes.
+- Visible place names are retained while exact selected coordinates are submitted. Editing invalidates the selection; current-location input clears any prior selection. No Google Places/geocoding or OpenAI calls for suggestions.
+- Backend GET /api/route-planner/locations relays through authenticated Kotlin HTTP connector to Node /locations. Bounded 24h provider cache, shared pacing and cooldown are reused; at most 8 distinct valid named results, no refine entries.
+- Tests: frontend 5, Node 12, Java service/config 11 pass; Astro check 0 errors and three preexisting hints. Kotlin connector compiles in Docker. Live suggestions verified for Zurich HB and ETH Zentrum, including keyboard selection and click selection.
+- Browser E2E: selected Zurich HB by keyboard and ETH address by click, then planned via exact coordinates successfully in 13 seconds with four meal stops (dummy OpenAI key fallback). Corrected suggestion contrast in dark mode during visual review.

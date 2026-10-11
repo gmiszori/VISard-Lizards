@@ -88,6 +88,27 @@ async function locate(value) {
     return Object.assign(point([hit.coordinate.x, hit.coordinate.y]), {label:hit.name});
   });
 }
+export function locationSuggestions(stations) {
+  const unique = new Map();
+  for (const hit of stations || []) {
+    if (hit.type === 'refine' || typeof hit.name !== 'string' || !hit.name.trim()) continue;
+    const lat = hit.coordinate?.x, lng = hit.coordinate?.y;
+    if (!Number.isFinite(lat) || !Number.isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) continue;
+    const key = hit.name.trim().toLowerCase();
+    if (!unique.has(key)) unique.set(key, {label: hit.name, latitude: lat, longitude: lng, kind: hit.type || (hit.id ? 'station' : 'place')});
+  }
+  return [...unique.values()].slice(0, 8);
+}
+export async function suggestLocations(input) {
+  const value = input.query;
+  if (typeof value !== 'string' || value.length > 200) throw new Error('Invalid location query.');
+  if (value.trim().length < 3) return {locations: []};
+  const lookup = locationQuery(value.trim());
+  return cached(`suggest:${lookup.query}:${lookup.type}`, 86400000, async () => {
+    const data = await request(`${transport}/locations?${query(lookup)}`);
+    return {locations: locationSuggestions(data.stations)};
+  });
+}
 export function encodePolyline(points) {
   let lat = 0, lng = 0, out = '';
   const encode = delta => { let v = delta < 0 ? ~(delta << 1) : delta << 1; let s = ''; while (v >= 32) { s += String.fromCharCode((32 | (v & 31)) + 63); v >>>= 5; } return s + String.fromCharCode(v + 63); };

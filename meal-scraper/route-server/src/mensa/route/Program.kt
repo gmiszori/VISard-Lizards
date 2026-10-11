@@ -119,6 +119,15 @@ private suspend fun bridge(jar: String) {
             respond(401, buildJsonObject { put("error", "Unauthorized") })
         } else if (exchange.requestURI.path == "/health" && exchange.requestMethod == "GET") {
             respond(if (child.isAlive) 200 else 503, buildJsonObject { put("ready", child.isAlive) })
+        } else if (exchange.requestURI.path == "/api/locations" && exchange.requestMethod == "POST") {
+            try {
+                val bytes = exchange.requestBody.use { it.readNBytes(2049) }
+                require(bytes.size <= 2048) { "Request too large." }
+                val query = json.parseToJsonElement(bytes.toString(Charsets.UTF_8)).jsonObject.text("query")
+                respond(200, OpenStreetMaps().locations(query))
+            } catch (ex: Exception) {
+                respond(503, buildJsonObject { put("error", "Location suggestions unavailable. Enter a full address or coordinates.") })
+            }
         } else if (toolName == null || exchange.requestMethod != "POST") {
             respond(404, buildJsonObject { put("error", "Not found") })
         } else if (!lock.tryAcquire()) {

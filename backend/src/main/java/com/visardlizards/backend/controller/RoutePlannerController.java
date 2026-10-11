@@ -35,4 +35,8 @@ public class RoutePlannerController {
                                         @Valid @RequestBody Trip trip) {
         return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(service.plan(trip, key));
     }
+    @GetMapping("/locations")
+    public ResponseEntity<JsonNode> locations(@RequestParam String query) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(service.locations(query));
+    }
 }

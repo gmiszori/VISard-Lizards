@@ -18,9 +18,13 @@ import '../route-planner/styles.css';
         <input id="openai-key" type="password" autocomplete="off" spellcheck="false" required maxlength="256" placeholder="sk-…" />
         <p class="field-note">Kept in this form until you clear it or reload the page. Never saved to browser storage or the app database.</p>
         <label for="origin">Starting point</label>
-        <div class="location-row"><input id="origin" required maxlength="200" placeholder="Address or place, e.g. Zürich HB" /><button type="button" id="use-location">Use my location</button></div>
+        <div class="location-row"><input id="origin" required maxlength="200" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="origin-suggestions" aria-describedby="origin-location-status" placeholder="Address or place, e.g. Zürich HB" /><button type="button" id="use-location">Use my location</button></div>
+        <div id="origin-suggestions" class="location-suggestions" role="listbox" aria-label="Starting point suggestions" hidden></div>
+        <p id="origin-location-status" class="field-note" role="status"></p>
         <label for="destination">Destination</label>
-        <input id="destination" required maxlength="200" placeholder="e.g. ETH Zürich, Rämistrasse 101" />
+        <input id="destination" required maxlength="200" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="destination-suggestions" aria-describedby="destination-location-status" placeholder="e.g. ETH Zürich, Rämistrasse 101" />
+        <div id="destination-suggestions" class="location-suggestions" role="listbox" aria-label="Destination suggestions" hidden></div>
+        <p id="destination-location-status" class="field-note" role="status"></p>
         <p class="field-note" id="time-zone"></p>
         <div class="time-row">
           <div><label for="departure">Leave at</label><input id="departure" type="datetime-local" required /></div>

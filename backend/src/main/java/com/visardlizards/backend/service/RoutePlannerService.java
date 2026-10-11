@@ -63,6 +63,15 @@ public class RoutePlannerService {
         if(token.length()>=16) try { ready=relay("/health",null).path("ready").asBoolean(); } catch(RuntimeException ignored) {}
         return mapper.createObjectNode().put("ready",ready).put("model",model).put("timeZone","Europe/Zurich");
     }
+    public JsonNode locations(String query) {
+        if(query.length()>200 || query.chars().anyMatch(Character::isISOControl))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Location query is invalid or too long.");
+        if(query.trim().length()<3) return mapper.createObjectNode().set("locations",mapper.createArrayNode());
+        try { return relay("/api/locations",mapper.createObjectNode().put("query",query.trim())); }
+        catch(RuntimeException exception) {
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,"Location suggestions unavailable. Enter a full address or coordinates.");
+        }
+    }
     void validate(Trip trip, String key) {
         if(key.length()>256 || key.chars().anyMatch(Character::isISOControl))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"The OpenAI key contains invalid characters or is too long.");

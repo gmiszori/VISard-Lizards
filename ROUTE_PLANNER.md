@@ -80,3 +80,7 @@ Public transport continues to use Swiss timetables. A full self-hosted transit e
 OpenAI key, model and rate/credit failures now return verified routes with specific AI warnings. A routing-provider failure remains an actual error when no route can be verified.
 
 Validation: official OSRM v5.27.1 container built and served both a synthetic pedestrian detour test and the full Switzerland graph. The preview now uses private OSRM; a direct Zurich request returned two walking alternatives.
+
+## Place suggestions
+
+Starting point and destination offer Swiss transport location matches after three characters and a 500 ms typing pause. Select with a click or Arrow Up/Down and Enter; Escape closes the list. Selected names remain visible, while routing submits the exact coordinates. Editing the name clears that selection. Suggestions require no OpenAI or Google Places key. `/api/route-planner/locations?query=...` relays through the authenticated Kotlin connector and private Node adapter; provider queries reuse the bounded 24-hour cache and pacing. Refine-only, duplicate and invalid-coordinate matches are omitted, with at most eight suggestions. If unavailable, full addresses or coordinates still work.

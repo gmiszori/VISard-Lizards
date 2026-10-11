@@ -1,8 +1,11 @@
 import { getPositionFix } from '../location/geolocation';
 import { MealRouteMap, selectedOption } from './map';
+import { attachLocationSuggestions } from './locations';
 
 const form = document.querySelector<HTMLFormElement>('#route-form')!;
 const input = (id: string) => document.querySelector<HTMLInputElement>(`#${id}`)!;
+const originLocation = attachLocationSuggestions(input('origin'));
+const destinationLocation = attachLocationSuggestions(input('destination'));
 const status = document.querySelector<HTMLElement>('#planner-status')!;
 const results = document.querySelector<HTMLElement>('#route-results')!;
 const button = document.querySelector<HTMLButtonElement>('#plan-button')!;
@@ -32,7 +35,7 @@ fetch('/api/route-planner/status', { cache: 'no-store' }).then(async response =>
 }).catch(() => { document.querySelector('#planner-readiness')!.textContent = 'Could not reach the route planner backend.'; });
 document.querySelector('#use-location')!.addEventListener('click', async () => {
   status.textContent = 'Requesting your location…';
-  try { const fix = await getPositionFix(); input('origin').value = `${fix.lat},${fix.lng}`; routeMap.locate(fix); status.textContent = 'Starting point set to your current location.'; }
+  try { const fix = await getPositionFix(); input('origin').value = `${fix.lat},${fix.lng}`; input('origin').dispatchEvent(new Event('input')); routeMap.locate(fix); status.textContent = 'Starting point set to your current location.'; }
   catch { status.textContent = 'Location unavailable. Please enter your starting point instead.'; }
 });
 type Leg = { departure: string; arrival: string; distanceMetres: number; directions: string[]; mapsUrl: string; provider?: { warnings?: string[]; polyline?: string } };
@@ -92,7 +95,7 @@ form.addEventListener('submit', async event => {
   status.textContent = 'Starting AI and MCP route planning…';
   try {
     const response = await fetch('/api/route-planner/plan', { method: 'POST', cache: 'no-store', signal: AbortSignal.timeout(300_000),
-      headers: { 'Content-Type': 'application/json', 'X-OpenAI-Key': key }, body: JSON.stringify({ origin: input('origin').value.trim(), destination: input('destination').value.trim(), departureTime: departure.toISOString(), arrivalTime: arrival.toISOString(), mealMinutes: Number(input('meal-minutes').value) }) });
+      headers: { 'Content-Type': 'application/json', 'X-OpenAI-Key': key }, body: JSON.stringify({ origin: originLocation.value(input('origin').value), destination: destinationLocation.value(input('destination').value), departureTime: departure.toISOString(), arrivalTime: arrival.toISOString(), mealMinutes: Number(input('meal-minutes').value) }) });
     const data = await response.json(); if (!response.ok) throw new Error(data.detail ?? 'Route planning failed. Check backend configuration.');
     render(data.plan, data.explanation); status.textContent = `Finished in ${Math.round((Date.now() - started) / 1000)} seconds.`;
     if(Array.isArray(data.toolCalls)) results.prepend(element('p', `AI tools used: ${data.toolCalls.map((call: {name: string}) => call.name).join(' → ')}`));
