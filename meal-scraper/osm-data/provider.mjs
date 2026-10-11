@@ -240,13 +240,15 @@ export async function transitLeg(connection, earliest, walking = walk, shape = t
         'Transit distance is not supplied.']}};
 }
 export async function options(input) {
+  const modes=input.modes ?? ['WALK','TRANSIT'];
+  if(!Array.isArray(modes) || !modes.length || modes.length>2 || modes.some(mode=>!['WALK','TRANSIT'].includes(mode))) throw new Error('Select walking or public transport.');
   const a = await locate(input.origin), b = await locate(input.destination), start = stamp(input.departureTime);
   let providerFailure;
   const results = [], warnings = [`Locations resolved as: ${a.label || a.join(',')} → ${b.label || b.join(',')}. Check these match your intended trip.`];
-  try {
+  if(modes.includes('WALK')) try {
     for (const route of await walkingRoutes(a,b)) results.push(walkingLeg(route,start));
   } catch(error) { providerFailure=error;warnings.push('Walking routing is unavailable for this leg.'); }
-  try {
+  if(modes.includes('TRANSIT')) try {
     const [date, time] = local(start);
     const data = await cached(`transit:${a}:${b}:${date}:${time}`, 30000, () => request(`${transport}/connections?${query({from:a.join(','),to:b.join(','),date,time,limit:'2'})}`));
     if(!data.connections?.length) warnings.push('No public transport connections were returned for this leg.');

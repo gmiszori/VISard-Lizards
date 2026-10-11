@@ -7,8 +7,9 @@ import java.net.URLEncoder
 private data class Candidate(val stop: MealStop, val point: Point, val data: JsonObject, val cafeteria: Boolean)
 private fun coordinates(value: JsonObject) = Point(value["latitude"]!!.jsonPrimitive.double, value["longitude"]!!.jsonPrimitive.double)
 
-class RouteTool(private val maps: MapProvider) {
+class RouteTool(private val baseMaps: MapProvider) {
     fun plan(request: JsonObject): JsonObject {
+        val maps = baseMaps.withModes(travelModes(request))
         val origin = request.text("origin"); val destination = request.text("destination")
         require(origin.isNotBlank() && origin.length <= 200 && destination.isNotBlank() && destination.length <= 200)
         val departure = Instant.parse(request.text("departureTime")); val deadline = Instant.parse(request.text("arrivalTime"))

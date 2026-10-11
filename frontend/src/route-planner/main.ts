@@ -14,10 +14,16 @@ const button = document.querySelector<HTMLButtonElement>('#plan-button')!;
 const section = document.querySelector<HTMLElement>('.planner-results')!;
 function selectCard(index: number) {
   results.querySelectorAll<HTMLElement>('.route-option').forEach((card, i) => {
+    card.hidden=index!==-2 && i!==index;
     card.classList.toggle('is-selected', i === index);
     card.querySelector('button')?.setAttribute('aria-pressed', String(i === index));
   });
+  results.querySelectorAll<HTMLElement>('[data-direct-index]').forEach(panel=>{
+    panel.hidden=index!==-2 && Number(panel.dataset.directIndex)!==index;
+  });
 }
+const modeButtons=[...document.querySelectorAll<HTMLButtonElement>('[data-mode]')];
+modeButtons.forEach(button=>button.addEventListener('click',()=>button.setAttribute('aria-pressed',String(button.getAttribute('aria-pressed')!=='true'))));
 const routeMap = new MealRouteMap(selectCard);
 let originRevision = 0;
 for (const event of ['input','change']) input('origin').addEventListener(event, () => {
@@ -71,11 +77,16 @@ function render(plan: Plan, explanation: string) {
       journeyTimeline('To your destination',option.onward,option.place.name,input('destination').value));
     results.append(card);
   });
-  if(!plan.options.length) results.append(journeyTimeline('To your destination',plan.baseline,input('origin').value,input('destination').value));
+  (plan.directRoutes?.length ? plan.directRoutes : [plan.baseline]).forEach((leg,i)=>{
+    const panel=journeyTimeline('Direct route to your destination',leg,input('origin').value,input('destination').value);
+    panel.dataset.directIndex=String(i===0 ? -1 : -2-i);results.append(panel);
+  });
   routeMap.setPlan(plan); selectCard(selectedOption(plan));
 }
 form.addEventListener('submit', async event => {
   event.preventDefault(); if (button.disabled) return;
+  const modes=modeButtons.filter(button=>button.getAttribute('aria-pressed')==='true').map(button=>button.dataset.mode!);
+  if(!modes.length) {status.textContent='Select Walk, Public transport, or both.';return;}
   const departure = departureDate(); const arrival = arrivalDate();
   if(!departure || !arrival) {status.textContent='Enter valid dates as DD.MM.YYYY and valid departure/arrival times.';return;}
   if (!(departure.getTime() < arrival.getTime())) { status.textContent = 'Arrival must be after departure.'; return; }
@@ -87,7 +98,7 @@ form.addEventListener('submit', async event => {
   status.textContent = 'Starting AI and MCP route planning…';
   try {
     const response = await fetch('/api/route-planner/plan', { method: 'POST', cache: 'no-store', signal: AbortSignal.timeout(300_000),
-      headers: { 'Content-Type': 'application/json', 'X-OpenAI-Key': key }, body: JSON.stringify({ origin: originLocation.value(input('origin').value), destination: destinationLocation.value(input('destination').value), departureTime: departure.toISOString(), arrivalTime: arrival.toISOString(), mealMinutes: Number(input('meal-minutes').value) }) });
+      headers: { 'Content-Type': 'application/json', 'X-OpenAI-Key': key }, body: JSON.stringify({ origin: originLocation.value(input('origin').value), destination: destinationLocation.value(input('destination').value), departureTime: departure.toISOString(), arrivalTime: arrival.toISOString(), mealMinutes: Number(input('meal-minutes').value),modes }) });
     const data = await response.json(); if (!response.ok) throw new Error(data.detail ?? 'Route planning failed. Check backend configuration.');
     render(data.plan, data.explanation); status.textContent = `Finished in ${Math.round((Date.now() - started) / 1000)} seconds.`;
   } catch (error) { status.textContent = error instanceof Error ? error.message : 'Could not plan the journey.'; }

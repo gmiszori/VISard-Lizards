@@ -26,6 +26,7 @@ import '../route-planner/styles.css';
         <div id="destination-suggestions" class="location-suggestions" role="listbox" aria-label="Destination suggestions" hidden></div>
         <p id="destination-location-status" class="field-note" role="status"></p>
         <p class="field-note" id="time-zone"></p>
+        <fieldset class="travel-modes"><legend>Travel by</legend><button type="button" data-mode="WALK" aria-pressed="false">🚶 Walk</button><button type="button" data-mode="TRANSIT" aria-pressed="true">🚆 Public transport</button></fieldset>
         <div class="time-row">
           <div class="journey-datetime"><label for="departure">Leave at</label><div class="date-fields"><div class="date-picker"><input id="departure" type="text" required placeholder="DD.MM.YYYY" maxlength="10" inputmode="numeric" aria-label="Departure date" /><button id="departure-calendar-toggle" type="button" class="calendar-toggle" aria-label="Choose departure date" aria-expanded="false" aria-controls="departure-calendar">▦</button><div id="departure-calendar" class="calendar-popup" role="group" aria-label="Departure calendar" hidden></div></div><input id="departure-time" type="time" required aria-label="Departure time" /></div></div>
           <div class="journey-datetime"><label for="arrival">Arrive by</label><div class="date-fields"><div class="date-picker"><input id="arrival" type="text" required placeholder="DD.MM.YYYY" maxlength="10" inputmode="numeric" aria-label="Arrival date" /><button id="arrival-calendar-toggle" type="button" class="calendar-toggle" aria-label="Choose arrival date" aria-expanded="false" aria-controls="arrival-calendar">▦</button><div id="arrival-calendar" class="calendar-popup" role="group" aria-label="Arrival calendar" hidden></div></div><input id="arrival-time" type="time" required aria-label="Arrival time" /></div></div>
@@ -43,7 +44,7 @@ import '../route-planner/styles.css';
         <div class="map-heading"><h2>Your route</h2><span id="route-map-selection" aria-live="polite">Routes will appear here after planning.</span></div>
         <div id="route-map" aria-label="Interactive Google map of your journey and meal stops"></div>
         <p id="route-map-status" role="status">Loading map…</p>
-        <div class="map-legend"><span><i class="outbound"></i> To meal stop</span><span><i class="onward"></i> To destination</span><span><i class="alternative"></i> Other options</span><span>Dashed: public transport · Solid: walking</span></div>
+        <div class="map-legend"><span><i class="outbound"></i> To meal stop</span><span><i class="onward"></i> To destination</span><span><i class="alternative"></i> Other routes</span><span>Dashed: public transport · Solid: walking</span></div>
         <div id="route-map-options" aria-label="Choose a route option"></div>
       </div>
       <h2 id="result-title">Your options</h2>

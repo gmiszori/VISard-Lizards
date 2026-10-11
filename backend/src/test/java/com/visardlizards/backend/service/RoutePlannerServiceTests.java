@@ -21,6 +21,13 @@ class RoutePlannerServiceTests {
     private final MensaRepository repository=mock(MensaRepository.class);
     private final Clock clock=Clock.fixed(Instant.parse("2026-10-10T20:00:00Z"),ZoneOffset.UTC);
     private Trip trip() { return new Trip("Zürich HB","ETH Zentrum",Instant.parse("2026-10-12T09:00:00Z"),Instant.parse("2026-10-12T12:00:00Z"),60); }
+    @Test void modesArePreservedAndEmptySelectionRejectedBeforeProviders() {
+        var base=trip();var transit=new Trip(base.origin(),base.destination(),base.departureTime(),base.arrivalTime(),60,List.of("TRANSIT"));
+        var service=service(RestClient.create());
+        assertEquals("TRANSIT",service.tripContext(transit).path("modes").get(0).asText());
+        assertEquals(List.of("WALK","TRANSIT"),base.modes());
+        assertThrows(ResponseStatusException.class,()->service.validate(new Trip(base.origin(),base.destination(),base.departureTime(),base.arrivalTime(),60,List.of()),""));
+    }
     private RoutePlannerService service(RestClient client) { return new RoutePlannerService(mapper,repository,clock,"http://router","connector-secret-123","gpt-6-astra",client); }
     @Test void locationSuggestionsRelayWithoutOpenAiAndValidateBeforeNetwork() {
         var builder=RestClient.builder();var server=MockRestServiceServer.bindTo(builder).build();var service=service(builder.build());

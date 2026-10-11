@@ -15,7 +15,13 @@ import tools.jackson.databind.JsonNode;
 public class RoutePlannerController {
     public record Trip(@NotBlank @Size(max=200) String origin, @NotBlank @Size(max=200) String destination,
                        @NotNull Instant departureTime, @NotNull Instant arrivalTime,
-                       @Min(45) @Max(60) int mealMinutes) {}
+                       @Min(45) @Max(60) int mealMinutes,
+                       @Size(min=1,max=2) java.util.List<@Pattern(regexp="WALK|TRANSIT") String> modes) {
+        public Trip { modes = modes == null ? java.util.List.of("WALK","TRANSIT") : java.util.List.copyOf(modes); }
+        public Trip(String origin,String destination,Instant departureTime,Instant arrivalTime,int mealMinutes) {
+            this(origin,destination,departureTime,arrivalTime,mealMinutes,null);
+        }
+    }
     private final RoutePlannerService service;
     private final String browserKey;
     public RoutePlannerController(RoutePlannerService service, @Value("${GOOGLE_MAPS_BROWSER_KEY:}") String browserKey) {

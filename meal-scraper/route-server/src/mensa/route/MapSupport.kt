@@ -18,10 +18,16 @@ data class Point(val lat: Double, val lng: Double) {
 
 /** Provider contract shared by Kotlin routing and the private OSM data adapter. */
 interface MapProvider : RouteProvider {
+    fun withModes(modes: List<String>): MapProvider = this
     fun options(origin: String, destination: String, departure: Instant): List<RouteLeg>
     fun nearby(point: Point): List<JsonObject>
     fun nearby(point: Point, date: LocalDate): List<JsonObject> = nearby(point)
     fun walkingCosts(origin: Point, destination: Point, stops: List<Point>): List<Double?> = stops.map { null }
+}
+fun travelModes(request: JsonObject): List<String> {
+    val modes = if (request["modes"] == null) listOf("WALK", "TRANSIT") else request.array("modes").map { it.jsonPrimitive.content }
+    require(modes.isNotEmpty() && modes.size <= 2 && modes.all { it in listOf("WALK", "TRANSIT") }) { "Select walking or public transport." }
+    return modes.distinct().sorted()
 }
 fun decodePolyline(encoded: String): List<Point> {
     val points = mutableListOf<Point>(); var index = 0; var lat = 0; var lng = 0

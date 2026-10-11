@@ -3,6 +3,12 @@ import java.time.Instant
 import kotlinx.serialization.json.*
 import kotlin.test.*
 class OpenStreetMapsTest {
+    @Test fun validatesAuthoritativeTravelModes() {
+        assertEquals(listOf("TRANSIT"),travelModes(buildJsonObject {put("modes",buildJsonArray {add("TRANSIT")})}))
+        assertEquals(listOf("TRANSIT","WALK"),travelModes(buildJsonObject {}))
+        assertFailsWith<IllegalArgumentException> {travelModes(buildJsonObject {put("modes",buildJsonArray {})})}
+        assertFailsWith<IllegalArgumentException> {travelModes(buildJsonObject {put("modes",buildJsonArray {add("DRIVE")})})}
+    }
     @Test fun rejectsPastOrInventedProviderGeometry() {
         val value = json.parseToJsonElement("""{"departure":"2026-10-12T09:00:00Z","arrival":"2026-10-12T09:15:00Z","distanceMetres":1000,"directions":["Walk"],"provider":{"mode":"WALK","polyline":"_p~iF~ps|U_ulLnnqC_mqNvxq`@"}}""").jsonObject
         assertEquals(Instant.parse("2026-10-12T09:15:00Z"), parseOpenLeg(value, Instant.parse("2026-10-12T09:00:00Z")).arrival)

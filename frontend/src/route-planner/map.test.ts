@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { MealRouteMap, selectedOption } from './map.ts';
+import { MealRouteMap, selectedOption, routeColor } from './map.ts';
 
 test('only an existing verified option can be highlighted by AI selection', () => {
   const leg = {}; const options = [{ place: {name: 'A'}, outbound: leg, onward: leg }, { place: {name: 'B'}, outbound: leg, onward: leg }];
@@ -9,12 +9,18 @@ test('only an existing verified option can be highlighted by AI selection', () =
   assert.equal(selectedOption({baseline: leg, options, selectedOptionIndex: 99}), 0);
   assert.equal(selectedOption({baseline: leg, options: [], selectedOptionIndex: 0}), -1);
 });
+test('meal approach stays blue and other routes use distinct greens',()=>{
+  assert.equal(routeColor(0,0),'#2563eb');assert.equal(routeColor(3,0),'#2563eb');
+  assert.equal(new Set([0,1,2,3].map(index=>routeColor(index,1))).size,4);
+  assert.notEqual(routeColor(-1,0),routeColor(-3,0));
+});
 
 test('route controls and meal markers select both legs; replanning removes old overlays', async () => {
   class Node {
     textContent = ''; dataset: Record<string, string> = {}; children: Node[] = [];
     attributes: Record<string, string> = {}; events: Record<string, () => void> = {};
     map: unknown; gmpClickable = false;
+    style: Record<string,string> = {};
     append(...nodes: Node[]) { this.children.push(...nodes); }
     replaceChildren() { this.children = []; }
     querySelectorAll() { return this.children; }
@@ -68,8 +74,8 @@ test('route controls and meal markers select both legs; replanning removes old o
     const chips = nodes.get('#route-map-options')!.children;
     chips[3].events.click();
     assert.deepEqual(selected, [1]); assert.equal(chips[3].attributes['aria-pressed'], 'true');
-    assert.equal(lines[3].options.strokeColor, '#2563eb'); assert.equal(lines[4].options.strokeColor, '#16804a');
-    assert.equal(lines[1].options.strokeColor, '#94a3b8');
+    assert.equal(lines[3].options.strokeColor, '#2563eb'); assert.equal(lines[4].options.strokeColor, '#34d399');
+    assert.equal(lines[1].options.strokeColor, '#2563eb');
     assert.equal(lines[1].options.map,null);
     markers[2].events['gmp-click'](); assert.deepEqual(selected, [1, 0]); assert.equal(markers[2].gmpClickable, true);
     chips[0].events.click(); assert.equal(fitted.length, 15, 'all options include the direct journey');

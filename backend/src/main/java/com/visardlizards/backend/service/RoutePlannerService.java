@@ -73,6 +73,8 @@ public class RoutePlannerService {
         }
     }
     void validate(Trip trip, String key) {
+        if(trip.modes().isEmpty() || trip.modes().size()>2 || !Set.of("WALK","TRANSIT").containsAll(trip.modes()))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Select walking or public transport.");
         if(key.length()>256 || key.chars().anyMatch(Character::isISOControl))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"The OpenAI key contains invalid characters or is too long.");
         var now=clock.instant(); var date=trip.departureTime().atZone(ZURICH).toLocalDate(); var today=now.atZone(ZURICH).toLocalDate();

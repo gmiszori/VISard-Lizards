@@ -7,6 +7,12 @@ export function selectedOption(plan: MappablePlan): number {
   return typeof index === 'number' && Number.isInteger(index) && index >= -1 && index < plan.options.length
     ? index : plan.options.length ? 0 : -1;
 }
+export function routeColor(index: number,leg: number): string {
+  if(index>=0 && leg===0) return '#2563eb';
+  const greens=['#16804a','#34d399','#047857','#65a30d','#14532d','#84cc16','#10b981'];
+  const colorIndex=index>=0 ? index : index===-1 ? 4 : -index+2;
+  return greens[colorIndex%greens.length];
+}
 declare global { interface Window { initMealRouteMap?: () => void; gm_authFailure?: () => void } }
 
 export class MealRouteMap {
@@ -97,7 +103,7 @@ export class MealRouteMap {
     for (const { line, index: routeIndex, leg, dashed } of this.lines) {
       const active = index === -2 || index === routeIndex;
       line.setMap(active ? this.map! : null);
-      const color = active ? (routeIndex < 0 ? '#64748b' : leg === 0 ? '#2563eb' : '#16804a') : '#94a3b8';
+      const color = routeColor(routeIndex,leg);
       line.setOptions({ strokeColor: color,
         strokeOpacity: dashed ? 0 : active ? .95 : .45, strokeWeight: active ? 6 : 4, zIndex: active ? 10 : 1,
         icons: dashed ? [{icon: {path: 'M 0,-1 0,1', strokeColor: color, strokeOpacity: active ? .95 : .45, scale: 4}, offset: '0', repeat: '16px'}] : [] });
@@ -118,6 +124,11 @@ export class MealRouteMap {
     const marker = new google.maps.marker.AdvancedMarkerElement({ map: this.map, position, title });
     marker.append(pin); return marker;
   }
+  private endpoint(position: Point,title: string,color: string) {
+    const dot=document.createElement('span');dot.className='route-endpoint-dot';dot.style.backgroundColor=color;
+    const marker=new google.maps.marker.AdvancedMarkerElement({map:this.map,position,title,zIndex:100});
+    marker.append(dot);return marker;
+  }
   private draw() {
     if (!this.map || !this.plan) return;
     this.clearOverlays();
@@ -136,8 +147,8 @@ export class MealRouteMap {
     const baseline = addLine(this.plan.baseline, -1, 0);
     this.plan.directRoutes?.slice(1).forEach((leg,i) => addLine(leg, -3-i, 0));
     if (baseline.length) {
-      this.markers.push({marker:this.marker(baseline[0], 'Starting point', 'A', '#334155'),index:null});
-      this.markers.push({marker:this.marker(baseline[baseline.length - 1], 'Destination', 'B', '#334155'),index:null});
+      this.markers.push({marker:this.endpoint(baseline[0], 'Starting point', '#2563eb'),index:null});
+      this.markers.push({marker:this.endpoint(baseline[baseline.length - 1], 'Destination', '#047857'),index:null});
     }
     this.plan.options.forEach((option, index) => {
       const outbound = addLine(option.outbound, index, 0); const onward = addLine(option.onward, index, 1);

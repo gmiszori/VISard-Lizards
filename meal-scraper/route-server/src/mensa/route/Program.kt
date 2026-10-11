@@ -30,6 +30,7 @@ private suspend fun serve() {
     val tripProperties = buildJsonObject {
         for (name in listOf("origin", "destination", "departureTime", "arrivalTime")) putJsonObject(name) { put("type", "string") }
         putJsonObject("mealMinutes") { put("type", "integer"); put("minimum", 45); put("maximum", 60) }
+        putJsonObject("modes") { put("type", "array"); put("minItems", 1); put("maxItems", 2); putJsonObject("items") { put("type", "string"); put("enum", buildJsonArray { add("WALK"); add("TRANSIT") }) } }
         for (name in listOf("cafeterias", "closedPlaces")) putJsonObject(name) { put("type", "array"); putJsonObject("items") { put("type", "object") } }
     }
     val steps = listOf(

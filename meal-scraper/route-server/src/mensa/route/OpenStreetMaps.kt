@@ -7,7 +7,8 @@ import java.time.*
 
 class OpenRouteException(val code: String, message: String) : IllegalStateException(message)
 /** Kotlin MCP remains the authority; the private JS adapter uses osm-api-js read-only. */
-class OpenStreetMaps : MapProvider {
+class OpenStreetMaps(private val modes: List<String> = listOf("TRANSIT", "WALK")) : MapProvider {
+    override fun withModes(modes: List<String>): MapProvider = if (this.modes == modes) this else OpenStreetMaps(modes)
     fun locations(query: String): JsonObject {
         require(query.length in 3..200) { "Enter between 3 and 200 characters." }
         return post("/locations", buildJsonObject { put("query", query) })
@@ -30,7 +31,7 @@ class OpenStreetMaps : MapProvider {
     }
     override fun options(origin: String, destination: String, departure: Instant): List<RouteLeg> =
         cache.getOrPut(Triple(origin, destination, departure)) {
-            post("/options", buildJsonObject { put("origin", origin); put("destination", destination); put("departureTime", departure.toString()) })
+            post("/options", buildJsonObject { put("origin", origin); put("destination", destination); put("departureTime", departure.toString()); put("modes", JsonArray(modes.map { JsonPrimitive(it) })) })
                 .array("routes").map { parseOpenLeg(it.jsonObject, departure) }.sortedBy { it.arrival }
         }
     override fun route(origin: String, destination: String, departure: Instant) = options(origin, destination, departure).firstOrNull()
