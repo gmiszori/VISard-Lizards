@@ -8,6 +8,7 @@ import { formatMenuDay } from '../data/presentation';
 import { visibleMenuDays } from '../data/menuDate';
 interface Props {
   days: string[];
+  today: string;
   /** The day shown on this page. */
   menuDate: string;
   /** true on a day page (the visitor picked the day). */
@@ -15,10 +16,10 @@ interface Props {
   /** Set on a canteen page: day links stay on this canteen. */
   canteenId?: string;
 }
-const { days, menuDate, chosenDay, canteenId } = Astro.props;
+const { days, today, menuDate, chosenDay, canteenId } = Astro.props;
 const href = (day: string) => (canteenId ? `/canteen/${encodeURIComponent(canteenId)}/${day}` : `/day/${day}`);
 const label = (day: string) => formatMenuDay(day);
-const shownDays = visibleMenuDays(days, menuDate);
+const shownDays = visibleMenuDays(days, today);
 ---
 <div class="day-picker" data-day-picker data-picker-date={menuDate} data-chosen-day={String(chosenDay)}
   data-days={JSON.stringify(days)} data-href-base={canteenId ? `/canteen/${encodeURIComponent(canteenId)}/` : '/day/'}>
@@ -64,7 +65,7 @@ const shownDays = visibleMenuDays(days, menuDate);
 </script>
 <script>
   import { activeSimulatedClock, appNow, CLOCK_EVENT, zurichParts } from '../time/clock';
-  import { defaultService, wantedMenuDate } from '../data/menuDate';
+  import { defaultService, visibleMenuDays, wantedMenuDate } from '../data/menuDate';
   import { formatMenuDay } from '../data/presentation';
 
   const SERVICE_KEY = 'campuseats-service-filter';
@@ -106,10 +107,21 @@ const shownDays = visibleMenuDays(days, menuDate);
   function renderDays() {
     if (!root) return;
     const de = document.documentElement.lang === 'de';
-    root.querySelectorAll<HTMLAnchorElement>('[data-day]').forEach(link => {
-      const day = link.dataset.day!;
+    const days = JSON.parse(root.dataset.days ?? '[]') as string[];
+    const template = daysNav?.querySelector<HTMLAnchorElement>('a');
+    daysNav?.replaceChildren(...visibleMenuDays(days, zurichParts(appNow()).date).map(day => {
+      const link = template ? template.cloneNode(false) as HTMLAnchorElement : document.createElement('a');
+      link.removeAttribute('aria-current');
+      link.className = '';
+      link.dataset.day = day;
+      link.href = `${root.dataset.hrefBase}${day}`;
       link.textContent = formatMenuDay(day, de ? 'de' : 'en');
-    });
+      if (day === root.dataset.pickerDate) {
+        link.setAttribute('aria-current', 'date');
+        link.className = 'is-selected';
+      }
+      return link;
+    }));
     root.querySelector('[data-day-picker-nav]')?.setAttribute('aria-label', de ? 'Menütag' : 'Menu day');
     root.querySelector('[data-service-filter-group]')?.setAttribute('aria-label', de ? 'Mahlzeit' : 'Meal service');
     revealSelectedDay();
@@ -125,13 +137,15 @@ const shownDays = visibleMenuDays(days, menuDate);
   }
 
   // Remember where the picker is on screen; the next day's page restores it (inline script above).
-  root?.querySelectorAll<HTMLAnchorElement>('[data-day]').forEach(link => link.addEventListener('click', () => {
+  daysNav?.addEventListener('click', event => {
+    const link = (event.target as Element).closest<HTMLAnchorElement>('[data-day]');
+    if (!link || !root) return;
     try {
       sessionStorage.setItem('campuseats-day-scroll', JSON.stringify({
         path: new URL(link.href).pathname.replace(/\/+$/, ''), top: root.getBoundingClientRect().top, at: Date.now(),
       }));
     } catch { /* storage blocked */ }
-  }));
+  });
 
   // On a day the visitor picked that is not today, live status ("Closed" right now), the current crowd and today's hours say nothing
   // about that day: hide them (CSS: [data-other-day] in styles/global.css).

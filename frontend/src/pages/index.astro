@@ -29,7 +29,7 @@ const openCount = canteens.filter((canteen) => canteen.isOpen).length;
   </section>
   <div class="section-head all-canteens-heading"><div><h2 data-i18n="canteensTitle">Canteens</h2></div></div>
   <MenuDate date={menuDate} today={today} variant="note" />
-  <DayPicker days={days} menuDate={menuDate} chosenDay={chosenDay} />
+  <DayPicker days={days} today={today} menuDate={menuDate} chosenDay={chosenDay} />
   <p id="ai-menu-hint" class="ai-menu-hint" data-i18n="aiMenuHint" hidden>The ranked list above shows individual dish matches across all canteens. Below, those same matches are grouped by canteen.</p>
   <div class="menu-list-controls"><div id="visible-count" class="count" role="status" aria-live="polite">{canteens.length} canteens</div><button id="no-menu-toggle" type="button" aria-pressed="false" hidden></button></div>
   <p id="favourites-status" role="status" hidden></p>

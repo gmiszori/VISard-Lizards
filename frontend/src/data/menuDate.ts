@@ -73,9 +73,11 @@ export function selectableMenuDays(today: string, menuDate: string, dataTo: stri
   return [...days].sort();
 }
 
-/** The shown menu day and the next two available days; full dated routes remain available. */
-export function visibleMenuDays(days: readonly string[], menuDate: string): string[] {
-  return [...new Set([...days, menuDate])].filter(day => isIsoDate(day) && day >= menuDate).sort().slice(0, 3);
+/** A fixed three-calendar-day window anchored to today's menu day, never the selected page. */
+export function visibleMenuDays(days: readonly string[], today: string): string[] {
+  const start = wantedMenuDate(today);
+  const end = addDays(start, 2) ?? start;
+  return [...new Set([...days, start])].filter(day => isIsoDate(day) && day >= start && day <= end).sort().slice(0, 3);
 }
 
 /**

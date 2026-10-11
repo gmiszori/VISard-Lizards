@@ -2,11 +2,17 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { addDays, defaultService, isIsoDate, isWeekend, latestToday, menuDateCandidates, menuDateNotice, nearestMenuDay, pickSampleMenuDate, requestedMenuDate, visibleMenuDays, weekdayIndex, wantedMenuDate } from './menuDate.ts';
 
-test('compact picker shows the selected day and next two available days', () => {
+test('compact picker stays in a fixed three-day window anchored to today', () => {
   const days = ['2026-10-09', '2026-10-12', '2026-10-13', '2026-10-14', '2026-10-15'];
   assert.deepEqual(visibleMenuDays(days, '2026-10-12'), ['2026-10-12', '2026-10-13', '2026-10-14']);
-  assert.deepEqual(visibleMenuDays(days, '2026-10-09'), ['2026-10-09', '2026-10-12', '2026-10-13']);
+  assert.deepEqual(visibleMenuDays(days, '2026-10-09'), ['2026-10-09']);
+  assert.deepEqual(visibleMenuDays(['2026-10-23'], '2026-10-12'), ['2026-10-12']);
   assert.deepEqual(visibleMenuDays(days, '2026-10-15'), ['2026-10-15']);
+  assert.deepEqual(visibleMenuDays(days, '2026-10-11'), ['2026-10-12', '2026-10-13', '2026-10-14']);
+  for (const selected of ['2026-10-12', '2026-10-13', '2026-10-14']) {
+    const window = visibleMenuDays([...days, selected], '2026-10-12');
+    assert.deepEqual(window, ['2026-10-12', '2026-10-13', '2026-10-14']);
+  }
   assert.deepEqual(visibleMenuDays(['invalid', '2026-10-13', '2026-10-13'], '2026-10-12'), ['2026-10-12', '2026-10-13']);
   assert.deepEqual(days, ['2026-10-09', '2026-10-12', '2026-10-13', '2026-10-14', '2026-10-15']);
 });
