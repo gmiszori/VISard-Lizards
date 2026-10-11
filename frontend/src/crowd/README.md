@@ -2,7 +2,7 @@
 
 The canteen detail page shows a small, orientative weekday histogram (about 60 px high): occupancy on a fixed 0–100% scale, one bar per 15-minute interval, with the exact value in each bar's tooltip and in the chart's accessible label. There is no slider. The chart opens on today, or on Monday on Saturday and Sunday (`defaultDay.ts`). The dashed marker follows the current time in Europe/Zurich. Missing intervals remain gaps, and days without predictions show an empty state.
 
-The current data comes from the existing synthetic `CROWD` module and is visibly labelled **Preview data**. Opening windows exclude closed hours; temporarily closed mensas have no preview prediction. On the detail page, a small adapter in `src/pages/canteen/[id].astro` loads `GET /api/mensas/{id}/crowd` and dispatches the backend prediction (`source: 'backend'`) once the backend has enough reports (`histogram.sufficient`); until then the preview stays, labelled as such.
+Initially the chart uses the synthetic `CROWD` module and is visibly labelled **Preview data**. Opening windows exclude closed hours; temporarily closed mensas have no preview prediction. `src/scripts/live-feedback.ts` loads `GET /api/mensas/{id}/crowd` on page load, every two minutes, after successful feedback, and when returning to the tab. Once at least ten reports exist (`histogram.sufficient`), it replaces the chart with backend predictions (`source: 'backend'`) without rebuilding or reloading. Missing slots remain unknown.
 
 ## Backend contract
 
@@ -36,6 +36,8 @@ weighted by its age (half-life 10 minutes), so it follows a change after a few r
 and the "Current crowd" box shows that real level instead of the illustrative value
 (`live-status.ts` skips boxes marked `data-crowd-reported`). With at least 10 reports the backend's
 prediction replaces the preview chart.
+
+Homepage crowd badges also use real recent reports through `src/scripts/live-feedback.ts`, with the same weighted summary, translated labels and opening-window checks. Detail summaries remain owned by the survey. Backend polling is bounded to four concurrent requests; accepted feedback triggers a refresh.
 
 Live summaries expire after 30 minutes in the browser, including while the page stays open without a
 new response. Empty or failed refreshes and closing time release the current-crowd display back to

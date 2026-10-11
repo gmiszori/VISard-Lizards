@@ -167,7 +167,10 @@ export function mountCrowdSurvey(): void {
     renderTexts();
     try {
       if (mock.enabled) writeCrowdMock(addMockReports(mock, mensaId!, level, 1, Date.now()));
-      else await apiPost(`/api/mensas/${encodeURIComponent(mensaId!)}/crowd-reports`, { level });
+      else {
+        await apiPost(`/api/mensas/${encodeURIComponent(mensaId!)}/crowd-reports`, { level });
+        document.dispatchEvent(new Event('campuseats:feedback-changed'));
+      }
       lastReportedAt = Date.now();
       rememberTime(LAST_REPORT_KEY, mensaId!, lastReportedAt);
       // Reporting from the queue: ask for a meal rating once it is probably eaten (rating/getRatingPrompt.ts).
@@ -208,6 +211,8 @@ export function mountCrowdSurvey(): void {
 
   buttons.forEach(button => button.addEventListener('click', () => report(Number(button.dataset.surveyLevel) as CrowdLevel, button)));
   document.addEventListener('languagechange', renderTexts);
+  document.addEventListener('campuseats:feedback-changed', () => { if (!root.hidden) void loadSummary(); });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && !root.hidden) void loadSummary(); });
   document.addEventListener(CLOCK_EVENT, refreshVisibility);
   window.addEventListener('storage', event => {
     if (event.key === LAST_REPORT_KEY || event.key === RETRY_UNTIL_KEY) renderTexts();

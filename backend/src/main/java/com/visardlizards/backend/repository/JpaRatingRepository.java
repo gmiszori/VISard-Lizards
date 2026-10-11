@@ -38,7 +38,16 @@ public class JpaRatingRepository implements RatingRepository {
 
 	@Override
 	public List<Rating> findBySubjectId(String subjectId) {
-		return entities.findBySubjectId(subjectId).stream()
+		return toRatings(entities.findBySubjectId(subjectId));
+	}
+
+	@Override
+	public List<Rating> findByMensaId(String mensaId) {
+		return toRatings(entities.findByMensaId(mensaId));
+	}
+
+	private List<Rating> toRatings(List<RatingEntity> ratings) {
+		return ratings.stream()
 				.map(e -> new Rating(e.getSubjectId(), e.getStars(), List.copyOf(e.getTags()), e.getCreatedAt(),
 						e.getUserId(), e.getSource()))
 				.toList();

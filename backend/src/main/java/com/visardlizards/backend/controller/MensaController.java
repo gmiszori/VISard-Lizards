@@ -54,8 +54,10 @@ public class MensaController {
 
 			- `openingHours` maps each of the next 7 days to the meal service windows of that day. A closed
 			  day has an empty list: weekends, company holidays and mensas that are temporarily closed.
-			- `avgRating` is the average of all user ratings, rounded to one decimal, or `null` if nobody has
-			  rated the mensa yet.
+			- `avgRating` is the weighted average of direct mensa ratings and user ratings of its stored meals,
+			  rounded to one decimal, or `null` if there are no contributing ratings. `crowd` and `guess` meal
+			  ratings count half; `location`, omitted source and direct mensa ratings count fully. Each rating
+			  contributes once; undoing a meal rating also removes its contribution to the mensa average.
 			- `coordinates` is the WGS84 position (`lat`, `lng`) accurate to the building, or `null` if unknown.
 			""")
 	@ApiResponse(responseCode = "200", description = "The mensas (without meal plan)")
@@ -127,8 +129,8 @@ public class MensaController {
 	@ResponseStatus(HttpStatus.CREATED)
 	@Operation(summary = "Rate a mensa", description = """
 			Saves a user's star rating of a mensa. Every call adds one rating; there are no user accounts, but
-			each client (IP address) can rate a mensa once every 24 hours. The new average shows up as `avgRating` in the mensa
-			endpoints.
+			each client (IP address) can rate a mensa once every 24 hours. The new rating contributes at full weight
+			to `avgRating` in the mensa endpoints, alongside weighted user ratings of meals belonging to that mensa.
 			""")
 	@ApiResponse(responseCode = "201", description = "Rating saved (no body)")
 	@ApiResponse(responseCode = "400", description = "Stars outside 1-5 or invalid body")

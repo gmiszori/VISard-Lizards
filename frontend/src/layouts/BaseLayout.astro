@@ -216,6 +216,7 @@ const { title, hideFooter = false } = Astro.props;
     <script type="application/json" id="live-data" is:inline set:html={JSON.stringify(LIVE_DATA).replace(/</g, '\\u003c')} />
     <script>
       import '../scripts/live-status';
+      import '../scripts/live-feedback';
       import '../scripts/preferences';
       import '../scripts/meal-stars';
       import '../scripts/service-label';

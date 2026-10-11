@@ -65,7 +65,8 @@ async function request<T>(method: 'GET' | 'POST' | 'PUT' | 'DELETE', path: strin
     throw new ApiError(response.status, detail, retryAfterMs(response.headers.get('Retry-After')));
   }
   if (response.status === 204) return undefined as T;
-  return response.json() as Promise<T>;
+  const text = await response.text();
+  return text ? JSON.parse(text) as T : undefined as T;
 }
 
 export const apiGet = <T>(path: string, baseUrl = API_URL, timeoutMs = 5000) =>

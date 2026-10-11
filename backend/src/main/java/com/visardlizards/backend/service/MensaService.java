@@ -104,7 +104,7 @@ public class MensaService {
 	}
 
 	public @Nullable BigDecimal getAverageRating(String mensaId) {
-		return ratingService.getAverage(mensaId);
+		return ratingService.getMensaAverage(mensaId);
 	}
 
 	public void rateMensa(String mensaId, int stars) {

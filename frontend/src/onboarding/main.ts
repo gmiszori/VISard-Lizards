@@ -1,4 +1,5 @@
 import { saveProfile } from './api';
+import { submitMensaRatings } from './submitRatings';
 import { createOnboardingStore } from './onboardingStore';
 import { pickTodaysDishOpenFirst } from './pickTodaysDish';
 import { steps, type Context, type OnboardingData } from './steps';
@@ -110,8 +111,21 @@ function initialise(root: HTMLElement) {
       sections[step]!.querySelector<HTMLElement>('h1')!.focus();
       root.scrollIntoView({ block: 'start', behavior: 'instant' });
     }
-    function finish() {
+    let finishing = false;
+    async function finish() {
+      if (finishing) return;
+      finishing = true;
+      next.disabled = true;
+      skip.disabled = true;
       lastMoveAt = performance.now();
+      try { await submitMensaRatings(store.state.profile.mensaRatings); }
+      catch {
+        showError();
+        finishing = false;
+        next.disabled = false;
+        skip.disabled = false;
+        return;
+      }
       const saved = saveProfile(store.state.profile);
       if (inWelcomeTour && saved) {
         localStorage.setItem(WELCOME_KEY, 'settings');
@@ -119,6 +133,9 @@ function initialise(root: HTMLElement) {
         window.location.replace('/');
         return;
       }
+      finishing = false;
+      next.disabled = false;
+      skip.disabled = false;
       store.clear(); completed = true; refresh();
       // If the device could not store the answers, say so instead of implying they were saved.
       payoff.querySelector<HTMLElement>('[data-save-note]')!.hidden = saved;

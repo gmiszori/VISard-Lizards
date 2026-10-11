@@ -325,7 +325,11 @@ publishes none.
 
 Saves a user's star rating of a mensa. Every call adds one rating; there are no user accounts, but
 each client (IP address) can rate a mensa only once every 24 hours. The new average shows up as `avgRating` in the mensa
-endpoints.
+endpoints. Mensa `avgRating` combines direct mensa ratings with user ratings of all stored meals
+belonging to that mensa (matched by the meal's `mensaId`, not its id prefix). Each rating contributes
+once, using its original weight: `crowd` and `guess` count half; `location`, omitted source and direct
+mensa ratings count fully. The weighted average is rounded to one decimal, or `null` without ratings.
+Meal ratings are not copied into extra mensa ratings; meal averages and tag counts remain meal-specific.
 
 Body: `{"stars": 4}` with `stars` from 1 to 5.
 
@@ -431,7 +435,7 @@ Errors: `404` unknown meal.
 Saves a user's rating of a meal: 1–5 stars plus optional tags that say why. When present, the trusted
 `X-User-Id` header set by the reverse proxy identifies the user; otherwise the anonymous id from the
 request is used for local development. Each user can rate each meal once. The result shows up
-in [`GET /api/meals/{id}`](#get-apimealsid).
+in [`GET /api/meals/{id}`](#get-apimealsid) and contributes to its mensa's `avgRating`.
 
 Body: `{"userId": "anon:3f1c2b7e-9a4d-4e8b-8c1f-2d5e6a7b8c9d", "stars": 5, "tags": ["tasty", "worth-it"], "source": "location"}`
 
@@ -452,7 +456,8 @@ source, or invalid body, `409` this user already rated this meal.
 
 Takes back a user's rating of a meal ("Undo" in the rating card). `X-User-Id` from the reverse proxy
 takes precedence over `userId`: `DELETE /api/meals/{id}/ratings?userId=anon:...`.
-Afterwards `avgRating` and `tagCounts` no longer count it and the user can rate the meal again.
+Afterwards the meal's `avgRating` and `tagCounts` and its mensa's `avgRating` no longer count it,
+and the user can rate the meal again.
 Response `204`. Errors: `400` missing or invalid `userId`, `404` unknown meal or no rating of this user.
 
 ## Push notifications for starred dishes

@@ -13,7 +13,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-@SpringBootTest
+@SpringBootTest(properties = "spring.datasource.url=jdbc:h2:mem:mensa-controller-tests;DB_CLOSE_DELAY=-1")
 @AutoConfigureMockMvc
 class MensaControllerTests {
 

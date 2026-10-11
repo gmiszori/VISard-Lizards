@@ -8,7 +8,9 @@ import org.jspecify.annotations.Nullable;
 /**
  * A star rating (1-5) of a mensa or a meal; subjectId is the mensa or meal id. userId is the frontend's
  * anonymous user id ("anon:" + UUID) for meal ratings, null for mensa ratings. source says how the frontend
- * knows the user ate there (see {@link #weight()}), null if it did not say.
+ * knows the user ate there (see {@link #weight()}), null if it did not say. A user's meal rating
+ * contributes to both the meal average and its mensa's combined average with the same weight;
+ * it is stored only once, so deleting it removes both contributions.
  */
 public record Rating(String subjectId, int stars, List<String> tags, Instant createdAt, @Nullable String userId,
 		@Nullable String source) {
@@ -30,7 +32,7 @@ public record Rating(String subjectId, int stars, List<String> tags, Instant cre
 		this(subjectId, stars, tags, createdAt, null, null);
 	}
 
-	/** Weight in averages: ratings without a location proof (crowd report, guess) count half. */
+	/** Weight in averages: crowd and guess count half; location and omitted source count fully. */
 	public double weight() {
 		return SOURCE_CROWD.equals(source) || SOURCE_GUESS.equals(source) ? 0.5 : 1.0;
 	}

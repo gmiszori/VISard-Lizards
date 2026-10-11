@@ -82,11 +82,19 @@ public class RatingService {
 	}
 
 	/**
-	 * Weighted average rounded to one decimal, or null if there are no ratings yet. Ratings without a
-	 * location proof count half (see {@link Rating#weight()}).
+	 * Weighted average rounded to one decimal, or null if there are no ratings yet.
+	 * Crowd and guess ratings count half (see {@link Rating#weight()}).
 	 */
 	public @Nullable BigDecimal getAverage(String subjectId) {
-		List<Rating> ratings = ratingRepository.findBySubjectId(subjectId);
+		return average(ratingRepository.findBySubjectId(subjectId));
+	}
+
+	/** Weighted average of direct mensa ratings and user ratings of meals belonging to it. */
+	public @Nullable BigDecimal getMensaAverage(String mensaId) {
+		return average(ratingRepository.findByMensaId(mensaId));
+	}
+
+	private @Nullable BigDecimal average(List<Rating> ratings) {
 		if (ratings.isEmpty()) {
 			return null;
 		}
