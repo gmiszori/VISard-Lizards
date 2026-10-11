@@ -1,10 +1,12 @@
 import { createSearch } from '../search/dishSearch';
 import { ALL_CAMPUS_IDS, isPriceTier, isViewMode, readPreferences, PREFERENCES_KEY, type Preferences } from '../preferences/state';
 import { canShowCanteen } from '../preferences/canteenVisibility';
+import { DEFAULT_MEAL_CAPITALIZATION, isMealCapitalization } from '../data/presentation';
+import { applyMealCapitalization } from './meal-names';
 let preferences: Preferences;
 try {
   preferences = readPreferences();
-} catch { preferences = { vegan: true, vegetarian: true, meat: true, viewMode: 'standard', openOnly: false, distanceDefault: false, locations: [...ALL_CAMPUS_IDS], priceTier: 'student', devMode: false }; }
+} catch { preferences = { vegan: true, vegetarian: true, meat: true, viewMode: 'standard', openOnly: false, distanceDefault: false, locations: [...ALL_CAMPUS_IDS], priceTier: 'student', devMode: false, mealCapitalization: DEFAULT_MEAL_CAPITALIZATION }; }
 let showWithoutMenu = false;
 /** "Show all canteens" in the empty state also looks past "Only show open canteens" for this visit (Settings stay as they are). */
 let ignoreOpenOnly = false;
@@ -38,6 +40,8 @@ function cardService(card: Element | null | undefined, picked: string | undefine
 const searchTextOf = (row: HTMLElement, card: HTMLElement) => `${card.dataset.name ?? ''} ${row.dataset.search ?? row.dataset.mealName ?? ''}`;
 
 function applyPreferences() {
+  applyMealCapitalization(preferences.mealCapitalization);
+  document.querySelectorAll<HTMLSelectElement>('[data-meal-capitalization]').forEach(select => select.value = preferences.mealCapitalization);
   document.documentElement.dataset.density = preferences.viewMode;
   document.documentElement.dataset.devMode = String(preferences.devMode);
   document.querySelectorAll<HTMLElement>('[data-meal-price]').forEach(price => {
@@ -196,10 +200,13 @@ function applyPreferences() {
   document.dispatchEvent(new Event('campuseats:preferences-applied'));
 }
 
-document.querySelector<HTMLFormElement>('#preferences-form')?.addEventListener('change', (event) => {
-  const input = event.target as HTMLInputElement | HTMLSelectElement;
+document.addEventListener('change', (event) => {
+  const input = event.target;
+  if (!(input instanceof HTMLInputElement || input instanceof HTMLSelectElement) || input.form?.id !== 'preferences-form') return;
   if (input instanceof HTMLSelectElement && input.name === 'priceTier' && isPriceTier(input.value)) {
     preferences = { ...preferences, priceTier: input.value };
+  } else if (input instanceof HTMLSelectElement && input.name === 'mealCapitalization' && isMealCapitalization(input.value)) {
+    preferences = { ...preferences, mealCapitalization: input.value };
   } else if (input instanceof HTMLInputElement && input.type === 'radio' && input.name === 'viewMode' && isViewMode(input.value)) {
     preferences = { ...preferences, viewMode: input.value };
   } else if (input instanceof HTMLInputElement && input.type === 'checkbox' && input.name in preferences) {

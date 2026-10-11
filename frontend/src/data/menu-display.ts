@@ -62,7 +62,7 @@ export function prepareMenu<T extends MenuItem>(menu: T[], mensa: Mensa | undefi
   for (const item of menu) {
     if (seen.has(item.id)) continue;
     seen.add(item.id);
-    const name = dishName(item.name);
+    const name = dishName(item.name, 'upper');
     const description = item.description.replace(/\s*\|\s*/g, ' ').replace(/\s+/g, ' ').trim();
     // Merge only identical published offerings; different prices, ingredients or diets stay separate.
     const key = JSON.stringify([name, description, item.priceStudent, item.priceWorker, item.priceExternal,

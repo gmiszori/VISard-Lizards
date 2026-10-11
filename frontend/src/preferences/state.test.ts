@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { normalizePreferences, readPreferences, readFavourites } from './state.ts';
 test('invalid stored shapes and boolean strings cannot break or silently enable filters', () => {
   for (const raw of [null, [], 'wrong', 12, { vegan: 'false', vegetarian: null, meat: [], compact: {}, openOnly: 'yes', priceTier: 'admin', locations: [null, 123, {}, 'invalid'] }]) {
-    assert.deepEqual(normalizePreferences(raw), { vegan: true, vegetarian: true, meat: true, viewMode: 'standard', openOnly: false, distanceDefault: false, locations: ['zentrum', 'hoenggerberg', 'irchel', 'oerlikon', 'basel', 'toni-areal', 'europaallee'], priceTier: 'student', devMode: false });
+    assert.deepEqual(normalizePreferences(raw), { vegan: true, vegetarian: true, meat: true, viewMode: 'standard', openOnly: false, distanceDefault: false, locations: ['zentrum', 'hoenggerberg', 'irchel', 'oerlikon', 'basel', 'toni-areal', 'europaallee'], priceTier: 'student', devMode: false, mealCapitalization: 'title' });
   }
 });
 test('normalizes legacy locations, deduplicates, and preserves intentional empty selection', () => {
@@ -43,4 +43,14 @@ test('all three food categories off is read as all on (nothing would be left to 
   assert.deepEqual([read.vegan, read.vegetarian, read.meat], [true, true, true]);
   const some = normalizePreferences({ vegan: false, vegetarian: false, meat: true });
   assert.deepEqual([some.vegan, some.vegetarian, some.meat], [false, false, true]);
+});
+
+test('meal capitalization persists valid choices and defaults old or invalid saves to title case', () => {
+  for (const mode of ['upper', 'title', 'sentence', 'lower'] as const) {
+    const storage = { getItem: (key: string) => key === 'campuseats-preferences' ? JSON.stringify({ mealCapitalization: mode }) : null };
+    assert.equal(readPreferences(storage).mealCapitalization, mode);
+  }
+  for (const value of [undefined, null, 'invalid', true, {}]) {
+    assert.equal(normalizePreferences({ mealCapitalization: value }).mealCapitalization, 'title');
+  }
 });

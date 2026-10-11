@@ -1,6 +1,7 @@
 import { matchesMeal, normalizedName, starName, PROFILE_KEY, readStarredMeals, writeStarredMeals } from '../meals/stars';
 import { askForPushOnce, syncLater } from '../push/optin';
-import { dishName, formatMenuDay } from '../data/presentation';
+import { formatMenuDay } from '../data/presentation';
+import { setMealName } from './meal-names';
 
 const copy = {
   en: { featured: 'Your starred meals', savedTitle: 'Starred meals', savedHint: 'When these dishes return to the menu, we’ll bring them to the top. Saved on this device.', empty: 'No starred meals yet. Tap the star next to a dish to save it.', star: 'Star meal', unstar: 'Unstar meal', remove: 'Remove', menuFor: 'On the menu for', added: 'Starred', removed: 'Unstarred', error: 'Could not save your starred meals on this device.' },
@@ -83,7 +84,7 @@ function render() {
   if (savedList) {
     savedList.replaceChildren(...stars.map(meal => {
       const li = document.createElement('li');
-      const name = document.createElement('strong'); name.textContent = dishName(meal);
+      const name = document.createElement('strong'); setMealName(name, meal);
       const remove = document.createElement('button');
       remove.type = 'button'; remove.className = 'saved-meal-remove'; remove.dataset.mealRemove = meal;
       remove.textContent = t('remove'); remove.setAttribute('aria-label', `${t('unstar')}: ${meal}`);

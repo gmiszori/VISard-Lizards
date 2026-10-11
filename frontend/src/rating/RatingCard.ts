@@ -1,6 +1,6 @@
 import { zurichTime, type MensaChoice, type RatingPrompt } from './getRatingPrompt.ts';
 import { appNow } from '../time/clock.ts';
-import { dishName } from '../data/presentation.ts';
+import { setMealName } from '../scripts/meal-names';
 import { mensaCandidates, STATE_KEY, useRatingPrompt } from './useRatingPrompt.ts';
 import { loadMeals } from './mealSource.ts';
 import { anonymousUserId, DuplicateMealRatingError, RATINGS_KEY, saveMealRating, undoMealRating, type Stars } from './saveMealRating.ts';
@@ -154,10 +154,10 @@ export function mountRatingCard(): void {
     list.replaceChildren();
     meals.forEach(option => {
       const button = document.createElement('button');
-      button.type = 'button'; button.textContent = dishName(option.name);
+      button.type = 'button'; setMealName(button, option.name);
       button.addEventListener('click', () => {
         meal = option;
-        query('[data-rating-meal-name]').textContent = dishName(option.name);
+        setMealName(query('[data-rating-meal-name]'), option.name);
         step('rate');
       });
       list.append(button);

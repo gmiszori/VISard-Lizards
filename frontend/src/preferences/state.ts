@@ -1,7 +1,9 @@
+import { DEFAULT_MEAL_CAPITALIZATION, isMealCapitalization, type MealCapitalization } from '../data/presentation.ts';
+
 export interface Preferences {
   vegan: boolean; vegetarian: boolean; meat: boolean; viewMode: 'standard' | 'compact' | 'list';
   locations: string[]; openOnly: boolean; distanceDefault: boolean; priceTier: 'student' | 'worker' | 'external';
-  devMode: boolean;
+  devMode: boolean; mealCapitalization: MealCapitalization;
 }
 export const PREFERENCES_KEY = 'campuseats-preferences';
 export const FAVOURITES_KEY = 'campuseats-favourites';
@@ -26,7 +28,8 @@ export function normalizePreferences(value: unknown, profileTier: unknown = 'stu
     viewMode: isViewMode(saved.viewMode) ? saved.viewMode : bool('compact', false) ? 'compact' : 'standard',
     openOnly: bool('openOnly', false), distanceDefault: bool('distanceDefault', false),
     priceTier: isPriceTier(saved.priceTier) ? saved.priceTier : isPriceTier(profileTier) ? profileTier : 'student',
-    locations, devMode: bool('devMode', false) };
+    locations, devMode: bool('devMode', false),
+    mealCapitalization: isMealCapitalization(saved.mealCapitalization) ? saved.mealCapitalization : DEFAULT_MEAL_CAPITALIZATION };
 }
 export function readPreferences(storage: Pick<Storage, 'getItem'> = localStorage): Preferences {
   try {

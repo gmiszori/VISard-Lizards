@@ -30,6 +30,7 @@
 <script>
   import { apiPost, ApiError } from '../data/api';
   import type { Recipe } from './recipePdf';
+  import { setMealName } from '../scripts/meal-names';
 
   const menu = document.querySelector<HTMLElement>('[data-recipe-menu]')!;
   const menuCommand = menu.querySelector<HTMLButtonElement>('[data-recipe-open]')!;
@@ -150,7 +151,7 @@
     servingsInput.disabled = false;
     selected = { name: trigger.dataset.recipeName ?? '', description: trigger.dataset.recipeDescription ?? '', diet: trigger.dataset.recipeDiet ?? 'meat' };
     closeMenu();
-    dishHeading.textContent = selected.name;
+    setMealName(dishHeading, selected.name);
     status.textContent = '';
     result.hidden = true;
     recipe = null;
