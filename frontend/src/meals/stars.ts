@@ -1,7 +1,7 @@
 export const PROFILE_KEY = 'campuseats-profile';
 
 export function normalizedName(name: string): string {
-  return name.normalize('NFKC').trim().replace(/\s+/g, ' ').toLocaleLowerCase('en');
+  return name.normalize('NFKC').replace(/\s*\|\s*/g, ' ').trim().replace(/\s+/g, ' ').toLocaleLowerCase('en');
 }
 
 /** Save the dish name as shown, with whitespace tidied up. */

@@ -12,16 +12,31 @@ const mensa = { ...MENSAS[0]!, temporarilyClosed: false, closures: [], openingHo
 
 test('Monday preview uses Monday service hours, with lunch and dinner separated', () => {
   const menu = prepareMenu([{ ...meal, id: 'lunch', service: 'lunch' },
-    { ...meal, id: 'dinner', service: 'dinner' }], mensa, '2026-10-12');
+    { ...meal, id: 'dinner', service: 'dinner', description: 'Evening recipe' }], mensa, '2026-10-12');
   assert.deepEqual(menu.map(m => m.servingWindows), [
     [{ open: '11:00', close: '14:00' }], [{ open: '17:30', close: '19:00' }],
   ]);
 });
 
-test('duplicate IDs render once while distinct offerings with the same name remain', () => {
+test('duplicate IDs render once while different recipes with the same name remain', () => {
   const lunch = { ...meal, id: 'lunch', service: 'lunch' as const };
-  const dinner = { ...meal, id: 'dinner', service: 'dinner' as const };
+  const dinner = { ...meal, id: 'dinner', service: 'dinner' as const, description: 'Different ingredients' };
   assert.deepEqual(prepareMenu([lunch, lunch, dinner, dinner], mensa, '2026-10-12').map(m => m.id), ['lunch', 'dinner']);
+});
+
+test('identical lunch and dinner offerings render once and retain both services and times', () => {
+  const lunch = { ...meal, name: 'Pasta | pesto', id: 'lunch', service: 'lunch' as const };
+  const dinner = { ...lunch, name: 'PASTA PESTO', id: 'dinner', service: 'dinner' as const };
+  const menu = prepareMenu([lunch, dinner], mensa, '2026-10-12');
+  assert.equal(menu.length, 1);
+  assert.equal(menu[0]!.name, 'PASTA PESTO');
+  assert.deepEqual(menu[0]!.services, ['lunch', 'dinner']);
+  assert.deepEqual(menu[0]!.servingWindows, [{ open: '11:00', close: '14:00' }, { open: '17:30', close: '19:00' }]);
+  assert.equal(groupMenuByService(menu)[0]!.service, 'lunch dinner');
+  const differentPrice = { ...dinner, priceStudent: (lunch.priceStudent ?? 0) + 1 };
+  assert.equal(prepareMenu([lunch, differentPrice], mensa, '2026-10-12').length, 2);
+  assert.equal(prepareMenu([lunch, { ...dinner, dietary: 'vegan' }], mensa, '2026-10-12').length, 2);
+  assert.equal(prepareMenu([lunch, { ...dinner, service: undefined }], mensa, '2026-10-12').length, 2);
 });
 
 test('lunch and dinner remain separate even when the same dish is offered twice', () => {

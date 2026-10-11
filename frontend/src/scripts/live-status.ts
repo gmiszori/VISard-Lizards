@@ -10,6 +10,7 @@
 import { appNow, CLOCK_EVENT, zurichClock, type Weekday } from '../time/clock';
 import { readPreferences } from '../preferences/state';
 import { canShowCanteen } from '../preferences/canteenVisibility';
+import { closingIn } from '../time/closing';
 
 interface LiveInfo {
   temporarilyClosed: boolean;
@@ -31,7 +32,7 @@ function stateOf(info: LiveInfo, now: { weekday: Weekday; minutes: number }) {
   const slot = crowd ? Math.floor((now.minutes - crowd.start) / 15) : -1;
   const pct = crowd && slot >= 0 ? (crowd.pct[slot] ?? 0) : 0;
   const occupancy = !isOpen ? 'closed' : pct < 40 ? 'low' : pct < 70 ? 'medium' : 'high';
-  return { isOpen, hours, occupancy };
+  return { isOpen, hours, occupancy, closingMinutes: isOpen ? closingIn(windows, now.minutes) : null };
 }
 
 /** Returns true when anything on the page changed. */
@@ -47,11 +48,16 @@ function refresh(): boolean {
     if (!info) return;
     const state = stateOf(info, now);
     if (el.dataset.live === 'status') {
-      const label = el.querySelector<HTMLElement>('[data-i18n]');
+      const label = el.querySelector<HTMLElement>('span');
       const key = state.isOpen ? 'open' : 'closed';
-      if (label && label.dataset.i18n !== key) {
-        label.dataset.i18n = key;
-        label.textContent = state.isOpen ? 'Open now' : 'Closed';
+      const german = document.documentElement.lang === 'de';
+      const text = state.closingMinutes !== null
+        ? german ? `Schliesst in ${state.closingMinutes} Min.` : `Closes in ${state.closingMinutes} min`
+        : state.isOpen ? german ? 'Geöffnet' : 'Open' : german ? 'Geschlossen' : 'Closed';
+      if (label && (label.textContent !== text || (state.closingMinutes === null && label.dataset.i18n !== key))) {
+        if (state.closingMinutes === null) label.dataset.i18n = key;
+        else delete label.dataset.i18n;
+        label.textContent = text;
         el.classList.toggle('open', state.isOpen);
         el.classList.toggle('closed', !state.isOpen);
         changed = true;

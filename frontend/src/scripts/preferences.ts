@@ -42,18 +42,20 @@ function applyPreferences() {
   document.documentElement.dataset.devMode = String(preferences.devMode);
   document.querySelectorAll<HTMLElement>('[data-meal-price]').forEach(price => {
     const amount = price.querySelector<HTMLElement>('[data-price-amount]');
-    const label = price.querySelector<HTMLElement>('[data-price-label]');
     const value = price.getAttribute(`data-price-${preferences.priceTier}`) ?? '–';
     const row = price.closest<HTMLElement>('[data-meal-row]');
     if (row) row.dataset.mealPriceMissing = String(value === '–');
-    if (amount) amount.textContent = `CHF ${value}`;
-    if (label) {
-      label.dataset.i18n = preferences.priceTier;
-      const labels = document.documentElement.lang === 'de'
-        ? { student: 'Studierende', worker: 'Mitarbeitende', external: 'Externe' }
-        : { student: 'Student', worker: 'Staff', external: 'External' };
-      label.textContent = labels[preferences.priceTier];
-    }
+    if (amount) amount.textContent = value === '–'
+      ? document.documentElement.lang === 'de' ? 'Preis nicht verfügbar' : 'Price unavailable'
+      : `CHF ${value}`;
+    const unit = price.querySelector<HTMLElement>('[data-price-unit]');
+    if (unit) unit.hidden = value === '–';
+  });
+  const categoryLabels = document.documentElement.lang === 'de'
+    ? { student: 'Preise für Studierende', worker: 'Preise für Mitarbeitende', external: 'Preise für Externe' }
+    : { student: 'Student prices', worker: 'Staff prices', external: 'External prices' };
+  document.querySelectorAll<HTMLElement>('[data-price-category]').forEach(label => {
+    label.textContent = categoryLabels[preferences.priceTier];
   });
   document.querySelectorAll<HTMLSelectElement>('[data-price-tier]').forEach(select => select.value = preferences.priceTier);
 
@@ -74,7 +76,7 @@ function applyPreferences() {
     const card = meal.closest<HTMLElement>('[data-canteen-card]');
     const effectiveService = cardService(card, service);
     const groupService = meal.closest<HTMLElement>('[data-meal-group]')?.dataset.service;
-    const otherService = effectiveService === 'closed' || (!!effectiveService && !!groupService && groupService !== effectiveService);
+    const otherService = effectiveService === 'closed' || (!!effectiveService && !!groupService && !groupService.split(' ').includes(effectiveService));
     meal.hidden = !preferences[diet] || otherService || !!(card && !search.test(searchTextOf(meal, card), meal.dataset.diet));
   });
 
@@ -107,7 +109,7 @@ function applyPreferences() {
       const card = list.closest<HTMLElement>('[data-canteen-card]');
       const effectiveService = cardService(card, service);
       const hasDishForService = effectiveService === 'closed' ? false
-        : !effectiveService || list.querySelector(`[data-meal-group][data-service="${effectiveService}"], [data-meal-group]:not([data-service])`) !== null;
+        : !effectiveService || list.querySelector(`[data-meal-group][data-service~="${effectiveService}"], [data-meal-group]:not([data-service])`) !== null;
       const hasAnyDish = list.querySelector('[data-meal-row]') !== null;
       const key = !hasAnyDish || !hasDishForService ? 'noDishesAvailable' : 'noPreferenceMeals';
       emptyMessage.dataset.i18n = key;
@@ -129,7 +131,7 @@ function applyPreferences() {
     const matchesSearch = search.test(card.dataset.name ?? '') || card.querySelector('[data-meal-row]:not([hidden])') !== null;
     // With lunch or dinner picked, a canteen without that service counts as having no menu.
     const effectiveService = cardService(card, service);
-    const servesChoice = !effectiveService || (effectiveService !== 'closed' && card.querySelector(`[data-meal-group][data-service="${effectiveService}"], [data-meal-group]:not([data-service])`) !== null);
+    const servesChoice = !effectiveService || (effectiveService !== 'closed' && card.querySelector(`[data-meal-group][data-service~="${effectiveService}"], [data-meal-group]:not([data-service])`) !== null);
     const hasMenu = preferences.viewMode === 'list'
       ? card.querySelector('[data-meal-row]:not([hidden])') !== null
       : card.dataset.hasMenu === 'true' && servesChoice;
