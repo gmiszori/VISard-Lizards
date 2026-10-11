@@ -53,4 +53,9 @@ public class RoutePlannerController {
     public ResponseEntity<JsonNode> menu(@RequestParam @Size(max=36) String planId,@RequestParam int optionIndex) {
         return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(service.menu(planId,optionIndex));
     }
+    @PostMapping("/food")
+    public ResponseEntity<JsonNode> food(@RequestParam String planId,@RequestParam int optionIndex,
+            @RequestHeader(name="X-OpenAI-Key",defaultValue="") String key) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(service.food(planId,optionIndex,key));
+    }
 }

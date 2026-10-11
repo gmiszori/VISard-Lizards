@@ -4,7 +4,7 @@ import { attachLocationSuggestions } from './locations';
 import { journeyTimeline, mealBreak, type JourneyLeg } from './journey';
 import { attachCalendar } from './calendar';
 import { attachMealRange } from './meal-range';
-import { mealMenu } from './menus';
+import { mealFood as mealMenu } from './food';
 import { journeyTiming, type JourneyTiming } from './timing';
 
 const form = document.querySelector<HTMLFormElement>('#route-form')!;
@@ -71,17 +71,18 @@ function render(plan: Plan, explanation: string,planId?:string) {
   menuLoaders=[];
   results.replaceChildren(); results.append(element('p', explanation));
   results.append(element('p', `${plan.checkedStops} stops checked · Direct route arrival ${time(plan.baseline.arrival)} · ${plan.mealMinutes}${plan.mealMaxMinutes && plan.mealMaxMinutes!==plan.mealMinutes ? `–${plan.mealMaxMinutes}` : ''} minute meal range`));
+  if(plan.options.length<3) results.append(element('p',plan.warnings.find(text=>text.startsWith('Only ')) || `Found ${plan.options.length} feasible meal stops. Try more travel time or a shorter meal break for more options.`));
   plan.options.forEach((option, index) => {
     const card = element('article'); card.className = 'route-option';
     const show = element('button', `Show option ${index + 1} on map`); show.type = 'button'; show.className = 'show-route';
     show.addEventListener('click', () => { routeMap.select(index); selectCard(index); document.querySelector('#route-map-panel')!.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
     card.append(show);
-    card.append(element('p', index === 0 ? 'Smallest detour' : 'Another option'), element('h3', option.place.name));
+    card.append(element('p', index === 0 ? 'Recommended meal stop' : 'Another option'), element('h3', option.place.name));
     if(option.additionalDistanceMetres!=null) card.append(element('p',`${option.additionalDistanceMetres<1000 ? `${option.additionalDistanceMetres} m` : `${(option.additionalDistanceMetres/1000).toFixed(1)} km`} additional distance${option.distanceEstimated ? ' · estimated from walking access' : ''}`));
     card.append(element('p', `Eat ${time(option.mealStart)}–${time(option.mealEnd)}. Arrive ${time(option.arrival)}, ${option.spareMinutes} minutes before your deadline.`));
     card.append(element('p', `${option.extraMinutes} extra minutes compared with the direct journey, including your meal and waiting.`));
     if(option.timing) card.append(journeyTiming(option.timing));
-    const menu=mealMenu(option.place,planId,index);menuLoaders.push(menu);card.append(menu.panel);
+    const menu=mealMenu(option.place,planId,index,()=>input('openai-key').value.trim());menuLoaders.push(menu);card.append(menu.panel);
     card.append(journeyTimeline('To your meal stop',option.outbound,input('origin').value,option.place.name),
       mealBreak(option.mealStart,option.mealEnd,option.place.name),
       journeyTimeline('To your destination',option.onward,option.place.name,input('destination').value));

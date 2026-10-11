@@ -24,7 +24,7 @@ class RouteTool(private val baseMaps: MapProvider) {
         val baseline = maps.route(origin, destination, departure) ?: error("No walking or public transport route was returned.")
         val path = decodePolyline(baseline.evidence?.text("polyline").orEmpty())
         require(path.isNotEmpty()) { "The route provider returned no route geometry." }
-        val maxStops = request["maxStops"]?.jsonPrimitive?.int ?: 8
+        val maxStops = request["maxStops"]?.jsonPrimitive?.int ?: 5
         require(maxStops in 1..8)
         val warnings = mutableListOf("Best among up to $maxStops checked stops within 1.5 km of the direct route, not a guarantee of a globally optimal route.",
             "Travel times are estimates. A five-minute arrival buffer is included; check live transport disruptions.")
@@ -34,13 +34,13 @@ class RouteTool(private val baseMaps: MapProvider) {
             val data = element.jsonObject
             val point = runCatching { coordinates(data.obj("location")) }.getOrNull() ?: return@mapNotNull null
             val windows = data.array("windows").map { MealWindow(Instant.parse(it.jsonObject.text("open")), Instant.parse(it.jsonObject.text("close"))) }
-            if (windows.isEmpty() || data.array("meals").isEmpty()) return@mapNotNull null
+            if (windows.isEmpty()) return@mapNotNull null
             Candidate(MealStop(data.text("id"), data.text("name"), point.toString(), windows), point, data, true)
         }.filter { corridorDistance(it.point, path) <= 1500 }.sortedBy { corridorDistance(it.point, path) }
         val restaurants = mutableListOf<Candidate>()
         val closedPlaces = request.array("closedPlaces").map { it.jsonObject }
         // Discover near the returned path, then verify both legs with the route provider.
-        for (index in listOf(0, path.lastIndex / 2, path.lastIndex).distinct()) {
+        for (index in (0..8).map { path.lastIndex * it / 8 }.distinct()) {
             val places = try { maps.nearby(path[index], date,quickMeal) } catch (ex: Exception) {
                 warnings += "Restaurant discovery failed for one route area; only successfully retrieved places are considered."; continue
             }
@@ -61,7 +61,7 @@ class RouteTool(private val baseMaps: MapProvider) {
                     put("priceLevel", place.text("priceLevel")); put("attributions", place.array("attributions"))
                     put("meals", JsonArray(emptyList())); put("menuNote", "Opening hours checked; kitchen hours, specific dishes and meal prices are not verified. Check the restaurant website.")
                     put("hoursNote", place.text("hoursNote"))
-                    put("venueType",place.text("venueType"));put("quickMeal",place["quickMeal"] ?: JsonPrimitive(false))
+                    put("location",place.obj("location"));put("cuisine",place.text("cuisine"));put("venueType",place.text("venueType"));put("quickMeal",place["quickMeal"] ?: JsonPrimitive(false))
                     val known=request.array("menuAvailability").firstOrNull { it.jsonObject.text("websiteUrl").trimEnd('/') == place.text("websiteUrl").trimEnd('/') }
                     if(known!=null) put("publishedDishCount",known.jsonObject["dishCount"] ?: JsonPrimitive(0))
                 }
@@ -85,9 +85,9 @@ class RouteTool(private val baseMaps: MapProvider) {
             maps.walkingCosts(evidencePoint("originCoordinates", path.first()), evidencePoint("destinationCoordinates", path.last()), candidates.map { it.point })
         }.getOrElse { warnings += "Walking matrix unavailable; stops ranked by route proximity."; candidates.map { null } }
         val ranked = candidates.withIndex().sortedWith(compareBy<IndexedValue<Candidate>> {
-            distances.getOrNull(it.index) ?: costs.getOrNull(it.index)?.times(1.4) ?: Double.POSITIVE_INFINITY
+            mealScore(distances.getOrNull(it.index) ?: costs.getOrNull(it.index)?.times(1.4) ?: corridorDistance(it.value.point,path)*2, it.value.data)
         }.thenByDescending { publishedDishes(it.value.data) }.thenBy { corridorDistance(it.value.point, path) }).map { it.value }
-        val shortlist = ranked.distinctBy { it.stop.id }.take(maxStops)
+        val shortlist = ranked.distinctBy { it.stop.id }.take(24)
         val planner = MealRoutePlanner(RouteProvider { a, b, time ->
             try { maps.route(a, b, time) } catch (ex: Exception) { warnings += "A candidate journey could not be verified and was omitted."; null }
         })
@@ -97,13 +97,22 @@ class RouteTool(private val baseMaps: MapProvider) {
             val index=candidates.indexOfFirst { it.stop.id==journey.stop.id }
             return distances.getOrNull(index)?.toInt() ?: (2*corridorDistance(candidates[index].point,path)).toInt()
         }
-        val journeys = planner.evaluate(origin, destination, departure, deadline, minutes, shortlist.map { it.stop }, maxMinutes)
-            .sortedWith(compareBy<MealJourney> { addedDistance(it) }.thenByDescending { journey -> publishedDishes(shortlist.first { it.stop.id==journey.stop.id }.data) }.thenBy { it.onward.arrival })
+        var checked=0
+        val verified=mutableListOf<MealJourney>()
+        // If the first choices fail, verify further candidates instead of returning no meal immediately.
+        for(batch in shortlist.chunked(maxStops)) {
+            checked+=batch.size
+            verified+=planner.evaluate(origin,destination,departure,deadline,minutes,batch.map { it.stop },maxMinutes)
+            if(verified.size>=maxStops) break
+        }
+        val journeys=verified.sortedWith(compareBy<MealJourney> {
+            mealScore(addedDistance(it).toDouble(),shortlist.first { candidate -> candidate.stop.id==it.stop.id }.data)
+        }.thenBy { it.onward.arrival }).take(maxStops)
         return buildJsonObject {
             put("timeZone", "Europe/Zurich"); put("arrivalDeadline", deadline.toString()); put("mealMinutes", minutes)
             put("mealMaxMinutes", maxMinutes)
-            put("quickMeal",quickMeal);put("selectionPriority","additional_distance_then_dish_availability")
-            put("baseline", legJson(baseline, origin, destination)); put("checkedStops", shortlist.size)
+            put("quickMeal",quickMeal);put("selectionPriority","food_suitability_and_moderate_detour")
+            put("baseline", legJson(baseline, origin, destination)); put("checkedStops", checked)
             put("options", JsonArray(journeys.map { journey -> buildJsonObject {
                 val candidate = shortlist.first { it.stop.id == journey.stop.id }
                 val place = buildJsonObject {
@@ -124,6 +133,7 @@ class RouteTool(private val baseMaps: MapProvider) {
                 put("outbound", legJson(journey.outbound, origin, journey.stop.position))
                 put("onward", legJson(journey.onward, journey.stop.position, destination))
             } }))
+            if(journeys.size < minOf(3,maxStops)) warnings += "Only ${journeys.size} feasible meal stops were found after checking $checked candidates. Other stops lacked reliable hours or could not fit the meal break and arrival deadline."
             if (journeys.isEmpty()) warnings += "No checked stop fits a full meal break, published hours and the arrival deadline. Try departing earlier or changing the arrival time."
             put("warnings", JsonArray(warnings.distinct().map { JsonPrimitive(it) })); put("attribution", "© OpenStreetMap contributors · Walking routes: FOSSGIS/OSRM · Timetables: transport.opendata.ch")
         }
@@ -137,4 +147,15 @@ fun legJson(leg: RouteLeg, origin: String, destination: String) = buildJsonObjec
     val from = leg.evidence?.text("originCoordinates")?.ifBlank { origin } ?: origin
     val to = leg.evidence?.text("destinationCoordinates")?.ifBlank { destination } ?: destination
     put("mapsUrl", if (leg.evidence?.text("mode") == "TRANSIT") "https://transport.opendata.ch/" else "https://www.openstreetmap.org/directions?engine=fossgis_osrm_foot&route=${URLEncoder.encode("$from;$to", Charsets.UTF_8)}")
+}
+
+/** A kilometre of detour costs 350 points; food evidence can justify a modest detour. */
+internal fun mealScore(distance: Double,place: JsonObject): Double {
+    val foodEvidence=when {
+        publishedDishes(place)>0 -> 500.0+minOf(100,publishedDishes(place)*20)
+        place.text("cuisine").split(';').any { it.isNotBlank() && it.trim() !in listOf("coffee_shop","coffee","tea","juice","ice_cream") } -> 500.0
+        place.text("venueType") in listOf("fast_food","restaurant","bakery","deli") -> 250.0
+        else -> 0.0
+    }
+    return distance*0.35-foodEvidence
 }

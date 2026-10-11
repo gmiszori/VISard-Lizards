@@ -37,7 +37,7 @@ class RouteSessions(private val provider: () -> MapProvider, private val clock: 
         return value
     }
     @Synchronized fun stops(id: String, maxStops: Int): JsonObject {
-        require(maxStops in 1..4) { "Check one to four meal stops." }
+        require(maxStops in 1..5) { "Check one to five meal stops." }
         val session = session(id)
         session.plan?.let { return it }
         val request = buildJsonObject { session.request.forEach { (key, value) -> put(key, value) }; put("maxStops", maxStops) }

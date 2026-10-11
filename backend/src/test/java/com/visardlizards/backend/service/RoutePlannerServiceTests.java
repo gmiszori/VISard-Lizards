@@ -21,6 +21,23 @@ class RoutePlannerServiceTests {
     private final MensaRepository repository=mock(MensaRepository.class);
     private final Clock clock=Clock.fixed(Instant.parse("2026-10-10T20:00:00Z"),ZoneOffset.UTC);
     private Trip trip() { return new Trip("Zürich HB","ETH Zentrum",Instant.parse("2026-10-12T09:00:00Z"),Instant.parse("2026-10-12T12:00:00Z"),60); }
+    @Test void foodSearchUsesOnlyRegisteredPlaceAndTransientHeader() {
+        var builder=RestClient.builder();var server=MockRestServiceServer.bindTo(builder).build();var service=service(builder.build());
+        var menus=mock(RouteMenuService.class);
+        org.springframework.test.util.ReflectionTestUtils.setField(service,"menus",menus);
+        when(menus.option("verified-plan",0)).thenReturn(mapper.readTree("{\"place\":{\"name\":\"Soup place\",\"cuisine\":\"soup\"}}"));
+        server.expect(requestTo("http://router/api/tools/food"))
+            .andExpect(header("Authorization","Bearer connector-secret-123"))
+            .andExpect(header("X-OpenAI-Key","request-key"))
+            .andExpect(jsonPath("$.place.name").value("Soup place"))
+            .andExpect(jsonPath("$._credential").doesNotExist())
+            .andRespond(withSuccess("{\"status\":\"researched\",\"description\":\"Soups\",\"sources\":[]}",MediaType.APPLICATION_JSON));
+        assertEquals("Soups",service.food("verified-plan",0,"request-key").path("description").asText());
+        assertThrows(ResponseStatusException.class,()->service.food("verified-plan",0,"bad\nkey"));
+        when(menus.option("expired",0)).thenThrow(new ResponseStatusException(org.springframework.http.HttpStatus.GONE));
+        assertThrows(ResponseStatusException.class,()->service.food("expired",0,"request-key"));
+        server.verify();verifyNoInteractions(repository);
+    }
     @Test void journeyTimingIncludesInitialWaitMealTransferWaitAndDeadlineSlack() {
         var plan=mapper.readTree("""
             {"options":[{"mealStart":"2026-10-12T09:20:00Z","mealEnd":"2026-10-12T10:20:00Z","arrival":"2026-10-12T10:40:00Z",
@@ -80,13 +97,16 @@ class RoutePlannerServiceTests {
         var closedContext=service.tripContext(trip());
         assertTrue(closedContext.path("cafeterias").isEmpty());
         assertEquals("Test",closedContext.path("closedPlaces").get(0).path("name").asText());
+        when(repository.findAllMensas()).thenReturn(List.of(mensa));when(repository.findMealsOn(date)).thenReturn(List.of());
+        var noMenu=service.tripContext(trip());assertEquals(1,noMenu.path("cafeterias").size());
+        assertTrue(noMenu.path("cafeterias").get(0).path("meals").isEmpty());
     }
     private void routes(MockRestServiceServer server) {
         server.expect(requestTo("http://router/api/tools/routes")).andExpect(header("Authorization","Bearer connector-secret-123"))
             .andExpect(headerDoesNotExist("X-OpenAI-Key")).andExpect(jsonPath("$.destination").value("ETH Zentrum"))
             .andRespond(withSuccess("{\"sessionId\":\"trusted-session\"}",MediaType.APPLICATION_JSON));
         server.expect(requestTo("http://router/api/tools/stops")).andExpect(jsonPath("$.sessionId").value("trusted-session"))
-            .andExpect(jsonPath("$.maxStops").value(4)).andRespond(withSuccess("{\"options\":[{},{}],\"warnings\":[]}",MediaType.APPLICATION_JSON));
+            .andExpect(jsonPath("$.maxStops").value(5)).andRespond(withSuccess("{\"options\":[{},{}],\"warnings\":[]}",MediaType.APPLICATION_JSON));
     }
     private void selected(MockRestServiceServer server,int index) {
         server.expect(requestTo("http://router/api/tools/show")).andExpect(header("Authorization","Bearer connector-secret-123"))

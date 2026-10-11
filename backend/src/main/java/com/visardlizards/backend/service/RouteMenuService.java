@@ -50,7 +50,7 @@ public class RouteMenuService {
         plans.put(id,new Options(plan.path("options").deepCopy(),clock.instant().plusSeconds(1800)));
         return id;
     }
-    private synchronized JsonNode option(String id,int index) {
+    synchronized JsonNode option(String id,int index) {
         var plan=plans.get(id);
         if(plan==null || !plan.expires().isAfter(clock.instant())) {
             plans.remove(id);throw new ResponseStatusException(HttpStatus.GONE,"This route expired. Plan your journey again to load its menus.");
